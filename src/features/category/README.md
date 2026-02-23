@@ -1,10 +1,3 @@
-# Category Feature
+# Category Features
 
-Manage product categories and classification.
-
-## Structure
-- `types/` - Type definitions
-- `api/` - API communication  
-- `service/` - Business logic
-- `hooks/` - Custom hooks
-- `components/` - React components
+Category management, classification, and hierarchical navigation.

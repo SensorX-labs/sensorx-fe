@@ -1,10 +1,3 @@
-# Auth Feature
+# Auth Features
 
-Authentication and user authorization.
-
-## Structure
-- `types/` - Type definitions
-- `api/` - API communication
-- `service/` - Business logic
-- `hooks/` - Custom hooks
-- `components/` - React components
+User authentication, login, registration, and authorization management.

@@ -1,3 +1,3 @@
-# User Components
+# Components
 
-User UI components.
+UI components for user (UserProfile, ProfileForm, PasswordForm, etc).
