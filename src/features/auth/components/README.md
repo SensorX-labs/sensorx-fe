@@ -1,3 +1,3 @@
-# Auth Components
+# Components
 
-Authentication UI components.
+UI components for authentication (LoginForm, RegisterForm, AuthGuard, etc).

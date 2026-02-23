@@ -1,3 +1,3 @@
-# Category Components
+# Components
 
-Category UI components.
+UI components for categories (CategoryNav, CategoryTree, CategoryFilter, etc).
