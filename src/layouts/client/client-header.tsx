@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
 
 export const ClientHeader = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -41,10 +42,62 @@ export const ClientHeader = () => {
             {/* liên hệ */}
             <div className="flex-1 flex items-center justify-start">
               <div className="hidden md:flex items-center">
-                <button className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
-                  <span className="text-lg">+</span>
-                  <span>Contact Us</span>
-                </button>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
+                      <span className="text-lg">+</span>
+                      <span>Liên hệ</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent className="w-[600px] sm:max-w-none px-12 md:px-20 py-20 flex flex-col gap-16">
+                    <SheetHeader className="p-0 flex-none">
+                      <SheetTitle className="text-3xl font-medium tracking-[0.1em] uppercase text-left">
+                        Liên hệ với chúng tôi
+                      </SheetTitle>
+                    </SheetHeader>
+
+                    <div className="flex flex-col gap-12">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                          <Phone size={22} strokeWidth={1.5} />
+                          <a href="tel:+84382116944" className="text-xl font-medium border-b border-black pb-0.5">
+                            Gọi cho chúng tôi +84 382 116 944
+                          </a>
+                        </div>
+                        <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
+                          <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
+                          <p>Chủ Nhật: 10:00 - 21:00</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                          <Circle></Circle>
+                          <button className="text-xl font-medium border-b border-black pb-0.5">
+                            Trò chuyện trực tiếp
+                          </button>
+                        </div>
+                        <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
+                          <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
+                          <p>Chủ Nhật: 10:00 - 21:00</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                          <MessageCircle size={22} strokeWidth={1.5} />
+                          <button className="text-xl font-medium border-b border-black pb-0.5">
+                            Gửi tin nhắn cho chúng tôi
+                          </button>
+                        </div>
+                        <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
+                          <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
+                          <p>Chủ Nhật: 10:00 - 21:00</p>
+                        </div>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
 
