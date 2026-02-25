@@ -58,7 +58,7 @@ export const ClientFooter = () => {
               </h3>
               <div className="space-y-3 text-sm text-zinc-400">
                 <p>
-                  <a href="tel:+84382116944" className="hover:text-white transition-colors">
+                  <a className="hover:text-white transition-colors">
                     +84 382 116 944
                   </a>
                 </p>
