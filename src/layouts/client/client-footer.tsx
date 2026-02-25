@@ -218,10 +218,16 @@ export const ClientFooter = () => {
 
             {/* bản quyền */}
             <div className="text-xs text-zinc-500">
-              <p>&copy; 2024 SensorX. Bảo lưu mọi quyền.</p>
+              <p>&copy; 2026 SensorX. Bảo lưu mọi quyền.</p>
               <p className="mt-2">Thiết kế tỉ mỉ. Xây dựng bằng tâm huyết.</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-24 pb-12 text-center">
+          <h2 className="text-[10rem] font-bold tracking-[0.2em] text-white opacity-10 select-none leading-none">
+            SENSORX
+          </h2>
         </div>
       </div>
     </footer>
