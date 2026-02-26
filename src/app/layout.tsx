@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   title: "SensorX",
   description: "A platform for buying and selling sensor products",
   icons: {
-    icon: "/assets/images/logo.png",
-    shortcut: "/assets/images/logo.png",
-    apple: "/assets/images/logo.png",
+    icon: "/assets/images/favicon.png",
+    shortcut: "/assets/images/favicon.png",
+    apple: "/assets/images/favicon.png",
   },
 };
 
