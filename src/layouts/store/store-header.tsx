@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
 
-export const ClientHeader = () => {
+export const StoreHeader = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -131,4 +131,4 @@ export const ClientHeader = () => {
   );
 };
 
-export default ClientHeader;
+export default StoreHeader;

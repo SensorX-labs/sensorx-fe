@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 
-export const ClientFooter = () => {
+export const StoreFooter = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -234,4 +234,4 @@ export const ClientFooter = () => {
   );
 };
 
-export default ClientFooter;
+export default StoreFooter;
