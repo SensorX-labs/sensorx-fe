@@ -184,11 +184,9 @@ export default function CrmSidebar() {
     <Sidebar collapsible="icon" className="[&>[data-sidebar=sidebar]]:bg-[#1E1E2D] border-r-0">
       {/* ───────── Header ───────── */}
       <SidebarHeader className="p-4 flex items-center gap-3 overflow-hidden">
-        <div className="shrink-0 w-8 h-8 bg-gradient-to-tr from-[#4318FF] to-[#868CFF] rounded-lg flex items-center justify-center shadow-lg">
-          <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
-        </div>
+        <img src="assets/images/favicon.png" alt="SensorX Logo" className="w-10 h-10" />
         <span className="text-white text-xl font-bold uppercase tracking-wider group-data-[collapsible=icon]:hidden">
-          Axetic
+          SensorX
         </span>
       </SidebarHeader>
 
