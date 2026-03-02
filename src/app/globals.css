@@ -47,6 +47,7 @@
     --radius-4xl: calc(var(--radius) + 16px);
   --color-brand-green: var(--brand-green);
   --color-brand-green-hover: var(--brand-green-hover);
+  --color-product-card-landing: var(--product-card-landing);
 }
 
 :root {
@@ -87,6 +88,9 @@
     /* màu thương hiệu */
     --brand-green: oklch(0.45 0.06 160);
     --brand-green-hover: oklch(0.4 0.07 160);
+
+    /* màu của card product landing page */
+    --product-card-landing: #F7F7F7;
 }
 
 .dark {
