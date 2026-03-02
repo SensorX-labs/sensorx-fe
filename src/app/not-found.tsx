@@ -4,8 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {ChevronRight, Phone, Mail, Search} from 'lucide-react';
-import {ClientHeader} from "@/layouts/client/client-header";
-import {ClientFooter} from "@/layouts/client/client-footer";
+import StoreHeader from '@/layouts/store/store-header';
+import StoreFooter from '@/layouts/store/store-footer';
 
 export default function NotFound() {
     const pathname = usePathname();
@@ -37,8 +37,7 @@ export default function NotFound() {
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
-            <ClientHeader/>
-
+            <StoreHeader/>
             <main className="flex-1">
 
                 <div className="relative bg-zinc-900 text-white py-24 sm:py-32 px-48 text-center bg-cover bg-center bg-no-repeat"
@@ -136,8 +135,7 @@ export default function NotFound() {
                     </div>
                 </div>
             </main>
-
-            <ClientFooter/>
+            <StoreFooter/>
         </div>
     );
 }
