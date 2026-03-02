@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
 
 export const StoreHeader = () => {
@@ -110,6 +110,9 @@ export const StoreHeader = () => {
 
             {/* menu */}
             <div className="flex-1 flex items-center justify-end gap-4 sm:gap-6 lg:gap-3">
+              <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
+                <Heart size={20} />
+              </button>
               <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <ShoppingBag size={20} />
               </button>

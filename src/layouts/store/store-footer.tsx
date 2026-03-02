@@ -192,35 +192,37 @@ export const StoreFooter = () => {
             </ul>
           </div>
         </div>
+      </div>
 
-        <div className="border-t border-zinc-800 pt-8 sm:pt-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-            {/* mạng xã hội */}
-            <div className="flex gap-6">
-              <h4 className="text-xs font-semibold tracking-widest uppercase text-white">
-                Theo dõi chúng tôi
-              </h4>
-              <div className="flex gap-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-                   className="text-zinc-400 hover:text-white transition-colors">
-                  <Facebook size={18} />
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                   className="text-zinc-400 hover:text-white transition-colors">
-                  <Instagram size={18} />
-                </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                   className="text-zinc-400 hover:text-white transition-colors">
-                  <Twitter size={18} />
-                </a>
-              </div>
-            </div>
+      <div className="border-t border-zinc-800" />
 
-            {/* bản quyền */}
-            <div className="text-xs text-zinc-500">
-              <p>&copy; 2026 SensorX. Bảo lưu mọi quyền.</p>
-              <p className="mt-2">Thiết kế tỉ mỉ. Xây dựng bằng tâm huyết.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+          {/* mạng xã hội */}
+          <div className="flex gap-6">
+            <h4 className="text-xs font-semibold tracking-widest uppercase text-white">
+              Theo dõi chúng tôi
+            </h4>
+            <div className="flex gap-4">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                 className="text-zinc-400 hover:text-white transition-colors">
+                <Facebook size={18} />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                 className="text-zinc-400 hover:text-white transition-colors">
+                <Instagram size={18} />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+                 className="text-zinc-400 hover:text-white transition-colors">
+                <Twitter size={18} />
+              </a>
             </div>
+          </div>
+
+          {/* bản quyền */}
+          <div className="text-xs text-zinc-500">
+            <p>&copy; 2026 SensorX. Bảo lưu mọi quyền.</p>
+            <p className="mt-2">Thiết kế tỉ mỉ. Xây dựng bằng tâm huyết.</p>
           </div>
         </div>
 
