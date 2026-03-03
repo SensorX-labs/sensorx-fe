@@ -1,9 +1,28 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { StoreFooter, StoreHeader } from '@/layouts/store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/shared/components/shadcn-ui/carousel';
 import { Bookmark } from 'lucide-react';
 
 export default function LandingPage() {
+    const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+    const banners = [
+        { src: 'assets/images/banner_6.jpeg', alt: 'Shop the collection' },
+        { src: 'assets/images/banner_2.jpeg', alt: 'Collection showcase' },
+        { src: 'assets/images/banner_3.jpeg', alt: 'Collection showcase' }
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const newArrivalProducts = [
         {
             id: 1,
@@ -68,7 +87,7 @@ export default function LandingPage() {
         }
     ];
 
-        const bestSellerProducts = [
+    const bestSellerProducts = [
         {
             id: 1,
             name: 'Cảm biến áp suất',
@@ -132,6 +151,57 @@ export default function LandingPage() {
         }
     ];
 
+    const collectionProducts = [
+        {
+            id: 11,
+            name: 'Cảm biến bên cửa tự động',
+            serie: 'ADS-A Series | Omron',
+            image: 'assets/images/products/cambienbencuatudong.webp',
+        },
+        {
+            id: 12,
+            name: 'Cảm biến quang điện loại nhỏ gọn',
+            serie: 'LPO Series | Autonics',
+            image: 'assets/images/products/cambienquangdienloainhogon.webp',
+        },
+        {
+            id: 13,
+            name: 'Cảm biến quang điện loại nhỏ gọn, khoảng cách phát hiện dài',
+            serie: 'SQ3PFS Series | Schneider Electric',
+            image: 'assets/images/products/cambienquangdienloainnhogonkhoangcachphathiendai.webp',
+        },
+        {
+            id: 14,
+            name: 'BY Series loại nhỏ tích hợp bộ khuếch đại',
+            serie: 'BY Series | Autonics',
+            image: 'assets/images/products/BY_main.webp',
+        },
+        {
+            id: 15,
+            name: 'Bộ điều khiển thiết bị an toàn',
+            serie: 'SFC Series | Panasonic',
+            image: 'assets/images/products/bodieukhienthietbiantoan.webp',
+        },
+        {
+            id: 16,
+            name: 'Bộ điều khiển nguồn',
+            serie: 'SPRS Series | Schneider Electric',
+            image: 'assets/images/products/bodieukhiennguon.webp',
+        },
+        {
+            id: 17,
+            name: 'Bộ định thời loại đôi, analog, nhỏ gọn',
+            serie: 'ATS8W/ATS11W Series | Autonics',
+            image: 'assets/images/products/bodinhthoiloaidoi.webp',
+        },
+        {
+            id: 18,
+            name: 'Động cơ bước 5 pha ( loại trục nhỏ gọn)',
+            serie: 'AK Series | Autonics',
+            image: 'assets/images/products/dongcobuoc5pha.webp',
+        }
+    ];
+
     return (
         <>
             <StoreHeader />
@@ -160,7 +230,7 @@ export default function LandingPage() {
                                 công nghiệp
                             </p>
 
-                            <button className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded-md hover:opacity-90 hover:-translate-y-1 transition-all duration-200">
+                            <button className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded-md hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer">
                                 Mua ngay
                             </button>
                         </div>
@@ -193,8 +263,8 @@ export default function LandingPage() {
                                             </button>
 
                                             {/* image container */}
-                                            <div className="bg-product-card-landing h-64 flex items-center justify-center overflow-hidden">
-                                                <img src={product.image} alt={product.name} className="h-56 w-56 object-contain" />
+                                            <div className="bg-product-card-landing h-80 flex items-center justify-center overflow-hidden">
+                                                <img src={product.image} alt={product.name} className="h-64 w-64 object-contain" />
                                             </div>
 
                                             {/* info section */}
@@ -222,8 +292,8 @@ export default function LandingPage() {
                                             </button>
 
                                             {/* image container */}
-                                            <div className="bg-product-card-landing h-64 flex items-center justify-center overflow-hidden">
-                                                <img src={product.image} alt={product.name} className="h-56 w-56 object-contain" />
+                                            <div className="bg-product-card-landing h-80 flex items-center justify-center overflow-hidden">
+                                                <img src={product.image} alt={product.name} className="h-64 w-64 object-contain" />
                                             </div>
 
                                             {/* info section */}
@@ -240,6 +310,62 @@ export default function LandingPage() {
                         </Carousel>
                     </TabsContent>
                 </Tabs>
+            </section>
+
+            <section className="w-full bg-gray-50 py-16">
+                <div className="max-w-7xl mx-auto px-4 flex gap-8">
+
+                    <div className="w-1/3 relative rounded-lg overflow-hidden h-124">
+                        {/* Banner Carousel */}
+                        {banners.map((banner, index) => (
+                            <img
+                                key={index}
+                                src={banner.src}
+                                alt={banner.alt}
+                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                                    index === currentBannerIndex ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            />
+                        ))}
+                        
+                        <div className="absolute inset-0 bg-black/20 flex items-end p-8 z-10">
+                            <h2 className="text-xl font-bold text-white underline tracking-widest">
+                                SHOP THE COLLECTION
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div className="w-2/3 flex items-center">
+                        <Carousel className="w-full">
+                            <CarouselContent>
+                                {collectionProducts.map((product) => (
+                                    <CarouselItem key={product.id} className="lg:basis-1/3 md:basis-1/2">
+                                        <div className="relative rounded-none overflow-hidden group">
+
+                                            {/* bookmark icon */}
+                                            <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                                <Bookmark size={20} className="text-gray-600" fill="none" strokeWidth={1.5} />
+                                            </button>
+
+                                            {/* image container */}
+                                            <div className="bg-product-card-landing h-84 flex items-center justify-center overflow-hidden">
+                                                <img src={product.image} alt={product.name} className="h-56 w-56 object-contain" />
+                                            </div>
+
+                                            {/* info section */}
+                                            <div className="p-4">
+                                                <h3 className="text-sm font-bold text-gray-900">{product.name}</h3>
+                                                <p className="text-gray-600 text-xs mt-1 uppercase">{product.serie}</p>
+                                            </div>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="left-2 h-10 w-10 aspect-square rounded-none bg-white shadow-md hover:bg-gray-100" />
+                            <CarouselNext className="right-2 h-10 w-10 aspect-square rounded-none bg-white shadow-md hover:bg-gray-100" />
+                        </Carousel>
+                    </div>
+                </div>
             </section>
 
             <StoreFooter />

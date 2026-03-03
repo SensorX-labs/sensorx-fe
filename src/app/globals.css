@@ -48,6 +48,7 @@
   --color-brand-green: var(--brand-green);
   --color-brand-green-hover: var(--brand-green-hover);
   --color-product-card-landing: var(--product-card-landing);
+  --color-page-background: var(--page-background);
 }
 
 :root {
@@ -90,7 +91,10 @@
     --brand-green-hover: oklch(0.4 0.07 160);
 
     /* màu của card product landing page */
-    --product-card-landing: #F7F7F7;
+    --product-card-landing: #ECECEC;
+
+    /* màu nền trang web */
+    --page-background: #FCF9F4;
 }
 
 .dark {
