@@ -175,3 +175,57 @@
     background-color: #A2A3B7;
     }
 }
+
+/* Animation cho hero text slide-in từ trái sang */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Shimmer effect - sọc trắng chạy từ trái sang phải */
+@keyframes shimmerWhite {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@layer utilities {
+    .animate-slide-in-left {
+        animation: slideInFromLeft 1.2s ease-out forwards;
+    }
+    
+    .animate-shimmer {
+        background: linear-gradient(
+            110deg,
+            var(--brand-green) 0%,
+            var(--brand-green) 45%,
+            rgba(255, 255, 255, 0.5) 50%,
+            var(--brand-green) 55%,
+            var(--brand-green) 100%
+        );
+        background-size: 1000px 100%;
+        background-position: -1000px 0;
+        animation: shimmerWhite 5s infinite linear;
+    }
+    
+    .delay-100 {
+        animation-delay: 100ms;
+    }
+    
+    .delay-200 {
+        animation-delay: 200ms;
+    }
+    
+    .delay-300 {
+        animation-delay: 300ms;
+    }
+}

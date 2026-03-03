@@ -258,17 +258,17 @@ export default function LandingPage() {
                 <div className="relative z-10 h-full flex items-center">
                     <div className="w-[90%] max-w-7xl mx-auto">
                         <div className="max-w-2xl space-y-6">
-                            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight tracking-widest">
+                            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight tracking-widest animate-slide-in-left delay-100">
                                 Giải Pháp Cảm Biến <br />
                                 <span className="text-brand-green tracking-widest">Hàng Đầu</span>
                             </h1>
 
-                            <p className="text-lg md:text-xl text-white/85 tracking-widest">
+                            <p className="text-lg md:text-xl text-white/85 tracking-widest animate-slide-in-left delay-200">
                                 Công nghệ cảm biến hiện đại, chính xác và tin cậy cho mọi ứng dụng
                                 công nghiệp
                             </p>
 
-                            <button className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded-md hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer">
+                            <button className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 animate-shimmer">
                                 Mua ngay
                             </button>
                         </div>
