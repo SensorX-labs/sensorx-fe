@@ -256,7 +256,7 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {newArrivalProducts.map((product) => (
                                     <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/4">
-                                        <div className="relative bg-product-card-landing rounded-none overflow-hidden">
+                                        <div className="relative bg-product-card-landing rounded overflow-hidden">
                                             {/* bookmark icon */}
                                             <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-300 rounded-full transition-colors">
                                                 <Bookmark size={20} className="text-gray-700" fill="white" strokeWidth={1.5} />
@@ -276,8 +276,8 @@ export default function LandingPage() {
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                            <CarouselPrevious className="-left-14 h-12 w-12 aspect-square rounded-none" />
-                            <CarouselNext className="-right-14 h-12 w-12 aspect-square rounded-none" />
+                            <CarouselPrevious className="-left-14 top-1/2 -translate-y-1/2 h-12 w-12 aspect-square rounded-none" />
+                            <CarouselNext className="-right-14 top-1/2 -translate-y-1/2 h-12 w-12 aspect-square rounded-none" />
                         </Carousel>
                     </TabsContent>
                     <TabsContent value="best-seller" className="mt-8">
@@ -285,7 +285,7 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {bestSellerProducts.map((product) => (
                                     <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/4">
-                                        <div className="relative bg-product-card-landing rounded-none overflow-hidden">
+                                        <div className="relative bg-product-card-landing rounded overflow-hidden">
                                             {/* bookmark icon */}
                                             <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-300 rounded-full transition-colors">
                                                 <Bookmark size={20} className="text-gray-700" fill="white" strokeWidth={1.5} />
@@ -305,8 +305,8 @@ export default function LandingPage() {
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
-                            <CarouselPrevious className="-left-14 h-12 w-12 aspect-square rounded-none" />
-                            <CarouselNext className="-right-14 h-12 w-12 aspect-square rounded-none" />
+                            <CarouselPrevious className="-left-14 top-1/2 -translate-y-1/2 h-12 w-12 aspect-square rounded-none" />
+                            <CarouselNext className="-right-14 top-1/2 -translate-y-1/2 h-12 w-12 aspect-square rounded-none" />
                         </Carousel>
                     </TabsContent>
                 </Tabs>
@@ -315,8 +315,8 @@ export default function LandingPage() {
             <section className="w-full bg-gray-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 flex gap-8">
 
-                    <div className="w-1/3 relative rounded-lg overflow-hidden h-124">
-                        {/* Banner Carousel */}
+                    <div className="w-1/3 relative rounded overflow-hidden h-124">
+
                         {banners.map((banner, index) => (
                             <img
                                 key={index}
@@ -340,7 +340,7 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {collectionProducts.map((product) => (
                                     <CarouselItem key={product.id} className="lg:basis-1/3 md:basis-1/2">
-                                        <div className="relative rounded-none overflow-hidden group">
+                                        <div className="relative rounded overflow-hidden group">
 
                                             {/* bookmark icon */}
                                             <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-200 rounded-full transition-colors">
@@ -364,6 +364,113 @@ export default function LandingPage() {
                             <CarouselPrevious className="left-2 h-10 w-10 aspect-square rounded-none bg-white shadow-md hover:bg-gray-100" />
                             <CarouselNext className="right-2 h-10 w-10 aspect-square rounded-none bg-white shadow-md hover:bg-gray-100" />
                         </Carousel>
+                    </div>
+                </div>
+            </section>
+
+            <section className="w-full bg-white py-16">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section3_banner1.jpeg" 
+                                    alt="sensor software" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                SENSOR SOFTWARE
+                            </h3>
+                        </div>
+
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section3_banner2.jpeg" 
+                                    alt="ultrasonic sensors" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                ULTRASONIC SENSORS
+                            </h3>
+                        </div>
+
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section3_banner3.jpeg" 
+                                    alt="laser distance measurement" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                LASER DISTANCE MEASUREMENT
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="w-full bg-white">
+                <div className="max-w-4xl mx-auto px-4 text-center">
+                    <div className="mb-8 text-gray-400 text-3xl tracking-widest">
+                        . . . . . . . . . .
+                    </div>
+                    
+                    <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-8 tracking-widest">
+                        Cảm biến chính xác và linh kiện điện tử<br />
+                        <span className="text-brand-green">Nâng cao hiệu suất sản xuất với công nghệ cảm biến hàng đầu</span>
+                    </h2>
+                    
+                    <div className="mb-8 text-gray-400 text-3xl tracking-widest">
+                        . . . . . . . . . .
+                    </div>
+                </div>
+            </section>
+
+            <section className="w-full bg-white py-16">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section4_banner1.jpeg" 
+                                    alt="sensor software" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                SENSOR SOFTWARE
+                            </h3>
+                        </div>
+
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section4_banner2.jpeg" 
+                                    alt="ultrasonic sensors" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                ULTRASONIC SENSORS
+                            </h3>
+                        </div>
+
+                        <div className="flex flex-col">
+                            <div className="overflow-hidden rounded mb-6">
+                                <img 
+                                    src="assets/images/section4_banner3.jpeg" 
+                                    alt="laser distance measurement" 
+                                    className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                                LASER DISTANCE MEASUREMENT
+                            </h3>
+                        </div>
                     </div>
                 </div>
             </section>
