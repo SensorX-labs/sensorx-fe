@@ -294,7 +294,7 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {newArrivalProducts.map((product) => (
                                     <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/4">
-                                        <div className="relative bg-product-card-landing rounded overflow-hidden">
+                                        <div className="relative bg-product-card-landing rounded overflow-hidden cursor-pointer\">
                                             {/* bookmark icon */}
                                             <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-300 rounded-full transition-colors">
                                                 <Bookmark size={20} className="text-gray-700" fill="white" strokeWidth={1.5} />
@@ -323,7 +323,7 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {bestSellerProducts.map((product) => (
                                     <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/4">
-                                        <div className="relative bg-product-card-landing rounded overflow-hidden">
+                                        <div className="relative bg-product-card-landing rounded overflow-hidden cursor-pointer\">
                                             {/* bookmark icon */}
                                             <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-300 rounded-full transition-colors">
                                                 <Bookmark size={20} className="text-gray-700" fill="white" strokeWidth={1.5} />
@@ -335,7 +335,7 @@ export default function LandingPage() {
                                             </div>
 
                                             {/* info section */}
-                                            <div className="p-4 bg-white">
+                                            <div className="p-4 bg-white cursor-pointer">
                                                 <h3 className="text-base font-semibold text-[#2B3674]">{product.name}</h3>
                                                 <p className="text-[#A3AED0] text-xs mt-2 uppercase tracking-wide">{product.serie}</p>
                                             </div>
@@ -378,10 +378,10 @@ export default function LandingPage() {
                             <CarouselContent>
                                 {collectionProducts.map((product) => (
                                     <CarouselItem key={product.id} className="lg:basis-1/3 md:basis-1/2">
-                                        <div className="relative rounded overflow-hidden group">
+                                        <div className="relative rounded overflow-hidden group cursor-pointer">
 
                                             {/* bookmark icon */}
-                                            <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                            <button className="absolute top-4 right-4 z-10 p-2 hover:bg-gray-300 rounded-full transition-colors">
                                                 <Bookmark size={20} className="text-gray-600" fill="none" strokeWidth={1.5} />
                                             </button>
 
@@ -391,7 +391,7 @@ export default function LandingPage() {
                                             </div>
 
                                             {/* info section */}
-                                            <div className="p-4">
+                                            <div className="p-4 cursor-pointer">
                                                 <h3 className="text-sm font-bold text-gray-900">{product.name}</h3>
                                                 <p className="text-gray-600 text-xs mt-1 uppercase">{product.serie}</p>
                                             </div>
@@ -417,7 +417,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 SENSOR SOFTWARE
                             </h3>
                         </div>
@@ -430,7 +430,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 ULTRASONIC SENSORS
                             </h3>
                         </div>
@@ -443,7 +443,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 LASER DISTANCE MEASUREMENT
                             </h3>
                         </div>
@@ -479,7 +479,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 SENSOR SOFTWARE
                             </h3>
                         </div>
@@ -492,7 +492,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 ULTRASONIC SENSORS
                             </h3>
                         </div>
@@ -505,7 +505,7 @@ export default function LandingPage() {
                                     className="w-full h-124 object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest">
+                            <h3 className="text-xl font-bold text-center text-gray-900 underline tracking-widest hover:cursor-pointer">
                                 LASER DISTANCE MEASUREMENT
                             </h3>
                         </div>
