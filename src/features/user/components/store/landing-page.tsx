@@ -202,6 +202,44 @@ export default function LandingPage() {
         }
     ];
 
+    const reviews = [
+        {
+            id: 1,
+            rating: 5,
+            title: 'CẢM BIẾN CHÍNH XÁC',
+            content: 'Sản phẩm cảm biến rất chính xác, giúp tối ưu hóa quy trình sản xuất của chúng tôi. Hỗ trợ kỹ thuật tuyệt vời!',
+            author: 'NGUYỄN VĂN A'
+        },
+        {
+            id: 2,
+            rating: 5,
+            title: 'LINH KIỆN ĐIỆN TỬ',
+            content: 'Chất lượng sản phẩm vượt mong đợi. Giao hàng nhanh và đóng gói chuyên nghiệp.',
+            author: 'TRẦN THỊ B'
+        },
+        {
+            id: 3,
+            rating: 5,
+            title: 'GIẢI PHÁP TOÀN DIỆN',
+            content: 'Nhà cung cấp đáng tin cậy với giá cạnh tranh. Sẽ tiếp tục hợp tác lâu dài.',
+            author: 'LÊ VĂN C'
+        },
+        {
+            id: 4,
+            rating: 5,
+            title: 'CÔNG NGHỆ HIỆN ĐẠI',
+            content: 'Tích hợp dễ dàng với hệ thống hiện có. Tăng hiệu suất sản xuất đáng kể.',
+            author: 'VÕ MINH D'
+        },
+        {
+            id: 5,
+            rating: 5,
+            title: 'ĐẢM BẢO CHẤT LƯỢNG',
+            content: 'Sản phẩm được kiểm tra chất lượng kỹ lưỡng. Độ chính xác cao, bền bỉ và tin cậy.',
+            author: 'PHẠM VĂN E'
+        }
+    ];
+
     return (
         <>
             <StoreHeader />
@@ -312,7 +350,7 @@ export default function LandingPage() {
                 </Tabs>
             </section>
 
-            <section className="w-full bg-gray-50 py-16">
+            <section className="w-full bg-page-background">
                 <div className="max-w-7xl mx-auto px-4 flex gap-8">
 
                     <div className="w-1/3 relative rounded overflow-hidden h-124">
@@ -472,6 +510,38 @@ export default function LandingPage() {
                             </h3>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section className="w-full bg-white py-8">
+                <div className="max-w-7xl mx-auto px-4">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-16 tracking-widest">
+                        Phản Hồi Từ Khách Hàng
+                    </h2>
+                    
+                    <Carousel className="w-full">
+                        <CarouselContent>
+                            {reviews.map((review) => (
+                                <CarouselItem key={review.id} className="md:basis-1/2 lg:basis-1/4">
+                                    <div className="bg-page-background p-8 rounded-none h-full flex flex-col">
+                                        <div className="flex items-center gap-1 mb-4">
+                                            {[...Array(review.rating)].map((_, i) => (
+                                                <span key={i} className="text-brand-green text-lg">★</span>
+                                            ))}
+                                            <span className="text-gray-600 text-sm ml-2">{review.rating}/5</span>
+                                        </div>
+                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-2 mb-4">{review.title}</h3>
+                                        <p className="text-gray-700 text-sm mb-6 flex-grow">
+                                            "{review.content}"
+                                        </p>
+                                        <p className="text-brand-green font-semibold text-sm">{review.author}</p>
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="-left-14 top-1/2 -translate-y-1/2 z-20 h-12 w-12 aspect-square rounded-none" />
+                        <CarouselNext className="-right-14 top-1/2 -translate-y-1/2 z-20 h-12 w-12 aspect-square rounded-none" />
+                    </Carousel>
                 </div>
             </section>
 
