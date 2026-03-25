@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { StoreFooter, StoreHeader } from '@/layouts/store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/shared/components/shadcn-ui/carousel';
@@ -268,9 +269,9 @@ export default function LandingPage() {
                                 công nghiệp
                             </p>
 
-                            <button className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 animate-shimmer">
+                            <Link href="/shop" className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 animate-shimmer">
                                 Mua ngay
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

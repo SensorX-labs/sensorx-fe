@@ -49,6 +49,11 @@
   --color-brand-green-hover: var(--brand-green-hover);
   --color-product-card-landing: var(--product-card-landing);
   --color-page-background: var(--page-background);
+  --color-product-card-bg: var(--product-card-bg);
+  --color-product-card-border: var(--product-card-border);
+  --color-bookmark-btn-bg: var(--bookmark-btn-bg);
+  --color-filter-border: var(--filter-border);
+  --color-filter-slider-bg: var(--filter-slider-bg);
 }
 
 :root {
@@ -95,6 +100,13 @@
 
     /* màu nền trang web */
     --page-background: #FCF9F4;
+
+    /* màu cho trang catalog (store) */
+    --product-card-bg: #E8E3DB;
+    --product-card-border: #D6CEC4;
+    --bookmark-btn-bg: rgba(255, 255, 255, 0.7);
+    --filter-border: #D1CCC4;
+    --filter-slider-bg: #D1CCC4;
 }
 
 .dark {
