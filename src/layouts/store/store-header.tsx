@@ -126,9 +126,6 @@ export const StoreHeader = () => {
               <Link href="/account" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <User size={20} />
               </Link>
-              <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <Search size={20} />
-              </button>
               <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">
                 <Menu size={20} />
                 Menu
