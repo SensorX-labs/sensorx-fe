@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bookmark, ShoppingBag } from 'lucide-react';
@@ -34,6 +34,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const [isHovered, setIsHovered] = useState(false);
     const [isFav, setIsFav] = useState(isFavorite);
     const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
+
+    // cập nhật isFav khi prop isFavorite thay đổi
+    useEffect(() => {
+        setIsFav(isFavorite);
+    }, [isFavorite]);
 
     const handleAddToFavorite = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
