@@ -117,13 +117,13 @@ export const StoreHeader = () => {
 
             {/* menu */}
             <div className="flex-1 flex items-center justify-end gap-4 sm:gap-6 lg:gap-3">
-              <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
+              <Link href="/shop/bookmarks" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <Bookmark size={20} />
-              </button>
+              </Link>
               <Link href="/shop/cart" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <ShoppingBag size={20} />
               </Link>
-              <Link href="/account" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
+              <Link href="/profile" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <User size={20} />
               </Link>
               <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">

@@ -37,6 +37,23 @@ export const Catalog: React.FC = () => {
     const [products, setProducts] = useState(() => getCatalogProducts());
     const [favorites, setFavorites] = useState<string[]>([]);
     const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // khởi tạo bookmarks từ localStorage khi mounted
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('bookmarkedProducts');
+            setFavorites(saved ? JSON.parse(saved) : []);
+        }
+        setIsMounted(true);
+    }, []);
+
+    // lưu bookmarks vào localStorage
+    useEffect(() => {
+        if (isMounted && typeof window !== 'undefined') {
+            localStorage.setItem('bookmarkedProducts', JSON.stringify(favorites));
+        }
+    }, [favorites]);
 
     // áp dụng lọc và sắp xếp sản phẩm
     const filteredProducts = useMemo(() => {
@@ -162,10 +179,11 @@ export const Catalog: React.FC = () => {
                                             name={product.name}
                                             price={product.price}
                                             originalPrice={product.originalPrice}
-                                            image={product.images?.[0]?.imageUrl || '/assets/images/products/placeholder.png'}
+                                            image={product.images?.[0]?.imageUrl || '/assets/images/products/default.png'}
                                             isFavorite={favorites.includes(product.id)}
                                             onAddToCart={() => handleAddToCart(product.id)}
                                             onAddToFavorite={() => handleAddToFavorite(product.id)}
+                                            product={product}
                                         />
                                     ))}
                                 </div>
