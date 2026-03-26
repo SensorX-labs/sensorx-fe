@@ -6,7 +6,7 @@ import { ProductAttribute } from '@/features/product/models';
  */
 
 export const mockProductAttributes: ProductAttribute[] = [
-  // Thuộc tính cho Cảm biến áp suất (prod-001)
+  // ==================== Cảm biến áp suất - ATM Series (prod-001) ====================
   {
     id: 'attr-001',
     productId: 'prod-001',
@@ -16,7 +16,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-002',
+    id: 'attr-001-2',
     productId: 'prod-001',
     name: 'Phạm vi công tác',
     value: '0-100 MPa',
@@ -24,16 +24,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-003',
+    id: 'attr-001-3',
     productId: 'prod-001',
     name: 'Điện áp hoạt động',
     value: '12-24 VDC',
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15',
   },
-  // Thuộc tính cho Cảm biến nhiệt độ (prod-002)
   {
-    id: 'attr-004',
+    id: 'attr-001-4',
+    productId: 'prod-001',
+    name: 'Loại output',
+    value: '4-20mA, 0-10V',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-001-5',
+    productId: 'prod-001',
+    name: 'Kích thước',
+    value: 'M14 x 1.5',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến nhiệt độ - LPO Series (prod-002) ====================
+  {
+    id: 'attr-002',
     productId: 'prod-002',
     name: 'Độ chính xác',
     value: '±1°C',
@@ -41,16 +58,41 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-005',
+    id: 'attr-002-2',
     productId: 'prod-002',
     name: 'Phạm vi đo',
     value: '-20 đến +80°C',
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15',
   },
-  // Thuộc tính cho Nút nhấn (prod-003)
   {
-    id: 'attr-006',
+    id: 'attr-002-3',
+    productId: 'prod-002',
+    name: 'Thời gian phản ứng',
+    value: '< 50ms',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-002-4',
+    productId: 'prod-002',
+    name: 'Loại cảm biến',
+    value: 'NTC, PTC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-002-5',
+    productId: 'prod-002',
+    name: 'Điện áp cấp',
+    value: '5-24 VDC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Nút nhấn vuông O30 - SQ3PFS Series (prod-003) ====================
+  {
+    id: 'attr-003',
     productId: 'prod-003',
     name: 'Kích thước',
     value: '30x30 mm',
@@ -58,16 +100,41 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-007',
+    id: 'attr-003-2',
     productId: 'prod-003',
     name: 'Áp suất danh định',
     value: '250 mA @ 250 VAC',
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15',
   },
-  // Thuộc tính cho Công tắc (prod-004)
   {
-    id: 'attr-008',
+    id: 'attr-003-3',
+    productId: 'prod-003',
+    name: 'Chất liệu',
+    value: 'Polycarbonate',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-003-4',
+    productId: 'prod-003',
+    name: 'Kiểu nút',
+    value: 'Lồi',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-003-5',
+    productId: 'prod-003',
+    name: 'Số tiếp điểm',
+    value: '1NC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Công tắc không tiếp xúc từ tính - MN Series (prod-004) ====================
+  {
+    id: 'attr-004',
     productId: 'prod-004',
     name: 'Loại công tắc',
     value: 'Không tiếp xúc',
@@ -75,7 +142,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-009',
+    id: 'attr-004-2',
     productId: 'prod-004',
     name: 'Dải cách',
     value: '0-15 mm',
@@ -83,7 +150,75 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-010',
+    id: 'attr-004-3',
+    productId: 'prod-004',
+    name: 'Tần số hoạt động',
+    value: '5 kHz',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-004-4',
+    productId: 'prod-004',
+    name: 'Công suất tiêu thụ',
+    value: '< 100 mW',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-004-5',
+    productId: 'prod-004',
+    name: 'Nhiệt độ hoạt động',
+    value: '-10 đến +60°C',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Bộ khiển dạ chỉ (prod-005) ====================
+  {
+    id: 'attr-005',
+    productId: 'prod-005',
+    name: 'Phạm vi điều chỉnh',
+    value: '0-180°',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-005-2',
+    productId: 'prod-005',
+    name: 'Độ phân giải',
+    value: '±1°',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-005-3',
+    productId: 'prod-005',
+    name: 'Loại hiển thị',
+    value: 'LED digital',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-005-4',
+    productId: 'prod-005',
+    name: 'Nguồn điện',
+    value: '220V AC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-005-5',
+    productId: 'prod-005',
+    name: 'Công suất tối đa',
+    value: '5 kW',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến áp suất cao (prod-006) ====================
+  {
+    id: 'attr-006',
     productId: 'prod-006',
     name: 'Loại đầu ra',
     value: '4-20 mA',
@@ -91,7 +226,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-011',
+    id: 'attr-006-2',
     productId: 'prod-006',
     name: 'Phạm vi áp suất',
     value: '0-250 Bar',
@@ -99,7 +234,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-012',
+    id: 'attr-006-3',
+    productId: 'prod-006',
+    name: 'Độ chính xác',
+    value: '±0.5%',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-006-4',
+    productId: 'prod-006',
+    name: 'Kết nối',
+    value: 'M14 x 1.5',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-006-5',
+    productId: 'prod-006',
+    name: 'Chất liệu thân',
+    value: 'Thép không gỉ',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến nhiệt độ cao (prod-007) ====================
+  {
+    id: 'attr-007',
     productId: 'prod-007',
     name: 'Loại cảm biến',
     value: 'Pt100',
@@ -107,7 +268,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-013',
+    id: 'attr-007-2',
     productId: 'prod-007',
     name: 'Độ phân giải',
     value: '0.1°C',
@@ -115,7 +276,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-014',
+    id: 'attr-007-3',
+    productId: 'prod-007',
+    name: 'Phạm vi đo',
+    value: '-50 đến +200°C',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-007-4',
+    productId: 'prod-007',
+    name: 'Thời gian tính',
+    value: '< 1 giây',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-007-5',
+    productId: 'prod-007',
+    name: 'Kích thước ống',
+    value: '6 x 50 mm',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến tiệm cận (prod-008) ====================
+  {
+    id: 'attr-008',
     productId: 'prod-008',
     name: 'Loại cảm biến',
     value: 'Inductive',
@@ -123,7 +310,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-015',
+    id: 'attr-008-2',
     productId: 'prod-008',
     name: 'Khoảng cách phát hiện',
     value: '0-30 mm',
@@ -131,7 +318,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-016',
+    id: 'attr-008-3',
+    productId: 'prod-008',
+    name: 'Tần số hoạt động',
+    value: '1 kHz',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-008-4',
+    productId: 'prod-008',
+    name: 'Đầu ra',
+    value: 'NPN/PNP',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-008-5',
+    productId: 'prod-008',
+    name: 'Điện áp cấp',
+    value: '10-30 VDC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Nút nhấn tròn (prod-009) ====================
+  {
+    id: 'attr-009',
     productId: 'prod-009',
     name: 'Hình dạng',
     value: 'Tròn',
@@ -139,7 +352,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-017',
+    id: 'attr-009-2',
     productId: 'prod-009',
     name: 'Màu sắc',
     value: 'Đỏ',
@@ -147,7 +360,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-018',
+    id: 'attr-009-3',
+    productId: 'prod-009',
+    name: 'Đường kính',
+    value: '22 mm',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-009-4',
+    productId: 'prod-009',
+    name: 'Số tiếp điểm',
+    value: '1NO + 1NC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-009-5',
+    productId: 'prod-009',
+    name: 'Áp suất danh định',
+    value: '250 mA @ 250 VAC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Công tắc an toàn (prod-010) ====================
+  {
+    id: 'attr-010',
     productId: 'prod-010',
     name: 'Loại công tắc',
     value: 'Giới hạn',
@@ -155,7 +394,7 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-019',
+    id: 'attr-010-2',
     productId: 'prod-010',
     name: 'Dòng danh định',
     value: '10A',
@@ -163,7 +402,33 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-020',
+    id: 'attr-010-3',
+    productId: 'prod-010',
+    name: 'Độ chính xác',
+    value: '±0.5 mm',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-010-4',
+    productId: 'prod-010',
+    name: 'Chiều dài cáp',
+    value: '2 m',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-010-5',
+    productId: 'prod-010',
+    name: 'Nhiệt độ hoạt động',
+    value: '-20 đến +60°C',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến siêu âm (prod-011) ====================
+  {
+    id: 'attr-011',
     productId: 'prod-011',
     name: 'Đầu ra',
     value: 'Kỹ thuật số',
@@ -171,7 +436,41 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-021',
+    id: 'attr-011-2',
+    productId: 'prod-011',
+    name: 'Phạm vi phát hiện',
+    value: '0-8 m',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-011-3',
+    productId: 'prod-011',
+    name: 'Tần số hoạt động',
+    value: '40 kHz',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-011-4',
+    productId: 'prod-011',
+    name: 'Góc phát hiện',
+    value: '15°',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-011-5',
+    productId: 'prod-011',
+    name: 'Điện áp cấp',
+    value: '5-24 VDC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến tầm nhìn (prod-012) ====================
+  {
+    id: 'attr-012',
     productId: 'prod-012',
     name: 'Phạm vi đo',
     value: '0-100% RH',
@@ -179,7 +478,41 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-022',
+    id: 'attr-012-2',
+    productId: 'prod-012',
+    name: 'Độ chính xác',
+    value: '±3%',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-012-3',
+    productId: 'prod-012',
+    name: 'Thời gian phản ứng',
+    value: '< 1 phút',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-012-4',
+    productId: 'prod-012',
+    name: 'Loại output',
+    value: '0-10V, 4-20mA',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-012-5',
+    productId: 'prod-012',
+    name: 'Nhiệt độ hoạt động',
+    value: '-30 đến +80°C',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến quang điện (prod-013) ====================
+  {
+    id: 'attr-013',
     productId: 'prod-013',
     name: 'Phạm vi phát hiện',
     value: '0-25 m',
@@ -187,7 +520,41 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-023',
+    id: 'attr-013-2',
+    productId: 'prod-013',
+    name: 'Loại phát hiện',
+    value: 'Diffuse / Retroreflective',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-013-3',
+    productId: 'prod-013',
+    name: 'Đầu ra',
+    value: 'PNP / NPN',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-013-4',
+    productId: 'prod-013',
+    name: 'LED indicator',
+    value: 'Có',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-013-5',
+    productId: 'prod-013',
+    name: 'Bộ điều chỉnh độ nhạy',
+    value: 'Có',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Bộ điều khiển công suất (prod-014) ====================
+  {
+    id: 'attr-014',
     productId: 'prod-014',
     name: 'Vị trí',
     value: '3 vị trí',
@@ -195,10 +562,76 @@ export const mockProductAttributes: ProductAttribute[] = [
     updatedAt: '2024-01-15',
   },
   {
-    id: 'attr-024',
+    id: 'attr-014-2',
+    productId: 'prod-014',
+    name: 'Công suất tối đa',
+    value: '30 kW',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-014-3',
+    productId: 'prod-014',
+    name: 'Điện áp hoạt động',
+    value: '380V 3 pha',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-014-4',
+    productId: 'prod-014',
+    name: 'Chứng chỉ',
+    value: 'CE, UL',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-014-5',
+    productId: 'prod-014',
+    name: 'Bảo vệ', 
+    value: 'Quá dòng, quá nhiệt',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+
+  // ==================== Cảm biến vị trí (prod-015) ====================
+  {
+    id: 'attr-015',
     productId: 'prod-015',
     name: 'Điện áp hoạt động',
     value: '24 VDC',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-015-2',
+    productId: 'prod-015',
+    name: 'Phạm vi đo',
+    value: '0-100 mm',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-015-3',
+    productId: 'prod-015',
+    name: 'Độ phân giải',
+    value: '0.1 mm',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-015-4',
+    productId: 'prod-015',
+    name: 'Tần số lấy mẫu',
+    value: '1 kHz',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
+  },
+  {
+    id: 'attr-015-5',
+    productId: 'prod-015',
+    name: 'Loại output',
+    value: '4-20 mA',
     createdAt: '2024-01-15',
     updatedAt: '2024-01-15',
   },

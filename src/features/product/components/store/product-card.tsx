@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Bookmark, ShoppingBag } from 'lucide-react';
 
 interface ProductCardProps {
@@ -18,7 +19,6 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({
     id,
     name,
-    price,
     originalPrice,
     image,
     isFavorite = false,
@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     return (
-        <div className="relative group">
+        <Link href={`/shop/${id}`} className="relative group block">
             {/* image container*/}
             <div
                 className="relative bg-product-card-bg overflow-hidden aspect-square rounded-none cursor-pointer transition-all duration-300 border border-product-card-border"
@@ -73,20 +73,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/*thông tin sản phẩm */}
             <div className="mt-5 space-y-2">
-                <h3 className="text-sm font-normal text-gray-900 line-clamp-2 h-9">
+                <h3 className="text-sm font-normal text-gray-900 line-clamp-2 h-9 tracking-wider">
                     {name}
                 </h3>
 
-                <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-semibold text-gray-900">
-                        {price.toLocaleString('vi-VN')}đ
-                    </span>
-                    {originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">
-                            {originalPrice.toLocaleString('vi-VN')}đ
-                        </span>
-                    )}
-                </div>
+
             </div>
 
             <button
@@ -97,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <span className="hidden sm:inline">THÊM NGAY</span>
                 <span className="sm:hidden">ADD</span>
             </button>
-        </div>
+        </Link>
     );
 };
 

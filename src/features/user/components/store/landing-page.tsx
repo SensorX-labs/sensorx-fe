@@ -270,7 +270,7 @@ export default function LandingPage() {
                             </p>
 
                             <Link href="/shop" className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 animate-shimmer">
-                                Mua ngay
+                                Mua sắm ngay
                             </Link>
                         </div>
                     </div>
