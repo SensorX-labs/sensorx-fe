@@ -166,6 +166,7 @@ export const Catalog: React.FC = () => {
                                             isFavorite={favorites.includes(product.id)}
                                             onAddToCart={() => handleAddToCart(product.id)}
                                             onAddToFavorite={() => handleAddToFavorite(product.id)}
+                                            product={product}
                                         />
                                     ))}
                                 </div>
