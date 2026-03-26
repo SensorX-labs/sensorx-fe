@@ -7,6 +7,7 @@ import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, P
 import { Product } from '@/features/product/models';
 import { mockProducts } from '@/features/product/mocks';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
+import { AddCartItemMessage } from '@/features/lead/components/store/add-cartitem-message';
 
 interface ProductDetailProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductDetailProps {
 export function ProductDetail({ product }: ProductDetailProps) {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
 
   // product cùng thể loại
   const relatedProducts = useMemo(
@@ -26,7 +28,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   );
 
   const handleAddToCart = () => {
-    console.log(`Added ${selectedQuantity} of ${product.name} to cart`);
+    setShowAddToCartMessage(true);
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +126,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <div className="flex gap-3">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 py-4 bg-brand-green text-white btn-tracking hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 text-sm"
+                className="flex-1 py-4 bg-brand-green text-white btn-tracking hover:bg-opacity-80 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
               >
                 <ShoppingBag size={20} />
                 Thêm vào giỏ hàng
@@ -260,6 +262,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </div>
         </div>
       </div>
+
+      <AddCartItemMessage
+        product={product}
+        quantity={selectedQuantity}
+        isVisible={showAddToCartMessage}
+        onClose={() => setShowAddToCartMessage(false)}
+      />
     </div>
   );
 }
