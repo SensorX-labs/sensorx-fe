@@ -52,11 +52,11 @@ export function Cart() {
           </Link>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 py-20">
 
-          <div className="grid grid-cols-1 grid-cols-3 gap-12">
+          <div className="grid grid-cols-3 gap-12">
             {/* danh sách item trong giỏ hàng */}
-            <div className="lg:col-span-2">
+            <div className="col-span-2">
               <div className="divide-y divide-gray-200">
                 {cartItems.map((item) => (
                   <CartItem
@@ -73,7 +73,7 @@ export function Cart() {
             </div>
 
             {/* nút yêu cầu báo giá*/}
-            <div className="lg:col-span-1">
+            <div className="col-span-1">
               <div className="bg-product-card-bg border border-product-card-border p-8 sticky top-24">
                 <h2 className="tracking-title mb-4">
                   Yêu cầu báo giá
