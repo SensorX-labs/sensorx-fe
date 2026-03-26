@@ -120,9 +120,9 @@ export const StoreHeader = () => {
               <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <Bookmark size={20} />
               </button>
-              <button className="text-gray-900 hover:text-gray-600 transition-colors p-2">
+              <Link href="/shop/cart" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <ShoppingBag size={20} />
-              </button>
+              </Link>
               <Link href="/account" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <User size={20} />
               </Link>
