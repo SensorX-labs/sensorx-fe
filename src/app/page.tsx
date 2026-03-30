@@ -1,4 +1,4 @@
-import LandingPage from "@/features/refactor/user/user/components/store/landing-page";
+import LandingPage from "@/features/user/user/components/store/landing-page";
 
 export default function Home() {
   return (

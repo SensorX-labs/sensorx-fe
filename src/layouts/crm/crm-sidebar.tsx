@@ -79,30 +79,30 @@ const sidebarSections: {
       {
         name: 'Khách hàng',
         icon: Users,
-        href: '/customers',
+        href: '/sales/customers',
       },
       {
         name: 'Tiềm năng',
         icon: TrendingUp,
         subItems: [
-          { name: 'Leads', href: '/leads' },
-          { name: 'Cơ hội', href: '/leads/opportunities' },
+          { name: 'Leads', href: '/sales/leads' },
+          { name: 'Cơ hội', href: '/sales/leads/opportunities' },
         ],
       },
       {
         name: 'Báo giá',
         icon: FileText,
-        href: '/quotations',
+        href: '/sales/quotations',
       },
       {
         name: 'Đơn hàng',
         icon: ShoppingCart,
-        href: '/orders',
+        href: '/sales/orders',
       },
       {
         name: 'Hóa đơn',
         icon: Receipt,
-        href: '/invoices',
+        href: '/sales/invoices',
       },
     ],
   },
@@ -112,7 +112,7 @@ const sidebarSections: {
       {
         name: 'Hàng hóa',
         icon: Package,
-        href: '/products',
+        href: '/catalog/products',
       },
       {
         name: 'Phiếu nhập kho',
@@ -142,7 +142,7 @@ const sidebarSections: {
       {
         name: 'Nhân viên',
         icon: UserCircle,
-        href: '/staff',
+        href: '/users/staff',
       },
       {
         name: 'Báo cáo',
