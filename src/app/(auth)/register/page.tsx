@@ -1,6 +1,6 @@
 "use client";
 
-import { RegisterForm } from "@/features/auth/components";
+import { RegisterForm } from "@/features/system/auth/components";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
