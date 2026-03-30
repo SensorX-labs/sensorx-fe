@@ -45,7 +45,6 @@ import {
   useSidebar,
 } from '@/shared/components/shadcn-ui/sidebar';
 
-/* ===================== TYPES ===================== */
 
 export type SidebarItemType = {
   name: string;
@@ -57,7 +56,6 @@ export type SidebarItemType = {
   }[];
 };
 
-/* ===================== DATA ===================== */
 
 const sidebarSections: {
   title: string;
@@ -163,7 +161,7 @@ const sidebarSections: {
 ];
 
 
-export default function CrmSidebar() {
+export default function AdminSidebar() {
   // Mặc định: tất cả menu đóng
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 

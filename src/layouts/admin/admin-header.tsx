@@ -4,7 +4,7 @@ import React from 'react';
 import { Search, Bell, Settings} from 'lucide-react';
 import { SidebarTrigger } from '@/shared/components/shadcn-ui/sidebar';
 
-const CrmHeader: React.FC = () => {
+const AdminHeader: React.FC = () => {
   return (
     <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-[#F4F7FE] border-b border-gray-200">
       <div className="flex items-center gap-2">
@@ -52,4 +52,4 @@ const CrmHeader: React.FC = () => {
   );
 };
 
-export default CrmHeader;
+export default AdminHeader;

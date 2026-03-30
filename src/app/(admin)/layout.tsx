@@ -1,10 +1,10 @@
 import React from 'react';
-import { CrmLayout } from '@/layouts/crm';
+import { AdminLayout } from '@/layouts/admin';
 
-export default function LayoutCrm({
+export default function LayoutAdmin({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <CrmLayout>{children}</CrmLayout>;
+  return <AdminLayout>{children}</AdminLayout>;
 }

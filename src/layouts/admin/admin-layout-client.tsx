@@ -1,20 +1,20 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import CrmSidebar from './crm-sidebar';
-import CrmHeader from './crm-header';
-import CrmFooter from './crm-footer';
+import CrmSidebar from './admin-sidebar';
+import CrmHeader from './admin-header';
+import CrmFooter from './admin-footer';
 import {
   SidebarProvider,
   SidebarInset,
 } from '@/shared/components/shadcn-ui/sidebar';
 
-interface CrmLayoutClientProps {
+interface AdminLayoutClientProps {
   children: ReactNode;
   defaultOpen: boolean;
 }
 
-export const CrmLayoutClient = ({ children, defaultOpen }: CrmLayoutClientProps) => {
+export const AdminLayoutClient = ({ children, defaultOpen }: AdminLayoutClientProps) => {
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <CrmSidebar />
