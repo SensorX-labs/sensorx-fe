@@ -1,4 +1,4 @@
-import OpportunitiesPage from '@/features/lead/components/crm/opportunities-page';
+import OpportunitiesPage from '@/features/refactor/sales/lead/components/crm/opportunities-page';
 
 export default function Opportunities() {
   return <OpportunitiesPage />;

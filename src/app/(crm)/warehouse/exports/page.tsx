@@ -1,4 +1,4 @@
-import WarehouseExportsPage from '@/features/warehouse/components/crm/warehouse-exports-page';
+import WarehouseExportsPage from '@/features/refactor/warehouse/stockout/warehouse-exports-page';
 
 export default function WarehouseExports() {
   return <WarehouseExportsPage />;

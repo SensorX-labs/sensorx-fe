@@ -129,16 +129,11 @@ const sidebarSections: {
         icon: Warehouse,
         href: '/warehouse/stock',
       },
-    ],
-  },
-  {
-    title: 'MARKETING',
-    items: [
       {
-        name: 'Chiến dịch',
-        icon: Megaphone,
-        href: '/campaigns',
-      },
+        name: 'Soạn kho',
+        icon: Layers,
+        href: '/warehouse/picking-note',
+      }
     ],
   },
   {
@@ -167,7 +162,6 @@ const sidebarSections: {
   },
 ];
 
-/* ===================== COMPONENT ===================== */
 
 export default function CrmSidebar() {
   // Mặc định: tất cả menu đóng
@@ -182,15 +176,12 @@ export default function CrmSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="[&>[data-sidebar=sidebar]]:bg-[#1E1E2D] border-r-0">
-      {/* ───────── Header ───────── */}
       <SidebarHeader className="p-4 flex items-center gap-3 overflow-hidden">
-        <img src="assets/images/favicon.png" alt="SensorX Logo" className="w-10 h-10" />
         <span className="text-white text-xl font-bold uppercase tracking-wider group-data-[collapsible=icon]:hidden">
           SensorX
         </span>
       </SidebarHeader>
 
-      {/* ───────── Content ───────── */}
       <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0">
         {sidebarSections.map((section) => (
           <SidebarGroup key={section.title} className="mb-6 group-data-[collapsible=icon]:mb-0">

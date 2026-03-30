@@ -1,4 +1,4 @@
-import DashboardPage from '@/features/user/components/crm/dashboard-page';
+import DashboardPage from '@/features/refactor/user/user/components/crm/dashboard-page';
 
 export default function Dashboard() {
   return <DashboardPage />;

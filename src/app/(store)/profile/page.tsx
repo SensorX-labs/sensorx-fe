@@ -1,4 +1,4 @@
-import { UserProfile } from '@/features/user/components/store';
+import { UserProfile } from '@/features/refactor/user/user/components/store';
 
 export default function ProfilePage() {
     return <UserProfile />;

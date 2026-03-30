@@ -1,12 +1,6 @@
 import React, { ReactNode } from 'react';
 import { cookies } from 'next/headers';
-import CrmSidebar from './crm-sidebar';
-import CrmHeader from './crm-header';
-import CrmFooter from './crm-footer';
-import {
-  SidebarProvider,
-  SidebarInset
-} from '@/shared/components/shadcn-ui/sidebar';
+import { CrmLayoutClient } from './crm-layout-client';
 
 interface CrmLayoutProps {
   children: ReactNode;
@@ -19,21 +13,9 @@ const CrmLayout = async ({ children }: CrmLayoutProps) => {
   const defaultOpen = sidebarCookie ? sidebarCookie.value === 'true' : true;
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      {/* Sidebar */}
-      <CrmSidebar />
-
-      {/* Main content */}
-      <SidebarInset className="flex min-h-screen flex-1 min-w-0 flex-col bg-[#F4F7FE]">
-        <CrmHeader />
-
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-
-        <CrmFooter />
-      </SidebarInset>
-    </SidebarProvider>
+    <CrmLayoutClient defaultOpen={defaultOpen}>
+      {children}
+    </CrmLayoutClient>
   );
 };
 

@@ -1,4 +1,4 @@
-import CustomersPage from '@/features/customer/components/crm/customers-page';
+import CustomersPage from '@/features/refactor/hrm/customer/components/crm/customers-page';
 
 export default function Customers() {
   return <CustomersPage />;

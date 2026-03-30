@@ -1,4 +1,4 @@
-import WarehouseImportsPage from '@/features/warehouse/components/crm/warehouse-imports-page';
+import WarehouseImportsPage from '@/features/refactor/warehouse/stockin/warehouse-imports-page';
 
 export default function WarehouseImports() {
   return <WarehouseImportsPage />;

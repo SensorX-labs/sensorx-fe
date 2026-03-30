@@ -1,6 +1,6 @@
 "use client";
 
-import { LoginForm } from "@/features/auth/components";
+import { LoginForm } from "@/features/refactor/system/auth/components";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {

@@ -1,4 +1,4 @@
-import OrdersPage from '@/features/order/components/crm/orders-page';
+import OrdersPage from '@/features/refactor/sales/order/components/crm/orders-page';
 
 export default function Orders() {
   return <OrdersPage />;
