@@ -25,16 +25,16 @@ const stageColor: Record<string, string> = {
   'Chuyển đổi': 'bg-green-100 text-green-600',
 };
 
-export default function LeadsPage() {
+export default function RequestForQuotationList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Tiềm năng (Leads)</h2>
+          <h2 className="text-2xl font-bold text-[#2B3674]">Yêu cầu báo giá</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Theo dõi và chuyển đổi khách hàng tiềm năng</p>
         </div>
         <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#3311CC] transition-colors">
-          <TrendingUp className="w-4 h-4" /> Thêm lead
+          <TrendingUp className="w-4 h-4" /> Thêm yêu cầu
         </button>
       </div>
 

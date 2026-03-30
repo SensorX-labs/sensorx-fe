@@ -2,4 +2,4 @@
 export * from './order'
 export * from './invoice'
 export * from './quotation'
-export * from './lead'
+export * from './requestforquotation'

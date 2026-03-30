@@ -7,7 +7,7 @@ import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, P
 import { Product } from '@/features/catalog/product/models';
 import { mockProducts } from '@/features/catalog/product/mocks';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
-import { AddCartItemMessage } from '@/features/sales/lead/components/store/add-cartitem-message';
+import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
 
 interface ProductDetailProps {
   product: Product;

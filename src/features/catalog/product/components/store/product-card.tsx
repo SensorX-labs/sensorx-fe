@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bookmark, ShoppingBag } from 'lucide-react';
 import { Product } from '@/features/catalog/product/models';
-import { AddCartItemMessage } from '@/features/sales/lead/components/store/add-cartitem-message';
+import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
 
 interface ProductCardProps {
     id: string;

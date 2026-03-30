@@ -80,12 +80,9 @@ const sidebarSections: {
         href: '/sales/customers',
       },
       {
-        name: 'Tiềm năng',
+        name: 'Yêu cầu báo giá',
         icon: TrendingUp,
-        subItems: [
-          { name: 'Leads', href: '/sales/leads' },
-          { name: 'Cơ hội', href: '/sales/leads/opportunities' },
-        ],
+        href: '/sales/requestforquotation',
       },
       {
         name: 'Báo giá',
@@ -115,12 +112,12 @@ const sidebarSections: {
       {
         name: 'Phiếu nhập kho',
         icon: PackagePlus,
-        href: '/warehouse/imports',
+        href: '/warehouse/stockin',
       },
       {
         name: 'Phiếu xuất kho',
         icon: PackageMinus,
-        href: '/warehouse/exports',
+        href: '/warehouse/stockout',
       },
       {
         name: 'Tồn kho',

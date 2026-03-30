@@ -1,1 +1,1 @@
-export { default as WarehouseImportsPage } from './stockin-list';
+export { default as StockInList } from './stockin-list';

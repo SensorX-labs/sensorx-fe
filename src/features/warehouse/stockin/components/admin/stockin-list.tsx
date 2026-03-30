@@ -25,7 +25,7 @@ const statusColor: Record<string, string> = {
   'Chờ xác nhận': 'bg-orange-100 text-orange-500',
 };
 
-export default function WarehouseImportsPage() {
+export default function StockInList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
