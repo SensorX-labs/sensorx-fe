@@ -27,12 +27,12 @@ export default function ProductsPage() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Hàng hóa</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Quản lý danh mục sản phẩm & hàng hóa</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
           <Package className="w-4 h-4" /> Thêm hàng hóa
         </button>
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded-lg">
+      <Card className="border-none shadow-sm bg-white rounded">
         <CardHeader className="px-6 py-4 border-b border-gray-100">
           <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách hàng hóa</CardTitle>
         </CardHeader>

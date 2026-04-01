@@ -45,14 +45,14 @@ export default function SettingsPage() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Cài đặt hệ thống</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Quản lý cấu hình và thông tin hệ thống</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
           <Settings className="w-4 h-4" /> Lưu thay đổi
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {settingGroups.map((group) => (
-          <Card key={group.title} className="border-none shadow-sm bg-white rounded-lg">
+          <Card key={group.title} className="border-none shadow-sm bg-white rounded">
             <CardHeader className="px-6 py-4 border-b border-gray-100">
               <CardTitle className="text-base font-bold text-[#2B3674] flex items-center gap-2">
                 <group.icon className="w-5 h-5 text-[#4318FF]" />

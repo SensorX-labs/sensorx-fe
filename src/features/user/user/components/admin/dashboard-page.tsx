@@ -58,11 +58,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* ───────────── Row 1: Stats ───────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-5 gap-6">
         {stats.map((item) => (
           <Card
             key={item.title}
-            className="border-none shadow-sm bg-white rounded-lg"
+            className="border-none shadow-sm bg-white rounded"
           >
             <CardContent className="p-6 flex items-center justify-between">
               <div className="space-y-1">
@@ -74,7 +74,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#F4F7FE]">
+              <div className="w-12 h-12 rounded flex items-center justify-center bg-[#F4F7FE]">
                 <item.icon className="w-6 h-6 text-[#4318FF]" />
               </div>
             </CardContent>
@@ -83,15 +83,15 @@ export default function DashboardPage() {
       </div>
 
       {/* ───────────── Row 2: Charts ───────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         {/* Sales Over Time */}
-        <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded-lg">
+        <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded">
           <CardHeader className="flex items-center justify-between p-6 pb-2">
             <CardTitle className="text-lg font-bold text-[#2B3674]">
               Sales Over Time By Value
             </CardTitle>
 
-            <div className="flex items-center gap-2 bg-[#F4F7FE] rounded-lg px-3 py-1.5 cursor-pointer">
+            <div className="flex items-center gap-2 bg-[#F4F7FE] rounded px-3 py-1.5 cursor-pointer">
               <span className="text-xs font-bold text-[#2B3674]">
                 02 Mar, 2026
               </span>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="p-6 pt-0 flex flex-col md:flex-row gap-8">
+          <CardContent className="p-6 pt-0 flex flex-row gap-8">
             {/* Chart */}
             <div className="flex-1 min-h-[240px]">
               <svg viewBox="0 0 400 160" className="w-full h-full">
@@ -126,7 +126,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Side List */}
-            <div className="w-full md:w-56 space-y-6">
+            <div className="w-56 space-y-6">
               <div>
                 <p className="text-2xl font-bold text-[#2B3674]">
                   $23,590.00
@@ -143,7 +143,7 @@ export default function DashboardPage() {
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg border border-[#E9EDF7]">
+                      <div className="p-1.5 rounded border border-[#E9EDF7]">
                         <item.icon className="w-4 h-4 text-[#4318FF]" />
                       </div>
                       <span className="text-xs font-bold text-[#A3AED0]">
@@ -165,7 +165,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Weekly Sales */}
-        <Card className="border-none shadow-sm bg-white rounded-lg">
+        <Card className="border-none shadow-sm bg-white rounded">
           <CardHeader className="flex items-center justify-between p-6 pb-2">
             <CardTitle className="text-lg font-bold text-[#2B3674]">
               Weekly Sales
