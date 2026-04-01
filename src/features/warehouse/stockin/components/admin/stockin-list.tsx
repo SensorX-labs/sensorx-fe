@@ -74,12 +74,12 @@ export default function StockInList() {
             <tbody>
               {imports.map((r) => (
                 <tr key={r.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{r.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{r.supplier}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{r.date}</td>
-                  <td className="px-6 py-3 text-center text-[#A3AED0]">{r.items}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{r.total} đ</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{r.warehouse}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{r.id}</td>
+                  <td className="px-6 py-3 font-semibold">{r.supplier}</td>
+                  <td className="px-6 py-3">{r.date}</td>
+                  <td className="px-6 py-3 text-center">{r.items}</td>
+                  <td className="px-6 py-3 font-semibold">{r.total} đ</td>
+                  <td className="px-6 py-3">{r.warehouse}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[r.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {r.status}

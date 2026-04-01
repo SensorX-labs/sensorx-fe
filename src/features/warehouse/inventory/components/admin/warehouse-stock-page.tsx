@@ -75,13 +75,13 @@ export default function WarehouseStockPage() {
             <tbody>
               {stock.map((item) => (
                 <tr key={item.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{item.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{item.name}</td>
-                  <td className="px-6 py-3 text-[#A3AED0] font-mono text-xs">{item.sku}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{item.category}</td>
-                  <td className="px-6 py-3 text-center font-bold text-[#2B3674]">{item.qty}</td>
-                  <td className="px-6 py-3 text-center text-[#A3AED0]">{item.minQty}</td>
-                  <td className="px-6 py-3 text-[#A3AED0] font-mono text-xs">{item.location}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{item.id}</td>
+                  <td className="px-6 py-3 font-semibold">{item.name}</td>
+                  <td className="px-6 py-3 font-mono text-xs">{item.sku}</td>
+                  <td className="px-6 py-3">{item.category}</td>
+                  <td className="px-6 py-3 text-center font-bold">{item.qty}</td>
+                  <td className="px-6 py-3 text-center">{item.minQty}</td>
+                  <td className="px-6 py-3 font-mono text-xs">{item.location}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {item.status}

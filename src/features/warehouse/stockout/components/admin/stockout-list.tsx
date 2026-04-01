@@ -79,11 +79,11 @@ export default function StockOutList() {
             <tbody>
               {exports.map((e) => (
                 <tr key={e.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{e.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{e.recipient}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{e.date}</td>
-                  <td className="px-6 py-3 text-center text-[#A3AED0]">{e.items}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{e.total} đ</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{e.id}</td>
+                  <td className="px-6 py-3 font-semibold">{e.recipient}</td>
+                  <td className="px-6 py-3">{e.date}</td>
+                  <td className="px-6 py-3 text-center">{e.items}</td>
+                  <td className="px-6 py-3 font-semibold">{e.total} đ</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${typeColor[e.type] ?? 'bg-gray-100 text-gray-500'}`}>
                       {e.type}

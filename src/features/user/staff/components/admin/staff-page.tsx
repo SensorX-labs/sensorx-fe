@@ -80,16 +80,16 @@ export default function StaffPage() {
             <tbody>
               {staff.map((s) => (
                 <tr key={s.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{s.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{s.name}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{s.email}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{s.phone}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{s.id}</td>
+                  <td className="px-6 py-3 font-semibold">{s.name}</td>
+                  <td className="px-6 py-3">{s.email}</td>
+                  <td className="px-6 py-3">{s.phone}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${roleColor[s.role] ?? 'bg-gray-100 text-gray-500'}`}>
                       {s.role}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{s.department}</td>
+                  <td className="px-6 py-3">{s.department}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[s.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {s.status}

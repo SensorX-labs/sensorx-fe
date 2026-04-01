@@ -289,6 +289,11 @@
     .subtitle-sm {
         @apply text-sm tracking-[0.08em] text-gray-600 mt-2 font-medium;
     }
+
+    /* Admin primary text color (#4318FF) */
+    .admin-text-primary {
+        @apply text-[#4318FF];
+    }
     
     /* Contact/Info Item - dùng chung cho toàn hệ thống */
     .contact-item {

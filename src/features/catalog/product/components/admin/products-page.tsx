@@ -52,12 +52,12 @@ export default function ProductsPage() {
             <tbody>
               {products.map((p) => (
                 <tr key={p.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{p.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{p.name}</td>
-                  <td className="px-6 py-3 text-[#A3AED0] font-mono text-xs">{p.sku}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{p.category}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{p.price} đ</td>
-                  <td className="px-6 py-3 text-center font-semibold text-[#2B3674]">{p.stock}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{p.id}</td>
+                  <td className="px-6 py-3 font-semibold ">{p.name}</td>
+                  <td className="px-6 py-3 font-mono text-xs">{p.sku}</td>
+                  <td className="px-6 py-3">{p.category}</td>
+                  <td className="px-6 py-3 font-semibold ">{p.price} đ</td>
+                  <td className="px-6 py-3 text-center font-semibold ">{p.stock}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[p.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {p.status}
