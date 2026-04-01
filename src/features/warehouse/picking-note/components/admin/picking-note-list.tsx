@@ -43,7 +43,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
         </div>
         <Link
           href="/warehouse/picking-note/new"
-          className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#3311CC] transition-colors"
+          className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors"
         >
           <Plus size={16} />
           Tạo phiếu
@@ -51,7 +51,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
       </div>
 
       {notes.length > 0 ? (
-        <Card className="border-none shadow-sm bg-white rounded-lg">
+        <Card className="border-none shadow-sm bg-white rounded">
           <CardHeader className="px-6 py-4 border-b border-gray-100">
             <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách phiếu soạn kho</CardTitle>
           </CardHeader>
@@ -118,12 +118,12 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-none shadow-sm bg-white rounded-lg">
+        <Card className="border-none shadow-sm bg-white rounded">
           <CardContent className="p-12 text-center">
             <p className="text-[#A3AED0] font-semibold mb-4">Chưa có phiếu soạn kho nào</p>
             <Link
               href="/warehouse/picking-note/new"
-              className="inline-block px-6 py-2 bg-[#4318FF] text-white text-sm font-semibold rounded-lg hover:bg-[#3311CC] transition-colors"
+              className="inline-block px-6 py-2 bg-[#4318FF] text-white text-sm font-semibold rounded hover:bg-[#3311CC] transition-colors"
             >
               Tạo phiếu soạn kho
             </Link>
