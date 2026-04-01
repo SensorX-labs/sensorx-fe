@@ -1,6 +1,6 @@
-import CustomersPage from '@/features/sales/requestforquotation/components/admin/request-for-quotation-list';
+import CustomersList from '@/features/user/customer/components/admin/customers-list';
 
 export default function Customers() {
-  return <CustomersPage />;
+  return <CustomersList />;
 }
 
