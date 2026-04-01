@@ -62,7 +62,7 @@ export default function SettingsPage() {
             <CardContent className="p-6 space-y-4">
               {group.fields.map((field) => (
                 <div key={field.label} className="flex items-center justify-between gap-4">
-                  <label className="text-sm font-semibold text-[#2B3674] min-w-0 flex-1">
+                  <label className="text-sm font-semibold admin-text-primary min-w-0 flex-1">
                     {field.label}
                   </label>
                   {field.type === 'toggle' ? (
@@ -70,7 +70,7 @@ export default function SettingsPage() {
                       {field.value}
                     </span>
                   ) : (
-                    <span className="text-sm text-[#A3AED0] text-right truncate max-w-[200px]">
+                    <span className="text-sm text-right truncate max-w-[200px]">
                       {field.value}
                     </span>
                   )}
