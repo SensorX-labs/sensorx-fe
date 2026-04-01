@@ -9,7 +9,7 @@ export default function RegisterPage() {
   return (
     <RegisterForm 
       onSwitchToLogin={() => router.push("/login")}
-      onSubmit={(data) => {
+      onSubmit={(data : unknown) => {
         console.log("Register with:", data);
         // Add register logic here
       }}

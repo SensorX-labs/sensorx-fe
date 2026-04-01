@@ -1,4 +1,4 @@
-import { ProductImage } from '@/features/catalog/product/models';
+import { ProductImage } from "../models/product-image";
 
 // Base image URLs for different product types
 const imagePool = [
