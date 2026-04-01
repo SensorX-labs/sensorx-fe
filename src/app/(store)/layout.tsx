@@ -1,7 +1,7 @@
 'use client';
 
+import StoreLayout from '@/layouts/store/layout';
 import React, { ReactNode } from 'react';
-import { StoreLayout } from '@/layouts/store';
 
 interface StoreLayoutProps {
   children: ReactNode;

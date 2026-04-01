@@ -1,9 +1,10 @@
-import { Product, ProductStatus } from '@/features/catalog/product/models';
 import { mockProductCategories, mockProductCategoryById } from './mock-product-category';
 import { mockUnitOfMeasures, mockUnitOfMeasureById } from './mock-unit-of-measure';
 import { mockProductImages, mockProductImagesByProductId } from './mocks-product-image';
 import { mockProductAttributes, mockAttributesByProductId } from './mock-product-attribute';
 import { mockProductPriceListByProductId } from './mock-product-price-list';
+import { Product } from '../models/product';
+import { ProductStatus } from '../models/product-status';
 
 export const mockProducts: Product[] = [
   {

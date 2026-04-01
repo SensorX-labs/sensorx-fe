@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useParams, notFound } from 'next/navigation';
-import { ProductDetail } from '@/features/catalog/product/components/store';
-import { mockProducts } from '@/features/catalog/product/mocks';
+import { mockProducts } from '@/features/catalog/product/mocks/mock-product';
+import { ProductDetail } from '@/features/catalog/product/components/store/product-detail';
 
 export default function ProductDetailPage() {
   const params = useParams();

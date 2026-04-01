@@ -3,11 +3,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProductCard from './product-card';
-import { mockProducts as realMockProducts } from '@/features/catalog/product/mocks';
-import { Product } from '@/features/catalog/product/models';
+import { Product } from '../../models/product';
+import { mockProducts } from '../../mocks/mock-product';
 
 const getCatalogProducts = (): (Product & { price: number; originalPrice?: number })[] => {
-    return realMockProducts.map((product) => {
+    return mockProducts.map((product : Product) => {
         const firstTier = product.priceList?.tiers?.[0];
         const price = firstTier?.defaultPrice || 0;
         const originalPrice = (firstTier?.defaultPrice || 0) + 500000;

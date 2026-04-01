@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminLayout } from '@/layouts/admin';
+import AdminLayout from '@/layouts/admin/layout';
 
 export default function LayoutAdmin({
   children,

@@ -6,7 +6,7 @@ interface CrmLayoutProps {
   children: ReactNode;
 }
 
-const CrmLayout = async ({ children }: CrmLayoutProps) => {
+const AdminLayout = async ({ children }: CrmLayoutProps) => {
   const cookieStore = await cookies();
   const sidebarCookie = cookieStore.get('sidebar_state');
   const defaultOpen = sidebarCookie ? sidebarCookie.value === 'true' : true;
@@ -18,4 +18,4 @@ const CrmLayout = async ({ children }: CrmLayoutProps) => {
   );
 };
 
-export default CrmLayout;
+export default AdminLayout;
