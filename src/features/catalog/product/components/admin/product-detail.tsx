@@ -48,10 +48,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
         </Link>
       </div>
 
-      {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {/* Left Column: Basic Info + Image Gallery */}
         <div className="md:col-span-1 space-y-6">
           {/* thông tin cơ bản sản phẩm */}
           <div className="border border-gray-200 bg-white rounded">
