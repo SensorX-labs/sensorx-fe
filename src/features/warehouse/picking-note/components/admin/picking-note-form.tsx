@@ -64,7 +64,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header Info Card */}
-      <Card className="border-none shadow-sm bg-white rounded-lg">
+      <Card className="border-none shadow-sm bg-white rounded">
         <CardHeader className="px-6 py-4 border-b border-gray-100">
           <CardTitle className="text-base font-bold text-[#2B3674]">Thông tin phiếu soạn kho</CardTitle>
         </CardHeader>
@@ -78,7 +78,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                 placeholder="Tự động sinh"
                 disabled={isEditing}
-                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-[#F4F7FE] rounded-lg disabled:bg-gray-100 disabled:text-[#A3AED0] focus:outline-none focus:border-[#4318FF]"
+                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-[#F4F7FE] rounded disabled:bg-gray-100 disabled:text-[#A3AED0] focus:outline-none focus:border-[#4318FF]"
               />
             </div>
 
@@ -88,7 +88,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-white rounded-lg focus:outline-none focus:border-[#4318FF]"
+                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-white rounded focus:outline-none focus:border-[#4318FF]"
               />
             </div>
 
@@ -97,7 +97,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
               <select
                 value={formData.warehouse}
                 onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-white rounded-lg focus:outline-none focus:border-[#4318FF]"
+                className="w-full px-4 py-2.5 border border-gray-200 text-sm text-[#2B3674] bg-white rounded focus:outline-none focus:border-[#4318FF]"
                 required
               >
                 <option value="">-- Chọn kho hàng --</option>
@@ -111,13 +111,13 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
       </Card>
 
       {/* Line Items Card */}
-      <Card className="border-none shadow-sm bg-white rounded-lg">
+      <Card className="border-none shadow-sm bg-white rounded">
         <CardHeader className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <CardTitle className="text-base font-bold text-[#2B3674]">Chi tiết hàng hóa</CardTitle>
           <button
             type="button"
             onClick={addLineItem}
-            className="flex items-center gap-2 bg-[#4318FF] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#3311CC] transition-colors"
+            className="flex items-center gap-2 bg-[#4318FF] text-white text-xs font-semibold px-3 py-1.5 rounded hover:bg-[#3311CC] transition-colors"
           >
             <Plus size={14} />
             Thêm dòng
@@ -145,7 +145,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                           value={item.productCode}
                           onChange={(e) => updateLineItem(item.id, 'productCode', e.target.value)}
                           placeholder="SKU123"
-                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded-lg focus:outline-none focus:border-[#4318FF]"
+                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded focus:outline-none focus:border-[#4318FF]"
                         />
                       </td>
                       <td className="px-6 py-3">
@@ -154,7 +154,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                           value={item.productName}
                           onChange={(e) => updateLineItem(item.id, 'productName', e.target.value)}
                           placeholder="Tên sản phẩm"
-                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded-lg focus:outline-none focus:border-[#4318FF]"
+                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded focus:outline-none focus:border-[#4318FF]"
                         />
                       </td>
                       <td className="px-6 py-3">
@@ -163,7 +163,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                           value={item.quantity}
                           onChange={(e) => updateLineItem(item.id, 'quantity', parseInt(e.target.value))}
                           min="1"
-                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] text-right rounded-lg focus:outline-none focus:border-[#4318FF]"
+                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] text-right rounded focus:outline-none focus:border-[#4318FF]"
                         />
                       </td>
                       <td className="px-6 py-3">
@@ -172,7 +172,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
                           value={item.notes}
                           onChange={(e) => updateLineItem(item.id, 'notes', e.target.value)}
                           placeholder="Ghi chú"
-                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded-lg focus:outline-none focus:border-[#4318FF]"
+                          className="w-full px-3 py-2 border border-gray-200 text-sm text-[#2B3674] rounded focus:outline-none focus:border-[#4318FF]"
                         />
                       </td>
                       <td className="px-6 py-3 text-center">
@@ -195,7 +195,7 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
               <button
                 type="button"
                 onClick={addLineItem}
-                className="inline-block px-4 py-2 bg-[#4318FF] text-white text-xs font-semibold rounded-lg hover:bg-[#3311CC] transition-colors"
+                className="inline-block px-4 py-2 bg-[#4318FF] text-white text-xs font-semibold rounded hover:bg-[#3311CC] transition-colors"
               >
                 Thêm hàng hóa
               </button>
@@ -219,13 +219,13 @@ export const PickingNoteForm: React.FC<PickingNoteFormProps> = ({ initialData, i
       <div className="flex items-center gap-3 justify-end">
         <Link
           href="/warehouse/picking-note"
-          className="px-6 py-2 border border-gray-200 text-sm font-semibold text-[#2B3674] rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-6 py-2 border border-gray-200 text-sm font-semibold text-[#2B3674] rounded hover:bg-gray-50 transition-colors"
         >
           Hủy
         </Link>
         <button
           type="submit"
-          className="px-6 py-2 bg-[#4318FF] text-white text-sm font-semibold rounded-lg hover:bg-[#3311CC] transition-colors"
+          className="px-6 py-2 bg-[#4318FF] text-white text-sm font-semibold rounded hover:bg-[#3311CC] transition-colors"
         >
           {isEditing ? 'Cập nhật phiếu' : 'Tạo phiếu'}
         </button>

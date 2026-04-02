@@ -1,4 +1,4 @@
-import { ProductCategory } from '@/features/catalog/product/models';
+import { ProductCategory } from "../models/product-category";
 
 export const mockProductCategories: ProductCategory[] = [
   {

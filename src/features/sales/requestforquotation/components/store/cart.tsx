@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { CartItem } from './cart-item';
-import { Product } from '@/features/catalog/product/models';
-import { mockProducts } from '@/features/catalog/product/mocks';
+import { mockProducts } from '@/features/catalog/product/mocks/mock-product';
 
 const mockCartItems = [
   {

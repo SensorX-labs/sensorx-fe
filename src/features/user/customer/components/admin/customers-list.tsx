@@ -5,7 +5,7 @@ import { Users, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
 
 const stats = [
-  { title: 'Tổng khách hàng', value: '1,245', icon: Users, color: 'text-[#4318FF]' },
+  { title: 'Tổng khách hàng', value: '1,245', icon: Users, color: 'admin-text-primary' },
   { title: 'Hoạt động', value: '987', icon: Users, color: 'text-green-500' },
   { title: 'Không hoạt động', value: '258', icon: Users, color: 'text-red-400' },
 ];
@@ -73,12 +73,12 @@ export default function CustomersList() {
             <tbody>
               {customers.map((c) => (
                 <tr key={c.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{c.id}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{c.id}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">{c.name}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{c.contact}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{c.email}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{c.phone}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{c.address}</td>
+                  <td className="px-6 py-3">{c.contact}</td>
+                  <td className="px-6 py-3">{c.email}</td>
+                  <td className="px-6 py-3">{c.phone}</td>
+                  <td className="px-6 py-3">{c.address}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[c.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {c.status}
@@ -87,7 +87,7 @@ export default function CustomersList() {
                   <td className="px-6 py-3">
                     <div className="flex items-center gap-2">
                       <button className="p-1.5 hover:bg-[#E9EDF7] rounded transition-colors">
-                        <Edit2 className="w-4 h-4 text-[#4318FF]" />
+                        <Edit2 className="w-4 h-4 admin-text-primary" />
                       </button>
                       <button className="p-1.5 hover:bg-[#FFE5E5] rounded transition-colors">
                         <Trash2 className="w-4 h-4 text-red-400" />

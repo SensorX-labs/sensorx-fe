@@ -74,12 +74,12 @@ export default function QuotationsPage() {
             <tbody>
               {quotations.map((q) => (
                 <tr key={q.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{q.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{q.customer}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{q.date}</td>
-                  <td className="px-6 py-3 text-center text-[#A3AED0]">{q.items}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{q.total} đ</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{q.validUntil}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{q.id}</td>
+                  <td className="px-6 py-3 font-semibold ">{q.customer}</td>
+                  <td className="px-6 py-3 ">{q.date}</td>
+                  <td className="px-6 py-3 text-center ">{q.items}</td>
+                  <td className="px-6 py-3 font-semibold ">{q.total} đ</td>
+                  <td className="px-6 py-3 ">{q.validUntil}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[q.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {q.status}

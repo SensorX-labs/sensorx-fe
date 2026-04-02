@@ -74,12 +74,12 @@ export default function InvoicesPage() {
             <tbody>
               {invoices.map((inv) => (
                 <tr key={inv.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{inv.id}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{inv.order}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{inv.customer}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{inv.issued}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{inv.due}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{inv.total} đ</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{inv.id}</td>
+                  <td className="px-6 py-3 text">{inv.order}</td>
+                  <td className="px-6 py-3 font-semibold ">{inv.customer}</td>
+                  <td className="px-6 py-3 text">{inv.issued}</td>
+                  <td className="px-6 py-3 text">{inv.due}</td>
+                  <td className="px-6 py-3 font-semibold ">{inv.total} đ</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[inv.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {inv.status}

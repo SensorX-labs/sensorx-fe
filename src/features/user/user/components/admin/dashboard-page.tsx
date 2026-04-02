@@ -12,10 +12,10 @@ import {
   Monitor,
   Tablet,
   Tv,
-  Facebook,
-  Twitter,
+  TrendingUp,
   ArrowRight,
-  Smartphone,
+  BarChart3,
+  PieChart,
 } from 'lucide-react';
 
 import {
@@ -28,33 +28,55 @@ import {
 /* ================= TYPES & DATA ================= */
 
 const stats = [
-  { title: 'Total Sales', value: '46.34k', icon: ShoppingBag },
-  { title: 'Total Items', value: '3,895', icon: Package },
-  { title: 'Average Sales', value: '$61,985', icon: DollarSign },
-  { title: 'Total Users', value: '12,584', icon: Users },
-  { title: 'Order Delivery', value: '24,526', icon: Truck },
+  { title: 'Tổng doanh số', value: '46.34k', icon: ShoppingBag },
+  { title: 'Tổng SP', value: '3,895', icon: Package },
+  { title: 'ĐH trung bình', value: '$61,985', icon: DollarSign },
+  { title: 'Khách hàng', value: '12,584', icon: Users },
+  { title: 'Giao hàng', value: '24,526', icon: Truck },
 ];
 
-const salesList = [
-  { label: 'Smart Camera', value: '56,236', icon: Monitor },
-  { label: 'Ipad 2021 Model', value: '220k', icon: Tablet },
-  { label: 'New Smart 4k TV', value: '51,568', icon: Tv },
-  { label: 'Mackbook 18 inch', value: '1,568', icon: Monitor },
+const topProducts = [
+  { label: 'Camera thông minh', value: '56,236', icon: Monitor },
+  { label: 'iPad 2021', value: '220k', icon: Tablet },
+  { label: 'Smart TV 4K', value: '51,568', icon: Tv },
+  { label: 'MacBook 18"', value: '1,568', icon: Monitor },
 ];
 
 const weeklyData = [
-  { day: 'M', value: 12 },
-  { day: 'T', value: 18 },
-  { day: 'W', value: 12 },
-  { day: 'T', value: 15 },
-  { day: 'F', value: 18 },
-  { day: 'S', value: 13 },
-  { day: 'S', value: 15 },
+  { day: 'T2', value: 12 },
+  { day: 'T3', value: 18 },
+  { day: 'T4', value: 12 },
+  { day: 'T5', value: 15 },
+  { day: 'T6', value: 18 },
+  { day: 'T7', value: 13 },
+  { day: 'CN', value: 15 },
+];
+
+const categoryData = [
+  { name: 'Cảm biến', value: 35, color: '#4318FF' },
+  { name: 'Điều khiển', value: 25, color: '#6AD01F' },
+  { name: 'Nút nhấn', value: 20, color: '#F97316' },
+  { name: 'Khác', value: 20, color: '#EC4899' },
+];
+
+const monthlyRevenue = [
+  { month: 'Th1', revenue: 24000 },
+  { month: 'Th2', revenue: 35000 },
+  { month: 'Th3', revenue: 28000 },
+  { month: 'Th4', revenue: 42000 },
+  { month: 'Th5', revenue: 38000 },
+  { month: 'Th6', revenue: 45000 },
 ];
 
 /* ================= COMPONENT ================= */
 
 export default function DashboardPage() {
+  // Tính tổng cho pie chart
+  const totalCategory = categoryData.reduce((sum, item) => sum + item.value, 0);
+
+  // Tìm max revenue cho bar chart
+  const maxRevenue = Math.max(...monthlyRevenue.map(m => m.revenue));
+
   return (
     <div className="space-y-6">
       {/* ───────────── Row 1: Stats ───────────── */}
@@ -84,16 +106,16 @@ export default function DashboardPage() {
 
       {/* ───────────── Row 2: Charts ───────────── */}
       <div className="grid grid-cols-3 gap-6">
-        {/* Sales Over Time */}
+        {/* Doanh số theo thời gian */}
         <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded">
           <CardHeader className="flex items-center justify-between p-6 pb-2">
             <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Sales Over Time By Value
+              Doanh số theo thời gian
             </CardTitle>
 
             <div className="flex items-center gap-2 bg-[#F4F7FE] rounded px-3 py-1.5 cursor-pointer">
               <span className="text-xs font-bold text-[#2B3674]">
-                02 Mar, 2026
+                02 Th3, 2026
               </span>
               <Calendar className="w-4 h-4 text-[#4318FF]" />
             </div>
@@ -119,7 +141,7 @@ export default function DashboardPage() {
               </svg>
 
               <div className="flex justify-between text-[11px] font-bold text-[#A3AED0] mt-2">
-                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m) => (
+                {['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6'].map((m) => (
                   <span key={m}>{m}</span>
                 ))}
               </div>
@@ -129,15 +151,15 @@ export default function DashboardPage() {
             <div className="w-56 space-y-6">
               <div>
                 <p className="text-2xl font-bold text-[#2B3674]">
-                  $23,590.00
+                  23.59M đ
                 </p>
                 <p className="text-xs font-bold text-[#A3AED0]">
-                  Available Balance
+                  Số dư khả dụng
                 </p>
               </div>
 
               <div className="space-y-4">
-                {salesList.map((item) => (
+                {topProducts.map((item) => (
                   <div
                     key={item.label}
                     className="flex items-center justify-between"
@@ -158,21 +180,21 @@ export default function DashboardPage() {
               </div>
 
               <button className="w-full py-1 text-[11px] font-bold text-[#4318FF] flex items-center justify-center gap-1 hover:underline">
-                View more <ArrowRight className="w-3 h-3" />
+                Xem thêm <ArrowRight className="w-3 h-3" />
               </button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Weekly Sales */}
+        {/* Doanh số hàng tuần */}
         <Card className="border-none shadow-sm bg-white rounded">
           <CardHeader className="flex items-center justify-between p-6 pb-2">
             <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Weekly Sales
+              Doanh số hàng tuần
             </CardTitle>
 
             <div className="text-xs font-bold text-[#A3AED0] flex items-center gap-1 cursor-pointer">
-              Today <ChevronRight className="w-4 h-4 rotate-90" />
+              Hôm nay <ChevronRight className="w-4 h-4 rotate-90" />
             </div>
           </CardHeader>
 
@@ -195,22 +217,120 @@ export default function DashboardPage() {
             </div>
 
             <p className="text-center text-[10px] font-bold text-[#A3AED0] mt-4">
-              This Week Total Sales And Earning
+              Tổng doanh số & khỏe nhân viên trong tuần
             </p>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div className="text-center">
                 <p className="text-xl font-bold text-[#2B3674]">502K</p>
                 <p className="text-[10px] font-bold text-[#A3AED0]">
-                  Total Sales
+                  Tổng ĐH
                 </p>
               </div>
 
               <div className="text-center border-l border-[#E9EDF7]">
                 <p className="text-xl font-bold text-[#2B3674]">65.4M</p>
                 <p className="text-[10px] font-bold text-[#A3AED0]">
-                  Total Funding
+                  Tổng thu
                 </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ───────────── Row 3: More Charts ───────────── */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Doanh số theo danh mục */}
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-lg font-bold text-[#2B3674]">
+              Doanh số theo danh mục
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="p-6 pt-4">
+            <div className="flex items-center justify-between">
+              {/* Pie Chart */}
+              <div className="w-32 h-32 relative">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  {categoryData.map((item, idx) => {
+                    const percentage = (item.value / totalCategory) * 360;
+                    const startAngle = categoryData.slice(0, idx).reduce((sum, i) => sum + (i.value / totalCategory) * 360, 0);
+                    const endAngle = startAngle + percentage;
+
+                    // Tính toán vị trí circle
+                    const startRad = (startAngle - 90) * (Math.PI / 180);
+                    const endRad = (endAngle - 90) * (Math.PI / 180);
+                    const x1 = 50 + 40 * Math.cos(startRad);
+                    const y1 = 50 + 40 * Math.sin(startRad);
+                    const x2 = 50 + 40 * Math.cos(endRad);
+                    const y2 = 50 + 40 * Math.sin(endRad);
+                    const largeArc = percentage > 180 ? 1 : 0;
+
+                    return (
+                      <path
+                        key={idx}
+                        d={`M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                        fill={item.color}
+                        opacity="0.9"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+
+              {/* Legend */}
+              <div className="flex-1 ml-6 space-y-3">
+                {categoryData.map((item) => (
+                  <div key={item.name} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-[#2B3674]">{item.name}</p>
+                      <p className="text-[10px] text-[#A3AED0]">{item.value}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Doanh thu hàng tháng */}
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-lg font-bold text-[#2B3674]">
+              Doanh thu 6 tháng
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="p-6 pt-4">
+            <div className="flex items-end justify-between h-44 gap-2 px-2 border-b border-[#E9EDF7] pb-4">
+              {monthlyRevenue.map((m) => {
+                const height = (m.revenue / maxRevenue) * 100;
+                return (
+                  <div key={m.month} className="flex flex-col items-center flex-1">
+                    <div
+                      className="w-full bg-gradient-to-t from-[#4318FF] to-[#6C5CF7] rounded-t"
+                      style={{ height: `${height}%`, minHeight: '20px' }}
+                      title={`${m.revenue.toLocaleString('vi')} đ`}
+                    />
+                    <span className="text-[10px] font-bold text-[#A3AED0] mt-2">
+                      {m.month}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div>
+                <p className="text-xs text-[#A3AED0]">TB cao nhất</p>
+                <p className="text-xl font-bold text-[#2B3674]">45M đ</p>
+              </div>
+              <div>
+                <p className="text-xs text-[#A3AED0]">TB thấp nhất</p>
+                <p className="text-xl font-bold text-[#2B3674]">24M đ</p>
               </div>
             </div>
           </CardContent>

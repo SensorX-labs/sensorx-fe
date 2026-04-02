@@ -1,5 +1,5 @@
+import { PickingNoteList } from '@/features/warehouse/picking-note/components/admin/picking-note-list';
 import React from 'react';
-import { PickingNoteList } from '@/features/warehouse/picking-note/components/admin';
 
 interface PickingNoteListPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

@@ -1,8 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { PickingNoteForm } from '@/features/warehouse/picking-note';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { PickingNoteForm } from '@/features/warehouse/picking-note/components/admin/picking-note-form';
 
 export default function NewPickingNotePage() {
   return (

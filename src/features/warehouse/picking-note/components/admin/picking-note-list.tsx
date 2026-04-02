@@ -71,13 +71,13 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
               <tbody>
                 {notes.map((note) => (
                   <tr key={note.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                    <td className="px-6 py-3 font-semibold text-[#4318FF]">{note.code}</td>
-                    <td className="px-6 py-3 text-[#A3AED0]">
+                    <td className="px-6 py-3 font-semibold admin-text-primary">{note.code}</td>
+                    <td className="px-6 py-3">
                       {new Date(note.date).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="px-6 py-3 font-semibold text-[#2B3674]">{note.createdBy}</td>
-                    <td className="px-6 py-3 text-right text-[#2B3674] font-semibold">{note.items}</td>
-                    <td className="px-6 py-3 text-right text-[#2B3674] font-semibold">{note.totalQuantity}</td>
+                    <td className="px-6 py-3 font-semibold">{note.createdBy}</td>
+                    <td className="px-6 py-3 text-right font-semibold">{note.items}</td>
+                    <td className="px-6 py-3 text-right font-semibold">{note.totalQuantity}</td>
                     <td className="px-6 py-3 text-center">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[note.status]}`}>
                         {statusLabel[note.status]}

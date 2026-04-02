@@ -74,12 +74,12 @@ export default function RequestForQuotationList() {
             <tbody>
               {leads.map((l) => (
                 <tr key={l.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold text-[#4318FF]">{l.id}</td>
+                  <td className="px-6 py-3 font-semibold admin-text-primary">{l.id}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">{l.name}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{l.contact}</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{l.source}</td>
+                  <td className="px-6 py-3 ">{l.contact}</td>
+                  <td className="px-6 py-3 ">{l.source}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">{l.value} đ</td>
-                  <td className="px-6 py-3 text-[#A3AED0]">{l.stage}</td>
+                  <td className="px-6 py-3 ">{l.stage}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${stageColor[l.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {l.status}

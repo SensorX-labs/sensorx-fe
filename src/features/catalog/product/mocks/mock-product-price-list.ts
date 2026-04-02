@@ -1,4 +1,5 @@
-import { ProductPriceList, PriceStatus } from '@/features/catalog/product/models';
+import { PriceStatus } from "../models/price-status";
+import { ProductPriceList } from "../models/product-price-list";
 
 export const mockProductPriceLists: ProductPriceList[] = [
   {

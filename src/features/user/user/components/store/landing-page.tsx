@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { StoreFooter, StoreHeader } from '@/layouts/store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/shared/components/shadcn-ui/carousel';
 import { Bookmark } from 'lucide-react';
+import StoreHeader from '@/layouts/store/store-header';
+import StoreFooter from '@/layouts/store/store-footer';
 
 export default function LandingPage() {
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);

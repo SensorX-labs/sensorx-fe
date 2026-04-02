@@ -1,9 +1,4 @@
-import { ProductAttribute } from '@/features/catalog/product/models';
-
-/**
- * Mock ProductAttribute Data
- * Thuộc tính chi tiết của các sản phẩm
- */
+import { ProductAttribute } from "../models/product-attribute";
 
 export const mockProductAttributes: ProductAttribute[] = [
   // ==================== Cảm biến áp suất - ATM Series (prod-001) ====================

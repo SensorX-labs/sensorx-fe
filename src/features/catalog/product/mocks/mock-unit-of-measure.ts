@@ -1,8 +1,4 @@
-import { UnitOfMeasure } from '@/features/catalog/product/models';
-
-/**
- * Mock UnitOfMeasure Data
- */
+import { UnitOfMeasure } from "../models/unit-of-measure";
 
 export const mockUnitOfMeasures: UnitOfMeasure[] = [
   {
