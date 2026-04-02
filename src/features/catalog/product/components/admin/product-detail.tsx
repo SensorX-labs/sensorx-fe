@@ -31,7 +31,6 @@ export function ProductDetail({ id }: ProductDetailProps) {
 
   return (
     <div className="space-y-6 w-full">
-      {/* Actions Bar */}
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" className="rounded text-gray-700">
           <Edit className="w-4 h-4 mr-2" />
