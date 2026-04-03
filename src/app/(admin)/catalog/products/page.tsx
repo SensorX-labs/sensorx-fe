@@ -1,6 +1,6 @@
-import ProductsPage from '@/features/catalog/product/components/admin/products-page';
+import ProductList from '@/features/catalog/product/components/admin/products-list';
 
 export default function Products() {
-  return <ProductsPage />;
+  return <ProductList />;
 }
 

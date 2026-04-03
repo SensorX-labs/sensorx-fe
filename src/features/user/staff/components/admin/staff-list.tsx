@@ -99,7 +99,7 @@ const roleColor: Record < string,
         'Nhân viên': 'bg-gray-100 text-gray-500'
     };
 
-export default function StaffPage() {
+export default function StaffList() {
     const router = useRouter();
 
     return (

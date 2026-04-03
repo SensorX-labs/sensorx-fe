@@ -1,6 +1,6 @@
-import QuotationsPage from '@/features/sales/quotation/components/admin/quotations-page';
+import QuotationList from '@/features/sales/quotation/components/admin/quotation-list';
 
 export default function Quotations() {
-  return <QuotationsPage />;
+  return <QuotationList />;
 }
 

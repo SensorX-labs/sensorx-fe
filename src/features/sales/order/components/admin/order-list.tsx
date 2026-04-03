@@ -28,7 +28,7 @@ const statusColor: Record<string, string> = {
   'Đã huỷ': 'bg-red-100 text-red-400',
 };
 
-export default function OrdersPage() {
+export default function OrderList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">

@@ -26,7 +26,7 @@ const statusColor: Record<string, string> = {
   'Quá hạn': 'bg-red-100 text-red-400',
 };
 
-export default function InvoicesPage() {
+export default function InvoiceList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">

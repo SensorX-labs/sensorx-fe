@@ -33,7 +33,7 @@ const statusLabel: Record < string,
         [ProductStatus.DISCONTINUED]: 'Ngừng kinh doanh'
     };
 
-export default function ProductsPage() {
+export default function ProductList() {
     const router = useRouter();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -74,57 +74,29 @@ export default function ProductsPage() {
                                 <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody> {
+                        <tbody>{
                             currentProducts.map((p) => (
-                                <tr key={
-                                        p.id
-                                    }
-                                    className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
-                                    <td className="px-6 py-3 font-semibold admin-text-primary">
-                                        {
-                                        p.code
-                                    }</td>
-                                    <td className="px-6 py-3 font-semibold">
-                                        {
-                                        p.name
-                                    }</td>
-                                    <td className="px-6 py-3">
-                                        {
-                                        p.category ?. name || '--'
-                                    }</td>
+                                <tr key={p.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
+                                    <td className="px-6 py-3 font-semibold admin-text-primary">{p.code}</td>
+                                    <td className="px-6 py-3 font-semibold">{p.name}</td>
+                                    <td className="px-6 py-3">{p.category?.name || '--'}</td>
                                     <td className="px-6 py-3 font-semibold ">
-                                        {
-                                        p.priceList ?. tiers && p.priceList.tiers.length > 0 ? new Intl.NumberFormat('vi-VN', {
+                                        {p.priceList?.tiers && p.priceList.tiers.length > 0 ? new Intl.NumberFormat('vi-VN', {
                                             style: 'currency',
                                             currency: 'VND'
-                                        }).format(p.priceList.tiers[0].defaultPrice) : '--'
-                                    } </td>
+                                        }).format(p.priceList.tiers[0].defaultPrice) : '--'} </td>
                                     <td className="px-6 py-3">
-                                        <span className={
-                                            `px-2 py-0.5 rounded-full text-xs font-bold ${
-                                                statusColor[p.status] ?? 'bg-gray-100 text-gray-500'
-                                            }`
-                                        }>
-                                            {
-                                            statusLabel[p.status] || p.status
-                                        } </span>
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[p.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                                            {statusLabel[p.status] || p.status} </span>
                                     </td>
                                     <td className="px-6 py-3">
                                         <div className="flex items-center justify-center gap-2">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={
-                                                    () => router.push(`/catalog/products/${
-                                                        p.id
-                                                    }?action=detail`)
-                                            }>
+                                                onClick={() => router.push(`/catalog/products/${p.id}?action=detail`)}>
                                                 <Eye className="w-4 h-4"/>
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
-                                                onClick={
-                                                    () => router.push(`/catalog/products/${
-                                                        p.id
-                                                    }?action=update`)
-                                            }>
+                                                onClick={() => router.push(`/catalog/products/${p.id}?action=update`)}>
                                                 <Edit className="w-4 h-4"/>
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
@@ -134,7 +106,7 @@ export default function ProductsPage() {
                                     </td>
                                 </tr>
                             ))
-                        } </tbody>
+                        }</tbody>
                     </table>
 
                     {
