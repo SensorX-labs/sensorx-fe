@@ -73,12 +73,19 @@ export function ProductDetail({ id }: ProductDetailProps) {
 
   return (
     <div className="space-y-6 w-full">
-      <div className="flex items-center justify-end gap-2">
-        {isEditing ? (
+      <div className="flex items-center justify-between">
+
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold admin-title uppercase">
+            {action === ActionType.CREATE ? 'Tạo mới' : action === ActionType.UPDATE ? 'Chỉnh sửa' : 'Chi tiết'} hàng hóa
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {isEditing ? (
           <>
             <Button variant="outline" className="rounded admin-btn-primary border-transparent" onClick={handleSave}>
               <Save className="w-4 h-4 mr-2" />
-              {action === ActionType.CREATE ? 'Lưu hàng hóa' : 'Cập nhật hàng hóa'}
+              Lưu
             </Button>
             <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50" onClick={handleCancel}>
               <X className="w-4 h-4 mr-2" />
@@ -105,6 +112,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
             Quay lại
           </Button>
         </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
