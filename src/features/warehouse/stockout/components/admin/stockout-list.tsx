@@ -33,11 +33,7 @@ const typeColor: Record<string, string> = {
 export default function StockOutList() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Phiếu xuất kho</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý hàng hóa xuất ra khỏi kho</p>
-        </div>
+      <div className="flex items-center justify-end">
         <button className="flex items-center gap-2 admin-btn-primary">
           <PackageMinus className="w-4 h-4" /> Tạo phiếu xuất
         </button>

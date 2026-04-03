@@ -30,11 +30,7 @@ const statusColor: Record<string, string> = {
 export default function OrdersPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Đơn hàng</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý tất cả đơn hàng của cửa hàng</p>
-        </div>
+      <div className="flex items-center justify-end">
         <button className="flex items-center gap-2 admin-btn-primary">
           <ShoppingCart className="w-4 h-4" /> Tạo đơn hàng
         </button>

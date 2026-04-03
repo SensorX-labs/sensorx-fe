@@ -104,11 +104,7 @@ export default function StaffPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold admin-title">Nhân viên</h2>
-                    <p className="text-sm admin-muted mt-1">Quản lý thông tin và phân quyền nhân viên</p>
-                </div>
+            <div className="flex items-center justify-end">
                 <button className="admin-btn-primary flex items-center gap-2">
                     <UserCircle className="w-4 h-4"/>
                     Thêm nhân viên

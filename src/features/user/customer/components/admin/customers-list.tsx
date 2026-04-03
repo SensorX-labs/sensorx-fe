@@ -26,16 +26,6 @@ const statusColor: Record<string, string> = {
 export default function CustomersList() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Khách hàng</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý danh sách khách hàng của bạn</p>
-        </div>
-        <button className="flex items-center gap-2 admin-btn-primary">
-          <Users className="w-4 h-4" /> Thêm khách hàng
-        </button>
-      </div>
-
       <div className="grid grid-cols-3 gap-4">
         {stats.map((s) => (
           <Card key={s.title} className="border-none shadow-sm bg-white rounded">

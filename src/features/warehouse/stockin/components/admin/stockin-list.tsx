@@ -28,11 +28,7 @@ const statusColor: Record<string, string> = {
 export default function StockInList() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Phiếu nhập kho</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý hàng hóa nhập vào kho</p>
-        </div>
+      <div className="flex items-center justify-end">
         <button className="flex items-center gap-2 admin-btn-primary">
           <PackagePlus className="w-4 h-4" /> Tạo phiếu nhập
         </button>

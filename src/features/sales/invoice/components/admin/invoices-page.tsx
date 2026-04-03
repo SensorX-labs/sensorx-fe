@@ -28,11 +28,7 @@ const statusColor: Record<string, string> = {
 export default function InvoicesPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Hóa đơn</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý hóa đơn và thanh toán</p>
-        </div>
+      <div className="flex items-center justify-end">
         <button className="flex items-center gap-2 admin-btn-primary">
           <Receipt className="w-4 h-4" /> Tạo hóa đơn
         </button>

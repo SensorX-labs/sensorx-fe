@@ -3,14 +3,17 @@
 import React from 'react';
 import {Search, Bell, Settings} from 'lucide-react';
 import {SidebarTrigger} from '@/shared/components/shadcn-ui/sidebar';
+import { useActiveTab } from '@/shared/hooks/use-active-tab';
 
 const AdminHeader: React.FC = () => {
+    const activeTab = useActiveTab();
+
     return (
         <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-page-background border-b border-gray-200">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="admin-muted hover:text-[--admin-title] hover:bg-admin-surface"/>
                 <h1 className="text-xl font-bold admin-title">
-                    Dashboard
+                    {activeTab}
                 </h1>
             </div>
 

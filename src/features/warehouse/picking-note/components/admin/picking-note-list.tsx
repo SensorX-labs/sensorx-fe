@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Edit2, Eye, Trash2, Plus, FileStack, FileEdit, CheckSquare, CheckCircle, XCircle } from 'lucide-react';
+import { Edit2, Eye, Trash2, Plus, FileStack, FileEdit, CheckSquare, CheckCircle, XCircle, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 interface PickingNote {
   id: string;
@@ -42,11 +43,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold admin-title">Phiếu Soạn Kho</h2>
-          <p className="text-sm admin-muted mt-1">Quản lý các phiếu soạn kho hàng</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Link
           href="/warehouse/picking-note/new"
           className="flex items-center gap-2 admin-btn-primary"
@@ -145,30 +142,37 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
                       </span>
                     </td>
                     <td className="px-6 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        <Link
-                          href={`/warehouse/picking-note/${note.id}`}
-                          className="p-1.5 text-[#A3AED0] hover:text-[#4318FF] transition-colors"
-                          title="Xem chi tiết"
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          asChild
                         >
-                          <Eye size={16} />
-                        </Link>
-                        {note.status === 'draft' && (
-                          <Link
-                            href={`/warehouse/picking-note/${note.id}/edit`}
-                            className="p-1.5 text-[#A3AED0] hover:text-[#4318FF] transition-colors"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit2 size={16} />
+                          <Link href={`/warehouse/picking-note/${note.id}?action=detail`}>
+                            <Eye className="w-4 h-4" />
                           </Link>
+                        </Button>
+                        {note.status === 'draft' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                            asChild
+                          >
+                            <Link href={`/warehouse/picking-note/${note.id}?action=update`}>
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                          </Button>
                         )}
                         {note.status === 'draft' && (
-                          <button
-                            className="p-1.5 text-[#A3AED0] hover:text-red-500 transition-colors"
-                            title="Xóa"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
                           >
-                            <Trash2 size={16} />
-                          </button>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
                     </td>

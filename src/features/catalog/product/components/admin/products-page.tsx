@@ -37,7 +37,7 @@ export default function ProductsPage() {
     const router = useRouter();
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; // Hiển thị 8 items 1 trang cho gọn đẹp (vì data mock có thể ít)
+    const itemsPerPage = 10; 
 
     const totalPages = Math.ceil(mockProducts.length / itemsPerPage);
 
@@ -54,11 +54,7 @@ export default function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold admin-title">Hàng hóa</h2>
-                    <p className="text-sm admin-muted mt-1">Quản lý danh mục sản phẩm & hàng hóa</p>
-                </div>
+            <div className="flex items-center justify-end">
                 <Link href="/catalog/products/new?action=create" className="admin-btn-primary flex items-center gap-2">
                     <Package className="w-4 h-4"/>
                     Thêm hàng hóa
