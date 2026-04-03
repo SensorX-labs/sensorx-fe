@@ -144,14 +144,14 @@ export default function StaffPage() {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Mã NV</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Họ tên</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Email</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Điện thoại</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Vai trò</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Phòng ban</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Trạng thái</th>
-                                <th className="text-center px-6 py-3 text-xs font-bold admin-muted uppercase">Thao tác</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Mã NV</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Họ tên</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Email</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Vai trò</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Phòng ban</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                                <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody> {
@@ -219,8 +219,8 @@ export default function StaffPage() {
                                         </div>
                                     </td>
                                 </tr>
-                            ))
-                        } </tbody>
+                            ))}
+                        </tbody>
                     </table>
                 </CardContent>
             </Card>

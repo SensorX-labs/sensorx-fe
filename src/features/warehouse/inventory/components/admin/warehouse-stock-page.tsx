@@ -59,14 +59,14 @@ export default function WarehouseStockPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã HH</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tên hàng hóa</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">SKU</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Loại hàng</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tồn kho</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tồn tối thiểu</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Vị trí</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã HH</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
+                <th className="text-left px-6 py-3 admin-table-th">SKU</th>
+                <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tồn kho</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tồn tối thiểu</th>
+                <th className="text-left px-6 py-3 admin-table-th">Vị trí</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>

@@ -131,8 +131,8 @@ export default function ProductsPage() {
                                         </div>
                                     </td>
                                 </tr>
-                            ))
-                        } </tbody>
+                            ))}
+                        </tbody>
                     </table>
 
                     {totalPages > 1 && (

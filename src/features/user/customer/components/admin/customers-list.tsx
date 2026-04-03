@@ -57,14 +57,14 @@ export default function CustomersList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tên công ty</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Người liên hệ</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Email</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Điện thoại</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Địa chỉ</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Hành động</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tên công ty</th>
+                <th className="text-left px-6 py-3 admin-table-th">Người liên hệ</th>
+                <th className="text-left px-6 py-3 admin-table-th">Email</th>
+                <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
+                <th className="text-left px-6 py-3 admin-table-th">Địa chỉ</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>

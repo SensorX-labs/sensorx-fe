@@ -64,13 +64,13 @@ export default function StockOutList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Số phiếu</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Đối tượng nhận</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Ngày xuất</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Số mặt hàng</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Giá trị</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Loại</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Số phiếu</th>
+                <th className="text-left px-6 py-3 admin-table-th">Đối tượng nhận</th>
+                <th className="text-left px-6 py-3 admin-table-th">Ngày xuất</th>
+                <th className="text-left px-6 py-3 admin-table-th">Số mặt hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Giá trị</th>
+                <th className="text-left px-6 py-3 admin-table-th">Loại</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>

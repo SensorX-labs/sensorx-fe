@@ -61,13 +61,13 @@ export default function OrdersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã ĐH</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Khách hàng</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Ngày đặt</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Sản phẩm</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tổng tiền</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Thanh toán</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã ĐH</th>
+                <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Ngày đặt</th>
+                <th className="text-left px-6 py-3 admin-table-th">Sản phẩm</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tổng tiền</th>
+                <th className="text-left px-6 py-3 admin-table-th">Thanh toán</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
