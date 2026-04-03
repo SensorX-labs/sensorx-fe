@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {useRouter} from 'next/navigation';
 import {
     Package,
@@ -9,7 +9,9 @@ import {
     TrendingUp,
     Eye,
     Edit,
-    Trash2
+    Trash2,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/shared/components/shadcn-ui/card';
 import {Button} from '@/shared/components/shadcn-ui/button';
@@ -33,6 +35,21 @@ const statusLabel: Record < string,
 export default function ProductsPage() {
     const router = useRouter();
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10; // Hiển thị 8 items 1 trang cho gọn đẹp (vì data mock có thể ít)
+
+    const totalPages = Math.ceil(mockProducts.length / itemsPerPage);
+
+    const currentProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return mockProducts.slice(startIndex, startIndex + itemsPerPage);
+    }, [currentPage, itemsPerPage]);
+
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -48,9 +65,6 @@ export default function ProductsPage() {
             </div>
 
             <Card className="border-none shadow-sm bg-white rounded">
-                <CardHeader className="px-6 py-4 border-b border-gray-100">
-                    <CardTitle className="text-base font-bold admin-title">Danh sách hàng hóa</CardTitle>
-                </CardHeader>
                 <CardContent className="p-0">
                     <table className="w-full text-sm">
                         <thead>
@@ -63,8 +77,8 @@ export default function ProductsPage() {
                                 <th className="text-center px-6 py-3 text-xs font-bold admin-muted uppercase">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody> {
-                            mockProducts.map((p) => (
+                        <tbody>
+                            {currentProducts.map((p) => (
                                 <tr key={
                                         p.id
                                     }
@@ -120,6 +134,49 @@ export default function ProductsPage() {
                             ))
                         } </tbody>
                     </table>
+
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
+                            <span className="text-sm admin-muted">
+                                Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, mockProducts.length)} trong tổng số {mockProducts.length} mục
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0 rounded"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                {Array.from({ length: totalPages }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    const isActive = currentPage === pageNum;
+                                    return (
+                                        <Button
+                                            key={pageNum}
+                                            variant={isActive ? "default" : "outline"}
+                                            size="sm"
+                                            className={`h-8 w-8 p-0 rounded ${isActive ? "bg-[var(--admin-primary)] text-white hover:bg-[var(--admin-primary-hover)] border-transparent" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+                                            onClick={() => goToPage(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    );
+                                })}
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0 rounded"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
