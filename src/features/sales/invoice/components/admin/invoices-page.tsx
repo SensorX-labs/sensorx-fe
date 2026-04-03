@@ -33,7 +33,7 @@ export default function InvoicesPage() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Hóa đơn</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Quản lý hóa đơn và thanh toán</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <Receipt className="w-4 h-4" /> Tạo hóa đơn
         </button>
       </div>

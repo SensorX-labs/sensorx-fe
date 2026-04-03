@@ -106,10 +106,10 @@ export default function StaffPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-[#2B3674]">Nhân viên</h2>
-                    <p className="text-sm text-[#A3AED0] mt-1">Quản lý thông tin và phân quyền nhân viên</p>
+                    <h2 className="text-2xl font-bold admin-title">Nhân viên</h2>
+                    <p className="text-sm admin-muted mt-1">Quản lý thông tin và phân quyền nhân viên</p>
                 </div>
-                <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+                <button className="admin-btn-primary flex items-center gap-2">
                     <UserCircle className="w-4 h-4"/>
                     Thêm nhân viên
                 </button>
@@ -124,16 +124,10 @@ export default function StaffPage() {
                         className="border-none shadow-sm bg-white rounded">
                         <CardContent className="p-5 flex items-center justify-between">
                             <div>
-                                <p className="text-xl font-bold text-[#2B3674]">
-                                    {
-                                    s.value
-                                }</p>
-                                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">
-                                    {
-                                    s.title
-                                }</p>
+                                <p className="text-xl font-bold admin-title">{s.value}</p>
+                                <p className="text-xs font-semibold admin-muted mt-0.5">{s.title}</p>
                             </div>
-                            <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
+                            <div className="w-10 h-10 rounded admin-surface flex items-center justify-center">
                                 <s.icon className={
                                     `w-5 h-5 ${
                                         s.color
@@ -147,20 +141,20 @@ export default function StaffPage() {
 
             <Card className="border-none shadow-sm bg-white rounded">
                 <CardHeader className="px-6 py-4 border-b border-gray-100">
-                    <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách nhân viên</CardTitle>
+                    <CardTitle className="text-base font-bold admin-title">Danh sách nhân viên</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã NV</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Họ tên</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Email</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Điện thoại</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Vai trò</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Phòng ban</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
-                                <th className="text-center px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Thao tác</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Mã NV</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Họ tên</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Email</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Điện thoại</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Vai trò</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Phòng ban</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Trạng thái</th>
+                                <th className="text-center px-6 py-3 text-xs font-bold admin-muted uppercase">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody> {
@@ -168,7 +162,7 @@ export default function StaffPage() {
                                 <tr key={
                                         s.id
                                     }
-                                    className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
+                                    className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
                                     <td className="px-6 py-3 font-semibold admin-text-primary">
                                         {
                                         s.id

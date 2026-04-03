@@ -45,8 +45,18 @@
     --radius-2xl: calc(var(--radius) + 8px);
     --radius-3xl: calc(var(--radius) + 12px);
     --radius-4xl: calc(var(--radius) + 16px);
-  --color-brand-green: var(--brand-green);
-  --color-brand-green-hover: var(--brand-green-hover);
+  --color-brand-green-50: var(--brand-green-50);
+  --color-brand-green-100: var(--brand-green-100);
+  --color-brand-green-200: var(--brand-green-200);
+  --color-brand-green-300: var(--brand-green-300);
+  --color-brand-green-400: var(--brand-green-400);
+  --color-brand-green-500: var(--brand-green-500);
+  --color-brand-green-600: var(--brand-green-600);
+  --color-brand-green-700: var(--brand-green-700);
+  --color-brand-green-800: var(--brand-green-800);
+  --color-brand-green-900: var(--brand-green-900);
+  --color-brand-green: var(--brand-green-600);
+  --color-brand-green-hover: var(--brand-green-700);
   --color-product-card-landing: var(--product-card-landing);
   --color-page-background: var(--page-background);
   --color-product-card-bg: var(--product-card-bg);
@@ -81,20 +91,35 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    /* admin Sidebar - dark theme */
-    --sidebar: #1E1E2D;
-    --sidebar-foreground: #A2A3B7;
-    --sidebar-primary: #4318FF;
+    /* Brand Green Unified Color Palette */
+    --brand-green-50: oklch(0.97 0.02 160);
+    --brand-green-100: oklch(0.92 0.03 160);
+    --brand-green-200: oklch(0.85 0.04 160);
+    --brand-green-300: oklch(0.75 0.05 160);
+    --brand-green-400: oklch(0.65 0.05 160);
+    --brand-green-500: oklch(0.55 0.05 160);
+    --brand-green-600: oklch(0.45 0.06 160);    /* Màu chủ đạo brand-green */
+    --brand-green-700: oklch(0.4 0.07 160);
+    --brand-green-800: oklch(0.3 0.04 160);
+    --brand-green-900: oklch(0.2 0.03 160);
+
+    /* Sidebar Variables (kế thừa từ Palette) */
+    --sidebar: var(--brand-green-800);
+    --sidebar-foreground: oklch(0.95 0.01 160);
+    --sidebar-primary: var(--brand-green-600);
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #2B2B40;
+    --sidebar-accent: var(--brand-green-700);
     --sidebar-accent-foreground: #ffffff;
     --sidebar-border: rgba(255,255,255,0.05);
-    --sidebar-ring: #4318FF;
+    --sidebar-ring: var(--brand-green-600);
 
-    /* màu thương hiệu */
-    --brand-green: oklch(0.45 0.06 160);
-    --brand-green-hover: oklch(0.4 0.07 160);
-
+    /* Admin UI Variables */
+    --admin-primary: var(--brand-green-600);
+    --admin-primary-hover: var(--brand-green-700);
+    --admin-surface: var(--brand-green-50);
+    --admin-surface-hover: var(--brand-green-100);
+    --admin-title: var(--brand-green-900);
+    --admin-muted: var(--brand-green-500);
     /* màu của card product landing page */
     --product-card-landing: #ECECEC;
 
@@ -290,9 +315,37 @@
         @apply text-sm tracking-[0.08em] text-gray-600 mt-2 font-medium;
     }
 
-    /* Admin primary text color (#4318FF) */
+    /* Admin primary text color */
     .admin-text-primary {
-        @apply text-[#4318FF];
+        color: var(--admin-primary);
+    }
+
+    /* Admin title color */
+    .admin-title {
+        color: var(--admin-title);
+    }
+
+    /* Admin muted/subtitle */
+    .admin-muted {
+        color: var(--admin-muted);
+    }
+
+    /* Nút chương đầu admin - primary */
+    .admin-btn-primary {
+        background-color: var(--admin-primary);
+        color: #ffffff;
+        @apply text-sm font-semibold px-4 py-2 rounded transition-colors;
+    }
+    .admin-btn-primary:hover {
+        background-color: var(--admin-primary-hover);
+    }
+
+    /* Nền surface nhẹ (icon wrapper, row highlight...) */
+    .admin-surface {
+        background-color: var(--admin-surface);
+    }
+    .admin-surface-hover:hover {
+        background-color: var(--admin-surface-hover);
     }
     
     /* Contact/Info Item - dùng chung cho toàn hệ thống */

@@ -33,7 +33,7 @@ export default function WarehouseStockPage() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Tồn kho</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Theo dõi số lượng hàng hóa trong kho</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <Warehouse className="w-4 h-4" /> Kiểm kê kho
         </button>
       </div>

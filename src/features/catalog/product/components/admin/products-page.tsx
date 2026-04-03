@@ -38,10 +38,10 @@ export default function ProductsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-[#2B3674]">Hàng hóa</h2>
-                    <p className="text-sm text-[#A3AED0] mt-1">Quản lý danh mục sản phẩm & hàng hóa</p>
+                    <h2 className="text-2xl font-bold admin-title">Hàng hóa</h2>
+                    <p className="text-sm admin-muted mt-1">Quản lý danh mục sản phẩm & hàng hóa</p>
                 </div>
-                <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+                <button className="admin-btn-primary flex items-center gap-2">
                     <Package className="w-4 h-4"/>
                     Thêm hàng hóa
                 </button>
@@ -49,18 +49,18 @@ export default function ProductsPage() {
 
             <Card className="border-none shadow-sm bg-white rounded">
                 <CardHeader className="px-6 py-4 border-b border-gray-100">
-                    <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách hàng hóa</CardTitle>
+                    <CardTitle className="text-base font-bold admin-title">Danh sách hàng hóa</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">SKU</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tên hàng hóa</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Loại hàng</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Đơn giá</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
-                                <th className="text-center px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Thao tác</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">SKU</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Tên hàng hóa</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Loại hàng</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Đơn giá</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Trạng thái</th>
+                                <th className="text-center px-6 py-3 text-xs font-bold admin-muted uppercase">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody> {
@@ -68,12 +68,12 @@ export default function ProductsPage() {
                                 <tr key={
                                         p.id
                                     }
-                                    className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
+                                    className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
                                     <td className="px-6 py-3 font-semibold admin-text-primary">
                                         {
                                         p.code
                                     }</td>
-                                    <td className="px-6 py-3 font-semibold ">
+                                    <td className="px-6 py-3 font-semibold admin-text-primary">
                                         {
                                         p.name
                                     }</td>

@@ -31,7 +31,7 @@ export default function CustomersList() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Khách hàng</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Quản lý danh sách khách hàng của bạn</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <Users className="w-4 h-4" /> Thêm khách hàng
         </button>
       </div>

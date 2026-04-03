@@ -33,7 +33,7 @@ export default function QuotationsPage() {
           <h2 className="text-2xl font-bold text-[#2B3674]">Báo giá</h2>
           <p className="text-sm text-[#A3AED0] mt-1">Quản lý các báo giá gửi cho khách hàng</p>
         </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <FileText className="w-4 h-4" /> Tạo báo giá
         </button>
       </div>

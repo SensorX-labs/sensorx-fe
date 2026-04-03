@@ -170,7 +170,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="[&>[data-sidebar=sidebar]]:bg-[#1E1E2D] border-r-0">
+    <Sidebar collapsible="icon" className="[&>[data-sidebar=sidebar]]:bg-sidebar border-r-0">
       <SidebarHeader className="p-4 flex items-center gap-3 overflow-hidden">
         <span className="text-white text-xl font-bold uppercase tracking-wider group-data-[collapsible=icon]:hidden">
           SensorX
@@ -180,7 +180,7 @@ export default function AdminSidebar() {
       <SidebarContent className="px-2 py-4 group-data-[collapsible=icon]:px-0">
         {sidebarSections.map((section) => (
           <SidebarGroup key={section.title} className="mb-6 group-data-[collapsible=icon]:mb-0">
-            <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold tracking-widest text-[#7B7CA8] uppercase group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold tracking-widest text-sidebar-foreground/70 uppercase group-data-[collapsible=icon]:hidden">
               {section.title}
             </SidebarGroupLabel>
 
@@ -201,29 +201,29 @@ export default function AdminSidebar() {
                           <CollapsibleTrigger asChild>
                             <SidebarMenuButton
                               tooltip={item.name}
-                              className="h-10 px-2 text-[#C4C5D6] hover:bg-[#2B2B40] hover:text-white transition-colors"
+                              className="h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
                             >
-                              <Icon className="w-5 h-5 shrink-0 text-[#7B7CA8]" />
+                              <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
                               <span className="text-[13px] font-medium">
                                 {item.name}
                               </span>
                               <ChevronRight
                                 className={cn(
                                   'ml-auto w-4 h-4 shrink-0 transition-transform duration-200 group-data-[collapsible=icon]:hidden',
-                                  isOpen && 'rotate-90 text-white'
+                                  isOpen && 'rotate-90 text-sidebar-accent-foreground'
                                 )}
                               />
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
 
                           <CollapsibleContent className="group-data-[collapsible=icon]:hidden">
-                            <SidebarMenuSub className="ml-5 border-l border-[#2B2B40]">
+                            <SidebarMenuSub className="ml-5 border-l border-sidebar-accent">
                               {item.subItems?.map((sub) => (
                                 <SidebarMenuSubItem key={sub.name}>
                                   <SidebarMenuSubButton asChild>
                                     <Link
                                       href={sub.href}
-                                      className="text-[#C4C5D6] hover:text-white"
+                                      className="text-sidebar-foreground hover:text-sidebar-accent-foreground"
                                     >
                                       {sub.name}
                                     </Link>
@@ -242,9 +242,9 @@ export default function AdminSidebar() {
                       <SidebarMenuButton tooltip={item.name} asChild>
                         <Link
                           href={item.href!}
-                          className="flex items-center gap-2 h-10 px-2 text-[#C4C5D6] hover:bg-[#2B2B40] hover:text-white transition-colors"
+                          className="flex items-center gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
                         >
-                          <Icon className="w-5 h-5 shrink-0 text-[#7B7CA8]" />
+                          <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
                           <span className="text-[13px] font-medium">
                             {item.name}
                           </span>
