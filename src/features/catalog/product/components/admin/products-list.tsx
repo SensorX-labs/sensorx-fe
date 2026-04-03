@@ -113,16 +113,7 @@ export default function ProductList() {
                     totalPages > 1 && (
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
                             <span className="text-sm">
-                                Hiển thị {
-                                (currentPage - 1) * itemsPerPage + 1
-                            }
-                                đến {
-                                Math.min(currentPage * itemsPerPage, mockProducts.length)
-                            }
-                                trong tổng số {
-                                mockProducts.length
-                            }
-                                mục
+                                Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, mockProducts.length)} trong tổng số {mockProducts.length} sản phẩm
                             </span>
                             <div className="flex items-center gap-1.5">
                                 <Button variant="outline" size="sm"
@@ -147,7 +138,7 @@ export default function ProductList() {
                                             size="sm"
                                             className={
                                                 `h-8 w-8 p-0 rounded ${
-                                                    isActive ? "bg-[var(--admin-primary)] text-white hover:bg-[var(--admin-primary-hover)] border-transparent" : "text-gray-600 border-gray-200 hover:bg-gray-50"
+                                                    isActive ? "bg-[var(--admin-primary)] text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"
                                                 }`
                                             }
                                             onClick={
