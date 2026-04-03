@@ -344,6 +344,7 @@
     }
     .admin-btn-primary:hover {
         background-color: var(--admin-primary-hover);
+        color: #ffffff;
     }
 
     /* Nền surface nhẹ (icon wrapper, row highlight...) */

@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Layers, Image as ImageIcon, DollarSign, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ActionType } from '@/shared/constants/action-type';
+import { Layers, Image as ImageIcon, DollarSign, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import Link from 'next/link';
 import { mockProductById } from '@/features/catalog/product/mocks/mock-product';
@@ -22,26 +24,83 @@ const statusLabel: Record<string, string> = {
 };
 
 export function ProductDetail({ id }: ProductDetailProps) {
-  const product = mockProductById(id);
+  const searchParams = useSearchParams();
+  const actionParam = searchParams.get('action');
+  
+  const isCreate = actionParam === ActionType.CREATE;
+  
+  const initialProduct = isCreate ? {
+    id: '', code: '', name: '', manufacture: '', status: ProductStatus.ACTIVE,
+    category: { id: '', code: '', name: '' },
+    unit: { id: '', code: '', name: '' },
+    priceList: { tiers: [] },
+    attributes: [],
+    images: []
+  } : mockProductById(id);
+
+  const [action, setAction] = useState<ActionType>(
+    (actionParam as ActionType) || ActionType.DETAIL
+  );
+
+  const [formData, setFormData] = useState<any>(initialProduct || {});
   const [selectedImg, setSelectedImg] = useState(0);
 
-  if (!product) return <div className="p-6 text-gray-600">Không tìm thấy hàng hóa</div>;
+  useEffect(() => {
+    if (!isCreate) {
+      if (actionParam === ActionType.UPDATE) setAction(ActionType.UPDATE);
+      else setAction(ActionType.DETAIL);
+    }
+  }, [actionParam, isCreate]);
 
-  const images = product.images ?? [];
+  if (!isCreate && !initialProduct) return <div className="p-6 text-gray-600">Không tìm thấy hàng hóa</div>;
+
+  const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
+  const images = formData.images ?? [];
+
+  const handleSave = () => {
+    // Logic lưu
+    setAction(ActionType.DETAIL);
+  };
+
+  const handleCancel = () => {
+    if (action === ActionType.CREATE) {
+       // logic redirect
+    } else {
+       setFormData(initialProduct);
+       setAction(ActionType.DETAIL);
+    }
+  };
 
   return (
     <div className="space-y-6 w-full">
       <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" className="rounded text-gray-700">
-          <Edit className="w-4 h-4 mr-2" />
-          Chỉnh sửa
-        </Button>
-        <Button variant="outline" className="rounded text-red-600 hover:bg-red-50 border-red-200">
-          <Trash2 className="w-4 h-4 mr-2" />
-          Xóa
-        </Button>
+        {isEditing ? (
+          <>
+            <Button variant="outline" className="rounded admin-btn-primary border-transparent" onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" />
+              {action === ActionType.CREATE ? 'Lưu hàng hóa' : 'Cập nhật hàng hóa'}
+            </Button>
+            <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50" onClick={handleCancel}>
+              <X className="w-4 h-4 mr-2" />
+              Hủy
+            </Button>
+          </>
+        ) : (
+          <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50" onClick={() => setAction(ActionType.UPDATE)}>
+            <Edit className="w-4 h-4 mr-2" />
+            Chỉnh sửa
+          </Button>
+        )}
+        
+        {action === ActionType.DETAIL && (
+          <Button variant="outline" className="rounded text-red-600 hover:bg-red-50 border-red-200">
+            <Trash2 className="w-4 h-4 mr-2" />
+            Xóa
+          </Button>
+        )}
+        
         <Link href="/catalog/products">
-          <Button variant="outline" className="rounded text-gray-700">
+          <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại
           </Button>
@@ -58,31 +117,86 @@ export function ProductDetail({ id }: ProductDetailProps) {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5">Tên sản phẩm</td>
-                  <td className="px-6 py-3 text-gray-900 font-medium">{product.name}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary">Mã sản phẩm</td>
-                  <td className="px-6 py-3 text-gray-900 font-medium">{product.code}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary">Nhà sản xuất</td>
-                  <td className="px-6 py-3 text-gray-900 font-medium">{product.manufacture || '--'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary">Danh mục</td>
-                  <td className="px-6 py-3 text-gray-900 font-medium">{product.category?.name || '--'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary">Đơn vị tính</td>
-                  <td className="px-6 py-3 text-gray-900 font-medium">{product.unit?.name || '--'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary">Trạng thái</td>
+                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Tên sản phẩm</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2.5 py-0.5 rounded border text-xs font-medium ${statusColor[product.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                      {statusLabel[product.status] || product.status}
-                    </span>
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        value={formData.name || ''} 
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                        placeholder="Nhập tên hàng hóa"
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">{formData.name}</span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Mã sản phẩm (SKU)</td>
+                  <td className="px-6 py-3">
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        value={formData.code || ''} 
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                        placeholder="VD: SP001"
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">{formData.code}</span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhà sản xuất</td>
+                  <td className="px-6 py-3">
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        value={formData.manufacture || ''} 
+                        onChange={(e) => setFormData({ ...formData, manufacture: e.target.value })}
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                        placeholder="Tên nhà sản xuất"
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">{formData.manufacture || '--'}</span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Danh mục</td>
+                  <td className="px-6 py-3">
+                    {isEditing ? (
+                      <input 
+                        type="text" 
+                        value={formData.category?.name || ''} 
+                        onChange={(e) => setFormData({ ...formData, category: { ...formData.category, name: e.target.value } })}
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                        placeholder="Danh mục"
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">{formData.category?.name || '--'}</span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Trạng thái</td>
+                  <td className="px-6 py-3">
+                    {isEditing ? (
+                      <select
+                        value={formData.status || ProductStatus.ACTIVE}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                      >
+                        <option value={ProductStatus.ACTIVE}>{statusLabel[ProductStatus.ACTIVE]}</option>
+                        <option value={ProductStatus.DISCONTINUED}>{statusLabel[ProductStatus.DISCONTINUED]}</option>
+                      </select>
+                    ) : (
+                      <span className={`px-2.5 py-0.5 rounded border text-xs font-medium ${statusColor[formData.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                        {statusLabel[formData.status] || formData.status}
+                      </span>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -101,23 +215,27 @@ export function ProductDetail({ id }: ProductDetailProps) {
             {images.length > 0 ? (
               <div className="p-4 space-y-3">
 
-                <div className="w-full rounded border border-gray-100 overflow-hidden bg-gray-50">
-                  <img
-                    src={images[selectedImg].imageUrl}
-                    alt={`${product.name} - ảnh ${selectedImg + 1}`}
-                    className="w-full object-cover"
-                  />
+                <div className="w-full aspect-square rounded border border-gray-100 overflow-hidden bg-gray-50 flex justify-center items-center">
+                  {images.length > 0 && images[selectedImg] ? (
+                    <img
+                      src={images[selectedImg].imageUrl}
+                      alt={`${formData.name} - ảnh ${selectedImg + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="w-12 h-12 text-gray-200" />
+                  )}
                 </div>
 
                 {images.length > 1 && (
                   <div className="flex gap-2 flex-wrap">
-                    {images.map((img, idx) => (
+                    {images.map((img: any, idx: number) => (
                       <button
-                        key={img.id}
+                        key={img.id || idx}
                         onClick={() => setSelectedImg(idx)}
                         className={`w-14 h-14 rounded border-2 overflow-hidden transition-all ${
                           selectedImg === idx
-                            ? 'border-gray-800'
+                            ? 'border-[var(--brand-green-500)]'
                             : 'border-gray-200 hover:border-gray-400'
                         }`}
                       >
@@ -131,6 +249,11 @@ export function ProductDetail({ id }: ProductDetailProps) {
               <div className="p-8 flex flex-col items-center justify-center text-center">
                 <ImageIcon className="w-8 h-8 text-gray-200 mb-2" />
                 <p className="text-sm text-gray-400">Chưa có hình ảnh.</p>
+                {isEditing && (
+                  <Button variant="outline" size="sm" className="mt-2 rounded admin-btn-primary border-transparent">
+                    + Thêm ảnh
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -144,7 +267,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
               <h4 className="text-base font-medium text-gray-900">Bảng giá tham khảo</h4>
             </div>
             <div className="p-6">
-              {product.priceList?.tiers && product.priceList.tiers.length > 0 ? (
+              {formData.priceList?.tiers && formData.priceList.tiers.length > 0 ? (
                 <div className="overflow-x-auto rounded border border-gray-100">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
@@ -155,7 +278,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {product.priceList.tiers.map((tier) => (
+                      {formData.priceList.tiers.map((tier: any) => (
                         <tr key={tier.id}>
                           <td className="px-4 py-3 text-gray-900">{tier.quantity}</td>
                           <td className="px-4 py-3 font-medium text-gray-900">
@@ -170,7 +293,14 @@ export function ProductDetail({ id }: ProductDetailProps) {
                   </table>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">Chưa có thông tin bảng giá.</p>
+                <div className="text-center py-6">
+                   <p className="text-sm text-gray-500 mb-4">Chưa có thông tin bảng giá.</p>
+                   {isEditing && (
+                     <Button variant="outline" size="sm" className="rounded admin-btn-primary border-transparent">
+                       + Thêm bậc giá
+                     </Button>
+                   )}
+                </div>
               )}
             </div>
           </div>
@@ -182,20 +312,25 @@ export function ProductDetail({ id }: ProductDetailProps) {
               <h4 className="text-base font-medium text-gray-900">Thuộc tính mở rộng</h4>
             </div>
             <div className="p-0">
-              {product.attributes && product.attributes.length > 0 ? (
+              {formData.attributes && formData.attributes.length > 0 ? (
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-gray-100">
-                    {product.attributes.map((attr) => (
+                    {formData.attributes.map((attr: any) => (
                       <tr key={attr.id}>
-                        <td className="px-6 py-3 w-1/3 admin-text-primary">{attr.name}</td>
+                        <td className="px-6 py-3 w-1/3 admin-text-primary font-semibold">{attr.name}</td>
                         <td className="px-6 py-3 font-medium text-gray-900">{attr.value}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <div className="p-6">
-                  <p className="text-sm text-gray-500 text-center py-4">Sản phẩm này không có thuộc tính phụ.</p>
+                <div className="p-6 text-center">
+                  <p className="text-sm text-gray-500 mb-4">Sản phẩm này không có thuộc tính phụ.</p>
+                  {isEditing && (
+                     <Button variant="outline" size="sm" className="rounded admin-btn-primary border-transparent">
+                       + Thêm thuộc tính
+                     </Button>
+                   )}
                 </div>
               )}
             </div>

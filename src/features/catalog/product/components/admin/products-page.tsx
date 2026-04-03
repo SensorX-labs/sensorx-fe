@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import {useRouter} from 'next/navigation';
+import Link from 'next/link';
 import {
     Package,
     Tag,
@@ -58,10 +59,10 @@ export default function ProductsPage() {
                     <h2 className="text-2xl font-bold admin-title">Hàng hóa</h2>
                     <p className="text-sm admin-muted mt-1">Quản lý danh mục sản phẩm & hàng hóa</p>
                 </div>
-                <button className="admin-btn-primary flex items-center gap-2">
+                <Link href="/catalog/products/new?action=create" className="admin-btn-primary flex items-center gap-2">
                     <Package className="w-4 h-4"/>
                     Thêm hàng hóa
-                </button>
+                </Link>
             </div>
 
             <Card className="border-none shadow-sm bg-white rounded">
@@ -115,16 +116,15 @@ export default function ProductsPage() {
                                     <td className="px-6 py-3">
                                         <div className="flex items-center justify-center gap-2">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={
-                                                    () => router.push(`/catalog/products/${
-                                                        p.id
-                                                    }`)
-                                            }>
+                                                onClick={() => router.push(`/catalog/products/${p.id}?action=detail`)}
+                                            >
                                                 <Eye className="w-4 h-4"/>
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                                                <Edit className="w-4 h-4"/>
-                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                                                onClick={() => router.push(`/catalog/products/${p.id}?action=update`)}
+                                             >
+                                                 <Edit className="w-4 h-4"/>
+                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
                                                 <Trash2 className="w-4 h-4"/>
                                             </Button>
