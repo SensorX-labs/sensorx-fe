@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Edit2, Eye, Trash2, Plus } from 'lucide-react';
+import { Edit2, Eye, Trash2, Plus, FileStack, FileEdit, CheckSquare, CheckCircle, XCircle, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 interface PickingNote {
   id: string;
@@ -34,38 +35,95 @@ const statusLabel: Record<string, string> = {
 };
 
 export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
+  const totalNotes = notes.length;
+  const draftNotes = notes.filter(n => n.status === 'draft').length;
+  const confirmedNotes = notes.filter(n => n.status === 'confirmed').length;
+  const completedNotes = notes.filter(n => n.status === 'completed').length;
+  const cancelledNotes = notes.filter(n => n.status === 'cancelled').length;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Phiếu Soạn Kho</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý các phiếu soạn kho hàng</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Link
-          href="/warehouse/picking-note/new"
-          className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors"
+          href="/warehouse/picking-note/new?action=create"
+          className="flex items-center gap-2 admin-btn-primary"
         >
-          <Plus size={16} />
-          Tạo phiếu
+          <FileEdit size={16} />
+          Tạo phiếu soạn kho
         </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-[var(--brand-green-50)] text-[var(--brand-green-600)] flex items-center justify-center">
+              <FileStack className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Tổng phiếu</p>
+              <p className="text-xl font-bold admin-title">{totalNotes}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-gray-50 text-gray-500 flex items-center justify-center">
+              <FileEdit className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Phiếu nháp</p>
+              <p className="text-xl font-bold admin-title">{draftNotes}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+              <CheckSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Xác nhận</p>
+              <p className="text-xl font-bold admin-title">{confirmedNotes}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Hoàn thành</p>
+              <p className="text-xl font-bold admin-title">{completedNotes}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
+              <XCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Đã hủy</p>
+              <p className="text-xl font-bold admin-title">{cancelledNotes}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {notes.length > 0 ? (
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardHeader className="px-6 py-4 border-b border-gray-100">
-            <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách phiếu soạn kho</CardTitle>
-          </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã phiếu</th>
-                  <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Ngày soạn</th>
-                  <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Người soạn</th>
-                  <th className="text-right px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Số sản phẩm</th>
-                  <th className="text-right px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tổng số lượng</th>
-                  <th className="text-center px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
-                  <th className="text-center px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Hành động</th>
+                  <th className="text-left px-6 py-3 admin-table-th">Mã phiếu</th>
+                  <th className="text-left px-6 py-3 admin-table-th">Ngày soạn</th>
+                  <th className="text-left px-6 py-3 admin-table-th">Người soạn</th>
+                  <th className="text-right px-6 py-3 admin-table-th">Số sản phẩm</th>
+                  <th className="text-right px-6 py-3 admin-table-th">Tổng số lượng</th>
+                  <th className="text-center px-6 py-3 admin-table-th">Trạng thái</th>
+                  <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,30 +142,37 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
                       </span>
                     </td>
                     <td className="px-6 py-3">
-                      <div className="flex items-center justify-center gap-1">
-                        <Link
-                          href={`/warehouse/picking-note/${note.id}`}
-                          className="p-1.5 text-[#A3AED0] hover:text-[#4318FF] transition-colors"
-                          title="Xem chi tiết"
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          asChild
                         >
-                          <Eye size={16} />
-                        </Link>
-                        {note.status === 'draft' && (
-                          <Link
-                            href={`/warehouse/picking-note/${note.id}/edit`}
-                            className="p-1.5 text-[#A3AED0] hover:text-[#4318FF] transition-colors"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit2 size={16} />
+                          <Link href={`/warehouse/picking-note/${note.id}?action=detail`}>
+                            <Eye className="w-4 h-4" />
                           </Link>
+                        </Button>
+                        {note.status === 'draft' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                            asChild
+                          >
+                            <Link href={`/warehouse/picking-note/${note.id}?action=update`}>
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                          </Button>
                         )}
                         {note.status === 'draft' && (
-                          <button
-                            className="p-1.5 text-[#A3AED0] hover:text-red-500 transition-colors"
-                            title="Xóa"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
                           >
-                            <Trash2 size={16} />
-                          </button>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -122,8 +187,8 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
           <CardContent className="p-12 text-center">
             <p className="text-[#A3AED0] font-semibold mb-4">Chưa có phiếu soạn kho nào</p>
             <Link
-              href="/warehouse/picking-note/new"
-              className="inline-block px-6 py-2 bg-[#4318FF] text-white text-sm font-semibold rounded hover:bg-[#3311CC] transition-colors"
+              href="/warehouse/picking-note/new?action=create"
+              className="inline-block admin-btn-primary"
             >
               Tạo phiếu soạn kho
             </Link>

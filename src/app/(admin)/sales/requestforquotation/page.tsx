@@ -1,6 +1,6 @@
-import LeadsPage from '@/features/sales/requestforquotation/components/admin/request-for-quotation-list';
+import RequestForQuotationList from '@/features/sales/requestforquotation/components/admin/request-for-quotation-list';
 
-export default function Leads() {
-  return <LeadsPage />;
+export default function RequestForQuotations() {
+  return <RequestForQuotationList />;
 }
 

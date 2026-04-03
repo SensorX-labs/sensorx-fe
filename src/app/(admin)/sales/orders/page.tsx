@@ -1,6 +1,6 @@
-import OrdersPage from '@/features/sales/order/components/admin/orders-page';
+import OrderList from '@/features/sales/order/components/admin/order-list';
 
 export default function Orders() {
-  return <OrdersPage />;
+  return <OrderList />;
 }
 

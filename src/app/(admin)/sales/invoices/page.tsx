@@ -1,6 +1,6 @@
-import InvoicesPage from '@/features/sales/invoice/components/admin/invoices-page';
+import InvoiceList from '@/features/sales/invoice/components/admin/invoice-list';
 
 export default function Invoices() {
-  return <InvoicesPage />;
+  return <InvoiceList />;
 }
 

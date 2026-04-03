@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { ShoppingCart, Clock, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { ShoppingCart, Clock, Truck, CheckCircle, XCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Tổng đơn hàng', value: '1,482', icon: ShoppingCart, color: 'text-[#4318FF]' },
@@ -27,15 +28,11 @@ const statusColor: Record<string, string> = {
   'Đã huỷ': 'bg-red-100 text-red-400',
 };
 
-export default function OrdersPage() {
+export default function OrderList() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Đơn hàng</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý tất cả đơn hàng của cửa hàng</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+      <div className="flex items-center justify-end">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <ShoppingCart className="w-4 h-4" /> Tạo đơn hàng
         </button>
       </div>
@@ -57,20 +54,18 @@ export default function OrdersPage() {
       </div>
 
       <Card className="border-none shadow-sm bg-white rounded">
-        <CardHeader className="px-6 py-4 border-b border-gray-100">
-          <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách đơn hàng</CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã ĐH</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Khách hàng</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Ngày đặt</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Sản phẩm</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tổng tiền</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Thanh toán</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã ĐH</th>
+                <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Ngày đặt</th>
+                <th className="text-left px-6 py-3 admin-table-th">Sản phẩm</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tổng tiền</th>
+                <th className="text-left px-6 py-3 admin-table-th">Thanh toán</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -86,6 +81,19 @@ export default function OrdersPage() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[o.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {o.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -28,12 +28,8 @@ const statusColor: Record<string, string> = {
 export default function WarehouseStockPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Tồn kho</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Theo dõi số lượng hàng hóa trong kho</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+      <div className="flex items-center justify-end">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <Warehouse className="w-4 h-4" /> Kiểm kê kho
         </button>
       </div>
@@ -55,21 +51,18 @@ export default function WarehouseStockPage() {
       </div>
 
       <Card className="border-none shadow-sm bg-white rounded">
-        <CardHeader className="px-6 py-4 border-b border-gray-100">
-          <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách tồn kho</CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã HH</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tên hàng hóa</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">SKU</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Loại hàng</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tồn kho</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tồn tối thiểu</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Vị trí</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã HH</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
+                <th className="text-left px-6 py-3 admin-table-th">SKU</th>
+                <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tồn kho</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tồn tối thiểu</th>
+                <th className="text-left px-6 py-3 admin-table-th">Vị trí</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>

@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Users, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
+import { Users, Mail, Phone, MapPin, Edit2, Trash2, Eye, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Tổng khách hàng', value: '1,245', icon: Users, color: 'admin-text-primary' },
@@ -26,16 +27,6 @@ const statusColor: Record<string, string> = {
 export default function CustomersList() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Khách hàng</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý danh sách khách hàng của bạn</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
-          <Users className="w-4 h-4" /> Thêm khách hàng
-        </button>
-      </div>
-
       <div className="grid grid-cols-3 gap-4">
         {stats.map((s) => (
           <Card key={s.title} className="border-none shadow-sm bg-white rounded">
@@ -53,21 +44,18 @@ export default function CustomersList() {
       </div>
 
       <Card className="border-none shadow-sm bg-white rounded">
-        <CardHeader className="px-6 py-4 border-b border-gray-100">
-          <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách khách hàng</CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Mã</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Tên công ty</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Người liên hệ</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Email</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Điện thoại</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Địa chỉ</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Trạng thái</th>
-                <th className="text-left px-6 py-3 text-xs font-bold text-[#A3AED0] uppercase">Hành động</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã</th>
+                <th className="text-left px-6 py-3 admin-table-th">Tên công ty</th>
+                <th className="text-left px-6 py-3 admin-table-th">Người liên hệ</th>
+                <th className="text-left px-6 py-3 admin-table-th">Email</th>
+                <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
+                <th className="text-left px-6 py-3 admin-table-th">Địa chỉ</th>
+                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                <th className="text-left px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -85,13 +73,16 @@ export default function CustomersList() {
                     </span>
                   </td>
                   <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1.5 hover:bg-[#E9EDF7] rounded transition-colors">
-                        <Edit2 className="w-4 h-4 admin-text-primary" />
-                      </button>
-                      <button className="p-1.5 hover:bg-[#FFE5E5] rounded transition-colors">
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

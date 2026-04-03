@@ -40,12 +40,8 @@ const settingGroups = [
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Cài đặt hệ thống</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Quản lý cấu hình và thông tin hệ thống</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#4318FF] text-white text-sm font-semibold px-4 py-2 rounded hover:bg-[#3311CC] transition-colors">
+      <div className="flex items-center justify-end">
+        <button className="flex items-center gap-2 admin-btn-primary">
           <Settings className="w-4 h-4" /> Lưu thay đổi
         </button>
       </div>

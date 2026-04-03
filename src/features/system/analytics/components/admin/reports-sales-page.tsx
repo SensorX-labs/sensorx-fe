@@ -22,11 +22,6 @@ const topProducts = [
 export default function ReportsSalesPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-[#2B3674]">Báo cáo bán hàng</h2>
-        <p className="text-sm text-[#A3AED0] mt-1">Phân tích hiệu quả bán hàng và sản phẩm bán chạy</p>
-      </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.title} className="border-none shadow-sm bg-white rounded">

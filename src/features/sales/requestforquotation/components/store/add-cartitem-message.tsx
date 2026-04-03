@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, ShoppingBag } from 'lucide-react';
-import { Product } from '@/features/catalog/product/models';
 import Image from 'next/image';
+import { Product } from '@/features/catalog/product/models/product';
 
 interface AddItemToCartMessageProps {
   product: Product;

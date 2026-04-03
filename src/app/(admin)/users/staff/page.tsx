@@ -1,6 +1,6 @@
-import StaffPage from '@/features/user/staff/components/admin/staff-page';
+import StaffList from '@/features/user/staff/components/admin/staff-list';
 
 export default function Staff() {
-  return <StaffPage />;
+  return <StaffList />;
 }
 
