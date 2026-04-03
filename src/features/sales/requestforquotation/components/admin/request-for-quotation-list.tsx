@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent} from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Tổng leads', value: '842', icon: TrendingUp, color: 'text-[#4318FF]' },
@@ -57,6 +58,7 @@ export default function RequestForQuotationList() {
                 <th className="text-left px-6 py-3 admin-table-th">Giá trị</th>
                 <th className="text-left px-6 py-3 admin-table-th">Giai đoạn</th>
                 <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -72,6 +74,19 @@ export default function RequestForQuotationList() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${stageColor[l.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {l.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

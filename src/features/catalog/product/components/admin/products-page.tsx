@@ -66,12 +66,12 @@ export default function ProductsPage() {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">SKU</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Tên hàng hóa</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Loại hàng</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Đơn giá</th>
-                                <th className="text-left px-6 py-3 text-xs font-bold admin-muted uppercase">Trạng thái</th>
-                                <th className="text-center px-6 py-3 text-xs font-bold admin-muted uppercase">Thao tác</th>
+                                <th className="text-left px-6 py-3 admin-table-th">SKU</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Đơn giá</th>
+                                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
+                                <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,7 +84,7 @@ export default function ProductsPage() {
                                         {
                                         p.code
                                     }</td>
-                                    <td className="px-6 py-3 font-semibold admin-text-primary">
+                                    <td className="px-6 py-3 font-semibold">
                                         {
                                         p.name
                                     }</td>
@@ -133,7 +133,7 @@ export default function ProductsPage() {
 
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
-                            <span className="text-sm admin-muted">
+                            <span className="text-sm">
                                 Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, mockProducts.length)} trong tổng số {mockProducts.length} mục
                             </span>
                             <div className="flex items-center gap-1.5">

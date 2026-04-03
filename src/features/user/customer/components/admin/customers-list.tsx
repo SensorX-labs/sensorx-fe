@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Users, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
+import { Users, Mail, Phone, MapPin, Edit2, Trash2, Eye, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Tổng khách hàng', value: '1,245', icon: Users, color: 'admin-text-primary' },
@@ -72,13 +73,16 @@ export default function CustomersList() {
                     </span>
                   </td>
                   <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1.5 hover:bg-[#E9EDF7] rounded transition-colors">
-                        <Edit2 className="w-4 h-4 admin-text-primary" />
-                      </button>
-                      <button className="p-1.5 hover:bg-[#FFE5E5] rounded transition-colors">
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

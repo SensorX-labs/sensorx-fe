@@ -150,8 +150,8 @@ export default function StaffPage() {
                                 <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody> {
-                            staff.map((s) => (
+                        <tbody>
+                            {staff.map((s) => (
                                 <tr key={
                                         s.id
                                     }
