@@ -27,22 +27,6 @@ const statusColor: Record<string, string> = {
 export default function CustomersList() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
-              </div>
-              <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="border-none shadow-sm bg-white rounded">
         <CardContent className="p-0">
           <table className="w-full text-sm">
@@ -54,8 +38,7 @@ export default function CustomersList() {
                 <th className="text-left px-6 py-3 admin-table-th">Email</th>
                 <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
                 <th className="text-left px-6 py-3 admin-table-th">Địa chỉ</th>
-                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
-                <th className="text-left px-6 py-3 admin-table-th">Hành động</th>
+                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -67,11 +50,6 @@ export default function CustomersList() {
                   <td className="px-6 py-3">{c.email}</td>
                   <td className="px-6 py-3">{c.phone}</td>
                   <td className="px-6 py-3">{c.address}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[c.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                      {c.status}
-                    </span>
-                  </td>
                   <td className="px-6 py-3">
                     <div className="flex items-center justify-center gap-2">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">

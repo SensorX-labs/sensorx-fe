@@ -34,22 +34,6 @@ export default function WarehouseStockPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
-              </div>
-              <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="border-none shadow-sm bg-white rounded">
         <CardContent className="p-0">
           <table className="w-full text-sm">
@@ -59,10 +43,9 @@ export default function WarehouseStockPage() {
                 <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
                 <th className="text-left px-6 py-3 admin-table-th">SKU</th>
                 <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tồn kho</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tồn tối thiểu</th>
+                <th className="text-center px-6 py-3 admin-table-th">Tồn kho</th>
+                <th className="text-center px-6 py-3 admin-table-th">Tồn tối thiểu</th>
                 <th className="text-left px-6 py-3 admin-table-th">Vị trí</th>
-                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
@@ -75,11 +58,6 @@ export default function WarehouseStockPage() {
                   <td className="px-6 py-3 text-center font-bold">{item.qty}</td>
                   <td className="px-6 py-3 text-center">{item.minQty}</td>
                   <td className="px-6 py-3 font-mono text-xs">{item.location}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                      {item.status}
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>

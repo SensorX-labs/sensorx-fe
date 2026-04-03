@@ -18,9 +18,10 @@ import {
   BarChart3,
   Settings,
   ChevronRight,
-  Target,
   UserCircle,
   FileEdit,
+  FolderTree,
+  Scale,
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -103,13 +104,28 @@ const sidebarSections: {
     ],
   },
   {
-    title: 'KHO HÀNG',
+    title: 'HÀNG HÓA',
     items: [
       {
         name: 'Hàng hóa',
         icon: Package,
         href: '/catalog/products',
       },
+      {
+        name: 'Danh mục',
+        icon: FolderTree,
+        href: '/catalog/categories',
+      },
+      {
+        name: 'Đơn vị tính',
+        icon: Scale,
+        href: '/catalog/uoms',
+      },
+    ],
+  },
+  {
+    title: 'KHO HÀNG',
+    items: [
       {
         name: 'Phiếu nhập kho',
         icon: PackagePlus,

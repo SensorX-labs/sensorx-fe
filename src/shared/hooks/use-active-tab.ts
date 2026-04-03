@@ -6,6 +6,8 @@ import { useMemo } from 'react';
 const routeMap: Record<string, string> = {
   '/dashboard': 'Bảng điều khiển',
   '/catalog/products': 'Hàng hóa',
+  '/catalog/categories': 'Danh mục',
+  '/catalog/uoms': 'Đơn vị tính',
   '/sales/customers': 'Khách hàng',
   '/sales/requestforquotation': 'Yêu cầu báo giá',
   '/sales/quotations': 'Báo giá',
@@ -14,7 +16,7 @@ const routeMap: Record<string, string> = {
   '/warehouse/stockin': 'Phiếu nhập kho',
   '/warehouse/stockout': 'Phiếu xuất kho',
   '/warehouse/stock': 'Tồn kho',
-  '/warehouse/picking-note': 'Soạn kho',
+  '/warehouse/picking-note': 'Phiếu soạn kho',
   '/users/staff': 'Nhân viên',
   '/settings': 'Cài đặt',
   '/reports/revenue': 'Báo cáo doanh thu',
