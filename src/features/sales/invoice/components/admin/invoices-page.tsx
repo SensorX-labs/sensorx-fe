@@ -55,9 +55,6 @@ export default function InvoicesPage() {
       </div>
 
       <Card className="border-none shadow-sm bg-white rounded">
-        <CardHeader className="px-6 py-4 border-b border-gray-100">
-          <CardTitle className="text-base font-bold text-[#2B3674]">Danh sách hóa đơn</CardTitle>
-        </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
