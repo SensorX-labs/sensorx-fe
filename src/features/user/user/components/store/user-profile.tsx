@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, LogOut, ChevronRight, Building, MapPin, Heart, FileText } from 'lucide-react';
+import { User, LogOut, ChevronRight, Building, MapPin, Heart, FileText, ShoppingCart } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
@@ -124,7 +124,7 @@ export function UserProfile() {
                                 { id: 'profile', label: 'Thông tin cá nhân', icon: User },
                                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
                                 { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
-                                { id: 'orders', label: 'Đơn hàng của tôi', icon: ChevronRight },
+                                { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
                             ].map((item) => {
                                 const Icon = item.icon || ChevronRight;

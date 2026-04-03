@@ -1,35 +1,64 @@
 'use client';
 
-import React from 'react';
-import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent} from '@/shared/components/shadcn-ui/card';
+import React, { useState } from 'react';
+import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle } from 'lucide-react';
+import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import { cn } from '@/shared/utils/cn';
 
 const stats = [
-  { title: 'Tổng leads', value: '842', icon: TrendingUp, color: 'text-[#4318FF]' },
+  { title: 'Chờ phân bổ', value: '12', icon: AlertCircle, color: 'text-orange-500' },
   { title: 'Đang xử lý', value: '213', icon: Clock, color: 'text-yellow-500' },
   { title: 'Đã chuyển đổi', value: '445', icon: CheckCircle, color: 'text-green-500' },
-  { title: 'Thất bại', value: '184', icon: XCircle, color: 'text-red-400' },
+  { title: 'Tổng RFQ', value: '842', icon: TrendingUp, color: 'text-[#4318FF]' },
 ];
 
-const leads = [
-  { id: 'LD001', name: 'Công ty TNHH Minh Phát', contact: 'Nguyễn Hùng', source: 'Website', value: '45,000,000', stage: 'Liên hệ lần đầu', status: 'Mới' },
-  { id: 'LD002', name: 'Doanh nghiệp Thiên Long', contact: 'Trần Linh', source: 'Giới thiệu', value: '120,000,000', stage: 'Đang tư vấn', status: 'Đang xử lý' },
-  { id: 'LD003', name: 'Cty CP Bình Minh', contact: 'Lê Tuấn', source: 'Zalo', value: '78,000,000', stage: 'Báo giá', status: 'Đang xử lý' },
-  { id: 'LD004', name: 'HTX Phú Thịnh', contact: 'Phạm Hà', source: 'Facebook', value: '32,000,000', stage: 'Thương lượng', status: 'Đang xử lý' },
-  { id: 'LD005', name: 'Cty TNHH Vĩnh Phúc', contact: 'Hoàng Nam', source: 'Email', value: '95,000,000', stage: 'Chốt hợp đồng', status: 'Chuyển đổi' },
+const initialLeads = [
+  { id: 'RFQ001', name: 'Công ty TNHH Minh Phát', contact: 'Nguyễn Hùng', source: 'Website', value: '45,000,000', items: 5, status: 'Chờ phân bổ' },
+  { id: 'RFQ002', name: 'Doanh nghiệp Thiên Long', contact: 'Trần Linh', source: 'Giới thiệu', value: '120,000,000', items: 3, status: 'Đang xử lý', assignee: 'Sale 1' },
+  { id: 'RFQ003', name: 'Cty CP Bình Minh', contact: 'Lê Tuấn', source: 'Zalo', value: '78,000,000', items: 8, status: 'Đang xử lý', assignee: 'Sale 2' },
+  { id: 'RFQ004', name: 'HTX Phú Thịnh', contact: 'Phạm Hà', source: 'Facebook', value: '32,000,000', items: 2, status: 'Đang xử lý', assignee: 'Sale 1' },
+  { id: 'RFQ005', name: 'Cty TNHH Vĩnh Phúc', contact: 'Hoàng Nam', source: 'Email', value: '95,000,000', items: 6, status: 'Đã chuyển đổi', assignee: 'Sale 3' },
 ];
 
-const stageColor: Record<string, string> = {
-  'Mới': 'bg-blue-100 text-blue-600',
+const statusStyles: Record<string, string> = {
+  'Chờ phân bổ': 'bg-orange-100 text-orange-600',
   'Đang xử lý': 'bg-yellow-100 text-yellow-600',
-  'Chuyển đổi': 'bg-green-100 text-green-600',
+  'Đã chuyển đổi': 'bg-green-100 text-green-600',
+  'Chờ phân công thủ công': 'bg-red-100 text-red-600',
 };
 
 export default function RequestForQuotationList() {
+  const [leads, setLeads] = useState(initialLeads);
+
+  const handleAccept = (id: string) => {
+    // Luồng BH-04: Tiếp nhận phân bổ
+    setLeads(prev => prev.map(lead => 
+      lead.id === id ? { ...lead, status: 'Đang xử lý', assignee: 'Cá nhân (Bạn)' } : lead
+    ));
+  };
+
+  const handleDecline = (id: string) => {
+    // Luồng BH-04: Từ chối phân bổ (Chuyển sang người tiếp theo hoặc chờ thủ công)
+    setLeads(prev => prev.filter(lead => lead.id !== id));
+    console.log(`Đã từ chối RFQ ${id}. Hệ thống sẽ ghi log và chuyển cho nhân viên ưu tiên tiếp theo.`);
+  };
+
+  const handleCreateQuotation = (id: string) => {
+    // Luồng BH-05: Lập báo giá
+    console.log(`Chuyển sang trang Lập báo giá cho RFQ: ${id}`);
+    // Giả lập sau khi lập báo giá thành công
+  };
+
+  const handleCreateOrder = (id: string) => {
+    // Chuyển đổi sang đơn hàng thành công
+    setLeads(prev => prev.map(lead => 
+      lead.id === id ? { ...lead, status: 'Đã chuyển đổi' } : lead
+    ));
+  };
+
   return (
     <div className="space-y-6">
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.title} className="border-none shadow-sm bg-white rounded">
@@ -51,41 +80,88 @@ export default function RequestForQuotationList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Mã</th>
-                <th className="text-left px-6 py-3 admin-table-th">Doanh nghiệp</th>
-                <th className="text-left px-6 py-3 admin-table-th">Người liên hệ</th>
-                <th className="text-left px-6 py-3 admin-table-th">Nguồn</th>
-                <th className="text-left px-6 py-3 admin-table-th">Giá trị</th>
-                <th className="text-left px-6 py-3 admin-table-th">Giai đoạn</th>
+                <th className="text-left px-6 py-3 admin-table-th">Mã RFQ</th>
+                <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
+                <th className="text-left px-6 py-3 admin-table-th">Liên hệ</th>
+                <th className="text-left px-6 py-3 admin-table-th text-center">Sản phẩm</th>
+                <th className="text-left px-6 py-3 admin-table-th">Giá trị dự kiến</th>
+                <th className="text-left px-6 py-3 admin-table-th">Nhân viên xử lý</th>
                 <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
-                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
+                <th className="text-left px-6 py-3 admin-table-th">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {leads.map((l) => (
                 <tr key={l.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
                   <td className="px-6 py-3 font-semibold admin-text-primary">{l.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{l.name}</td>
+                  <td className="px-6 py-3 font-semibold text-[#2B3674]">
+                    <div>
+                      {l.name}
+                      <p className="text-[10px] text-gray-400 font-normal">Nguồn: {l.source}</p>
+                    </div>
+                  </td>
                   <td className="px-6 py-3 ">{l.contact}</td>
-                  <td className="px-6 py-3 ">{l.source}</td>
+                  <td className="px-6 py-3 text-center ">{l.items}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">{l.value} đ</td>
-                  <td className="px-6 py-3 ">{l.stage}</td>
+                  <td className="px-6 py-3 text-gray-600 font-medium">
+                    {l.assignee ? (
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-3.5 h-3.5 text-blue-500" />
+                        {l.assignee}
+                      </div>
+                    ) : (
+                      <span className="italic text-gray-400 text-xs">Chưa phân bổ</span>
+                    )}
+                  </td>
                   <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${stageColor[l.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                      statusStyles[l.status] ?? 'bg-gray-100 text-gray-500'
+                    )}>
                       {l.status}
                     </span>
                   </td>
                   <td className="px-6 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    <div className="flex items-center gap-1">
+                      {l.status === 'Chờ phân bổ' && (
+                        <>
+                          <Button 
+                            onClick={() => handleAccept(l.id)}
+                            variant="ghost" size="sm" className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50 flex items-center gap-1"
+                          >
+                            <Check className="w-3.5 h-3.5" /> Tiếp nhận
+                          </Button>
+                          <Button 
+                            onClick={() => handleDecline(l.id)}
+                            variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 flex items-center gap-1"
+                          >
+                            <X className="w-3.5 h-3.5" /> Từ chối
+                          </Button>
+                        </>
+                      )}
+
+                      {l.status === 'Đang xử lý' && (
+                        <>
+                          <Button 
+                            onClick={() => handleCreateQuotation(l.id)}
+                            variant="ghost" size="sm" className="h-8 px-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 flex items-center gap-1"
+                          >
+                            <FileText className="w-3.5 h-3.5" /> Báo giá
+                          </Button>
+                          <Button 
+                            onClick={() => handleCreateOrder(l.id)}
+                            variant="ghost" size="sm" className="h-8 px-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex items-center gap-1"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" /> Chốt đơn
+                          </Button>
+                        </>
+                      )}
+
+                      {l.status === 'Đã chuyển đổi' && (
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-400 flex items-center gap-1">
+                          <Eye className="w-3.5 h-3.5" /> Xem chi tiết
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
