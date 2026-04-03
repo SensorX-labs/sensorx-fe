@@ -66,7 +66,7 @@ const statusConfig = {
   },
 };
 
-export function QuotationRequestsTab() {
+export function QuotationRequestsTab({ onViewDetail }: { onViewDetail?: (id: string) => void }) {
   return (
     <div className="duration-500">
       <div className="flex items-center justify-between gap-4 mb-6">
@@ -92,7 +92,8 @@ export function QuotationRequestsTab() {
             return (
               <div 
                 key={request.id}
-                className="group border border-gray-100 bg-white hover:border-gray-300 transition-all duration-300 overflow-hidden"
+                className="group border border-gray-100 bg-white hover:border-gray-300 transition-all duration-300 overflow-hidden cursor-pointer"
+                onClick={() => onViewDetail?.(request.id)}
               >
                 <div className="p-5 flex items-center justify-between">
                   <div className="flex items-center gap-4">

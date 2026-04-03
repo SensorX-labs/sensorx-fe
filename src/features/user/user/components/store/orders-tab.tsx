@@ -15,6 +15,7 @@ interface Order {
 
 interface OrdersTabProps {
     orders: Order[];
+    onViewDetail?: (id: string) => void;
 }
 
 const statusConfig = {
@@ -35,7 +36,7 @@ const statusConfig = {
     }
 };
 
-export const OrdersTab: React.FC<OrdersTabProps> = ({ orders }) => {
+export const OrdersTab: React.FC<OrdersTabProps> = ({ orders, onViewDetail }) => {
     return (
         <div className="duration-500">
             <div className="flex items-center justify-between gap-4 mb-6">
@@ -61,7 +62,8 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ orders }) => {
                         return (
                             <div 
                                 key={order.id}
-                                className="group border border-gray-100 bg-white hover:border-gray-300 transition-all duration-300 overflow-hidden"
+                                className="group border border-gray-100 bg-white hover:border-gray-300 transition-all duration-300 overflow-hidden cursor-pointer"
+                                onClick={() => onViewDetail?.(order.id)}
                             >
                                 <div className="p-5 flex items-center justify-between">
                                     <div className="flex items-center gap-4">
