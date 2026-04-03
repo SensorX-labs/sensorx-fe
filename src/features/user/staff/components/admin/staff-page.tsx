@@ -107,7 +107,7 @@ export default function StaffPage() {
             <div className="flex items-center justify-end">
                 <button className="admin-btn-primary flex items-center gap-2">
                     <UserCircle className="w-4 h-4"/>
-                    Thêm nhân viên
+                    Tạo nhân viên
                 </button>
             </div>
 

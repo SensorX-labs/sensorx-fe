@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Target,
   UserCircle,
+  FileEdit,
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -125,8 +126,8 @@ const sidebarSections: {
         href: '/warehouse/stock',
       },
       {
-        name: 'Soạn kho',
-        icon: Layers,
+        name: 'Phiếu soạn kho',
+        icon: FileEdit,
         href: '/warehouse/picking-note',
       }
     ],

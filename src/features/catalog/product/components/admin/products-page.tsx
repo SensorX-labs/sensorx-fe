@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -37,7 +37,7 @@ export default function ProductsPage() {
     const router = useRouter();
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; 
+    const itemsPerPage = 10;
 
     const totalPages = Math.ceil(mockProducts.length / itemsPerPage);
 
@@ -46,7 +46,7 @@ export default function ProductsPage() {
         return mockProducts.slice(startIndex, startIndex + itemsPerPage);
     }, [currentPage, itemsPerPage]);
 
-    const goToPage = (page: number) => {
+    const goToPage = (page : number) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
@@ -57,7 +57,7 @@ export default function ProductsPage() {
             <div className="flex items-center justify-end">
                 <Link href="/catalog/products/new?action=create" className="admin-btn-primary flex items-center gap-2">
                     <Package className="w-4 h-4"/>
-                    Thêm hàng hóa
+                    Tạo hàng hóa
                 </Link>
             </div>
 
@@ -74,8 +74,8 @@ export default function ProductsPage() {
                                 <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {currentProducts.map((p) => (
+                        <tbody> {
+                            currentProducts.map((p) => (
                                 <tr key={
                                         p.id
                                     }
@@ -112,68 +112,93 @@ export default function ProductsPage() {
                                     <td className="px-6 py-3">
                                         <div className="flex items-center justify-center gap-2">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={() => router.push(`/catalog/products/${p.id}?action=detail`)}
-                                            >
+                                                onClick={
+                                                    () => router.push(`/catalog/products/${
+                                                        p.id
+                                                    }?action=detail`)
+                                            }>
                                                 <Eye className="w-4 h-4"/>
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
-                                                onClick={() => router.push(`/catalog/products/${p.id}?action=update`)}
-                                             >
-                                                 <Edit className="w-4 h-4"/>
-                                             </Button>
+                                                onClick={
+                                                    () => router.push(`/catalog/products/${
+                                                        p.id
+                                                    }?action=update`)
+                                            }>
+                                                <Edit className="w-4 h-4"/>
+                                            </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
                                                 <Trash2 className="w-4 h-4"/>
                                             </Button>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
-                        </tbody>
+                            ))
+                        } </tbody>
                     </table>
 
-                    {totalPages > 1 && (
+                    {
+                    totalPages > 1 && (
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
                             <span className="text-sm">
-                                Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, mockProducts.length)} trong tổng số {mockProducts.length} mục
+                                Hiển thị {
+                                (currentPage - 1) * itemsPerPage + 1
+                            }
+                                đến {
+                                Math.min(currentPage * itemsPerPage, mockProducts.length)
+                            }
+                                trong tổng số {
+                                mockProducts.length
+                            }
+                                mục
                             </span>
                             <div className="flex items-center gap-1.5">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => goToPage(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="h-8 w-8 p-0 rounded"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
+                                <Button variant="outline" size="sm"
+                                    onClick={
+                                        () => goToPage(currentPage - 1)
+                                    }
+                                    disabled={
+                                        currentPage === 1
+                                    }
+                                    className="h-8 w-8 p-0 rounded">
+                                    <ChevronLeft className="h-4 w-4"/>
                                 </Button>
-                                {Array.from({ length: totalPages }).map((_, idx) => {
+                                {
+                                Array.from({length: totalPages}).map((_, idx) => {
                                     const pageNum = idx + 1;
                                     const isActive = currentPage === pageNum;
                                     return (
-                                        <Button
-                                            key={pageNum}
-                                            variant={isActive ? "default" : "outline"}
+                                        <Button key={pageNum}
+                                            variant={
+                                                isActive ? "default" : "outline"
+                                            }
                                             size="sm"
-                                            className={`h-8 w-8 p-0 rounded ${isActive ? "bg-[var(--admin-primary)] text-white hover:bg-[var(--admin-primary-hover)] border-transparent" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
-                                            onClick={() => goToPage(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </Button>
+                                            className={
+                                                `h-8 w-8 p-0 rounded ${
+                                                    isActive ? "bg-[var(--admin-primary)] text-white hover:bg-[var(--admin-primary-hover)] border-transparent" : "text-gray-600 border-gray-200 hover:bg-gray-50"
+                                                }`
+                                            }
+                                            onClick={
+                                                () => goToPage(pageNum)
+                                        }>
+                                            {pageNum} </Button>
                                     );
-                                })}
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => goToPage(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="h-8 w-8 p-0 rounded"
-                                >
-                                    <ChevronRight className="h-4 w-4" />
+                                })
+                            }
+                                <Button variant="outline" size="sm"
+                                    onClick={
+                                        () => goToPage(currentPage + 1)
+                                    }
+                                    disabled={
+                                        currentPage === totalPages
+                                    }
+                                    className="h-8 w-8 p-0 rounded">
+                                    <ChevronRight className="h-4 w-4"/>
                                 </Button>
                             </div>
                         </div>
-                    )}
-                </CardContent>
+                    )
+                } </CardContent>
             </Card>
         </div>
     );

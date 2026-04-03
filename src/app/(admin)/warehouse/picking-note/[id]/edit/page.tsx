@@ -1,7 +1,4 @@
-import React from 'react';
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
-import { PickingNoteForm } from '@/features/warehouse/picking-note/components/admin/picking-note-form';
+import { PickingNoteDetail } from '@/features/warehouse/picking-note/components/admin/picking-note-detail';
 
 interface EditPickingNotePageProps {
   params: Promise<{ id: string }>;
@@ -10,43 +7,52 @@ interface EditPickingNotePageProps {
 export default async function EditPickingNotePage(props: EditPickingNotePageProps) {
   const params = await props.params;
 
-  // TODO: Fetch picking note by ID from API
-  const mockPickingNote = {
-    id: params.id,
-    code: 'PN-2024-001',
-    date: '2024-01-15',
-    warehouse: 'Kho 1',
-    items: [
-      {
-        id: '1',
-        productCode: 'PROD-001',
-        productName: 'Áo thun trắng size M',
-        quantity: 10,
-        notes: 'Hàng mới',
-      },
-      {
-        id: '2',
-        productCode: 'PROD-002',
-        productName: 'Quần jean xanh size 32',
-        quantity: 15,
-        notes: 'Kiểm tra kỹ',
-      },
-    ],
-  };
+  const mockPickingNotes = [
+    {
+      id: '1',
+      code: 'PN-2024-001',
+      date: '2024-01-15',
+      createdBy: 'Nguyễn Văn A',
+      warehouse: 'Kho 1',
+      status: 'draft' as const,
+      items: [
+        { id: '1', productCode: 'PROD-001', productName: 'Áo thun trắng size M', quantity: 10, notes: 'Hàng mới' },
+        { id: '2', productCode: 'PROD-002', productName: 'Quần jean xanh size 32', quantity: 15, notes: 'Kiểm tra kỹ' },
+      ],
+      createdAt: '2024-01-15T08:30:00Z',
+      updatedAt: '2024-01-15T08:30:00Z',
+    },
+    {
+      id: '2',
+      code: 'PN-2024-002',
+      date: '2024-01-14',
+      createdBy: 'Trần Thị B',
+      warehouse: 'Kho 2',
+      status: 'confirmed' as const,
+      items: [
+        { id: '1', productCode: 'PROD-004', productName: 'Giày thể thao Nam', quantity: 5, notes: '' },
+      ],
+      createdAt: '2024-01-14T10:20:00Z',
+      updatedAt: '2024-01-14T11:45:00Z',
+    },
+    {
+      id: '3',
+      code: 'PN-2024-003',
+      date: '2024-01-13',
+      createdBy: 'Lê Văn C',
+      warehouse: 'Kho 1',
+      status: 'completed' as const,
+      items: [
+        { id: '1', productCode: 'PROD-005', productName: 'Balo du lịch 45L', quantity: 8, notes: 'Đã đóng gói' },
+      ],
+      createdAt: '2024-01-13T09:00:00Z',
+      updatedAt: '2024-01-13T16:20:00Z',
+    },
+  ];
+
+  const mockPickingNote = mockPickingNotes.find(n => n.id === params.id) || mockPickingNotes[0];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`/warehouse/picking-note/${params.id}`} className="p-1.5 hover:bg-gray-100 rounded transition-colors">
-          <ChevronLeft size={20} className="text-[#2B3674]" />
-        </Link>
-        <div>
-          <h2 className="text-2xl font-bold text-[#2B3674]">Chỉnh Sửa Phiếu Soạn Kho</h2>
-          <p className="text-sm text-[#A3AED0] mt-1">Chỉnh sửa thông tin và chi tiết hàng hóa</p>
-        </div>
-      </div>
-
-      <PickingNoteForm isEditing={true} initialData={mockPickingNote} />
-    </div>
+    <PickingNoteDetail id={params.id} initialData={mockPickingNote} />
   );
 }

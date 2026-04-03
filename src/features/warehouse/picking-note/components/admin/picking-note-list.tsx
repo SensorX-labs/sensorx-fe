@@ -45,11 +45,11 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-end">
         <Link
-          href="/warehouse/picking-note/new"
+          href="/warehouse/picking-note/new?action=create"
           className="flex items-center gap-2 admin-btn-primary"
         >
-          <Plus size={16} />
-          Tạo phiếu
+          <FileEdit size={16} />
+          Tạo phiếu soạn kho
         </Link>
       </div>
 
@@ -187,7 +187,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
           <CardContent className="p-12 text-center">
             <p className="text-[#A3AED0] font-semibold mb-4">Chưa có phiếu soạn kho nào</p>
             <Link
-              href="/warehouse/picking-note/new"
+              href="/warehouse/picking-note/new?action=create"
               className="inline-block admin-btn-primary"
             >
               Tạo phiếu soạn kho
