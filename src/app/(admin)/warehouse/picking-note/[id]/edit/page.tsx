@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
-import { PickingNoteForm } from '@/features/warehouse/picking-note';
+import { PickingNoteForm } from '@/features/warehouse/picking-note/components/admin/picking-note-form';
 
 interface EditPickingNotePageProps {
   params: Promise<{ id: string }>;

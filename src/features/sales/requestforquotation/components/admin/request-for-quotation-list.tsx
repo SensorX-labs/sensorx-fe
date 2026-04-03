@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import { Card, CardContent} from '@/shared/components/shadcn-ui/card';
 
 const stats = [
   { title: 'Tổng leads', value: '842', icon: TrendingUp, color: 'text-[#4318FF]' },

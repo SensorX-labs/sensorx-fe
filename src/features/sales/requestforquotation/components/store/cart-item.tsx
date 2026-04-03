@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { X, Minus, Plus } from 'lucide-react';
-import { Product } from '@/features/catalog/product/models';
+import { Product } from '@/features/catalog/product/models/product';
 
 interface CartItemProps {
   product: Product;
