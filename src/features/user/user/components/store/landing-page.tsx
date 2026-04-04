@@ -270,8 +270,14 @@ export default function LandingPage() {
                                 công nghiệp
                             </p>
 
-                            <Link href="/shop" className="inline-flex items-center px-24 py-2.5 bg-brand-green text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 animate-shimmer">
-                                Mua sắm ngay
+                            <Link 
+                                href="/shop" 
+                                className="inline-flex items-center px-24 py-2.5 bg-[#006A4E] text-white font-semibold tracking-widest text-sm rounded hover:opacity-90 hover:-translate-y-1 transition-all duration-200 hover:cursor-pointer animate-slide-in-left delay-300 relative overflow-hidden"
+                            >
+                                <span className="relative z-10 text-white">Mua sắm ngay</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-fast pointer-events-none" 
+                                     style={{ width: '200%', left: '-50%' }}
+                                />
                             </Link>
                         </div>
                     </div>

@@ -44,59 +44,44 @@ const staff = [
         name: 'Nguyễn Thanh Hùng',
         email: 'hung.nt@axetic.vn',
         phone: '0901 111 222',
-        role: 'Quản lý',
-        department: 'Kinh doanh',
-        status: 'Làm việc'
+        department: 'Kinh doanh'
     },
     {
         id: 'NV002',
         name: 'Trần Thị Kim Loan',
         email: 'loan.ttk@axetic.vn',
         phone: '0912 222 333',
-        role: 'Nhân viên',
-        department: 'Kế toán',
-        status: 'Làm việc'
+        department: 'Kế toán'
     },
     {
         id: 'NV003',
         name: 'Lê Văn Phong',
         email: 'phong.lv@axetic.vn',
         phone: '0923 333 444',
-        role: 'Nhân viên',
-        department: 'Kho vận',
-        status: 'Nghỉ phép'
+        department: 'Giám đốc'
     },
     {
         id: 'NV004',
         name: 'Phạm Minh Quân',
         email: 'quan.pm@axetic.vn',
         phone: '0934 444 555',
-        role: 'Trưởng phòng',
-        department: 'Kinh doanh',
-        status: 'Làm việc'
+        department: 'Kho vận'
     }, {
         id: 'NV005',
         name: 'Hoàng Thị Lan',
         email: 'lan.ht@axetic.vn',
         phone: '0945 555 666',
-        role: 'Nhân viên',
-        department: 'CSKH',
-        status: 'Làm việc'
+        department: 'Mua hàng'
     },
 ];
 
-const statusColor: Record < string,
+const departmentColor: Record < string,
     string > = {
-        'Làm việc': 'bg-green-100 text-green-600',
-        'Nghỉ phép': 'bg-yellow-100 text-yellow-600',
-        'Nghỉ việc': 'bg-red-100 text-red-400'
-    };
-
-const roleColor: Record < string,
-    string > = {
-        'Quản lý': 'bg-purple-100 text-purple-600',
-        'Trưởng phòng': 'bg-blue-100 text-blue-600',
-        'Nhân viên': 'bg-gray-100 text-gray-500'
+        'Giám đốc': 'bg-red-50 text-red-600 border border-red-100',
+        'Kho vận': 'bg-blue-50 text-blue-600 border border-blue-100',
+        'Kinh doanh': 'bg-green-50 text-green-600 border border-green-100',
+        'Kế toán': 'bg-orange-50 text-orange-600 border border-orange-100',
+        'Mua hàng': 'bg-indigo-50 text-indigo-600 border border-indigo-100'
     };
 
 export default function StaffList() {
@@ -111,30 +96,6 @@ export default function StaffList() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {
-                stats.map((s) => (
-                    <Card key={
-                            s.title
-                        }
-                        className="border-none shadow-sm bg-white rounded">
-                        <CardContent className="p-5 flex items-center justify-between">
-                            <div>
-                                <p className="text-xl font-bold admin-title">{s.value}</p>
-                                <p className="text-xs font-semibold admin-muted mt-0.5">{s.title}</p>
-                            </div>
-                            <div className="w-10 h-10 rounded admin-surface flex items-center justify-center">
-                                <s.icon className={
-                                    `w-5 h-5 ${
-                                        s.color
-                                    }`
-                                }/>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))
-            } </div>
-
             <Card className="border-none shadow-sm bg-white rounded">
                 <CardContent className="p-0">
                     <table className="w-full text-sm">
@@ -144,66 +105,30 @@ export default function StaffList() {
                                 <th className="text-left px-6 py-3 admin-table-th">Họ tên</th>
                                 <th className="text-left px-6 py-3 admin-table-th">Email</th>
                                 <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
-                                <th className="text-left px-6 py-3 admin-table-th">Vai trò</th>
                                 <th className="text-left px-6 py-3 admin-table-th">Phòng ban</th>
-                                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
                                 <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             {staff.map((s) => (
-                                <tr key={
-                                        s.id
-                                    }
-                                    className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
-                                    <td className="px-6 py-3 font-semibold admin-text-primary">
-                                        {
-                                        s.id
-                                    }</td>
-                                    <td className="px-6 py-3 font-semibold">
-                                        {
-                                        s.name
-                                    }</td>
+                                <tr key={s.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
+                                    <td className="px-6 py-3 font-semibold admin-text-primary">{s.id}</td>
+                                    <td className="px-6 py-3">{s.name}</td>
+                                    <td className="px-6 py-3">{s.email}</td>
+                                    <td className="px-6 py-3">{s.phone}</td>
                                     <td className="px-6 py-3">
-                                        {
-                                        s.email
-                                    }</td>
-                                    <td className="px-6 py-3">
-                                        {
-                                        s.phone
-                                    }</td>
-                                    <td className="px-6 py-3">
-                                        <span className={
-                                            `px-2 py-0.5 rounded-full text-xs font-bold ${
-                                                roleColor[s.role] ?? 'bg-gray-100 text-gray-500'
-                                            }`
-                                        }>
-                                            {
-                                            s.role
-                                        } </span>
-                                    </td>
-                                    <td className="px-6 py-3">
-                                        {
-                                        s.department
-                                    }</td>
-                                    <td className="px-6 py-3">
-                                        <span className={
-                                            `px-2 py-0.5 rounded-full text-xs font-bold ${
-                                                statusColor[s.status] ?? 'bg-gray-100 text-gray-500'
-                                            }`
-                                        }>
-                                            {
-                                            s.status
-                                        } </span>
+                                        <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
+                                            {s.department}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-3">
                                         <div className="flex items-center justify-center gap-2">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={
-                                                    () => router.push(`/users/staff/${
-                                                        s.id
-                                                    }`)
-                                            }>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => router.push(`/users/staff/${s.id}`)}
+                                            >
                                                 <Eye className="w-4 h-4"/>
                                             </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">

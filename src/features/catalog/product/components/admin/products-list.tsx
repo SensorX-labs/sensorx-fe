@@ -70,7 +70,6 @@ export default function ProductList() {
                                 <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
                                 <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
                                 <th className="text-left px-6 py-3 admin-table-th">Đơn giá</th>
-                                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
                                 <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
                             </tr>
                         </thead>
@@ -85,10 +84,6 @@ export default function ProductList() {
                                             style: 'currency',
                                             currency: 'VND'
                                         }).format(p.priceList.tiers[0].defaultPrice) : '--'} </td>
-                                    <td className="px-6 py-3">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[p.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                                            {statusLabel[p.status] || p.status} </span>
-                                    </td>
                                     <td className="px-6 py-3">
                                         <div className="flex items-center justify-center gap-2">
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
@@ -113,16 +108,7 @@ export default function ProductList() {
                     totalPages > 1 && (
                         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
                             <span className="text-sm">
-                                Hiển thị {
-                                (currentPage - 1) * itemsPerPage + 1
-                            }
-                                đến {
-                                Math.min(currentPage * itemsPerPage, mockProducts.length)
-                            }
-                                trong tổng số {
-                                mockProducts.length
-                            }
-                                mục
+                                Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, mockProducts.length)} trong tổng số {mockProducts.length} sản phẩm
                             </span>
                             <div className="flex items-center gap-1.5">
                                 <Button variant="outline" size="sm"
@@ -147,7 +133,7 @@ export default function ProductList() {
                                             size="sm"
                                             className={
                                                 `h-8 w-8 p-0 rounded ${
-                                                    isActive ? "bg-[var(--admin-primary)] text-white hover:bg-[var(--admin-primary-hover)] border-transparent" : "text-gray-600 border-gray-200 hover:bg-gray-50"
+                                                    isActive ? "bg-[var(--admin-primary)] text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"
                                                 }`
                                             }
                                             onClick={

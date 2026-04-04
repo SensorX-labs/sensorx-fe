@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, LogOut, ChevronRight, Building, MapPin, Heart } from 'lucide-react';
+import { User, LogOut, ChevronRight, Building, MapPin, Heart, FileText, ShoppingCart } from 'lucide-react';
+import { cn } from '@/shared/utils';
 import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
 import { AddressesTab } from './addresses-tab';
+import { QuotationRequestsTab } from './quotation-requests-tab';
+import { OrderDetailView } from './order-detail-view';
+import { QuotationDetailView } from './quotation-detail-view';
 
 interface UserData {
     name: string;
@@ -44,8 +48,10 @@ interface Order {
 }
 
 export function UserProfile() {
-    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'addresses' | 'wishlist'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'addresses' | 'wishlist'>('profile');
     const [isEditing, setIsEditing] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+    const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
 
     // Mock user data
     const userData: UserData = {
@@ -117,21 +123,27 @@ export function UserProfile() {
                             {[
                                 { id: 'profile', label: 'Thông tin cá nhân', icon: User },
                                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
-                                { id: 'orders', label: 'Đơn hàng của tôi', icon: ChevronRight },
+                                { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
+                                { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
                             ].map((item) => {
-                                const Icon = item.icon;
+                                const Icon = item.icon || ChevronRight;
                                 return (
                                     <button
                                         key={item.id}
-                                        onClick={() => setActiveTab(item.id as any)}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none transition-all duration-300 ${
+                                        onClick={() => {
+                                            setActiveTab(item.id as any);
+                                            setSelectedOrderId(null);
+                                            setSelectedQuotationId(null);
+                                        }}
+                                        className={cn(
+                                            "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none transition-all duration-300 border",
                                             activeTab === item.id
-                                                ? 'text-white border-0'
-                                                : 'border border-gray-200 text-gray-700 hover:border-gray-400'
-                                        }`}
+                                                ? "text-white border-[#2D5A27] shadow-md"
+                                                : "bg-[#F9FAFB] text-[#374151] border-gray-200 hover:border-gray-400 hover:bg-white"
+                                        )}
                                         style={{
-                                            backgroundColor: activeTab === item.id ? 'var(--brand-green)' : 'transparent',
+                                            backgroundColor: activeTab === item.id ? '#2D5A27' : ''
                                         }}
                                     >
                                         <Icon size={18} />
@@ -164,7 +176,21 @@ export function UserProfile() {
                             />
                         )}
 
-                        {activeTab === 'orders' && <OrdersTab orders={orders} />}
+                        {activeTab === 'orders' && (
+                            selectedOrderId ? (
+                                <OrderDetailView onBack={() => setSelectedOrderId(null)} />
+                            ) : (
+                                <OrdersTab orders={orders} onViewDetail={setSelectedOrderId} />
+                            )
+                        )}
+
+                        {activeTab === 'quotations' && (
+                            selectedQuotationId ? (
+                                <QuotationDetailView onBack={() => setSelectedQuotationId(null)} />
+                            ) : (
+                                <QuotationRequestsTab onViewDetail={setSelectedQuotationId} />
+                            )
+                        )}
 
                         {activeTab === 'addresses' && (
                             <AddressesTab

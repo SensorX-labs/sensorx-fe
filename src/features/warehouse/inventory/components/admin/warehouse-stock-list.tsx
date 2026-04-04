@@ -12,18 +12,12 @@ const stats = [
 ];
 
 const stock = [
-  { id: 'HH001', name: 'Camera an ninh 4K', sku: 'CAM-4K-001', category: 'Camera', qty: 45, minQty: 10, location: 'A1-01', status: 'Bình thường' },
-  { id: 'HH002', name: 'Đầu ghi hình 16 kênh', sku: 'DVR-16CH', category: 'Đầu ghi', qty: 12, minQty: 5, location: 'A1-02', status: 'Bình thường' },
-  { id: 'HH003', name: 'Cáp mạng Cat6 (cuộn 305m)', sku: 'CBL-CAT6', category: 'Phụ kiện', qty: 4, minQty: 10, location: 'B2-05', status: 'Sắp hết' },
-  { id: 'HH004', name: 'Màn hình giám sát 27"', sku: 'MON-27-PRO', category: 'Màn hình', qty: 0, minQty: 3, location: 'A2-01', status: 'Hết hàng' },
-  { id: 'HH005', name: 'Bộ nguồn UPS 1000VA', sku: 'UPS-1000', category: 'Nguồn điện', qty: 28, minQty: 5, location: 'C1-03', status: 'Bình thường' },
+  { id: 'HH001', name: 'Camera an ninh 4K', sku: 'CAM-4K-001', category: 'Camera', qty: 45, location: 'A1-01' },
+  { id: 'HH002', name: 'Đầu ghi hình 16 kênh', sku: 'DVR-16CH', category: 'Đầu ghi', qty: 12, location: 'A1-02' },
+  { id: 'HH003', name: 'Cáp mạng Cat6 (cuộn 305m)', sku: 'CBL-CAT6', category: 'Phụ kiện', qty: 40, location: 'B2-05' },
+  { id: 'HH004', name: 'Màn hình giám sát 27"', sku: 'MON-27-PRO', category: 'Màn hình', qty: 15, location: 'A2-01' },
+  { id: 'HH005', name: 'Bộ nguồn UPS 1000VA', sku: 'UPS-1000', category: 'Nguồn điện', qty: 28, location: 'C1-03' },
 ];
-
-const statusColor: Record<string, string> = {
-  'Bình thường': 'bg-green-100 text-green-600',
-  'Sắp hết': 'bg-yellow-100 text-yellow-600',
-  'Hết hàng': 'bg-red-100 text-red-400',
-};
 
 export default function WarehouseStockPage() {
   return (
@@ -32,22 +26,6 @@ export default function WarehouseStockPage() {
         <button className="flex items-center gap-2 admin-btn-primary">
           <Warehouse className="w-4 h-4" /> Kiểm kê kho
         </button>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
-              </div>
-              <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       <Card className="border-none shadow-sm bg-white rounded">
@@ -59,10 +37,8 @@ export default function WarehouseStockPage() {
                 <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
                 <th className="text-left px-6 py-3 admin-table-th">SKU</th>
                 <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tồn kho</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tồn tối thiểu</th>
+                <th className="text-center px-6 py-3 admin-table-th">Tồn kho</th>
                 <th className="text-left px-6 py-3 admin-table-th">Vị trí</th>
-                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
@@ -70,16 +46,10 @@ export default function WarehouseStockPage() {
                 <tr key={item.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
                   <td className="px-6 py-3 font-semibold admin-text-primary">{item.id}</td>
                   <td className="px-6 py-3 font-semibold">{item.name}</td>
-                  <td className="px-6 py-3 font-mono text-xs">{item.sku}</td>
+                  <td className="px-6 py-3">{item.sku}</td>
                   <td className="px-6 py-3">{item.category}</td>
                   <td className="px-6 py-3 text-center font-bold">{item.qty}</td>
-                  <td className="px-6 py-3 text-center">{item.minQty}</td>
-                  <td className="px-6 py-3 font-mono text-xs">{item.location}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[item.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                      {item.status}
-                    </span>
-                  </td>
+                  <td className="px-6 py-3">{item.location}</td>
                 </tr>
               ))}
             </tbody>
