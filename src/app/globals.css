@@ -307,7 +307,7 @@
     .breadcrumb-text {
         @apply text-sm tracking-[0.08em] font-medium text-gray-900;
     }
-    
+
     /* Kiểu text cho nút bấm*/
     .btn-tracking {
         @apply font-semibold tracking-[0.08em];
