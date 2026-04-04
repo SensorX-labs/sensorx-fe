@@ -12,6 +12,14 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/shared/components/shadcn-ui/dialog";
+import { Input } from "@/shared/components/shadcn-ui/input";
 
 interface UnitOfMeasure {
   id: string;
@@ -31,15 +39,50 @@ const mockUnits: UnitOfMeasure[] = [
 
 export default function UnitOfMeasureList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newUomName, setNewUomName] = useState('');
+
+  const handleCreate = () => {
+    // Logic xử lý tạo mới ở đây
+    console.log('Creating UoM:', newUomName);
+    setIsModalOpen(false);
+    setNewUomName('');
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end gap-4">
-        <Button className="admin-btn-primary flex items-center gap-2">
+        <Button 
+          className="admin-btn-primary flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
+        >
           <Scale className="w-4 h-4" />
           Tạo đơn vị tính
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="tracking-title text-xl">Tạo đơn vị tính mới</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="tracking-label">Tên đơn vị tính</label>
+              <Input 
+                placeholder="Nhập tên đơn vị tính (vd: Cái, Bộ, Kg...)" 
+                value={newUomName}
+                onChange={(e) => setNewUomName(e.target.value)}
+                className="focus-visible:ring-blue-500/20"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="rounded text-sm font-semibold" onClick={() => setIsModalOpen(false)}>Hủy</Button>
+            <Button className="admin-btn-primary" onClick={handleCreate}>Tạo mới</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters & Search */}
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-sm">

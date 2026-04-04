@@ -13,6 +13,14 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/shared/components/shadcn-ui/dialog";
+import { Input } from "@/shared/components/shadcn-ui/input";
 
 interface Category {
   id: string;
@@ -32,15 +40,50 @@ const mockCategories: Category[] = [
 
 export default function CategoryList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const handleCreate = () => {
+    // Logic xử lý tạo mới ở đây
+    console.log('Creating category:', newCategoryName);
+    setIsModalOpen(false);
+    setNewCategoryName('');
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end gap-4">
-        <Button className="admin-btn-primary flex items-center gap-2">
+        <Button 
+          className="admin-btn-primary flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
+        >
           <FolderTree className="w-4 h-4" />
           Tạo danh mục
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="tracking-title text-xl">Tạo danh mục mới</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="tracking-label">Tên danh mục</label>
+              <Input 
+                placeholder="Nhập tên danh mục..." 
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="focus-visible:ring-blue-500/20"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="rounded text-sm font-semibold" onClick={() => setIsModalOpen(false)}>Hủy</Button>
+            <Button className="admin-btn-primary" onClick={handleCreate}>Tạo mới</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-sm">
         <div className="relative flex-1">
