@@ -1,5 +1,5 @@
 import { QuoteStatus } from "../constants/quote-status";
-import { CustomerInfo } from "./customer-info";
+import { CustomerInfo } from "../../../../shared/models/customer-info";
 import { QuoteResponse } from "./quote-response";
 
 export interface Quote {
