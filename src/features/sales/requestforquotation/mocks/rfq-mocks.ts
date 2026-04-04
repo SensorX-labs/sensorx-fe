@@ -35,7 +35,7 @@ export const MOCK_RFQS: Rfq[] = [
     {
         id: "rfq-003",
         code: "RFQ-2024-003",
-        userId: "user-002",
+        userId: null,
         customerId: "cust-003",
         customerInfo: {
             recipientName: "Lê Văn C",

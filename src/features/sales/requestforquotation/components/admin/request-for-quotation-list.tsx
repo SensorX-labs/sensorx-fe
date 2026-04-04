@@ -91,7 +91,6 @@ export default function RequestForQuotationList() {
               <tr className="border-b border-gray-100">
                 <th className="text-left px-6 py-3 admin-table-th">Mã RFQ</th>
                 <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th text-right pr-6">Giá trị dự kiến</th>
                 <th className="text-left px-6 py-3 admin-table-th">Nhân viên xử lý</th>
                 <th className="text-left px-6 py-3 admin-table-th text-center">Trạng thái</th>
                 <th className="text-left px-6 py-3 admin-table-th text-right pr-10">Hành động</th>
@@ -107,9 +106,8 @@ export default function RequestForQuotationList() {
                       <p className="text-[10px] text-gray-400 font-normal">LH: {l.customerInfo.recipientName}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674] text-right pr-6">- đ</td>
                   <td className="px-6 py-3 text-gray-600 font-medium">
-                    {l.status !== RfqStatus.PENDING && l.userId && (
+                    {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId && (
                       <div className="flex items-center gap-2">
                         <UserCheck className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-xs">ID: {l.userId}</span>
