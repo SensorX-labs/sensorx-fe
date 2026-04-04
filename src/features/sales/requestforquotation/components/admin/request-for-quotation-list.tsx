@@ -32,26 +32,21 @@ export default function RequestForQuotationList() {
   const [leads, setLeads] = useState(initialLeads);
 
   const handleAccept = (id: string) => {
-    // Luồng BH-04: Tiếp nhận phân bổ
     setLeads(prev => prev.map(lead => 
       lead.id === id ? { ...lead, status: 'Đang xử lý', assignee: 'Cá nhân (Bạn)' } : lead
     ));
   };
 
   const handleDecline = (id: string) => {
-    // Luồng BH-04: Từ chối phân bổ (Chuyển sang người tiếp theo hoặc chờ thủ công)
     setLeads(prev => prev.filter(lead => lead.id !== id));
     console.log(`Đã từ chối RFQ ${id}. Hệ thống sẽ ghi log và chuyển cho nhân viên ưu tiên tiếp theo.`);
   };
 
   const handleCreateQuotation = (id: string) => {
-    // Luồng BH-05: Lập báo giá
     console.log(`Chuyển sang trang Lập báo giá cho RFQ: ${id}`);
-    // Giả lập sau khi lập báo giá thành công
   };
 
   const handleCreateOrder = (id: string) => {
-    // Chuyển đổi sang đơn hàng thành công
     setLeads(prev => prev.map(lead => 
       lead.id === id ? { ...lead, status: 'Đã chuyển đổi' } : lead
     ));

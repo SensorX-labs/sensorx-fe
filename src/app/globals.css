@@ -228,10 +228,10 @@
 /* Shimmer effect - sọc trắng chạy từ trái sang phải */
 @keyframes shimmerWhite {
     0% {
-        background-position: -1000px 0;
+        transform: translateX(-100%);
     }
     100% {
-        background-position: 1000px 0;
+        transform: translateX(100%);
     }
 }
 
@@ -240,18 +240,21 @@
         animation: slideInFromLeft 1.2s ease-out forwards;
     }
     
+    .animate-shimmer-fast {
+        animation: shimmerWhite 1.5s infinite linear;
+    }
+    
     .animate-shimmer {
         background: linear-gradient(
             110deg,
-            var(--brand-green) 0%,
-            var(--brand-green) 45%,
-            rgba(255, 255, 255, 0.5) 50%,
-            var(--brand-green) 55%,
-            var(--brand-green) 100%
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 60%,
+            rgba(255, 255, 255, 0) 100%
         );
-        background-size: 1000px 100%;
-        background-position: -1000px 0;
-        animation: shimmerWhite 5s infinite linear;
+        background-size: 200% 100%;
+        animation: shimmerWhite 3s infinite linear;
     }
     
     .delay-100 {
