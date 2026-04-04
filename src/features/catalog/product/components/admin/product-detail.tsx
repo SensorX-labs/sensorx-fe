@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ActionType } from '@/shared/constants/action-type';
-import { Layers, Image as ImageIcon, DollarSign, ArrowLeft, Edit, Trash2, Save, X } from 'lucide-react';
+import { Layers, Image as ImageIcon, DollarSign, ArrowLeft, Edit, Trash2, Save, X, BookOpen } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import Link from 'next/link';
 import { mockProductById } from '@/features/catalog/product/mocks/mock-product';
 import { ProductStatus } from '@/features/catalog/product/models/product-status';
+import { NotionEditor } from '@/shared/components/notion-editor';
 
 interface ProductDetailProps {
   id: string;
@@ -59,6 +60,9 @@ export function ProductDetail({ id }: ProductDetailProps) {
 
   const handleSave = () => {
     // Logic lưu
+    console.log("Nội dung markdown");
+    console.log(formData.usageGuide);
+    
     setAction(ActionType.DETAIL);
   };
 
@@ -340,6 +344,24 @@ export function ProductDetail({ id }: ProductDetailProps) {
                      </Button>
                    )}
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Hướng dẫn sử dụng */}
+          <div className="border border-gray-200 bg-white rounded overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-white">
+              <BookOpen className="w-4 h-4 text-gray-400" />
+              <h4 className="text-base font-medium text-gray-900">Hướng dẫn sử dụng</h4>
+            </div>
+            <div className={isEditing ? "p-0" : "p-6"}>
+              <NotionEditor 
+                content={formData.usageGuide || ''} 
+                onChange={(content) => setFormData({ ...formData, usageGuide: content })}
+                editable={isEditing}
+              />
+              {!isEditing && !formData.usageGuide && (
+                <p className="text-sm text-gray-500 italic">Chưa có hướng dẫn sử dụng cho sản phẩm này.</p>
               )}
             </div>
           </div>
