@@ -95,11 +95,11 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
                   <div className="flex items-center gap-16">
                     <div className="text-right">
                       <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Tổng cộng</p>
-                      <p className="text-sm font-bold text-brand-green">
+                      <p className="qty-label !text-lg !text-gray-900">
                          {quote.items ? 
-                            (quote.items.reduce((acc, i) => acc + (i.unitPrice * i.quantity), 0) * 1.1).toLocaleString('vi-VN') : 
+                            (quote.items.reduce((acc: any, i: any) => acc + (i.unitPrice * i.quantity), 0) * 1.1).toLocaleString('vi-VN') + ' VNĐ' : 
                             'Liên hệ'
-                         }đ
+                         }
                       </p>
                     </div>
                     <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn btn-tracking">

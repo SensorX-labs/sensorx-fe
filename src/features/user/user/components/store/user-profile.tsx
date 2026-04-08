@@ -8,7 +8,7 @@ import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
 import { AddressesTab } from './addresses-tab';
 import { MyQuotationsTab } from './my-quotations-tab';
-import { OrderDetailView } from './order-detail-view';
+import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
 import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
 import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
 import { MyRfqsTab } from './my-rfqs-tab';
