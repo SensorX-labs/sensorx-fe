@@ -1,7 +1,8 @@
-export interface QuteItemm {
+export interface QuoteItem {
     id : string ;
     productId : string ;
     productCode : string ;
+    productName : string ;
     manufacturer : string ;
     unit : string ;
     quantity : number ;
