@@ -111,7 +111,6 @@ export function Cart() {
                 </div>
               </section>
 
-              {/* Step 2: Quotation Info */}
               <section className="bg-white border border-gray-200 p-10">
                 <div className="flex items-center gap-4 mb-4 pb-0">
                   <span className="w-10 h-10 bg-gray-900 text-white flex items-center justify-center text-sm font-bold">02</span>
@@ -124,7 +123,6 @@ export function Cart() {
               </section>
             </div>
 
-            {/* Sidebar Summary (1/3) */}
             <aside className="w-1/3 sticky top-8">
               <div className="bg-product-card-bg border border-product-card-border p-10">
                 <h3 className="tracking-title mb-8 flex items-center gap-2">
