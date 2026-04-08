@@ -126,5 +126,59 @@ export const MOCK_RFQS: Rfq[] = [
         ],
         status: RfqStatus.CONVERTED,
         createdAt: "2024-03-15T16:00:00Z"
+    },
+    {
+        id: "rfq-005",
+        code: "RFQ-2024-005",
+        userId: "user-002",
+        customerId: "cust-005",
+        customerInfo: {
+            recipientName: "Hoàng Đức L",
+            recipientPhone: "0944556677",
+            companyName: "Logistics Toàn Cầu",
+            email: "lhd@global-log.vn",
+            address: "Lô M2, Đường K1, KCN Cát Lái, Quận 2, TP.HCM",
+            taxCode: "0708091011"
+        },
+        items: [
+            {
+                id: "ri-005",
+                productId: "p-006",
+                productCode: "HMI-001",
+                productName: "Màn hình HMI 7 inch",
+                manufacturer: "Kinco",
+                unit: "Cái",
+                quantity: 3
+            }
+        ],
+        status: RfqStatus.NEGOTIATING,
+        createdAt: "2024-03-18T11:20:00Z"
+    },
+    {
+        id: "rfq-007",
+        code: "RFQ-2024-007",
+        userId: "user-005",
+        customerId: "cust-007",
+        customerInfo: {
+            recipientName: "Trương Mỹ L",
+            recipientPhone: "0955667788",
+            companyName: "Thép Hòa Phát",
+            email: "ltm@hoaphat.com.vn",
+            address: "KCN Phố Nối A, Hưng Yên",
+            taxCode: "0203040506"
+        },
+        items: [
+            {
+                id: "ri-006",
+                productId: "p-007",
+                productCode: "ENC-001",
+                productName: "Bộ mã hóa vòng quay Encoder",
+                manufacturer: "Omron",
+                unit: "Cái",
+                quantity: 15
+            }
+        ],
+        status: RfqStatus.RESPONDED,
+        createdAt: "2024-03-20T09:30:00Z"
     }
 ];
