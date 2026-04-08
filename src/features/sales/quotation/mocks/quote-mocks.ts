@@ -19,6 +19,30 @@ export const MOCK_QUOTES: Quote[] = [
             address: "123 Đường Số 1, KCN Tân Bình, TP.HCM",
             taxCode: "0102030405"
         },
+        items: [
+            {
+                id: "qi-001",
+                productId: "p-001",
+                productCode: "SEN-001",
+                productName: "Cảm biến áp suất 0-10 bar",
+                manufacturer: "Danfoss",
+                unit: "Cái",
+                quantity: 10,
+                unitPrice: 1500000,
+                taxRate: 10
+            },
+            {
+                id: "qi-002",
+                productId: "p-002",
+                productCode: "SEN-002",
+                productName: "Cảm biến nhiệt độ Pt100",
+                manufacturer: "Autonics",
+                unit: "Cái",
+                quantity: 5,
+                unitPrice: 850000,
+                taxRate: 10
+            }
+        ],
         note: "Báo giá ưu đãi cho khách hàng thân thiết",
         status: QuoteStatus.PENDING,
         response: null,
@@ -38,6 +62,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "456 Khu Công nghệ cao, Quận 10, TP.HCM",
             taxCode: "0605040302"
         },
+        items: [
+            {
+                id: "qi-003",
+                productId: "p-003",
+                productCode: "PLC-001",
+                productName: "Bộ lập trình PLC S7-1200",
+                manufacturer: "Siemens",
+                unit: "Bộ",
+                quantity: 2,
+                unitPrice: 12000000,
+                taxRate: 10
+            }
+        ],
         note: null,
         status: QuoteStatus.SENT,
         response: {
@@ -63,6 +100,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "456 Khu Công nghệ cao, Quận 10, TP.HCM",
             taxCode: "0605040302"
         },
+        items: [
+            {
+                id: "qi-003",
+                productId: "p-003",
+                productCode: "PLC-001",
+                productName: "Bộ lập trình PLC S7-1200",
+                manufacturer: "Siemens",
+                unit: "Bộ",
+                quantity: 2,
+                unitPrice: 11500000,
+                taxRate: 10
+            }
+        ],
         note: "Cập nhật giá theo yêu cầu khách hàng",
         status: QuoteStatus.APPROVED,
         response: null,
@@ -82,6 +132,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "235 Võ Thị Sáu, Quận 3, TP.HCM",
             taxCode: "0304050607"
         },
+        items: [
+            {
+                id: "qi-004",
+                productId: "p-004",
+                productCode: "CON-001",
+                productName: "Khởi động từ 3 pha 22kW",
+                manufacturer: "Schneider",
+                unit: "Cái",
+                quantity: 20,
+                unitPrice: 2200000,
+                taxRate: 10
+            }
+        ],
         note: "Yêu cầu gấp cho công trình Thủ Thiêm",
         status: QuoteStatus.RETURNED,
         response: null,
@@ -101,6 +164,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "07 Lê Minh Xuân, Quận Tân Bình, TP.HCM",
             taxCode: "0809101112"
         },
+        items: [
+            {
+                id: "qi-005",
+                productId: "p-005",
+                productCode: "INV-001",
+                productName: "Biến tần 5.5kW",
+                manufacturer: "ABB",
+                unit: "Bộ",
+                quantity: 1,
+                unitPrice: 9500000,
+                taxRate: 10
+            }
+        ],
         note: null,
         status: QuoteStatus.ORDERED,
         response: {
@@ -126,6 +202,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "Lô M2, Đường K1, KCN Cát Lái, Quận 2, TP.HCM",
             taxCode: "0708091011"
         },
+        items: [
+            {
+                id: "qi-006",
+                productId: "p-006",
+                productCode: "HMI-001",
+                productName: "Màn hình HMI 7 inch",
+                manufacturer: "Kinco",
+                unit: "Cái",
+                quantity: 3,
+                unitPrice: 4200000,
+                taxRate: 10
+            }
+        ],
         note: "Chiết khấu 5% cho đơn hàng đầu tiên",
         status: QuoteStatus.SENT,
         response: {
@@ -151,6 +240,19 @@ export const MOCK_QUOTES: Quote[] = [
             address: "Lô T2, Đường D1, Khu Công nghệ cao, Quận 9, TP.HCM",
             taxCode: "0405060708"
         },
+        items: [
+            {
+                id: "qi-007",
+                productId: "p-007",
+                productCode: "CAB-001",
+                productName: "Cáp điều khiển 4x1.5mm2",
+                manufacturer: "Cadivi",
+                unit: "Mét",
+                quantity: 100,
+                unitPrice: 35000,
+                taxRate: 10
+            }
+        ],
         note: null,
         status: QuoteStatus.EXPIRED,
         response: null,
