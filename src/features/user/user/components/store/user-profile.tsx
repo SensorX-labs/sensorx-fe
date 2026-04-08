@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { User, LogOut, ChevronRight, Building, MapPin, Heart, FileText, ShoppingCart } from 'lucide-react';
@@ -7,9 +7,11 @@ import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
 import { AddressesTab } from './addresses-tab';
-import { QuotationRequestsTab } from './quotation-requests-tab';
+import { MyQuotationsTab } from './my-quotations-tab';
 import { OrderDetailView } from './order-detail-view';
-import { QuotationDetailView } from './quotation-detail-view';
+import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
+import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
+import { MyRfqsTab } from './my-rfqs-tab';
 
 interface UserData {
     name: string;
@@ -48,10 +50,11 @@ interface Order {
 }
 
 export function UserProfile() {
-    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'addresses' | 'wishlist'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'wishlist'>('profile');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
+    const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
 
     // Mock user data
     const userData: UserData = {
@@ -124,6 +127,7 @@ export function UserProfile() {
                                 { id: 'profile', label: 'Thông tin cá nhân', icon: User },
                                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
                                 { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
+                                { id: 'my-quotations', label: 'Báo giá của tôi', icon: FileText },
                                 { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
                             ].map((item) => {
@@ -135,6 +139,7 @@ export function UserProfile() {
                                             setActiveTab(item.id as any);
                                             setSelectedOrderId(null);
                                             setSelectedQuotationId(null);
+                                            setSelectedRfqId(null);
                                         }}
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none transition-all duration-300 border",
@@ -185,10 +190,24 @@ export function UserProfile() {
                         )}
 
                         {activeTab === 'quotations' && (
-                            selectedQuotationId ? (
-                                <QuotationDetailView onBack={() => setSelectedQuotationId(null)} />
+                            selectedRfqId ? (
+                                <RfqDetailView 
+                                    onBack={() => setSelectedRfqId(null)} 
+                                    rfqId={selectedRfqId}
+                                />
                             ) : (
-                                <QuotationRequestsTab onViewDetail={setSelectedQuotationId} />
+                                <MyRfqsTab onViewDetail={setSelectedRfqId} />
+                            )
+                        )}
+
+                        {activeTab === 'my-quotations' && (
+                            selectedQuotationId ? (
+                                <QuotationDetailView 
+                                    onBack={() => setSelectedQuotationId(null)} 
+                                    quotationId={selectedQuotationId}
+                                />
+                            ) : (
+                                <MyQuotationsTab onViewDetail={setSelectedQuotationId} />
                             )
                         )}
 
