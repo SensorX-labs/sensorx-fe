@@ -109,7 +109,7 @@ export default function RequestForQuotationList() {
 
   const handleCreateQuotation = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    console.log(`Chuyển sang trang Lập báo giá cho RFQ: ${id}`);
+    setViewDetailId(id);
   };
 
   if (viewDetailId) {

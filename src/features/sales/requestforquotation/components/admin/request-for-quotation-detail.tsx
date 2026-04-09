@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, FileText, User, Building2,
   Mail, Phone, MapPin, Calendar, ShoppingCart,
@@ -9,6 +9,7 @@ import {
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
+import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
 
 interface RequestForQuotationDetailProps {
@@ -34,8 +35,18 @@ const statusLabel: Record<string, string> = {
 
 export default function RequestForQuotationDetail({ id, onBack }: RequestForQuotationDetailProps) {
   const rfq = MOCK_RFQS.find(r => r.id === id);
+  const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
 
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
+
+  if (isCreatingQuotation) {
+    return (
+      <QuotationCreate 
+        rfqId={id}
+        onBack={() => setIsCreatingQuotation(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 w-full">
@@ -70,7 +81,11 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             </>
           )}
           {rfq.status === RfqStatus.ACCEPTED && (
-            <Button variant="outline" className="rounded admin-btn-primary border-transparent">
+            <Button 
+              onClick={() => setIsCreatingQuotation(true)}
+              variant="outline" 
+              className="rounded admin-btn-primary border-transparent"
+            >
               <FileText className="w-4 h-4 mr-2" />
               Lập báo giá
             </Button>
