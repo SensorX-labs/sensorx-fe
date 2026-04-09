@@ -97,7 +97,7 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
                       <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Tổng cộng</p>
                       <p className="qty-label !text-lg !text-gray-900">
                          {quote.items ? 
-                            (quote.items.reduce((acc: any, i: any) => acc + (i.unitPrice * i.quantity), 0) * 1.1).toLocaleString('vi-VN') + ' VNĐ' : 
+                            (quote.items.reduce((acc: any, i: any) => acc + (i.unitPrice * i.quantity), 0) * 1.1).toLocaleString('vi-VN') : 
                             'Liên hệ'
                          }
                       </p>

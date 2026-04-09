@@ -1,11 +1,12 @@
 export interface QuoteItem {
-    id : string ;
-    productId : string ;
+    id? : string ;
+    productId? : string ;
     productCode : string ;
     productName : string ;
-    manufacturer : string ;
+    manufacturer? : string ;
     unit : string ;
     quantity : number ;
     unitPrice : number ;
     taxRate : number ;
+    category?: string;
 }

@@ -81,7 +81,7 @@ export function OrdersTab({ orders, onViewDetail }: OrdersTabProps) {
                                         <div className="text-right">
                                             <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Tổng cộng</p>
                                             <p className="qty-label !text-lg !text-gray-900">
-                                                {(order.total).toLocaleString('vi-VN')} VNĐ
+                                                {(order.total).toLocaleString('vi-VN')}
                                             </p>
                                         </div>
                                         <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn btn-tracking">

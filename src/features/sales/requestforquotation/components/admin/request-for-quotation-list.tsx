@@ -1,199 +1,296 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
-import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Bell, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import { Input } from '@/shared/components/shadcn-ui/input';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/components/shadcn-ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/shadcn-ui/select";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+} from "@/shared/components/shadcn-ui/dialog";
+import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
+import RequestForQuotationDetail from './request-for-quotation-detail';
 
 const stats = [
-  { title: 'Chờ phân bổ', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: AlertCircle, color: 'text-orange-500' },
-  { title: 'Đang xử lý', value: MOCK_RFQS.filter(r => [RfqStatus.ACCEPTED, RfqStatus.NEGOTIATING, RfqStatus.RESPONDED].includes(r.status)).length.toString(), icon: Clock, color: 'text-yellow-500' },
-  { title: 'Đã chuyển đổi', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-green-500' },
-  { title: 'Tổng RFQ', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
+  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: Bell, color: 'text-gray-600' },
+  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: Clock, color: 'text-gray-600' },
+  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-gray-600' },
+  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-gray-600' },
 ];
 
 const statusStyles: Record<string, string> = {
-  [RfqStatus.DRAFT]: 'bg-gray-100 text-gray-600',
-  [RfqStatus.PENDING]: 'bg-orange-100 text-orange-600',
-  [RfqStatus.ACCEPTED]: 'bg-blue-100 text-blue-600',
-  [RfqStatus.REJECTED]: 'bg-red-100 text-red-600',
-  [RfqStatus.NEGOTIATING]: 'bg-yellow-100 text-yellow-600',
-  [RfqStatus.RESPONDED]: 'bg-cyan-100 text-cyan-600',
-  [RfqStatus.CONVERTED]: 'bg-green-100 text-green-600',
+  [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
+  [RfqStatus.PENDING]: 'bg-gray-50 text-blue-600 border-blue-100',
+  [RfqStatus.ACCEPTED]: 'bg-gray-50 text-indigo-600 border-indigo-100',
+  [RfqStatus.REJECTED]: 'bg-gray-50 text-red-500 border-red-100',
+  [RfqStatus.CONVERTED]: 'bg-gray-50 text-green-600 border-green-100',
 };
 
 const statusLabels: Record<string, string> = {
   [RfqStatus.DRAFT]: 'Nháp',
-  [RfqStatus.PENDING]: 'Chờ phân bổ',
+  [RfqStatus.PENDING]: 'Chờ tiếp nhận',
   [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
   [RfqStatus.REJECTED]: 'Đã từ chối',
-  [RfqStatus.NEGOTIATING]: 'Thương lượng',
-  [RfqStatus.RESPONDED]: 'Đã phản hồi',
-  [RfqStatus.CONVERTED]: 'Đã chuyển đổi',
+  [RfqStatus.CONVERTED]: 'Đã sinh báo giá',
 };
 
 export default function RequestForQuotationList() {
   const [leads, setLeads] = useState(MOCK_RFQS);
+  const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
+  const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
+  const [viewDetailId, setViewDetailId] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const handleAccept = (id: string) => {
+  const filteredLeads = useMemo(() => {
+    return leads.filter(lead => {
+      const matchesSearch = 
+        lead.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.customerInfo.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.customerInfo.recipientName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [leads, searchQuery, statusFilter]);
+
+  const handleAccept = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    // Logic: Kiểm tra trạng thái và cập nhật, gửi thông báo tự động cho khách
     setLeads(prev => prev.map(lead => 
-      lead.id === id ? { ...lead, status: RfqStatus.ACCEPTED } : lead
+      lead.id === id ? { ...lead, status: RfqStatus.ACCEPTED, userId: 'Current Salesman' } : lead
     ));
+    // Thông báo thành công: "Đã tiếp nhận yêu cầu. Hệ thống đã gửi email thông báo cho khách hàng."
   };
 
-  const handleDecline = (id: string) => {
+  const handleDecline = () => {
+    if (!selectedRfqId) return;
+
+    // Logic: Ghi nhật ký lý do, chuyển cho nhân viên kế tiếp hoặc quản lý
     setLeads(prev => prev.map(lead => 
-        lead.id === id ? { ...lead, status: RfqStatus.REJECTED } : lead
+        lead.id === selectedRfqId 
+        ? { 
+            ...lead, 
+            status: RfqStatus.REJECTED, 
+          } 
+        : lead
     ));
+    
+    setIsDeclineDialogOpen(false);
+    setSelectedRfqId(null);
+    setDeclineReason('');
+    // Hệ thống tự động phân bổ cho người tiếp theo hoặc báo cho manager
   };
 
-  const handleCreateQuotation = (id: string) => {
-    console.log(`Chuyển sang trang Lập báo giá cho RFQ: ${id}`);
+  const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setSelectedRfqId(id);
+    setIsDeclineDialogOpen(true);
   };
 
-  const handleCreateOrder = (id: string) => {
-    setLeads(prev => prev.map(lead => 
-      lead.id === id ? { ...lead, status: RfqStatus.CONVERTED } : lead
-    ));
+  const handleCreateQuotation = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setViewDetailId(id);
   };
+
+  if (viewDetailId) {
+    return (
+      <RequestForQuotationDetail 
+        id={viewDetailId} 
+        onBack={() => setViewDetailId(null)} 
+      />
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
-              </div>
-              <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
+          <div key={s.title} className="bg-white p-4 rounded border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="tracking-label mb-1 uppercase">{s.title}</p>
+              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+            </div>
+            <s.icon className={`w-5 h-5 ${s.color} opacity-40`} />
+          </div>
         ))}
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Mã RFQ</th>
-                <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Nhân viên xử lý</th>
-                <th className="text-left px-6 py-3 admin-table-th text-center">Trạng thái</th>
-                <th className="text-left px-6 py-3 admin-table-th text-right pr-10">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((l) => (
-                <tr key={l.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold admin-text-primary">{l.code}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">
-                    <div>
-                      {l.customerInfo.companyName}
-                      <p className="text-[10px] text-gray-400 font-normal">LH: {l.customerInfo.recipientName}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 text-gray-600 font-medium">
-                    {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId && (
-                      <div className="flex items-center gap-2">
-                        <UserCheck className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="text-xs">ID: {l.userId}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-3 text-center">
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                      statusStyles[l.status] ?? 'bg-gray-100 text-gray-500'
-                    )}>
-                      {statusLabels[l.status]}
+      <div className="bg-white p-4 rounded border border-gray-100 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input 
+              placeholder="Tìm mã RFQ, công ty, khách hàng..." 
+              className="pl-10 text-xs border-gray-200 focus:border-gray-300 focus:ring-0 h-10 rounded shadow-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-[200px]">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="text-xs h-10 border-gray-200 rounded shadow-none">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-400" />
+                  <SelectValue placeholder="Trạng thái" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Tất cả trạng thái</SelectItem>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value} className="text-xs">{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Mã RFQ</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Người xử lý</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLeads.map((l) => (
+              <tr 
+                key={l.id} 
+                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors cursor-pointer group"
+                onClick={() => setViewDetailId(l.id)}
+              >
+                <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
+                <td className="px-6 py-4">
+                  <div className="font-semibold text-gray-800">{l.customerInfo.companyName}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.customerInfo.recipientName}</div>
+                </td>
+                <td className="px-6 py-4 italic text-gray-500 text-xs text-left">
+                  {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId ? (
+                    <span className="flex items-center gap-1.5 grayscale opacity-70">
+                      <UserCheck className="w-3.5 h-3.5" />
+                      {l.userId}
                     </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center justify-end gap-2 pr-4">
-                      {l.status === RfqStatus.PENDING && (
-                        <>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                title="Phân bổ nhân viên"
-                              >
-                                <UserPlus className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
-                                <Bot className="w-4 h-4 text-blue-500" />
-                                <span>Phân bổ bằng AI</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
-                                <UserCheck className="w-4 h-4 text-purple-500" />
-                                <span>Chỉ định thủ công</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                  ) : <span className="opacity-30">—</span>}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={cn(
+                    "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                    statusStyles[l.status]
+                  )}>
+                    {statusLabels[l.status]}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-center gap-1">
+                    {l.status === RfqStatus.PENDING && (
+                      <>
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
+                          onClick={(e) => handleAccept(l.id, e)}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
+                          onClick={(e) => openDeclineDialog(l.id, e)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
 
-                          <Button 
-                            onClick={() => handleAccept(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            title="Tiếp nhận"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            onClick={() => handleDecline(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title="Từ chối"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-
-                      {[RfqStatus.ACCEPTED, RfqStatus.NEGOTIATING].includes(l.status) && (
-                        <>
-                          <Button 
-                            onClick={() => handleCreateQuotation(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                            title="Báo giá"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            onClick={() => handleCreateOrder(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                            title="Chốt đơn"
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-500" title="Xem chi tiết">
-                        <Eye className="w-4 h-4" />
+                    {l.status === RfqStatus.ACCEPTED && (
+                      <Button 
+                        variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        onClick={(e) => handleCreateQuotation(l.id, e)}
+                      >
+                        <FileText className="w-4 h-4" />
                       </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+                    )}
+
+                    <Button 
+                      variant="ghost" size="icon" className="h-8 w-8 text-gray-400 group-hover:text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewDetailId(l.id);
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {filteredLeads.length === 0 && (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-gray-400 italic text-xs tracking-widest uppercase">
+                  Không tìm thấy dữ liệu phù hợp
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Decline Reason Dialog */}
+      <Dialog open={isDeclineDialogOpen} onOpenChange={setIsDeclineDialogOpen}>
+        <DialogContent className="sm:max-w-[400px] border-none shadow-xl gap-0 p-0 overflow-hidden">
+          <DialogHeader className="p-6 bg-gray-50 border-b border-gray-100">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 uppercase tracking-widest text-xs font-bold">
+              <AlertCircle className="w-4 h-4 text-red-500" />
+              Từ chối tiếp nhận RFQ
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <p className="text-[11px] text-gray-500 leading-relaxed italic">
+                * Lý do từ chối sẽ được ghi lại trong lịch sử hệ thống phục vụ mục đích quản lý.
+            </p>
+            <div className="space-y-2">
+                <label className="tracking-label uppercase block">Lý do từ chối</label>
+                <Textarea 
+                    placeholder="Nhập lý do tại đây..." 
+                    className="text-xs min-h-[100px] border-gray-200 focus:border-gray-300 focus:ring-0 shadow-none resize-none px-3 py-2"
+                    value={declineReason}
+                    onChange={(e) => setDeclineReason(e.target.value)}
+                />
+            </div>
+          </div>
+          <DialogFooter className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2 justify-end">
+            <Button variant="ghost" onClick={() => setIsDeclineDialogOpen(false)} className="text-[10px] font-bold uppercase tracking-widest border border-gray-200 bg-white h-9 px-4">Hủy</Button>
+            <Button 
+                onClick={handleDecline} 
+                className="text-[10px] font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white shadow-none h-9 px-4"
+                disabled={!declineReason.trim()}
+            >
+                Xác nhận từ chối
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

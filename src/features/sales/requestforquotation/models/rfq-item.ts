@@ -1,9 +1,10 @@
 export interface RfqItem {
-    id : string ;
-    productId : string ;
+    id? : string ;
+    productId? : string ;
     productCode : string ;
     productName : string ;
-    manufacturer : string ;
+    manufacturer? : string ;
     unit : string ;
     quantity : number ;
+    category?: string;
 }
