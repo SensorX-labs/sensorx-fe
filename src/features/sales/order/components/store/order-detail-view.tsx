@@ -162,19 +162,19 @@ export function OrderDetailView({ onBack }: { onBack: () => void }) {
               <div className="flex justify-between meta-label uppercase">
                 <span className="text-gray-400 font-bold">Tạm tính:</span>
                 <span className="qty-label">
-                  {(orderDetail.subtotal).toLocaleString('vi-VN')} VNĐ
+                  {(orderDetail.subtotal).toLocaleString('vi-VN')}
                 </span>
               </div>
               <div className="flex justify-between meta-label uppercase">
                 <span className="text-gray-400 font-bold">Phí vận chuyển:</span>
                 <span className="qty-label">
-                  {(orderDetail.shippingFee).toLocaleString('vi-VN')} VNĐ
+                  {(orderDetail.shippingFee).toLocaleString('vi-VN')}
                 </span>
               </div>
               <div className="flex justify-between pt-6 border-t-2 border-gray-900 items-baseline">
                 <span className="tracking-label uppercase text-sm">Tổng:</span>
                 <span className="tracking-title-xl text-3xl text-brand-green tracking-tighter">
-                  {(orderDetail.total).toLocaleString('vi-VN')} VNĐ
+                  {(orderDetail.total).toLocaleString('vi-VN')}
                 </span>
               </div>
            </div>

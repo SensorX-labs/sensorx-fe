@@ -90,8 +90,7 @@ export default function QuotationList() {
               {MOCK_QUOTES.map((q) => (
                 <tr
                   key={q.id}
-                  className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors cursor-pointer"
-                  onClick={() => goTo(q.id, ActionType.DETAIL)}
+                  className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors"
                 >
                   <td className="px-6 py-3 font-semibold admin-text-primary">{q.code}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">
@@ -110,8 +109,8 @@ export default function QuotationList() {
                       {statusLabels[q.status]}
                     </span>
                   </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center justify-end gap-2 pr-4" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-6 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2 pr-4">
                       <Button
                         variant="ghost" size="icon"
                         className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"

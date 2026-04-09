@@ -5,11 +5,14 @@ import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList
+  ClipboardList, Search
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/shared/components/shadcn-ui/popover";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/shared/components/shadcn-ui/select";
@@ -23,8 +26,9 @@ import { PaymentTern } from '../../constants/payment-term';
 import { ActionType } from '@/shared/constants/action-type';
 
 interface QuotationCreateProps {
-  id: string;      // quote id hoặc 'new'
+  id?: string;      // quote id hoặc 'new'
   rfqId?: string;
+  onBack?: () => void;
 }
 
 const statusColor: Record<string, string> = {
@@ -57,6 +61,72 @@ const paymentTermLabel: Record<string, string> = {
   [PaymentTern.FULLPAYMENT]: '100% Trả trước',
   [PaymentTern.DEPOSIT]: '30% Cọc',
 };
+
+function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+
+  // Đồng bộ lại state khi prop defaultValue thay đổi
+  React.useEffect(() => {
+    setSelectedCode(defaultValue || "");
+  }, [defaultValue]);
+
+  const filteredProducts = mockProducts.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const selectedProduct = mockProducts.find(p => p.code === selectedCode);
+  const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
+          <div className="flex flex-col items-start overflow-hidden">
+             <span className="truncate w-full font-semibold">{displayLabel}</span>
+          </div>
+          <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
+        <div className="p-2 border-b bg-gray-50/50">
+           <Input 
+              placeholder="Gõ tên hoặc mã sản phẩm..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+              autoFocus
+           />
+        </div>
+        <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
+           {filteredProducts.length === 0 ? (
+             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+           ) : (
+             filteredProducts.map(p => (
+               <div 
+                 key={p.id}
+                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                 onClick={() => {
+                    setSelectedCode(p.code);
+                    onSelect(p);
+                    setOpen(false);
+                 }}
+               >
+                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
+                 <div className="flex justify-between items-center mt-1">
+                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                 </div>
+               </div>
+             ))
+           )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
   const searchParams = useSearchParams();
@@ -200,14 +270,14 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
           {/* Thông tin cơ bản */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-900">Thông tin cơ bản</h4>
+              <ClipboardList className="w-4 h-4 " />
+              <h4 className="text-sm font-medium">Thông tin cơ bản</h4>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Mã báo giá</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{existingQuote?.code || '—'}</td>
+                  <td className="px-6 py-3">{existingQuote?.code || '—'}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Trạng thái</td>
@@ -219,14 +289,14 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Ngày tạo</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">
+                  <td className="px-6 py-3">
                     {existingQuote?.quoteDate ? new Date(existingQuote.quoteDate).toLocaleDateString('vi-VN') : '—'}
                   </td>
                 </tr>
                 {existingQuote?.parentId && (
                   <tr>
                     <td className="px-6 py-3 admin-text-primary font-semibold">Bản gốc</td>
-                    <td className="px-6 py-3 font-medium text-blue-600 hover:underline cursor-pointer">
+                    <td className="px-6 py-3 text-blue-600 hover:underline cursor-pointer">
                       {existingQuote.parentId}
                     </td>
                   </tr>
@@ -237,8 +307,8 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
 
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-900">Thông tin khách hàng</h4>
+              <User className="w-4 h-4 " />
+              <h4 className="text-sm font-medium">Thông tin khách hàng</h4>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
@@ -263,25 +333,25 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="font-medium text-gray-900">{customerInfo?.companyName || '—'}</span>
+                      <span>{customerInfo?.companyName || '—'}</span>
                     )}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">
+                  <td className="px-6 py-3">
                     {customerInfo?.recipientName || '—'}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">
+                  <td className="px-6 py-3">
                     {customerInfo?.recipientPhone || '—'}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">
+                  <td className="px-6 py-3">
                     {customerInfo?.email || '—'}
                   </td>
                 </tr>
@@ -291,8 +361,8 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
 
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-900">Điều khoản thanh toán</h4>
+              <DollarSign className="w-4 h-4 " />
+              <h4 className="text-sm font-medium">Điều khoản thanh toán</h4>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
@@ -314,7 +384,7 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="font-medium text-gray-900">
+                      <span>
                         {paymentMethodLabel[formData.paymentMethod]}
                       </span>
                     )}
@@ -338,7 +408,7 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="font-medium text-gray-900">
+                      <span>
                         {paymentTermLabel[formData.paymentTerm]}
                       </span>
                     )}
@@ -355,8 +425,8 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4 text-gray-400" />
-                <h4 className="text-base font-medium text-gray-900">Danh mục sản phẩm</h4>
+                <ShoppingCart className="w-4 h-4 " />
+                <h4 className="text-base font-medium">Danh mục sản phẩm</h4>
               </div>
               {isEditing && (
                 <Button onClick={handleAddItem} size="sm" className="rounded admin-btn-primary border-transparent text-xs">
@@ -368,11 +438,11 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
                   <tr>
-                    <th className="px-6 py-3 font-medium text-left text-xs">Sản phẩm</th>
-                    <th className="px-6 py-3 font-medium text-center text-xs w-24">SL</th>
-                    <th className="px-6 py-3 font-medium text-right text-xs w-32">Đơn giá</th>
-                    <th className="px-6 py-3 font-medium text-center text-xs w-20">Thuế %</th>
-                    <th className="px-6 py-3 font-medium text-right text-xs w-32">Cộng</th>
+                    <th className="px-6 py-3 admin-table-th text-left">Sản phẩm</th>
+                    <th className="px-6 py-3 w-24 admin-table-th text-center">SL</th>
+                    <th className="px-6 py-3 w-32 admin-table-th text-right">Đơn giá</th>
+                    <th className="px-6 py-3 w-20 admin-table-th text-center">Thuế %</th>
+                    <th className="px-6 py-3 w-32 admin-table-th text-right">Cộng</th>
                     {isEditing && <th className="px-3 py-3 w-10" />}
                   </tr>
                 </thead>
@@ -385,41 +455,25 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                         <td className="px-6 py-3">
                           {isEditing ? (
                             <div className="min-w-[200px]">
-                              <Select
-                                value={item.productCode}
-                                onValueChange={(code) => {
-                                  const prod = mockProducts.find(p => p.code === code);
-                                  if (prod) {
-                                    const updatedItems = [...items];
-                                    updatedItems[index] = {
-                                      ...updatedItems[index],
-                                      productCode: prod.code,
-                                      productName: prod.name,
-                                      unit: prod.unit?.name || item.unit
-                                    };
-                                    setItems(updatedItems);
-                                  }
+                              <SearchableProductSelect
+                                defaultValue={item.productCode}
+                                defaultLabel={item.productName}
+                                onSelect={(prod) => {
+                                  const updatedItems = [...items];
+                                  updatedItems[index] = {
+                                    ...updatedItems[index],
+                                    productCode: prod.code,
+                                    productName: prod.name,
+                                    unit: prod.unit?.name || item.unit
+                                  };
+                                  setItems(updatedItems);
                                 }}
-                              >
-                                <SelectTrigger className="w-full text-xs h-9 border-gray-300 rounded focus:ring-1 focus:ring-[var(--brand-green-500)]">
-                                  <SelectValue placeholder="Chọn sản phẩm..." />
-                                </SelectTrigger>
-                                <SelectContent className="max-h-[300px]">
-                                  {mockProducts.map((p) => (
-                                    <SelectItem key={p.id} value={p.code} className="text-xs">
-                                      <div className="flex flex-col">
-                                        <span className="font-medium">{p.name}</span>
-                                        <span className="text-[10px] text-gray-400">Mã: {p.code}</span>
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              />
                             </div>
                           ) : (
                             <>
-                              <div className="font-medium text-gray-900">{item.productName}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">Mã: {item.productCode}</div>
+                              <div>{item.productName}</div>
+                              <div className="text-xs mt-0.5">Mã: {item.productCode}</div>
                             </>
                           )}
                         </td>
@@ -432,7 +486,7 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span className="font-medium text-gray-900">{item.quantity} {item.unit}</span>
+                            <span>{item.quantity} {item.unit}</span>
                           )}
                         </td>
                         <td className="px-6 py-3 text-right">
@@ -445,7 +499,7 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span className="font-medium text-gray-900">{item.unitPrice.toLocaleString('vi-VN')}đ</span>
+                            <span>{item.unitPrice.toLocaleString('vi-VN')}đ</span>
                           )}
                         </td>
                         <td className="px-6 py-3 text-center">
@@ -458,11 +512,11 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span className="font-medium text-gray-900">{item.taxRate}%</span>
+                            <span>{item.taxRate}%</span>
                           )}
                         </td>
-                        <td className="px-6 py-3 text-right font-semibold text-gray-900">
-                          {total.toLocaleString('vi-VN')}đ
+                        <td className="px-6 py-3 text-right">
+                          {total.toLocaleString('vi-VN')}
                         </td>
                         {isEditing && (
                           <td className="px-3 py-3 text-center">
@@ -479,13 +533,13 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-200">
+                <tfoot className="bg-gray-50 border-t border-gray-200 text-lg">
                   <tr>
-                    <td colSpan={isEditing ? 5 : 4} className="px-6 py-4 text-right font-semibold text-gray-900">
+                    <td colSpan={isEditing ? 5 : 4} className="px-6 py-4 text-right font-semibold">
                       Tổng cộng:
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-[var(--brand-green-600)]">
-                      {calculateTotal().toLocaleString('vi-VN')}đ
+                      {calculateTotal().toLocaleString('vi-VN')}
                     </td>
                   </tr>
                 </tfoot>
@@ -496,8 +550,8 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
           {/* Ghi chú */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-gray-400" />
-              <h4 className="text-base font-medium text-gray-900">Ghi chú & Điều khoản</h4>
+              <MessageSquare className="w-4 h-4 " />
+              <h4 className="text-base font-medium">Ghi chú & Điều khoản</h4>
             </div>
             <div className="p-6">
               {isEditing ? (
@@ -509,8 +563,8 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                   className="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)] resize-none"
                 />
               ) : (
-                <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
-                  {formData.note || <span className="text-gray-400 italic">Không có ghi chú.</span>}
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {formData.note || <span className=" italic">Không có ghi chú.</span>}
                 </p>
               )}
             </div>

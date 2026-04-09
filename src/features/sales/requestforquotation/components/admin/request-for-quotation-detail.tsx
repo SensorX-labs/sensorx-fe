@@ -90,7 +90,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               Lập báo giá
             </Button>
           )}
-          <Link href="/sales/rfq">
+          <Link href="/sales/requestforquotation">
             <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Quay lại

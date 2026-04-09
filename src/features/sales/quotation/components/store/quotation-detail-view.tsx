@@ -185,7 +185,6 @@ export function QuotationDetailView({onBack, quotationId} : {
                                 {
                                 (quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0).toLocaleString('vi-VN')
                             }
-                                VNĐ
                             </span>
                         </div>
                         <div className="flex justify-between meta-label uppercase">
@@ -194,7 +193,6 @@ export function QuotationDetailView({onBack, quotationId} : {
                                 {
                                 ((quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0) * 0.1).toLocaleString('vi-VN')
                             }
-                                VNĐ
                             </span>
                         </div>
                         <div className="flex justify-between pt-6 border-t-2 border-gray-900 items-baseline">
@@ -203,7 +201,6 @@ export function QuotationDetailView({onBack, quotationId} : {
                                 {
                                 ((quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0) * 1.1).toLocaleString('vi-VN')
                             }
-                                VNĐ
                             </span>
                         </div>
                     </div>
