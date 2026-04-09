@@ -1,9 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { FileText, Clock, CheckCircle, XCircle, Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { MOCK_QUOTES } from '../../mocks/quote-mocks';
 import { QuoteStatus } from '../../constants/quote-status';
+import QuotationDetail from './quotation-detail';
 
 const stats = [
   { title: 'Tổng báo giá', value: MOCK_QUOTES.length.toString(), icon: FileText, color: 'text-[#4318FF]' },
@@ -33,6 +36,17 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function QuotationList() {
+  const [viewDetailId, setViewDetailId] = useState<string | null>(null);
+
+  if (viewDetailId) {
+    return (
+      <QuotationDetail 
+        id={viewDetailId} 
+        onBack={() => setViewDetailId(null)} 
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,7 +90,11 @@ export default function QuotationList() {
             </thead>
             <tbody>
               {MOCK_QUOTES.map((q) => (
-                <tr key={q.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
+                <tr 
+                  key={q.id} 
+                  className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors cursor-pointer"
+                  onClick={() => setViewDetailId(q.id)}
+                >
                   <td className="px-6 py-3 font-semibold admin-text-primary">{q.code}</td>
                   <td className="px-6 py-3 font-semibold text-[#2B3674]">
                     <div>
