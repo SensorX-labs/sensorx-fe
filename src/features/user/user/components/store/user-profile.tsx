@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
-import { User, LogOut, ChevronRight, Building, MapPin, Heart, FileText, ShoppingCart } from 'lucide-react';
+import { User, LogOut, ChevronRight, Building, MapPin, Shield, FileText, ShoppingCart } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
@@ -12,6 +12,7 @@ import { OrderDetailView } from '../../../../sales/order/components/store/order-
 import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
 import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
 import { MyRfqsTab } from './my-rfqs-tab';
+import { SecurityTab } from './security-tab';
 
 interface UserData {
     name: string;
@@ -50,7 +51,7 @@ interface Order {
 }
 
 export function UserProfile() {
-    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'wishlist'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'security'>('profile');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
@@ -130,6 +131,7 @@ export function UserProfile() {
                                 { id: 'my-quotations', label: 'Báo giá của tôi', icon: FileText },
                                 { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
+                                { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield }, // Generalized from "Quên mật khẩu"
                             ].map((item) => {
                                 const Icon = item.icon || ChevronRight;
                                 return (
@@ -217,6 +219,10 @@ export function UserProfile() {
                                 userPhone={userData.phone}
                                 address={userData.address}
                             />
+                        )}
+
+                        {activeTab === 'security' && (
+                            <SecurityTab />
                         )}
 
                     </main>
