@@ -9,7 +9,22 @@ export const MOCK_RFQS: Rfq[] = [
     userId: null,
     customerId: 'CUS-001',
     createdAt: '2024-03-20T08:00:00Z',
-    items: [],
+    items: [
+      {
+        productCode: 'PROD-001',
+        productName: 'Cảm biến nhiệt độ công nghiệp',
+        quantity: 10,
+        unit: 'Cái',
+        category: 'Sensors'
+      },
+      {
+        productCode: 'PROD-002',
+        productName: 'Module điều khiển PLC',
+        quantity: 2,
+        unit: 'Bộ',
+        category: 'Controllers'
+      }
+    ],
     customerInfo: {
       companyName: 'Công ty TNHH Giải pháp Công nghệ Việt',
       recipientName: 'Nguyễn Văn A',
@@ -29,7 +44,15 @@ export const MOCK_RFQS: Rfq[] = [
     userId: 'SLS-001',
     customerId: 'CUS-002',
     createdAt: '2024-03-19T14:30:00Z',
-    items: [],
+    items: [
+      {
+        productCode: 'PROD-005',
+        productName: 'Cảm biến áp suất 0-10 bar',
+        quantity: 5,
+        unit: 'Cái',
+        category: 'Sensors'
+      }
+    ],
     customerInfo: {
       companyName: 'Tập đoàn Sản xuất ABC',
       recipientName: 'Trần Thị B',
@@ -50,7 +73,22 @@ export const MOCK_RFQS: Rfq[] = [
     userId: 'SLS-002',
     customerId: 'CUS-003',
     createdAt: '2024-03-18T09:00:00Z',
-    items: [],
+    items: [
+      {
+        productCode: 'PROD-012',
+        productName: 'Cáp tín hiệu chống nhiễu 2x0.75mm',
+        quantity: 200,
+        unit: 'Mét',
+        category: 'Cables'
+      },
+      {
+        productCode: 'PROD-015',
+        productName: 'Đầu nối công nghiệp M12',
+        quantity: 20,
+        unit: 'Cái',
+        category: 'Accessories'
+      }
+    ],
     customerInfo: {
       companyName: 'Cửa hàng Điện máy Quang Minh',
       recipientName: 'Lê Văn C',

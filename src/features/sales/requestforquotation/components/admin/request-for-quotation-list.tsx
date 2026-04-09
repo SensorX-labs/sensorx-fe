@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Bell, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
@@ -24,20 +24,21 @@ import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
+import RequestForQuotationDetail from './request-for-quotation-detail';
 
 const stats = [
-  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: Bell, color: 'text-blue-500' },
-  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: Clock, color: 'text-yellow-500' },
-  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-green-500' },
-  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
+  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: Bell, color: 'text-gray-600' },
+  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: Clock, color: 'text-gray-600' },
+  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-gray-600' },
+  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-gray-600' },
 ];
 
 const statusStyles: Record<string, string> = {
-  [RfqStatus.DRAFT]: 'bg-gray-100 text-gray-600 border border-gray-200',
-  [RfqStatus.PENDING]: 'bg-blue-50 text-blue-600 border border-blue-100',
-  [RfqStatus.ACCEPTED]: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
-  [RfqStatus.REJECTED]: 'bg-red-50 text-red-600 border border-red-100',
-  [RfqStatus.CONVERTED]: 'bg-green-50 text-green-600 border border-green-100',
+  [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
+  [RfqStatus.PENDING]: 'bg-gray-50 text-blue-600 border-blue-100',
+  [RfqStatus.ACCEPTED]: 'bg-gray-50 text-indigo-600 border-indigo-100',
+  [RfqStatus.REJECTED]: 'bg-gray-50 text-red-500 border-red-100',
+  [RfqStatus.CONVERTED]: 'bg-gray-50 text-green-600 border-green-100',
 };
 
 const statusLabels: Record<string, string> = {
@@ -52,6 +53,7 @@ export default function RequestForQuotationList() {
   const [leads, setLeads] = useState(MOCK_RFQS);
   const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
+  const [viewDetailId, setViewDetailId] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
   
   // Filter states
@@ -71,7 +73,8 @@ export default function RequestForQuotationList() {
     });
   }, [leads, searchQuery, statusFilter]);
 
-  const handleAccept = (id: string) => {
+  const handleAccept = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     // Logic: Kiểm tra trạng thái và cập nhật, gửi thông báo tự động cho khách
     setLeads(prev => prev.map(lead => 
       lead.id === id ? { ...lead, status: RfqStatus.ACCEPTED, userId: 'Current Salesman' } : lead
@@ -98,195 +101,190 @@ export default function RequestForQuotationList() {
     // Hệ thống tự động phân bổ cho người tiếp theo hoặc báo cho manager
   };
 
-  const openDeclineDialog = (id: string) => {
+  const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setSelectedRfqId(id);
     setIsDeclineDialogOpen(true);
   };
 
-  const handleCreateQuotation = (id: string) => {
+  const handleCreateQuotation = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     console.log(`Chuyển sang trang Lập báo giá cho RFQ: ${id}`);
   };
 
+  if (viewDetailId) {
+    return (
+      <RequestForQuotationDetail 
+        id={viewDetailId} 
+        onBack={() => setViewDetailId(null)} 
+      />
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
-              </div>
-              <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
+          <div key={s.title} className="bg-white p-4 rounded border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="tracking-label mb-1 uppercase">{s.title}</p>
+              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+            </div>
+            <s.icon className={`w-5 h-5 ${s.color} opacity-40`} />
+          </div>
         ))}
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input 
-                placeholder="Tìm kiếm theo mã RFQ, tên công ty hoặc khách hàng..." 
-                className="pl-10 text-xs border-gray-200 focus:border-blue-300 focus:ring-blue-100 h-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="w-full md:w-[200px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="text-xs h-10 border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-3.5 h-3.5 text-gray-400" />
-                    <SelectValue placeholder="Trạng thái" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all" className="text-xs text-gray-700">Tất cả trạng thái</SelectItem>
-                  {Object.entries(statusLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value} className="text-xs text-gray-700">{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {(searchQuery || statusFilter !== 'all') && (
-              <Button 
-                variant="ghost" 
-                className="text-[10px] uppercase font-bold text-gray-500 hover:text-blue-600 transition-colors"
-                onClick={() => {
-                  setSearchQuery('');
-                  setStatusFilter('all');
-                }}
-              >
-                Xóa lọc
-              </Button>
-            )}
+      <div className="bg-white p-4 rounded border border-gray-100 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input 
+              placeholder="Tìm mã RFQ, công ty, khách hàng..." 
+              className="pl-10 text-xs border-gray-200 focus:border-gray-300 focus:ring-0 h-10 rounded shadow-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-        </CardContent>
-      </Card>
+          <div className="w-full md:w-[200px]">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="text-xs h-10 border-gray-200 rounded shadow-none">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-gray-400" />
+                  <SelectValue placeholder="Trạng thái" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Tất cả trạng thái</SelectItem>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value} className="text-xs">{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Mã RFQ</th>
-                <th className="text-left px-6 py-3 admin-table-th">Khách hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Nhân viên xử lý</th>
-                <th className="text-left px-6 py-3 admin-table-th text-center">Trạng thái</th>
-                <th className="text-left px-6 py-3 admin-table-th text-right pr-10">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.map((l) => (
-                <tr key={l.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold admin-text-primary">{l.code}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">
-                    <div>
-                      {l.customerInfo.companyName}
-                      <p className="text-[10px] text-gray-400 font-normal">LH: {l.customerInfo.recipientName}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 text-gray-600 font-medium">
-                    {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">ID: {l.userId}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-3 text-center">
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                      statusStyles[l.status] ?? 'bg-gray-100 text-gray-500'
-                    )}>
-                      {statusLabels[l.status]}
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Mã RFQ</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Người xử lý</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredLeads.map((l) => (
+              <tr 
+                key={l.id} 
+                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors cursor-pointer group"
+                onClick={() => setViewDetailId(l.id)}
+              >
+                <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
+                <td className="px-6 py-4">
+                  <div className="font-semibold text-gray-800">{l.customerInfo.companyName}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.customerInfo.recipientName}</div>
+                </td>
+                <td className="px-6 py-4 italic text-gray-500 text-xs text-left">
+                  {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId ? (
+                    <span className="flex items-center gap-1.5 grayscale opacity-70">
+                      <UserCheck className="w-3.5 h-3.5" />
+                      {l.userId}
                     </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center justify-end gap-2 pr-4">
-                      {l.status === RfqStatus.PENDING && (
-                        <>
-                          <Button 
-                            onClick={() => handleAccept(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 border-2 border-green-200"
-                            title="Tiếp nhận ngay"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            onClick={() => openDeclineDialog(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 border-2 border-red-200"
-                            title="Từ chối hỗ trợ"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
+                  ) : <span className="opacity-30">—</span>}
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className={cn(
+                    "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                    statusStyles[l.status]
+                  )}>
+                    {statusLabels[l.status]}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-center gap-1">
+                    {l.status === RfqStatus.PENDING && (
+                      <>
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
+                          onClick={(e) => handleAccept(l.id, e)}
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
+                          onClick={(e) => openDeclineDialog(l.id, e)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
 
-                      {l.status === RfqStatus.ACCEPTED && (
-                        <>
-                          <Button 
-                            onClick={() => handleCreateQuotation(l.id)}
-                            variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50 border-2 border-blue-200"
-                            title="Lập báo giá"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
-
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-500 hover:bg-gray-50 border-2 border-gray-200" title="Xem chi tiết">
-                        <Eye className="w-4 h-4" />
+                    {l.status === RfqStatus.ACCEPTED && (
+                      <Button 
+                        variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        onClick={(e) => handleCreateQuotation(l.id, e)}
+                      >
+                        <FileText className="w-4 h-4" />
                       </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredLeads.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-10 text-center text-gray-400 italic text-xs">
-                    Không tìm thấy yêu cầu nào khớp với bộ lọc.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+                    )}
+
+                    <Button 
+                      variant="ghost" size="icon" className="h-8 w-8 text-gray-400 group-hover:text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewDetailId(l.id);
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {filteredLeads.length === 0 && (
+              <tr>
+                <td colSpan={5} className="py-12 text-center text-gray-400 italic text-xs tracking-widest uppercase">
+                  Không tìm thấy dữ liệu phù hợp
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Decline Reason Dialog */}
       <Dialog open={isDeclineDialogOpen} onOpenChange={setIsDeclineDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600 uppercase tracking-wider text-sm font-bold">
-              <AlertCircle className="w-5 h-5" />
+        <DialogContent className="sm:max-w-[400px] border-none shadow-xl gap-0 p-0 overflow-hidden">
+          <DialogHeader className="p-6 bg-gray-50 border-b border-gray-100">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 uppercase tracking-widest text-xs font-bold">
+              <AlertCircle className="w-4 h-4 text-red-500" />
               Từ chối tiếp nhận RFQ
             </DialogTitle>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p className="text-xs text-gray-500 leading-relaxed italic">
-                * Lưu ý: Lý do từ chối sẽ được ghi vào nhật ký hệ thống. Sau khi bạn từ chối, yêu cầu sẽ tự động được chuyển sang nhân viên ưu tiên kế tiếp để đảm bảo tiến độ phục vụ khách hàng.
+          <div className="p-6 space-y-4">
+            <p className="text-[11px] text-gray-500 leading-relaxed italic">
+                * Lý do từ chối sẽ được ghi lại trong lịch sử hệ thống phục vụ mục đích quản lý.
             </p>
             <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold text-gray-700 tracking-widest">Lý do từ chối hỗ trợ khách hàng</label>
+                <label className="tracking-label uppercase block">Lý do từ chối</label>
                 <Textarea 
-                    placeholder="Ví dụ: Đang quá tải đơn hàng, không phải chuyên môn mặt hàng này..." 
-                    className="text-xs min-h-[100px] border-gray-200 focus:border-red-300 focus:ring-red-100"
+                    placeholder="Nhập lý do tại đây..." 
+                    className="text-xs min-h-[100px] border-gray-200 focus:border-gray-300 focus:ring-0 shadow-none resize-none px-3 py-2"
                     value={declineReason}
                     onChange={(e) => setDeclineReason(e.target.value)}
                 />
             </div>
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setIsDeclineDialogOpen(false)} className="text-[10px] font-bold uppercase tracking-widest border-2 border-gray-200">Hủy bỏ</Button>
+          <DialogFooter className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2 justify-end">
+            <Button variant="ghost" onClick={() => setIsDeclineDialogOpen(false)} className="text-[10px] font-bold uppercase tracking-widest border border-gray-200 bg-white h-9 px-4">Hủy</Button>
             <Button 
-                onClick={handleDecline}
+                onClick={handleDecline} 
+                className="text-[10px] font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white shadow-none h-9 px-4"
                 disabled={!declineReason.trim()}
-                className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-8"
             >
                 Xác nhận từ chối
             </Button>
