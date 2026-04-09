@@ -70,7 +70,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
               </thead>
               <tbody>
                 {(rfq.items || []).map((item, idx) => (
-                  <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
+                  <tr key={`${item.productCode}-${idx}`} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
                     <td className="px-8 py-5">
                       <p className="breadcrumb-text uppercase">{item.productName}</p>
                       <div className="mt-1">
@@ -82,7 +82,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
                   </tr>
                 ))}
                 {(!rfq.items || rfq.items.length === 0) && (
-                    <tr>
+                    <tr key="empty-row">
                         <td colSpan={3} className="px-8 py-12 text-center meta-label uppercase italic">Chưa có thông tin sản phẩm trong yêu cầu này</td>
                     </tr>
                 )}
