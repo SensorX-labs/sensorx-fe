@@ -11,4 +11,5 @@ export interface Rfq {
     items : RfqItem[] ;
     status : RfqStatus ;
     createdAt : string ;
+    logs?: { action: string; reason?: string; timestamp?: string }[];
 }

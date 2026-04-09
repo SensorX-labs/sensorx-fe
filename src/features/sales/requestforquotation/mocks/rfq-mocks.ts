@@ -1,184 +1,109 @@
-import { Rfq } from "../models/rqf";
-import { RfqStatus } from "../constants/rfq-status";
+﻿import { Rfq } from '../models/rqf';
+import { RfqStatus } from '../constants/rfq-status';
 
 export const MOCK_RFQS: Rfq[] = [
-    {
-        id: "rfq-001",
-        code: "RFQ-2024-001",
-        userId: "user-001",
-        customerId: "cust-001",
-        customerInfo: {
-            recipientName: "Nguyễn Văn A",
-            recipientPhone: "0901234567",
-            companyName: "Công ty TNHH Giải pháp Công nghiệp Việt Nam",
-            email: "vana@industry.vn",
-            address: "123 Đường Số 1, KCN Tân Bình, TP.HCM",
-            taxCode: "0102030405"
-        },
-        items: [
-            {
-                id: "ri-001",
-                productId: "p-001",
-                productCode: "SEN-001",
-                productName: "Cảm biến áp suất 0-10 bar",
-                manufacturer: "Danfoss",
-                unit: "Cái",
-                quantity: 10
-            }
-        ],
-        status: RfqStatus.PENDING,
-        createdAt: "2024-03-01T08:30:00Z"
+  {
+    id: '1',
+    code: 'RFQ-001',
+    status: RfqStatus.PENDING,
+    userId: null,
+    customerId: 'CUS-001',
+    createdAt: '2024-03-20T08:00:00Z',
+    items: [],
+    customerInfo: {
+      companyName: 'Công ty TNHH Giải pháp Công nghệ Việt',
+      recipientName: 'Nguyễn Văn A',
+      email: 'a.nguyen@techsolutions.vn',
+      recipientPhone: '0901234567',
+      address: '123 Đường ABC, Quận 1, TP.HCM',
+      taxCode: '0101234567'
     },
-    {
-        id: "rfq-002",
-        code: "RFQ-2024-002",
-        userId: "user-001",
-        customerId: "cust-002",
-        customerInfo: {
-            recipientName: "Trần Thị B",
-            recipientPhone: "0912345678",
-            companyName: "Tập đoàn Điện máy ABC",
-            email: "bt@abc-corp.com",
-            address: "456 Khu Công nghệ cao, Quận 9, TP.HCM",
-            taxCode: "0605040302"
-        },
-        items: [
-            {
-                id: "ri-002",
-                productId: "p-003",
-                productCode: "PLC-001",
-                productName: "Bộ lập trình PLC S7-1200",
-                manufacturer: "Siemens",
-                unit: "Bộ",
-                quantity: 2
-            }
-        ],
-        status: RfqStatus.ACCEPTED,
-        createdAt: "2024-03-05T10:15:00Z"
+    logs: [
+      { action: 'Khách hàng tạo yêu cầu', timestamp: '2024-03-20T08:00:00Z' }
+    ]
+  },
+  {
+    id: '2',
+    code: 'RFQ-002',
+    status: RfqStatus.ACCEPTED,
+    userId: 'SLS-001',
+    customerId: 'CUS-002',
+    createdAt: '2024-03-19T14:30:00Z',
+    items: [],
+    customerInfo: {
+      companyName: 'Tập đoàn Sản xuất ABC',
+      recipientName: 'Trần Thị B',
+      email: 'b.tran@abccorp.com',
+      recipientPhone: '0912345678',
+      address: '456 Khu Công nghiệp, Bình Dương',
+      taxCode: '0108889999'
     },
-    {
-        id: "rfq-003",
-        code: "RFQ-2024-003",
-        userId: null,
-        customerId: "cust-003",
-        customerInfo: {
-            recipientName: "Lê Văn C",
-            recipientPhone: "0987654321",
-            companyName: "Xưởng Cơ khí Thành Công",
-            email: "cv@thanhcong.com.vn",
-            address: "78 Đường 3/2, Quận 10, TP.HCM",
-            taxCode: "0908070605"
-        },
-        items: [
-            {
-                id: "ri-003",
-                productId: "p-004",
-                productCode: "CON-001",
-                productName: "Khởi động từ 3 pha 22kW",
-                manufacturer: "Schneider",
-                unit: "Cái",
-                quantity: 5
-            }
-        ],
-        status: RfqStatus.DRAFT,
-        createdAt: "2024-03-10T14:20:00Z"
+    logs: [
+      { action: 'Khách hàng tạo yêu cầu', timestamp: '2024-03-19T14:30:00Z' },
+      { action: 'Nhân viên SLS-001 tiếp nhận', timestamp: '2024-03-19T15:00:00Z' }
+    ]
+  },
+  {
+    id: '3',
+    code: 'RFQ-003',
+    status: RfqStatus.CONVERTED,
+    userId: 'SLS-002',
+    customerId: 'CUS-003',
+    createdAt: '2024-03-18T09:00:00Z',
+    items: [],
+    customerInfo: {
+      companyName: 'Cửa hàng Điện máy Quang Minh',
+      recipientName: 'Lê Văn C',
+      email: 'c.le@quangminh.vn',
+      recipientPhone: '0987654321',
+      address: '789 Đường XYZ, Đà Nẵng',
+      taxCode: '0401112223'
     },
-    {
-        id: "rfq-004",
-        code: "RFQ-2024-004",
-        userId: "user-003",
-        customerId: "cust-004",
-        customerInfo: {
-            recipientName: "Phạm Minh H",
-            recipientPhone: "0933445566",
-            companyName: "Xây dựng Hòa Bình",
-            email: "hpm@hoabinh.com.vn",
-            address: "235 Võ Thị Sáu, Quận 3, TP.HCM",
-            taxCode: "0304050607"
-        },
-        items: [],
-        status: RfqStatus.REJECTED,
-        createdAt: "2024-03-12T09:45:00Z"
+    logs: [
+      { action: 'Khách hàng tạo yêu cầu', timestamp: '2024-03-18T09:00:00Z' },
+      { action: 'Nhân viên SLS-002 tiếp nhận', timestamp: '2024-03-18T10:00:00Z' },
+      { action: 'Đã chuyển thành đơn hàng', timestamp: '2024-03-18T16:00:00Z' }
+    ]
+  },
+  {
+    id: '4',
+    code: 'RFQ-004',
+    status: RfqStatus.REJECTED,
+    userId: 'SLS-001',
+    customerId: 'CUS-004',
+    createdAt: '2024-03-20T11:00:00Z',
+    items: [],
+    customerInfo: {
+      companyName: 'Xưởng Cơ khí Thành Công',
+      recipientName: 'Phạm Văn D',
+      email: 'd.pham@thanhcong.vn',
+      recipientPhone: '0977889900',
+      address: '101 Đường DEF, Hà Nội',
+      taxCode: '0105556667'
     },
-    {
-        id: "rfq-006",
-        code: "RFQ-2024-006",
-        userId: "user-004",
-        customerId: "cust-006",
-        customerInfo: {
-            recipientName: "Đặng Thu Thảo",
-            recipientPhone: "0966778899",
-            companyName: "May mặc Việt Tiến",
-            email: "thaodt@viettien.com.vn",
-            address: "07 Lê Minh Xuân, Quận Tân Bình, TP.HCM",
-            taxCode: "0809101112"
-        },
-        items: [
-            {
-                id: "ri-004",
-                productId: "p-005",
-                productCode: "INV-001",
-                productName: "Biến tần 5.5kW",
-                manufacturer: "ABB",
-                unit: "Bộ",
-                quantity: 1
-            }
-        ],
-        status: RfqStatus.CONVERTED,
-        createdAt: "2024-03-15T16:00:00Z"
+    logs: [
+      { action: 'Khách hàng tạo yêu cầu', timestamp: '2024-03-20T11:00:00Z' },
+      { action: 'Từ chối: Khách hàng yêu cầu mặt hàng không kinh doanh', timestamp: '2024-03-20T11:30:00Z' }
+    ]
+  },
+  {
+    id: '5',
+    code: 'RFQ-005',
+    status: RfqStatus.PENDING,
+    userId: null,
+    customerId: 'CUS-005',
+    createdAt: '2024-03-20T13:00:00Z',
+    items: [],
+    customerInfo: {
+      companyName: 'Nội thất Xinh',
+      recipientName: 'Hoàng Thị E',
+      email: 'e.hoang@noithatxinh.com',
+      recipientPhone: '0933445566',
+      address: '202 Đường GHI, Cần Thơ',
+      taxCode: '1809998887'
     },
-    {
-        id: "rfq-005",
-        code: "RFQ-2024-005",
-        userId: "user-002",
-        customerId: "cust-005",
-        customerInfo: {
-            recipientName: "Hoàng Đức L",
-            recipientPhone: "0944556677",
-            companyName: "Logistics Toàn Cầu",
-            email: "lhd@global-log.vn",
-            address: "Lô M2, Đường K1, KCN Cát Lái, Quận 2, TP.HCM",
-            taxCode: "0708091011"
-        },
-        items: [
-            {
-                id: "ri-005",
-                productId: "p-006",
-                productCode: "HMI-001",
-                productName: "Màn hình HMI 7 inch",
-                manufacturer: "Kinco",
-                unit: "Cái",
-                quantity: 3
-            }
-        ],
-        status: RfqStatus.NEGOTIATING,
-        createdAt: "2024-03-18T11:20:00Z"
-    },
-    {
-        id: "rfq-007",
-        code: "RFQ-2024-007",
-        userId: "user-005",
-        customerId: "cust-007",
-        customerInfo: {
-            recipientName: "Trương Mỹ L",
-            recipientPhone: "0955667788",
-            companyName: "Thép Hòa Phát",
-            email: "ltm@hoaphat.com.vn",
-            address: "KCN Phố Nối A, Hưng Yên",
-            taxCode: "0203040506"
-        },
-        items: [
-            {
-                id: "ri-006",
-                productId: "p-007",
-                productCode: "ENC-001",
-                productName: "Bộ mã hóa vòng quay Encoder",
-                manufacturer: "Omron",
-                unit: "Cái",
-                quantity: 15
-            }
-        ],
-        status: RfqStatus.RESPONDED,
-        createdAt: "2024-03-20T09:30:00Z"
-    }
+    logs: [
+      { action: 'Khách hàng tạo yêu cầu', timestamp: '2024-03-20T13:00:00Z' }
+    ]
+  }
 ];
