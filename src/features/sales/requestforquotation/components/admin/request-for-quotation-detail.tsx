@@ -7,7 +7,15 @@ import {
   AlertCircle, ClipboardList, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/shadcn-ui/select';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
+import { MOCK_STAFF } from '../../mocks/staff-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
@@ -18,30 +26,31 @@ interface RequestForQuotationDetailProps {
 }
 
 const statusColor: Record<string, string> = {
-  [RfqStatus.DRAFT]:     'bg-gray-50 text-gray-500 border-gray-200',
-  [RfqStatus.PENDING]:   'bg-blue-50 text-blue-700 border-blue-200',
-  [RfqStatus.ACCEPTED]:  'bg-indigo-50 text-indigo-700 border-indigo-200',
-  [RfqStatus.REJECTED]:  'bg-red-50 text-red-700 border-red-200',
+  [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
+  [RfqStatus.PENDING]: 'bg-blue-50 text-blue-700 border-blue-200',
+  [RfqStatus.ACCEPTED]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  [RfqStatus.REJECTED]: 'bg-red-50 text-red-700 border-red-200',
   [RfqStatus.CONVERTED]: 'bg-green-50 text-green-700 border-green-200',
 };
 
 const statusLabel: Record<string, string> = {
-  [RfqStatus.DRAFT]:     'Nháp',
-  [RfqStatus.PENDING]:   'Đang chờ',
-  [RfqStatus.ACCEPTED]:  'Đã tiếp nhận',
-  [RfqStatus.REJECTED]:  'Đã từ chối',
+  [RfqStatus.DRAFT]: 'Nháp',
+  [RfqStatus.PENDING]: 'Đang chờ',
+  [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
+  [RfqStatus.REJECTED]: 'Đã từ chối',
   [RfqStatus.CONVERTED]: 'Đã chốt đơn',
 };
 
 export default function RequestForQuotationDetail({ id, onBack }: RequestForQuotationDetailProps) {
   const rfq = MOCK_RFQS.find(r => r.id === id);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
+  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
 
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
 
   if (isCreatingQuotation) {
     return (
-      <QuotationCreate 
+      <QuotationCreate
         rfqId={id}
         onBack={() => setIsCreatingQuotation(false)}
       />
@@ -81,9 +90,9 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             </>
           )}
           {rfq.status === RfqStatus.ACCEPTED && (
-            <Button 
+            <Button
               onClick={() => setIsCreatingQuotation(true)}
-              variant="outline" 
+              variant="outline"
               className="rounded admin-btn-primary border-transparent"
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -127,6 +136,23 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   <td className="px-6 py-3 admin-text-primary font-semibold">Ngày tạo</td>
                   <td className="px-6 py-3 font-medium text-gray-900">
                     {new Date(rfq.createdAt).toLocaleDateString('vi-VN')}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên</td>
+                  <td className="px-6 py-3">
+                    <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn nhân viên" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MOCK_STAFF.map((staff) => (
+                          <SelectItem key={staff.id} value={staff.id}>
+                            {staff.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </td>
                 </tr>
               </tbody>
