@@ -16,7 +16,7 @@ export const AdminLayoutClient = ({children, defaultOpen} : AdminLayoutClientPro
         <SidebarProvider defaultOpen={defaultOpen}>
             <CrmSidebar/>
 
-            <SidebarInset className="flex min-h-screen flex-1 min-w-0 flex-col bg-[#F4F7FE]">
+            <SidebarInset className="flex min-h-screen flex-1 min-w-0 flex-col bg-[var(--admin-background)]">
                 <CrmHeader/>
 
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
