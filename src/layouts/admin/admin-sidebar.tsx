@@ -22,6 +22,7 @@ import {
   FileEdit,
   FolderTree,
   Scale,
+  ClipboardList
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -150,6 +151,11 @@ const sidebarSections: {
         name: 'Danh sách kho',
         icon: Layers,
         href: '/warehouse/list',
+      },
+      {
+        name: 'Yêu cầu cấp hàng',
+        icon: ClipboardList,
+        href: '/warehouse/supply-requests',
       }
     ],
   },
