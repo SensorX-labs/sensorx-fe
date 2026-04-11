@@ -1,23 +1,21 @@
-import { BaseModel } from '@/shared/models/base-model';
-import { ProductCategory } from './product-category';
-import { UnitOfMeasure } from './unit-of-measure';
-import { ProductStatus } from './product-status';
-import { ProductAttribute } from './product-attribute';
-import { ProductImage } from './product-image';
-import { ProductPriceList } from './product-price-list';
+import { ProductCategory } from "../../category/models/product-category";
+import { ProductStatus } from "../enums/product-status";
+import { ProductAttribute } from "./product-attribute";
+import { ProductImage } from "./product-image";
+import { ProductShowcase } from "./product-showcase";
 
-export interface Product extends BaseModel {
-  id: string;
-  code: string;
-  name: string;
-  manufacture: string;
-  categoryId: string;
-  category?: ProductCategory;
-  status: ProductStatus;
-  unit?: UnitOfMeasure;
-  
-  priceList?: ProductPriceList; // Danh sách giá
+export interface Product {
+    id?: string ;
+    code ?: string ;
+    name : string ;
+    manufacturer ?: string ;
+    category : ProductCategory ;
+    status : ProductStatus ;
+    unit ?: string ;
+    
 
-  attributes? : ProductAttribute[];
-  images ?: ProductImage [];
+    // trường thông tin thêm 
+    productShowcases ?: ProductShowcase[] ;
+    productImages ?: ProductImage[] ;
+    productAttributes ?: ProductAttribute[] ;
 }
