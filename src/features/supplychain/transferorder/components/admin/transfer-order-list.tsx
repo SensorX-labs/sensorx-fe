@@ -17,11 +17,14 @@ import { MOCK_WAREHOUSES } from '../../../warehouse/mocks/warehouse-mocks';
 
 export function TransferOrderList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
   
-  const filteredOrders = MOCK_TRANSFER_ORDERS.filter(order => 
-    order.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.note?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrders = MOCK_TRANSFER_ORDERS.filter(order => {
+    const matchesSearch = order.code?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          order.note?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getWarehouseName = (warehouseId: string) => {
     const warehouse = MOCK_WAREHOUSES.find(w => w.id === warehouseId);
@@ -40,6 +43,10 @@ export function TransferOrderList() {
     console.log('View transfer order details:', id);
   };
 
+  const totalOrders = MOCK_TRANSFER_ORDERS.length;
+  const processingOrders = MOCK_TRANSFER_ORDERS.filter(o => o.status === TransferOrderStatus.PROCESSING).length;
+  const completedOrders = MOCK_TRANSFER_ORDERS.filter(o => o.status === TransferOrderStatus.COMPLETED).length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end gap-4">
@@ -49,20 +56,80 @@ export function TransferOrderList() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4 bg-white p-4 rounded shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm phiếu điều chuyển..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-none shadow-sm rounded bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between space-x-2">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Tổng phiếu</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-gray-900">{totalOrders}</span>
+                </div>
+              </div>
+              <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+                <ArrowRightLeft className="w-4 h-4 text-blue-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-none shadow-sm rounded bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between space-x-2">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Đang xử lý</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-gray-900">{processingOrders}</span>
+                </div>
+              </div>
+              <div className="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center">
+                <ArrowRightLeft className="w-4 h-4 text-yellow-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm rounded bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between space-x-2">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Đã xử lý</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-gray-900">{completedOrders}</span>
+                </div>
+              </div>
+              <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center">
+                <ArrowRightLeft className="w-4 h-4 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
+      <Card className="border-none shadow-sm bg-white rounded overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4">
+          <div className="relative flex-1 w-full sm:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm phiếu điều chuyển..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <select
+              className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value={TransferOrderStatus.PROCESSING}>Đang xử lý</option>
+              <option value={TransferOrderStatus.COMPLETED}>Đã xử lý</option>
+            </select>
+          </div>
+        </div>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>

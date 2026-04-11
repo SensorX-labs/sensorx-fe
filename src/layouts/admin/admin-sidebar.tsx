@@ -147,14 +147,19 @@ const sidebarSections: {
         name: 'Phiếu soạn kho',
         icon: FileEdit,
         href: '/warehouse/picking-note',
-      },
+      }
+    ],
+  },
+  {
+    title: 'CHUỖI CUNG ỨNG',
+    items: [
       {
         name: 'Danh sách kho',
         icon: Layers,
         href: '/warehouse/list',
       },
       {
-        name: 'Yêu cầu cấp hàng',
+        name: 'Yêu cầu cung ứng',
         icon: ClipboardList,
         href: '/warehouse/supply-requests',
       },
