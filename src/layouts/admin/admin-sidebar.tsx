@@ -22,7 +22,8 @@ import {
   FileEdit,
   FolderTree,
   Scale,
-  ClipboardList
+  ClipboardList,
+  ArrowRightLeft
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -156,6 +157,11 @@ const sidebarSections: {
         name: 'Yêu cầu cấp hàng',
         icon: ClipboardList,
         href: '/warehouse/supply-requests',
+      },
+      {
+        name: 'Phiếu điều chuyển',
+        icon: ArrowRightLeft,
+        href: '/warehouse/transfer-orders',
       }
     ],
   },
