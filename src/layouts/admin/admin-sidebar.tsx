@@ -145,6 +145,11 @@ const sidebarSections: {
         name: 'Phiếu soạn kho',
         icon: FileEdit,
         href: '/warehouse/picking-note',
+      },
+      {
+        name: 'Danh sách kho',
+        icon: Layers,
+        href: '/warehouse/list',
       }
     ],
   },
