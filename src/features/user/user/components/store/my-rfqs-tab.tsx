@@ -14,17 +14,9 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     label: 'Đã tiếp nhận',
     className: 'bg-blue-50 text-blue-700 border-blue-200',
   },
-  [RfqStatus.RESPONDED]: {
-    label: 'Đã phản hồi',
-    className: 'bg-green-50 text-green-700 border-green-200',
-  },
   [RfqStatus.REJECTED]: {
     label: 'Đã từ chối',
     className: 'bg-red-50 text-red-700 border-red-200',
-  },
-  [RfqStatus.NEGOTIATING]: {
-    label: 'Đang thương lượng',
-    className: 'bg-orange-50 text-orange-700 border-orange-200',
   },
   [RfqStatus.CONVERTED]: {
     label: 'Đã có báo giá',

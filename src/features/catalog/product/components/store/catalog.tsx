@@ -4,15 +4,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProductCard from './product-card';
 import { FilterCatalog, FilterState } from './filter-catalog';
+import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
+import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
 import { Product } from '../../models/product';
-import { mockProducts } from '../../mocks/mock-product';
 
 const getCatalogProducts = (): (Product & { price: number; originalPrice?: number })[] => {
-    return mockProducts.map((product: Product) => {
-        // Lấy giá từ tier đầu tiên (số lượng = 1)
-        const firstTier = product.priceList?.tiers?.[0];
-        const price = firstTier?.defaultPrice || 0;
-        const originalPrice = (firstTier?.defaultPrice || 0) + 500000; // Giá gốc cao hơn 500k
+    return MOCK_PRODUCTS.map((product: Product) => {
+        const priceData = MOCK_INTERNAL_PRICES.find(p => p.productId === product.id || p.productId === product.code);
+        const price = priceData?.suggestedPrice || 0;
+        const originalPrice = price ? price + 500000 : 0;
 
         return {
             ...product,
@@ -60,14 +60,14 @@ export const Catalog: React.FC = () => {
         let result = [...products];
 
         if (filters.categories.length > 0) {
-            result = result.filter((p) => filters.categories.includes(p.categoryId));
+            result = result.filter((p) => p.category?.id && filters.categories.includes(p.category.id));
         }
 
         if (filters.search.trim()) {
             const searchTerm = filters.search.toLowerCase();
             result = result.filter((p) =>
                 p.name.toLowerCase().includes(searchTerm) ||
-                p.manufacture.toLowerCase().includes(searchTerm)
+                (p.manufacturer && p.manufacturer.toLowerCase().includes(searchTerm))
             );
         }
 
@@ -86,11 +86,11 @@ export const Catalog: React.FC = () => {
                 result.sort((a, b) => b.name.localeCompare(a.name, 'vi'));
                 break;
             case 'popular':
-                result.sort((a, b) => (a.id > b.id ? 1 : -1));
+                result.sort((a, b) => ((a.id || '') > (b.id || '') ? 1 : -1));
                 break;
             case 'newest':
             default:
-                result.sort((a, b) => (a.id > b.id ? -1 : 1));
+                result.sort((a, b) => ((a.id || '') > (b.id || '') ? -1 : 1));
                 break;
         }
 
@@ -175,14 +175,14 @@ export const Catalog: React.FC = () => {
                                     {paginatedProducts.map((product) => (
                                         <ProductCard
                                             key={product.id}
-                                            id={product.id}
+                                            id={product.id!}
                                             name={product.name}
                                             price={product.price}
                                             originalPrice={product.originalPrice}
-                                            image={product.images?.[0]?.imageUrl || '/assets/images/products/default.png'}
-                                            isFavorite={favorites.includes(product.id)}
-                                            onAddToCart={() => handleAddToCart(product.id)}
-                                            onAddToFavorite={() => handleAddToFavorite(product.id)}
+                                            image={product.productImages?.[0]?.imageUrl || '/assets/images/products/default.png'}
+                                            isFavorite={favorites.includes(product.id!)}
+                                            onAddToCart={() => handleAddToCart(product.id!)}
+                                            onAddToFavorite={() => handleAddToFavorite(product.id!)}
                                             product={product}
                                         />
                                     ))}

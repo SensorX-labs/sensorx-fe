@@ -18,10 +18,15 @@ import {
   XCircle
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { mockProducts } from '@/features/catalog/product/mocks/mock-product';
+import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { MOCK_INTERNAL_PRICES } from '@/features/catalog/product/mocks/internal-price-mocks';
 
-const p1 = mockProducts.find(p => p.id === 'prod-001')!;
-const p2 = mockProducts.find(p => p.id === 'prod-002')!;
+const p1 = MOCK_PRODUCTS.find(p => p.id === 'prod-001')!;
+const p2 = MOCK_PRODUCTS.find(p => p.id === 'prod-002')!;
+
+const getPrice = (productId: string) => {
+  return MOCK_INTERNAL_PRICES.find(p => p.productId === productId)?.suggestedPrice || 0;
+};
 
 const orderDetail = {
   id: 'ORD-001',
@@ -29,7 +34,9 @@ const orderDetail = {
   status: 'completed',
   paymentMethod: 'Chuyển khoản ngân hàng',
   shippingMethod: 'Giao hàng tiêu chuẩn (Giao Hàng Nhanh)',
-  subtotal: (p1.priceList?.tiers[0].defaultPrice || 0) * 2 + (p2.priceList?.tiers[0].defaultPrice || 0),
+  get subtotal() {
+    return getPrice(p1.id!) * 2 + getPrice(p2.id!);
+  },
   shippingFee: 150000,
   get total() { return this.subtotal + this.shippingFee; },
   billingInfo: {
@@ -39,24 +46,26 @@ const orderDetail = {
     company: 'Công Ty TNHH SensorX',
     address: '123 Đường ABC, Phường 1, Quận 1, TP. Hồ Chí Minh'
   },
-  items: [
-    {
-      id: p1.id,
-      name: p1.name,
-      sku: p1.code,
-      price: p1.priceList?.tiers[0].defaultPrice || 0,
-      qty: 2,
-      image: p1.images?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
-    },
-    {
-      id: p2.id,
-      name: p2.name,
-      sku: p2.code,
-      price: p2.priceList?.tiers[0].defaultPrice || 0,
-      qty: 1,
-      image: p2.images?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
-    }
-  ]
+  get items() {
+    return [
+      {
+        id: p1.id,
+        name: p1.name,
+        sku: p1.code,
+        price: getPrice(p1.id!),
+        qty: 2,
+        image: p1.productImages?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
+      },
+      {
+        id: p2.id,
+        name: p2.name,
+        sku: p2.code,
+        price: getPrice(p2.id!),
+        qty: 1,
+        image: p2.productImages?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
+      }
+    ];
+  }
 };
 
 const statusConfig: any = {

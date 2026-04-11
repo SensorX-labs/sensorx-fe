@@ -18,7 +18,7 @@ export function CartItem({
   onQuantityChange,
   onRemove,
 }: CartItemProps) {
-  const primaryImg = product.images?.[0]?.imageUrl || '/assets/images/products/default.webp';
+  const primaryImg = product.productImages?.[0]?.imageUrl || '/assets/images/products/default.webp';
 
   return (
     <div className="flex gap-6 py-8 border-b border-gray-200">
@@ -40,7 +40,7 @@ export function CartItem({
           {product.name}
         </h3>
         <p className="meta-label mb-4">
-          Mã: {product.code} | Thương hiệu: {product.manufacture}
+          Mã: {product.code} | Thương hiệu: {product.manufacturer}
         </p>
 
         <div className="flex items-center gap-4">

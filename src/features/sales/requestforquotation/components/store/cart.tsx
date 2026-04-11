@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, ShoppingBag, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 import { CartItem } from './cart-item';
-import { mockProducts } from '@/features/catalog/product/mocks/mock-product';
+import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
 import { QuotationForm, QuotationFormData } from './quote-request-form';
 
 const mockCartItems = [
   {
-    product: mockProducts.find((p) => p.id === 'prod-001')!,
+    product: MOCK_PRODUCTS.find((p) => p.id === 'prod-001')!,
     quantity: 2,
   },
   {
-    product: mockProducts.find((p) => p.id === 'prod-002')!,
+    product: MOCK_PRODUCTS.find((p) => p.id === 'prod-002')!,
     quantity: 1,
   },
 ];
@@ -103,9 +103,9 @@ export function Cart() {
                       product={item.product}
                       quantity={item.quantity}
                       onQuantityChange={(quantity) =>
-                        handleQuantityChange(item.product.id, quantity)
+                        handleQuantityChange(item.product.id!, quantity)
                       }
-                      onRemove={() => handleRemoveItem(item.product.id)}
+                      onRemove={() => handleRemoveItem(item.product.id!)}
                     />
                   ))}
                 </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { mockProductCategories } from '../../mocks/mock-product-category';
+import { MOCK_CATEGORIES } from '@/features/catalog/category/components/mocks/product-category-mocks';
 
 interface FilterCatalogProps {
     onFiltersChange?: (filters: FilterState) => void;
@@ -164,7 +164,7 @@ export const FilterCatalog: React.FC<FilterCatalogProps> = ({
                 </button>
                 {expandedSections.category && (
                     <div className="pl-2 space-y-3 pb-6 border-b border-filter-border">
-                        {mockProductCategories
+                        {MOCK_CATEGORIES
                             .filter((category) => category.id != null)
                             .map((category) => (
                                 <label key={category.id} className="flex items-center cursor-pointer group">
