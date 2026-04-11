@@ -70,9 +70,6 @@ export function WarehouseList() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-gray-500">
-                          <WarehouseIcon className="w-4 h-4" />
-                        </div>
                         <span className="font-semibold text-gray-700">{wh.name}</span>
                       </div>
                     </td>
