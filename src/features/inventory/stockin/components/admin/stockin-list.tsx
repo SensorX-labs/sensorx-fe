@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { PackagePlus, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
-import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Phiếu nhập tháng này', value: '143', icon: PackagePlus, color: 'text-[#4318FF]' },
@@ -44,9 +44,11 @@ export default function StockInList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
-        <button className="flex items-center gap-2 admin-btn-primary">
-          <PackagePlus className="w-4 h-4" /> Tạo phiếu nhập
-        </button>
+        <Link href="/inventory/stockin/new?action=create">
+          <button className="flex items-center gap-2 admin-btn-primary">
+            <PackagePlus className="w-4 h-4" /> Thêm phiếu nhập
+          </button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -121,15 +123,19 @@ export default function StockInList() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Link href={`/inventory/stockin/${r.id}`}>
+                        <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </Link>
+                      <Link href={`/inventory/stockin/${r.id}?action=edit`}>
+                        <button className="p-2 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </Link>
+                      <button className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded">
                         <Trash2 className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
                   </td>
                 </tr>
