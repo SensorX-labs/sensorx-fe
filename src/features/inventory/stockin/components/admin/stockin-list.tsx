@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { PackagePlus, Truck, DollarSign, Hash, Eye, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import React, { useState, useMemo } from 'react';
+import { PackagePlus, Truck, DollarSign, Hash, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
@@ -27,6 +27,20 @@ const statusColor: Record<string, string> = {
 };
 
 export default function StockInList() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const filteredImports = useMemo(() => {
+    return imports.filter(item => {
+      const matchesSearch = 
+        (item.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        (item.supplier?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchTerm, statusFilter]);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
@@ -51,36 +65,61 @@ export default function StockInList() {
         ))}
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Số phiếu</th>
-                <th className="text-left px-6 py-3 admin-table-th">Nhà cung cấp</th>
-                <th className="text-left px-6 py-3 admin-table-th">Ngày nhập</th>
-                <th className="text-left px-6 py-3 admin-table-th">Số mặt hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tổng tiền</th>
-                <th className="text-left px-6 py-3 admin-table-th">Kho</th>
-                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
-                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {imports.map((r) => (
-                <tr key={r.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold admin-text-primary">{r.id}</td>
-                  <td className="px-6 py-3 font-semibold">{r.supplier}</td>
-                  <td className="px-6 py-3">{r.date}</td>
-                  <td className="px-6 py-3 text-center">{r.items}</td>
-                  <td className="px-6 py-3 font-semibold">{r.total} đ</td>
-                  <td className="px-6 py-3">{r.warehouse}</td>
-                  <td className="px-6 py-3">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm số phiếu, nhà cung cấp..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-[200px]">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+              <option value="Đang xử lý">Đang xử lý</option>
+              <option value="Chờ xác nhận">Chờ xác nhận</option>
+            </select>
+          </div>
+        </div>
+
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Số phiếu</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Nhà cung cấp</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Ngày nhập</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Số mặt hàng</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Tổng tiền</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Kho</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredImports.map((r) => (
+                <tr key={r.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900">{r.id}</td>
+                  <td className="px-6 py-4 font-semibold text-gray-900">{r.supplier}</td>
+                  <td className="px-6 py-4 text-gray-700">{r.date}</td>
+                  <td className="px-6 py-4 text-center text-gray-700">{r.items}</td>
+                  <td className="px-6 py-4 font-semibold text-gray-900">{r.total} đ</td>
+                  <td className="px-6 py-4 text-gray-700">{r.warehouse}</td>
+                  <td className="px-6 py-4">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[r.status] ?? 'bg-gray-100 text-gray-500'}`}>
                       {r.status}
                     </span>
                   </td>
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
                         <Eye className="w-4 h-4" />
@@ -97,8 +136,8 @@ export default function StockInList() {
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
   );
 }
+

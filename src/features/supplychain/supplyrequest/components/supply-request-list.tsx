@@ -48,7 +48,7 @@ export function SupplyRequestList() {
   const completedRequests = MOCK_SUPPLY_REQUESTS.filter(r => r.status === SupplyRequestStatus.COMPLETED).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-end gap-4">
         <Button className="admin-btn-primary flex items-center gap-2">
           <ClipboardList className="w-4 h-4" />
@@ -106,8 +106,8 @@ export function SupplyRequestList() {
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -118,7 +118,7 @@ export function SupplyRequestList() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="w-full md:w-[200px]">
             <select
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
               value={statusFilter}
@@ -130,28 +130,26 @@ export function SupplyRequestList() {
             </select>
           </div>
         </div>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Mã Yêu Cầu</th>
-                <th className="text-left px-6 py-3 admin-table-th">Kho Nhận</th>
-                <th className="text-left px-6 py-3 admin-table-th">Ghi chú</th>
-                <th className="text-center px-6 py-3 admin-table-th">Số Loại Hàng</th>
-                <th className="text-center px-6 py-3 admin-table-th">Trạng thái</th>
-                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRequests.length > 0 ? (
-                filteredRequests.map((req) => (
-                  <tr key={req.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-semibold admin-text-primary">{req.id}</span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700 font-medium">
-                      {getWarehouseName(req.warehouseId)}
-                    </td>
+
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Mã Yêu Cầu</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Kho Nhận</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Ghi chú</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Số Loại Hàng</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRequests.length > 0 ? (
+              filteredRequests.map((req) => (
+                <tr key={req.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900">{req.id}</td>
+                  <td className="px-6 py-4 font-bold text-gray-900">
+                    {getWarehouseName(req.warehouseId)}
+                  </td>
                     <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate">
                       {req.note || '---'}
                     </td>
@@ -198,18 +196,17 @@ export function SupplyRequestList() {
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    Không tìm thấy yêu cầu nào.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  Không tìm thấy yêu cầu nào.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
