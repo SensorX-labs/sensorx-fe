@@ -1,5 +1,5 @@
-import StockInList from "@/features/warehouse/stockin/components/admin/stockin-list";
+import StockInList from "@/features/inventory/stockin/components/admin/stockin-list";
 
 export default function StockIns() {
-  return <StockInList />;
+    return <StockInList />;
 }

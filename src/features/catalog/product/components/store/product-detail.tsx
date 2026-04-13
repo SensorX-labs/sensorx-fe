@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, Phone, Mail } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
 import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
+import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
+import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
 import { Product } from '../../models/product';
-import { mockProducts } from '../../mocks/mock-product';
 
 interface ProductDetailProps {
   product: Product;
@@ -21,10 +22,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
   // product cùng thể loại
   const relatedProducts = useMemo(
     () =>
-      mockProducts
-        .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
+      MOCK_PRODUCTS
+        .filter((p) => p.category?.id === product.category?.id && p.id !== product.id)
         .slice(0, 4),
-    [product.categoryId, product.id]
+    [product.category?.id, product.id]
   );
 
   const handleAddToCart = () => {
@@ -55,11 +56,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="space-y-4">
 
             {/* ảnh to */}
-            {product.images && product.images.length > 0 && (
+            {product.productImages && product.productImages.length > 0 && (
               <Carousel className="w-full">
                 <CarouselContent>
-                  {product.images.map((image) => (
-                    <CarouselItem key={image.id}>
+                  {product.productImages.map((image, idx) => (
+                    <CarouselItem key={idx}>
                       <div className="relative bg-product-card-bg aspect-square overflow-hidden border border-product-card-border">
                         <Image
                           src={image.imageUrl}
@@ -78,11 +79,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
 
             {/* ảnh bên dưới */}
-            {product.images && product.images.length > 1 && (
+            {product.productImages && product.productImages.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.images.map((image, index) => (
+                {product.productImages.map((image, index) => (
                   <button
-                    key={image.id}
+                    key={index}
                     className={`flex-shrink-0 w-20 h-20 border-2 overflow-hidden transition-all bg-product-card-bg border-product-card-border`}
                   >
                     <Image
@@ -105,7 +106,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div className="flex items-center gap-4 meta-label">
                 <span>Mã sản phẩm: {product.code}</span>
                 <span>•</span>
-                <span>Thương hiệu: {product.manufacture}</span>
+                <span>Thương hiệu: {product.manufacturer}</span>
               </div>
             </div>
 
@@ -119,7 +120,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 min="1"
                 className="w-24 px-4 py-2 border border-gray-300 text-center text-gray-900 font-medium focus:outline-none focus:border-gray-900"
               />
-              <span className="text-xs text-gray-600 font-medium tracking-wider">{product.unit?.name || 'cái'}</span>
+              <span className="text-xs text-gray-600 font-medium tracking-wider">{product.unit || 'cái'}</span>
             </div>
 
             {/* các nút */}
@@ -176,14 +177,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </div>
 
         {/* thông số sản phẩm*/}
-        {product.attributes && product.attributes.length > 0 && (
+        {product.productAttributes && product.productAttributes.length > 0 && (
           <div className="mt-12 py-8">
             <h2 className="tracking-title-lg">Thông số kỹ thuật</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-20">
-              {product.attributes.map((attr) => (
-                <div key={attr.id} className="flex justify-between border-b border-gray-100 pb-4">
-                  <span className="text-gray-600 font-medium">{attr.name}</span>
-                  <span className="text-gray-900 font-semibold">{attr.value}</span>
+              {product.productAttributes.map((attr, idx) => (
+                <div key={idx} className="flex justify-between border-b border-gray-100 pb-4">
+                  <span className="text-gray-600 font-medium">{attr.attributeName}</span>
+                  <span className="text-gray-900 font-semibold">{attr.attributeValue}</span>
                 </div>
               ))}
             </div>
@@ -196,9 +197,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <h2 className="tracking-title-lg">Sản phẩm liên quan</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct) => {
-                const firstTier = relatedProduct.priceList?.tiers?.[0];
-                const price = firstTier?.defaultPrice || 0;
-                const primaryImg = relatedProduct.images?.[0]?.imageUrl || '/assets/images/products/default.webp';
+                const priceData = MOCK_INTERNAL_PRICES.find(p => p.productId === relatedProduct.id || p.productId === relatedProduct.code);
+                const price = priceData?.suggestedPrice || 0;
+                const primaryImg = relatedProduct.productImages?.[0]?.imageUrl || '/assets/images/products/default.webp';
 
                 return (
                   <Link
@@ -218,6 +219,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
                       <h3 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-brand-green transition-colors">
                         {relatedProduct.name}
                       </h3>
+                      {price > 0 && (
+                        <div className="font-bold text-gray-900">{price.toLocaleString('vi-VN')} đ</div>
+                      )}
                     </div>
                   </Link>
                 );

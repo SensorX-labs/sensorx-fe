@@ -34,7 +34,7 @@ export function AddCartItemMessage({
 
   if (!show) return null;
 
-  const primaryImg = product.images?.[0]?.imageUrl || '/assets/images/products/default.webp';
+  const primaryImg = product.productImages?.[0]?.imageUrl || '/assets/images/products/default.webp';
 
   return (
     <div className="fixed top-24 right-8 z-50 animate-in fade-in slide-in-from-right duration-300">
@@ -71,7 +71,7 @@ export function AddCartItemMessage({
               {product.name}
             </h4>
             <p className="meta-label mb-3">
-              Mã: {product.code} | Thương hiệu: {product.manufacture}
+              Mã: {product.code} | Thương hiệu: {product.manufacturer}
             </p>
             <p className="text-sm font-semibold text-gray-900">
               Số lượng: {quantity}

@@ -19,7 +19,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
 import { MOCK_ORDERS } from '../../mocks/order-mocks';
-import { mockProducts } from '@/features/catalog/product/mocks/mock-product';
+import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
 import { OrderStatus } from '../../enums/order-status';
 
 interface OrderDetailProps {
@@ -36,12 +36,12 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
     setSelectedCode(defaultValue || "");
   }, [defaultValue]);
 
-  const filteredProducts = mockProducts.filter(p => 
+  const filteredProducts = MOCK_PRODUCTS.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.code.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const selectedProduct = mockProducts.find(p => p.code === selectedCode);
+  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
@@ -73,7 +73,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  key={p.id}
                  className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
                  onClick={() => {
-                    setSelectedCode(p.code);
+                    setSelectedCode(p.code || "");
                     onSelect(p);
                     setOpen(false);
                  }}
@@ -81,7 +81,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
                  </div>
                </div>
              ))

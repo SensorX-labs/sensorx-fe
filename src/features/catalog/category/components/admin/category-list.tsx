@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Package
 } from 'lucide-react';
+import { MOCK_CATEGORIES } from '../../mocks/category-mocks';
+import { ProductCategory } from '../../models/product-category';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -22,21 +24,7 @@ import {
 } from "@/shared/components/shadcn-ui/dialog";
 import { Input } from "@/shared/components/shadcn-ui/input";
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  productCount: number;
-  status: 'active' | 'inactive';
-}
 
-const mockCategories: Category[] = [
-  { id: '1', name: 'Điện thoại & Phụ kiện', description: 'Các loại điện thoại thông minh và phụ kiện đi kèm', productCount: 156, status: 'active' },
-  { id: '2', name: 'Máy tính & Laptop', description: 'Máy tính để bàn, laptop và linh kiện máy tính', productCount: 84, status: 'active' },
-  { id: '3', name: 'Thiết bị âm thanh', description: 'Loa, tai nghe, micro và các thiết bị âm thanh khác', productCount: 42, status: 'active' },
-  { id: '4', name: 'Đồ gia dụng', description: 'Thiết bị điện gia đình và đồ dùng nhà bếp', productCount: 215, status: 'active' },
-  { id: '5', name: 'Máy ảnh & Quay phim', description: 'Máy ảnh cơ, máy ảnh kỹ thuật số và phụ kiện', productCount: 28, status: 'inactive' },
-];
 
 export default function CategoryList() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,7 +97,7 @@ export default function CategoryList() {
               </tr>
             </thead>
             <tbody>
-              {mockCategories.map((cat) => (
+              {MOCK_CATEGORIES.map((cat) => (
                 <tr key={cat.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

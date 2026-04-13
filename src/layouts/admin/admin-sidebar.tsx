@@ -22,6 +22,8 @@ import {
   FileEdit,
   FolderTree,
   Scale,
+  ClipboardList,
+  ArrowRightLeft
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -116,11 +118,7 @@ const sidebarSections: {
         icon: FolderTree,
         href: '/catalog/categories',
       },
-      {
-        name: 'Đơn vị tính',
-        icon: Scale,
-        href: '/catalog/uoms',
-      },
+      
     ],
   },
   {
@@ -145,6 +143,26 @@ const sidebarSections: {
         name: 'Phiếu soạn kho',
         icon: FileEdit,
         href: '/warehouse/picking-note',
+      }
+    ],
+  },
+  {
+    title: 'CHUỖI CUNG ỨNG',
+    items: [
+      {
+        name: 'Danh sách kho',
+        icon: Layers,
+        href: '/warehouse/list',
+      },
+      {
+        name: 'Yêu cầu cung ứng',
+        icon: ClipboardList,
+        href: '/warehouse/supply-requests',
+      },
+      {
+        name: 'Phiếu điều chuyển',
+        icon: ArrowRightLeft,
+        href: '/warehouse/transfer-orders',
       }
     ],
   },

@@ -123,8 +123,11 @@
     /* màu của card product landing page */
     --product-card-landing: #ECECEC;
 
-    /* màu nền trang web */
+    /* màu nền trang web (Store) */
     --page-background: #FCF9F4;
+
+    /* màu nền trang Admin (Gray-Blue) */
+    --admin-background: #F4F7FE;
 
     /* màu cho trang catalog (store) */
     --product-card-bg: #E8E3DB;
@@ -371,4 +374,3 @@
         @apply text-xs text-gray-600 tracking-[0.04em];
     }
 }
-

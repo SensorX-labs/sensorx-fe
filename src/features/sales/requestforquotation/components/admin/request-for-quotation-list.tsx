@@ -1,17 +1,9 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo } from 'react';
 import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Bell, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { Input } from '@/shared/components/shadcn-ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/shadcn-ui/select";
 import {
     Dialog,
     DialogContent,
@@ -135,37 +127,31 @@ export default function RequestForQuotationList() {
         ))}
       </div>
 
-      <div className="bg-white p-4 rounded border border-gray-100 shadow-sm">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input 
+            <input 
               placeholder="Tìm mã RFQ, công ty, khách hàng..." 
-              className="pl-10 text-xs border-gray-200 focus:border-gray-300 focus:ring-0 h-10 rounded shadow-none"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="w-full md:w-[200px]">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="text-xs h-10 border-gray-200 rounded shadow-none">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-3.5 h-3.5 text-gray-400" />
-                  <SelectValue placeholder="Trạng thái" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">Tất cả trạng thái</SelectItem>
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value} className="text-xs">{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select 
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
           </div>
         </div>
-      </div>
 
-      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50/50 border-b border-gray-100">
