@@ -67,59 +67,59 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[var(--brand-green-50)] text-[var(--brand-green-600)] flex items-center justify-center">
-              <FileStack className="w-5 h-5" />
-            </div>
+          <CardContent className="p-2.5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Tổng phiếu</p>
-              <p className="text-xl font-bold admin-title">{totalNotes}</p>
+              <p className="text-sm font-bold text-[#2B3674]">{totalNotes}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Tổng phiếu</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <FileStack className="w-4 h-4 text-[var(--brand-green-600)]" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gray-50 text-gray-500 flex items-center justify-center">
-              <FileEdit className="w-5 h-5" />
-            </div>
+          <CardContent className="p-2.5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Phiếu nháp</p>
-              <p className="text-xl font-bold admin-title">{draftNotes}</p>
+              <p className="text-sm font-bold text-[#2B3674]">{draftNotes}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Phiếu nháp</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <FileEdit className="w-4 h-4 text-gray-500" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-              <CheckSquare className="w-5 h-5" />
-            </div>
+          <CardContent className="p-2.5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Xác nhận</p>
-              <p className="text-xl font-bold admin-title">{confirmedNotes}</p>
+              <p className="text-sm font-bold text-[#2B3674]">{confirmedNotes}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Xác nhận</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <CheckSquare className="w-4 h-4 text-blue-500" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5" />
-            </div>
+          <CardContent className="p-2.5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Hoàn thành</p>
-              <p className="text-xl font-bold admin-title">{completedNotes}</p>
+              <p className="text-sm font-bold text-[#2B3674]">{completedNotes}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Hoàn thành</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-green-500" />
             </div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white rounded">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center">
-              <XCircle className="w-5 h-5" />
-            </div>
+          <CardContent className="p-2.5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Đã hủy</p>
-              <p className="text-xl font-bold admin-title">{cancelledNotes}</p>
+              <p className="text-sm font-bold text-[#2B3674]">{cancelledNotes}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Đã hủy</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <XCircle className="w-4 h-4 text-red-500" />
             </div>
           </CardContent>
         </Card>

@@ -56,51 +56,39 @@ export function SupplyRequestList() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Tổng yêu cầu</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{totalRequests}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
-                <ClipboardList className="w-4 h-4 text-blue-500" />
-              </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{totalRequests}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Tổng yêu cầu</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ClipboardList className="w-4 h-4 text-blue-500" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Chờ xử lý</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{pendingRequests}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center">
-                <ClipboardList className="w-4 h-4 text-yellow-600" />
-              </div>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{pendingRequests}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Chờ xử lý</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ClipboardList className="w-4 h-4 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Đã xử lý</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{completedRequests}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center">
-                <ClipboardList className="w-4 h-4 text-green-600" />
-              </div>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{completedRequests}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Đã xử lý</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ClipboardList className="w-4 h-4 text-green-600" />
             </div>
           </CardContent>
         </Card>

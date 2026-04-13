@@ -113,16 +113,16 @@ export default function StaffList() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {stats.map((s) => (
                     <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-                        <CardContent className="p-5 flex items-center justify-between">
+                        <CardContent className="p-2.5 flex items-center justify-between">
                             <div>
-                                <p className="text-xl font-bold text-[#2B3674]">{s.value}</p>
-                                <p className="text-xs font-semibold text-[#A3AED0] mt-0.5">{s.title}</p>
+                                <p className="text-sm font-bold text-[#2B3674]">{s.value}</p>
+                                <p className="text-xs font-semibold text-[#A3AED0]">{s.title}</p>
                             </div>
-                            <div className="w-10 h-10 rounded bg-[#F4F7FE] flex items-center justify-center">
-                                <s.icon className={`w-5 h-5 ${s.color}`} />
+                            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+                                <s.icon className={`w-4 h-4 ${s.color}`} />
                             </div>
                         </CardContent>
                     </Card>
