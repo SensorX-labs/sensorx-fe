@@ -20,12 +20,12 @@ import Link from 'next/link';
 import { ActionType } from '@/shared/constants/action-type';
 import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
 
-interface StockInDetailProps {
+interface StockOutDetailProps {
   id?: string;
   onBack?: () => void;
 }
 
-interface StockInItem {
+interface StockOutItem {
   id: string;
   productCode: string;
   productName: string;
@@ -34,14 +34,14 @@ interface StockInItem {
   taxRate: number;
 }
 
-interface StockInData {
+interface StockOutData {
   id: string;
   code: string;
   date: string;
-  supplier: string;
+  destination: string;
   warehouse: string;
   status: 'draft' | 'pending' | 'completed';
-  items: StockInItem[];
+  items: StockOutItem[];
   note: string;
 }
 
@@ -122,7 +122,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
   );
 }
 
-export default function StockInDetail({ id }: StockInDetailProps) {
+export default function StockOutDetail({ id }: StockOutDetailProps) {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
@@ -131,32 +131,32 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   );
   const [isEditing, setIsEditing] = useState(action === ActionType.CREATE);
 
-  const [stockInData, setStockInData] = useState<StockInData>({
-    id: id || 'PN001',
-    code: action === ActionType.CREATE ? '' : 'PN001',
+  const [stockOutData, setStockOutData] = useState<StockOutData>({
+    id: id || 'PX001',
+    code: action === ActionType.CREATE ? '' : 'PX001',
     date: new Date().toISOString().split('T')[0],
-    supplier: action === ActionType.CREATE ? '' : 'Cty CP Minh Toàn',
+    destination: action === ActionType.CREATE ? '' : 'Cửa hàng Hoàng Diệu',
     warehouse: (actionParam || ActionType.DETAIL) === ActionType.CREATE ? '' : 'kho-chinh',
     status: 'draft',
     items: action === ActionType.CREATE ? [] : [
-      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', quantity: 10, unitPrice: 5000000, taxRate: 10 },
+      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', quantity: 5, unitPrice: 5000000, taxRate: 10 },
     ],
     note: '',
   });
 
-  const [items, setItems] = useState<StockInItem[]>(stockInData.items);
-  const [supplier, setSupplier] = useState(stockInData.supplier);
-  const [warehouse, setWarehouse] = useState(stockInData.warehouse);
-  const [note, setNote] = useState(stockInData.note);
+  const [items, setItems] = useState<StockOutItem[]>(stockOutData.items);
+  const [destination, setDestination] = useState(stockOutData.destination);
+  const [warehouse, setWarehouse] = useState(stockOutData.warehouse);
+  const [note, setNote] = useState(stockOutData.note);
 
   const handleSave = () => {
-    console.log('Lưu phiếu nhập:', { ...stockInData, items, supplier, warehouse, note });
+    console.log('Lưu phiếu xuất:', { ...stockOutData, items, destination, warehouse, note });
     setAction(ActionType.DETAIL);
     setIsEditing(false);
   };
 
   const handleSubmit = () => {
-    console.log('Xác nhận phiếu nhập:', { ...stockInData, items, supplier, warehouse });
+    console.log('Xác nhận phiếu xuất:', { ...stockOutData, items, destination, warehouse });
     setAction(ActionType.DETAIL);
   };
 
@@ -172,7 +172,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
     }, 0);
 
   const addItem = () => {
-    const newItem: StockInItem = {
+    const newItem: StockOutItem = {
       id: Date.now().toString(),
       productCode: '',
       productName: '',
@@ -187,7 +187,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
     setItems(items.filter(item => item.id !== id));
   };
 
-  const updateItem = (id: string, field: keyof StockInItem, value: any) => {
+  const updateItem = (id: string, field: keyof StockOutItem, value: any) => {
     setItems(items.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
@@ -199,8 +199,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
         <div className="flex flex-col">
           <h2 className="text-2xl font-bold tracking-title-xl uppercase">
             {action === ActionType.CREATE
-              ? 'Tạo phiếu nhập kho'
-              : 'Chi tiết phiếu nhập kho'}
+              ? 'Tạo phiếu xuất kho'
+              : 'Chi tiết phiếu xuất kho'}
           </h2>
         </div>
         <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               </Button>
               
               {action === ActionType.CREATE ? (
-                <Link href="/inventory/stockin">
+                <Link href="/inventory/stockout">
                   <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Quay lại
@@ -229,13 +229,13 @@ export default function StockInDetail({ id }: StockInDetailProps) {
             <>
               <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
                 <Package className="w-4 h-4 mr-2" />
-                Xác nhận nhập
+                Xác nhận xuất
               </Button>
               <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
                 <Edit className="w-4 h-4 mr-2" />
                 Chỉnh sửa
               </Button>
-              <Link href="/inventory/stockin">
+              <Link href="/inventory/stockout">
                 <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Quay lại
@@ -259,43 +259,33 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-6 py-3 text-[#2B3674] w-2/5 font-semibold">Mã phiếu</td>
-                  <td className="px-6 py-3">{stockInData.code}</td>
+                  <td className="px-6 py-3">{stockOutData.code}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Trạng thái</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[stockInData.status]}`}>
-                      {statusLabel[stockInData.status]}
+                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[stockOutData.status]}`}>
+                      {statusLabel[stockOutData.status]}
                     </span>
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 text-[#2B3674] font-semibold">Ngày nhập</td>
-                  <td className="px-6 py-3">{new Date(stockInData.date).toLocaleDateString('vi-VN')}</td>
+                  <td className="px-6 py-3 text-[#2B3674] font-semibold">Ngày xuất</td>
+                  <td className="px-6 py-3">{new Date(stockOutData.date).toLocaleDateString('vi-VN')}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Thông tin nhà cung cấp */}
+          {/* Thông tin nơi nhận */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
               <Warehouse className="w-4 h-4" />
-              <h4 className="text-sm font-medium">Thông tin nhà cung cấp & kho</h4>
+              <h4 className="text-sm font-medium">Thông tin kho & nơi nhận</h4>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Nhà cung cấp</label>
-                <Input
-                  disabled={!isEditing}
-                  value={supplier}
-                  onChange={(e) => setSupplier(e.target.value)}
-                  className="text-sm h-9 border-gray-300 rounded"
-                  placeholder="Nhập tên nhà cung cấp"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho xuất</label>
                 <Select value={warehouse} onValueChange={setWarehouse} disabled={!isEditing}>
                   <SelectTrigger className="w-full h-9 text-sm border-gray-300 rounded">
                     <SelectValue placeholder="Chọn kho" />
@@ -306,6 +296,16 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                     <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Nơi nhận</label>
+                <Input
+                  disabled={!isEditing}
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="text-sm h-9 border-gray-300 rounded"
+                  placeholder="Nhập nơi nhận"
+                />
               </div>
             </div>
           </div>
