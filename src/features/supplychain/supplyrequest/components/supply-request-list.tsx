@@ -108,7 +108,7 @@ export function SupplyRequestList() {
 
       <Card className="border-none shadow-sm bg-white rounded overflow-hidden">
         <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4">
-          <div className="relative flex-1 w-full sm:max-w-sm">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"

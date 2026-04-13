@@ -1,10 +1,12 @@
 'use client';
 
 import React, {ReactNode} from 'react';
-import CrmSidebar from './admin-sidebar';
+import dynamic from 'next/dynamic';
 import CrmHeader from './admin-header';
 import CrmFooter from './admin-footer';
 import {SidebarProvider, SidebarInset} from '@/shared/components/shadcn-ui/sidebar';
+
+const CrmSidebar = dynamic(() => import('./admin-sidebar'), { ssr: false });
 
 interface AdminLayoutClientProps {
     children: ReactNode;

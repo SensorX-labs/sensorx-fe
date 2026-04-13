@@ -118,11 +118,7 @@ const sidebarSections: {
         icon: FolderTree,
         href: '/catalog/categories',
       },
-      {
-        name: 'Đơn vị tính',
-        icon: Scale,
-        href: '/catalog/uoms',
-      },
+      
     ],
   },
   {
