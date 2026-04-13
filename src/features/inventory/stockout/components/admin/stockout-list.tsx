@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { PackageMinus, ShoppingBag, DollarSign, Hash, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { PackageMinus, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Phiếu xuất tháng này', value: '218', icon: PackageMinus, color: 'text-[#4318FF]' },
-  { title: 'Xuất bán hàng', value: '195', icon: ShoppingBag, color: 'text-blue-500' },
-  { title: 'Tổng giá trị xuất', value: '3.4 tỷ', icon: DollarSign, color: 'text-green-500' },
-  { title: 'Mặt hàng đã xuất', value: '4,120', icon: Hash, color: 'text-orange-500' },
+  { title: 'Xuất bán hàng', value: '195', icon: PackageMinus, color: 'text-blue-500' },
+  { title: 'Tổng giá trị xuất', value: '3.4 tỷ', icon: PackageMinus, color: 'text-green-500' },
+  { title: 'Mặt hàng đã xuất', value: '4,120', icon: PackageMinus, color: 'text-orange-500' },
 ];
 
 const exports = [

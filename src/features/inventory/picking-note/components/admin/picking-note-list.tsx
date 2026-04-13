@@ -75,7 +75,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
               <p className="text-xs font-semibold text-[#A3AED0]">Tổng phiếu</p>
             </div>
             <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-              <FileStack className="w-4 h-4 text-[var(--brand-green-600)]" />
+              <FileEdit className="w-4 h-4 text-[var(--brand-green-600)]" />
             </div>
           </CardContent>
         </Card>
@@ -97,7 +97,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
               <p className="text-xs font-semibold text-[#A3AED0]">Xác nhận</p>
             </div>
             <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-              <CheckSquare className="w-4 h-4 text-blue-500" />
+              <FileEdit className="w-4 h-4 text-blue-500" />
             </div>
           </CardContent>
         </Card>
@@ -108,7 +108,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
               <p className="text-xs font-semibold text-[#A3AED0]">Hoàn thành</p>
             </div>
             <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <FileEdit className="w-4 h-4 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -119,7 +119,7 @@ export const PickingNoteList: React.FC<PickingNoteListProps> = ({ notes }) => {
               <p className="text-xs font-semibold text-[#A3AED0]">Đã hủy</p>
             </div>
             <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-              <XCircle className="w-4 h-4 text-red-500" />
+              <FileEdit className="w-4 h-4 text-red-500" />
             </div>
           </CardContent>
         </Card>

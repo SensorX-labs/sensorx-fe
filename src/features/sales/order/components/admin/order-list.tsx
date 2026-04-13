@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Clock, Truck, CheckCircle, XCircle, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { ShoppingCart, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
@@ -25,9 +25,9 @@ const statusLabel: Record<OrderStatus, string> = {
 
 const stats = [
   { title: 'Tổng đơn hàng', value: MOCK_ORDERS.length.toString(), icon: ShoppingCart, color: 'text-[#4318FF]' },
-  { title: 'Chờ thanh toán', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.PendingPayment).length.toString(), icon: Clock, color: 'text-yellow-500' },
-  { title: 'Đang xử lý', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.Processing).length.toString(), icon: Truck, color: 'text-blue-500' },
-  { title: 'Xuất kho', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.Dispatched).length.toString(), icon: CheckCircle, color: 'text-green-500' },
+  { title: 'Chờ thanh toán', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.PendingPayment).length.toString(), icon: ShoppingCart, color: 'text-yellow-500' },
+  { title: 'Đang xử lý', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.Processing).length.toString(), icon: ShoppingCart, color: 'text-blue-500' },
+  { title: 'Xuất kho', value: MOCK_ORDERS.filter(o => o.status === OrderStatus.Dispatched).length.toString(), icon: ShoppingCart, color: 'text-green-500' },
 ];
 
 export default function OrderList() {

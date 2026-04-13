@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Warehouse, Package, AlertTriangle, TrendingDown, Search } from 'lucide-react';
+import { Warehouse, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 
 const stats = [
-  { title: 'Tổng mặt hàng', value: '1,284', icon: Package, color: 'text-[#4318FF]' },
+  { title: 'Tổng mặt hàng', value: '1,284', icon: Warehouse, color: 'text-[#4318FF]' },
   { title: 'Tổng tồn kho', value: '18,420', icon: Warehouse, color: 'text-blue-500' },
-  { title: 'Sắp hết hàng', value: '23', icon: AlertTriangle, color: 'text-yellow-500' },
-  { title: 'Hết hàng', value: '8', icon: TrendingDown, color: 'text-red-400' },
+  { title: 'Sắp hết hàng', value: '23', icon: Warehouse, color: 'text-yellow-500' },
+  { title: 'Hết hàng', value: '8', icon: Warehouse, color: 'text-red-400' },
 ];
 
 const stock = [

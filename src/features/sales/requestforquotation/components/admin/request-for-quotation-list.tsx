@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Bell, Trash2, Search, Filter } from 'lucide-react';
+import { TrendingUp, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -19,10 +19,10 @@ import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
 
 const stats = [
-  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: Bell, color: 'text-gray-600' },
-  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: Clock, color: 'text-gray-600' },
-  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-gray-600' },
-  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-gray-600' },
+  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: TrendingUp, color: 'text-yellow-500' },
+  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: TrendingUp, color: 'text-blue-500' },
+  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: TrendingUp, color: 'text-green-500' },
+  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
 ];
 
 const statusStyles: Record<string, string> = {

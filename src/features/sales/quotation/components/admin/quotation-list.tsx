@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Clock, CheckCircle, XCircle, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { FileText, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { MOCK_QUOTES } from '../../mocks/quote-mocks';
@@ -11,9 +11,9 @@ import { ActionType } from '@/shared/constants/action-type';
 
 const stats = [
   { title: 'Tổng báo giá', value: MOCK_QUOTES.length.toString(), icon: FileText, color: 'text-[#4318FF]' },
-  { title: 'Chờ duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.PENDING).length.toString(), icon: Clock, color: 'text-yellow-500' },
-  { title: 'Đã duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.APPROVED).length.toString(), icon: CheckCircle, color: 'text-green-500' },
-  { title: 'Bị từ chối', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.RETURNED).length.toString(), icon: XCircle, color: 'text-red-400' },
+  { title: 'Chờ duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.PENDING).length.toString(), icon: FileText, color: 'text-yellow-500' },
+  { title: 'Đã duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.APPROVED).length.toString(), icon: FileText, color: 'text-green-500' },
+  { title: 'Bị từ chối', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.RETURNED).length.toString(), icon: FileText, color: 'text-red-400' },
 ];
 
 const statusStyles: Record<string, string> = {

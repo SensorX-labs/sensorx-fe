@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Receipt, Clock, CheckCircle, AlertCircle, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { Receipt, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
   { title: 'Tổng hóa đơn', value: '924', icon: Receipt, color: 'text-[#4318FF]' },
-  { title: 'Chưa thanh toán', value: '87', icon: Clock, color: 'text-yellow-500' },
-  { title: 'Đã thanh toán', value: '812', icon: CheckCircle, color: 'text-green-500' },
-  { title: 'Quá hạn', value: '25', icon: AlertCircle, color: 'text-red-400' },
+  { title: 'Chưa thanh toán', value: '87', icon: Receipt, color: 'text-yellow-500' },
+  { title: 'Đã thanh toán', value: '812', icon: Receipt, color: 'text-green-500' },
+  { title: 'Quá hạn', value: '25', icon: Receipt, color: 'text-red-400' },
 ];
 
 const invoices = [
