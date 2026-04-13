@@ -19,7 +19,7 @@ const routeMap: Record<string, string> = {
   '/warehouse/picking-note': 'Phiếu soạn kho',
   '/warehouse/list': 'Danh sách kho',
   '/warehouse/supply-requests': 'Yêu cầu cung ứng',
-  '/warehouse/transfer-orders': 'Phiếu điều chuyển',
+  '/warehouse/transfer-orders': 'lệnh điều chuyển',
   '/users/staff': 'Nhân viên',
   '/settings': 'Cài đặt',
   '/reports/revenue': 'Báo cáo doanh thu',

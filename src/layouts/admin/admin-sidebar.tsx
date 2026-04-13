@@ -160,7 +160,7 @@ const sidebarSections: {
         href: '/warehouse/supply-requests',
       },
       {
-        name: 'Phiếu điều chuyển',
+        name: 'lệnh điều chuyển',
         icon: ArrowRightLeft,
         href: '/warehouse/transfer-orders',
       }

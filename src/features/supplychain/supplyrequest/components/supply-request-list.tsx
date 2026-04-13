@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { 
   Plus, 
   Search, 
@@ -50,10 +51,12 @@ export function SupplyRequestList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-4">
-        <Button className="admin-btn-primary flex items-center gap-2">
-          <ClipboardList className="w-4 h-4" />
-          Tạo yêu cầu
-        </Button>
+        <Link href="/supplychain/supplyrequest/new">
+          <Button className="admin-btn-primary flex items-center gap-2">
+            <ClipboardList className="w-4 h-4" />
+            Tạo yêu cầu
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -157,30 +160,19 @@ export function SupplyRequestList() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                          onClick={() => handleViewDetails(req.id!)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
-                          onClick={() => handleEdit(req.id!)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDelete(req.id!)}
-                        >
+                        <Link href={`/supplychain/supplyrequest/${req.id}`}>
+                          <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </Link>
+                        <Link href={`/supplychain/supplyrequest/${req.id}?action=edit`}>
+                          <button className="p-2 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </Link>
+                        <button className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded">
                           <Trash2 className="w-4 h-4" />
-                        </Button>
+                        </button>
                       </div>
                     </td>
                   </tr>
