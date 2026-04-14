@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Clock, CheckCircle, XCircle, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Bell, Trash2, Search, Filter } from 'lucide-react';
+import { TrendingUp, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -19,10 +19,10 @@ import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
 
 const stats = [
-  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: Bell, color: 'text-gray-600' },
-  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: Clock, color: 'text-gray-600' },
-  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: CheckCircle, color: 'text-gray-600' },
-  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-gray-600' },
+  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: TrendingUp, color: 'text-yellow-500' },
+  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: TrendingUp, color: 'text-blue-500' },
+  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: TrendingUp, color: 'text-green-500' },
+  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
 ];
 
 const statusStyles: Record<string, string> = {
@@ -115,15 +115,19 @@ export default function RequestForQuotationList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {stats.map((s) => (
-          <div key={s.title} className="bg-white p-4 rounded border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="tracking-label mb-1 uppercase">{s.title}</p>
-              <p className="text-xl font-bold text-gray-900">{s.value}</p>
-            </div>
-            <s.icon className={`w-5 h-5 ${s.color} opacity-40`} />
-          </div>
+          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
+            <CardContent className="p-2.5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-[#2B3674]">{s.value}</p>
+                <p className="text-xs font-semibold text-[#A3AED0]">{s.title}</p>
+              </div>
+              <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+                <s.icon className={`w-4 h-4 ${s.color}`} />
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { 
   Plus, 
   Search, 
@@ -31,16 +32,8 @@ export function TransferOrderList() {
     return warehouse ? warehouse.name : warehouseId;
   };
 
-  const handleEdit = (id: string) => {
-    console.log('Edit transfer order:', id);
-  };
-
   const handleDelete = (id: string) => {
     console.log('Delete transfer order:', id);
-  };
-
-  const handleViewDetails = (id: string) => {
-    console.log('View transfer order details:', id);
   };
 
   const totalOrders = MOCK_TRANSFER_ORDERS.length;
@@ -50,57 +43,47 @@ export function TransferOrderList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end gap-4">
-        <Button className="admin-btn-primary flex items-center gap-2">
-          <ArrowRightLeft className="w-4 h-4" />
-          Tạo phiếu điều chuyển
-        </Button>
+        <Link href="/supplychain/transferorder/new?action=create">
+          <Button className="admin-btn-primary flex items-center gap-2">
+            <ArrowRightLeft className="w-4 h-4" />
+            Tạo lệnh điều chuyển
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Tổng phiếu</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{totalOrders}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
-                <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-              </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{totalOrders}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Tổng phiếu</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ArrowRightLeft className="w-4 h-4 text-blue-500" />
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Đang xử lý</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{processingOrders}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center">
-                <ArrowRightLeft className="w-4 h-4 text-yellow-600" />
-              </div>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{processingOrders}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Đang xử lý</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ArrowRightLeft className="w-4 h-4 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Đã xử lý</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-gray-900">{completedOrders}</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center">
-                <ArrowRightLeft className="w-4 h-4 text-green-600" />
-              </div>
+        <Card className="border-none shadow-sm bg-white rounded">
+          <CardContent className="p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-[#2B3674]">{completedOrders}</p>
+              <p className="text-xs font-semibold text-[#A3AED0]">Đã xử lý</p>
+            </div>
+            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
+              <ArrowRightLeft className="w-4 h-4 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -112,7 +95,7 @@ export function TransferOrderList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm phiếu điều chuyển..."
+              placeholder="Tìm kiếm lệnh điều chuyển..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -171,22 +154,24 @@ export function TransferOrderList() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                          onClick={() => handleViewDetails(order.id!)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
-                          onClick={() => handleEdit(order.id!)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
+                        <Link href={`/supplychain/transferorder/${order.id}`}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        <Link href={`/supplychain/transferorder/${order.id}?action=edit`}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </Link>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -202,7 +187,7 @@ export function TransferOrderList() {
               ) : (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    Không tìm thấy phiếu điều chuyển nào.
+                    Không tìm thấy lệnh điều chuyển nào.
                   </td>
                 </tr>
               )}

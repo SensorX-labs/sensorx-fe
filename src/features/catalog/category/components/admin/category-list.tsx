@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { MOCK_CATEGORIES } from '../../mocks/category-mocks';
 import { ProductCategory } from '../../models/product-category';
-import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
   Dialog,
@@ -39,7 +38,7 @@ export default function CategoryList() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-end gap-4">
         <Button 
           className="admin-btn-primary flex items-center gap-2"
@@ -73,38 +72,33 @@ export default function CategoryList() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center gap-4 bg-white p-4 rounded shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm danh mục..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm danh mục..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Tên danh mục</th>
-                <th className="text-left px-6 py-3 admin-table-th">Mô tả</th>
-                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
-              </tr>
-            </thead>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Tên danh mục</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Mô tả</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
             <tbody>
               {MOCK_CATEGORIES.map((cat) => (
-                <tr key={cat.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold admin-text-primary">{cat.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 max-w-xs truncate">
+                <tr key={cat.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900">{cat.name}</td>
+                  <td className="px-6 py-4 text-gray-500 max-w-sm truncate">
                     {cat.description}
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -121,8 +115,7 @@ export default function CategoryList() {
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
   );
 }

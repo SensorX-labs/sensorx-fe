@@ -9,9 +9,9 @@ import {
   Edit,
   Trash2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Search
 } from 'lucide-react';
-import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
 import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
@@ -31,14 +31,29 @@ const statusLabel: Record<string, string> = {
 export function ProductList() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const itemsPerPage = 10;
 
-  const totalPages = Math.ceil(MOCK_PRODUCTS.length / itemsPerPage);
+  const filteredProducts = useMemo(() => {
+    return MOCK_PRODUCTS.filter(product => {
+      const matchesSearch = 
+        (product.code?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        (product.name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        (product.manufacturer?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'ALL' || product.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchTerm, statusFilter]);
 
   const currentProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return MOCK_PRODUCTS.slice(startIndex, startIndex + itemsPerPage);
-  }, [currentPage, itemsPerPage]);
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, filteredProducts, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -63,84 +78,108 @@ export function ProductList() {
         </Link>
       </div>
 
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">SKU</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tên hàng hóa</th>
-                <th className="text-left px-6 py-3 admin-table-th">Nhà sản xuất</th>
-                <th className="text-left px-6 py-3 admin-table-th">Loại hàng</th>
-                <th className="text-left px-6 py-3 admin-table-th">Đơn giá gợi ý</th>
-                <th className="text-left px-6 py-3 admin-table-th">Trạng thái</th>
-                <th className="text-center px-6 py-3 admin-table-th">Thao tác</th>
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm SKU, tên hàng hóa, nhà sản xuất..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-[200px]">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value={ProductStatus.ACTIVE}>Đang hoạt động</option>
+              <option value={ProductStatus.INACTIVE}>Tạm ngưng</option>
+            </select>
+          </div>
+        </div>
+
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">SKU</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Tên hàng hóa</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Nhà sản xuất</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Loại hàng</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Đơn giá gợi ý</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentProducts.map((p) => (
+              <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                <td className="px-6 py-4 font-bold text-gray-900">
+                  {p.code || '--'}
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    {p.productImages && p.productImages.length > 0 && (
+                      <div className="w-8 h-8 rounded border border-gray-100 overflow-hidden hide-on-mobile">
+                        <img src={p.productImages[0].imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <span className="font-semibold text-gray-900">{p.name}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-gray-700 italic">
+                  {p.manufacturer || '--'}
+                </td>
+                <td className="px-6 py-4 text-gray-700">
+                  {p.category?.name || '--'}
+                </td>
+                <td className="px-6 py-4 font-bold text-green-600">
+                  {getProductPrice(p.id!, p.code)}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusColor[p.status]}`}>
+                    {statusLabel[p.status]}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => router.push(`/catalog/products/${p.id}?action=detail`)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                      onClick={() => router.push(`/catalog/products/${p.id}?action=update`)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {currentProducts.map((p) => (
-                <tr key={p.id} className="border-b border-gray-50 hover:bg-admin-surface transition-colors">
-                  <td className="px-6 py-3 font-semibold admin-text-primary">
-                    {p.code || '--'}
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-3">
-                      {p.productImages && p.productImages.length > 0 && (
-                        <div className="w-8 h-8 rounded border border-gray-100 overflow-hidden hide-on-mobile">
-                          <img src={p.productImages[0].imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <span className="font-semibold">{p.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 text-gray-600 italic">
-                    {p.manufacturer || '--'}
-                  </td>
-                  <td className="px-6 py-3 text-gray-600">
-                    {p.category?.name || '--'}
-                  </td>
-                  <td className="px-6 py-3 font-bold text-brand-green">
-                    {getProductPrice(p.id!, p.code)}
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusColor[p.status]}`}>
-                      {statusLabel[p.status]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => router.push(`/catalog/products/${p.id}?action=detail`)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
-                        onClick={() => router.push(`/catalog/products/${p.id}?action=update`)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
               ))}
             </tbody>
           </table>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
-              <span className="text-sm text-gray-500">
-                Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, MOCK_PRODUCTS.length)} trong tổng số {MOCK_PRODUCTS.length} sản phẩm
-              </span>
-              <div className="flex items-center gap-1.5">
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
+            <span className="text-sm text-gray-500">
+              Hiển thị {(currentPage - 1) * itemsPerPage + 1} đến {Math.min(currentPage * itemsPerPage, filteredProducts.length)} trong tổng số {filteredProducts.length} sản phẩm
+            </span>
+            <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
@@ -177,8 +216,7 @@ export function ProductList() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
   );
 }

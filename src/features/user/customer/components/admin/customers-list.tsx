@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Users, Mail, Phone, MapPin, Edit2, Trash2, Eye, Edit } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
+import React, { useState } from 'react';
+import { Users, Mail, Phone, MapPin, Edit2, Trash2, Eye, Edit, Search } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
 const stats = [
@@ -25,50 +24,80 @@ const statusColor: Record<string, string> = {
 };
 
 export default function CustomersList() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = 
+      customer.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
+
   return (
-    <div className="space-y-6">
-      <Card className="border-none shadow-sm bg-white rounded">
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 admin-table-th">Mã</th>
-                <th className="text-left px-6 py-3 admin-table-th">Tên công ty</th>
-                <th className="text-left px-6 py-3 admin-table-th">Người liên hệ</th>
-                <th className="text-left px-6 py-3 admin-table-th">Email</th>
-                <th className="text-left px-6 py-3 admin-table-th">Điện thoại</th>
-                <th className="text-left px-6 py-3 admin-table-th">Địa chỉ</th>
-                <th className="text-center px-6 py-3 admin-table-th">Hành động</th>
+    <div className="space-y-4">
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-4 items-center p-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm mã, công ty, người liên hệ, email..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="text-left px-6 py-4 tracking-label uppercase">Mã</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Tên công ty</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Người liên hệ</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Email</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Điện thoại</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Địa chỉ</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCustomers.map((c) => (
+              <tr key={c.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                <td className="px-6 py-4 font-bold text-gray-900">{c.id}</td>
+                <td className="px-6 py-4 font-bold text-gray-900">{c.name}</td>
+                <td className="px-6 py-4 text-gray-700">{c.contact}</td>
+                <td className="px-6 py-4 text-gray-700">{c.email}</td>
+                <td className="px-6 py-4 text-gray-700">{c.phone}</td>
+                <td className="px-6 py-4 text-gray-700">{c.address}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {customers.map((c) => (
-                <tr key={c.id} className="border-b border-gray-50 hover:bg-[#F4F7FE] transition-colors">
-                  <td className="px-6 py-3 font-semibold admin-text-primary">{c.id}</td>
-                  <td className="px-6 py-3 font-semibold text-[#2B3674]">{c.name}</td>
-                  <td className="px-6 py-3">{c.contact}</td>
-                  <td className="px-6 py-3">{c.email}</td>
-                  <td className="px-6 py-3">{c.phone}</td>
-                  <td className="px-6 py-3">{c.address}</td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            ))}
+            {filteredCustomers.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                  Không tìm thấy khách hàng nào.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
