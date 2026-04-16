@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList, Search
+  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp
 } from 'lucide-react';
+import { QuoteAnalysisService } from '../../services/quote-analysis-service';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
@@ -166,7 +167,37 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
     })) || []
   );
 
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [expandDealStatus, setExpandDealStatus] = useState(false);
+
   const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
+  const isDetailWithPending = action === ActionType.DETAIL && existingQuote?.status === QuoteStatus.PENDING;
+
+  // Auto gọi analysis khi ở detail view với status PENDING
+  useEffect(() => {
+    if (isDetailWithPending && !analysisResult && !analysisLoading) {
+      handleAnalyzeQuote();
+    }
+  }, [isDetailWithPending]);
+
+  const handleAnalyzeQuote = async () => {
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const quoteAnalysisService = new QuoteAnalysisService();
+      const result = await quoteAnalysisService.analyzeQuote('TEST-SAFE-001');
+      setAnalysisResult(result);
+      console.log('Phân tích báo giá thành công:', result);
+    } catch (error: any) {
+      setAnalysisError(error.message || 'Lỗi phân tích báo giá');
+      console.error('Lỗi phân tích báo giá:', error);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   const selectedCustomer = allCustomers.find(c => c.id === selectedCustomerId);
   const customerInfo = selectedCustomer || existingQuote?.customerInfo || rfq?.customerInfo;
 
@@ -266,6 +297,73 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {/* Hiển thị kết quả phân tích */}
+        {analysisResult && analysisResult.status === 'success' && (
+          <div 
+            className="md:col-span-3 border border-gray-200 bg-white rounded"
+            onMouseEnter={() => setExpandDealStatus(true)}
+            onMouseLeave={() => setExpandDealStatus(false)}
+          >
+            <div className="w-full px-6 py-4 border-b border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer">
+              <Zap className="w-4 h-4 text-gray-600" />
+              <h4 className="text-sm font-medium flex-1 text-left">Phân tích thương vụ</h4>
+              {(() => {
+                const status = analysisResult.analysis.deal_status;
+                const statusConfig: Record<string, { badge: string; badgeText: string; icon: React.ReactNode }> = {
+                  'An toàn': {
+                    badge: 'bg-green-100 text-green-700 border border-green-200',
+                    badgeText: 'An toàn',
+                    icon: <CheckCircle className="w-4 h-4" />
+                  },
+                  'Rủi ro': {
+                    badge: 'bg-amber-100 text-amber-700 border border-amber-200',
+                    badgeText: 'Rủi ro',
+                    icon: <AlertCircle className="w-4 h-4" />
+                  },
+                  'Lỗ': {
+                    badge: 'bg-red-100 text-red-700 border border-red-200',
+                    badgeText: 'Lỗ',
+                    icon: <XCircle className="w-4 h-4" />
+                  },
+                  'Tiềm năng Upsell': {
+                    badge: 'bg-blue-100 text-blue-700 border border-blue-200',
+                    badgeText: 'Tiềm năng Upsell',
+                    icon: <TrendingUp className="w-4 h-4" />
+                  }
+                };
+                const config = statusConfig[status] || statusConfig['Rủi ro'];
+                return <div className={`${config.badge} px-2.5 py-1 rounded flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider`}>{config.icon}{config.badgeText}</div>;
+              })()}
+            </div>
+
+            {expandDealStatus && (
+              <div className="divide-y divide-gray-100">
+                <div className="px-6 py-4">
+                  <p className="text-sm text-gray-900 font-semibold uppercase mb-3">Phân tích</p>
+                  <p className="text-sm text-gray-800 leading-relaxed">{analysisResult.analysis.reasoning}</p>
+                </div>
+                <div className="px-6 py-4">
+                  <p className="text-sm text-gray-900 font-semibold uppercase mb-3">Chiến lược</p>
+                  <p className="text-sm text-gray-800 leading-relaxed">{analysisResult.analysis.strategy}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Hiển thị lỗi */}
+        {analysisError && (
+          <div className="md:col-span-3 border border-red-200 bg-red-50 rounded p-4">
+            <div className="flex items-start gap-3">
+              <X className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-900 mb-2">Lỗi phân tích</h3>
+                <p className="text-sm text-red-800">{analysisError}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="md:col-span-1 space-y-6">
           {/* Thông tin cơ bản */}
