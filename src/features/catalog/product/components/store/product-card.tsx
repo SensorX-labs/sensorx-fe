@@ -47,6 +47,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     const handleCardClick = () => {
+        if (product) {
+            localStorage.setItem('selectedProduct', JSON.stringify(product));
+        }
         router.push(`/shop/${id}`);
     };
 
