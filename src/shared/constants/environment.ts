@@ -1,12 +1,12 @@
 const PLACEHOLDER = "__NEXT_PUBLIC_API_URL__";
-const DEFAULT_URL = "http://localhost:5053";
+export const masterUrl = "http://localhost:5001";
+const dataUrl = "http://localhost:5000";
+const aiUrl = "http://localhost:8000";
 
 // Kiểm tra xem placeholder đã được thay thế chưa
 const getBackendUrl = (): string => {
-    // Nếu placeholder chưa được thay thế, dùng fallback
     if (PLACEHOLDER.startsWith("__NEXT_PUBLIC")) {
-        // Chạy trong môi trường dev hoặc chưa inject
-        return DEFAULT_URL;
+        return masterUrl;
     }
     return PLACEHOLDER;
 };

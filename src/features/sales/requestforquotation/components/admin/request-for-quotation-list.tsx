@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TrendingUp, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Trash2, Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
@@ -17,15 +17,17 @@ import { cn } from '@/shared/utils/cn';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
+import { RFQServices } from '../../services/rfq-services';
 
-const stats = [
-  { title: 'Chờ xử lý', value: MOCK_RFQS.filter(r => r.status === RfqStatus.PENDING).length.toString(), icon: TrendingUp, color: 'text-yellow-500' },
-  { title: 'Đã tiếp nhận', value: MOCK_RFQS.filter(r => r.status === RfqStatus.ACCEPTED).length.toString(), icon: TrendingUp, color: 'text-blue-500' },
-  { title: 'Đã sinh báo giá', value: MOCK_RFQS.filter(r => r.status === RfqStatus.CONVERTED).length.toString(), icon: TrendingUp, color: 'text-green-500' },
-  { title: 'Tổng yêu cầu', value: MOCK_RFQS.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
-];
+import { RfqListItem } from '../../models/rfq-list-response';
 
 const statusStyles: Record<string, string> = {
+  'Draft': 'bg-gray-50 text-gray-500 border-gray-200',
+  'Pending': 'bg-gray-50 text-blue-600 border-blue-100',
+  'Accepted': 'bg-gray-50 text-indigo-600 border-indigo-100',
+  'Rejected': 'bg-gray-50 text-red-500 border-red-100',
+  'Converted': 'bg-gray-50 text-green-600 border-green-100',
+  // Fallback cho enum uppercase
   [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
   [RfqStatus.PENDING]: 'bg-gray-50 text-blue-600 border-blue-100',
   [RfqStatus.ACCEPTED]: 'bg-gray-50 text-indigo-600 border-indigo-100',
@@ -34,6 +36,12 @@ const statusStyles: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
+  'Draft': 'Nháp',
+  'Pending': 'Chờ tiếp nhận',
+  'Accepted': 'Đã tiếp nhận',
+  'Rejected': 'Đã từ chối',
+  'Converted': 'Đã sinh báo giá',
+  // Fallback
   [RfqStatus.DRAFT]: 'Nháp',
   [RfqStatus.PENDING]: 'Chờ tiếp nhận',
   [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
@@ -42,7 +50,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function RequestForQuotationList() {
-  const [leads, setLeads] = useState(MOCK_RFQS);
+  const [leads, setLeads] = useState<RfqListItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
   const [viewDetailId, setViewDetailId] = useState<string | null>(null);
@@ -52,12 +61,36 @@ export default function RequestForQuotationList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  const fetchRfqs = async () => {
+    setLoading(true);
+    try {
+      const rfqService = new RFQServices();
+      const result = await rfqService.getListRFQ({ PageIndex: 1, PageSize: 50 });
+      setLeads(result.items);
+    } catch (error) {
+      console.error(">>> Lỗi khi fetch RFQ:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRfqs();
+  }, []);
+
+  const stats = useMemo(() => [
+    { title: 'Chờ xử lý', value: leads.filter(r => r.status === 'Pending').length.toString(), icon: TrendingUp, color: 'text-yellow-500' },
+    { title: 'Đã tiếp nhận', value: leads.filter(r => r.status === 'Accepted').length.toString(), icon: TrendingUp, color: 'text-blue-500' },
+    { title: 'Đã sinh báo giá', value: leads.filter(r => r.status === 'Converted').length.toString(), icon: TrendingUp, color: 'text-green-500' },
+    { title: 'Tổng yêu cầu', value: leads.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
+  ], [leads]);
+
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
       const matchesSearch = 
         lead.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.customerInfo.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.customerInfo.recipientName.toLowerCase().includes(searchQuery.toLowerCase());
+        lead.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.recipientName?.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
       
@@ -175,16 +208,16 @@ export default function RequestForQuotationList() {
               >
                 <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
                 <td className="px-6 py-4">
-                  <div className="font-semibold text-gray-800">{l.customerInfo.companyName}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.customerInfo.recipientName}</div>
+                  <div className="font-semibold text-gray-800">{l.companyName}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.recipientName}</div>
                 </td>
-                <td className="px-6 py-4 italic text-gray-500 text-xs text-left">
-                  {![RfqStatus.PENDING, RfqStatus.DRAFT].includes(l.status as RfqStatus) && l.userId ? (
-                    <span className="flex items-center gap-1.5 grayscale opacity-70">
+                <td className="px-6 py-4 text-gray-500 text-xs text-left">
+                  {l.status !== 'Pending' && l.staffId ? (
+                    <span className="flex items-center gap-1.5">
                       <UserCheck className="w-3.5 h-3.5" />
-                      {l.userId}
+                      Nhân viên {l.staffId.slice(0, 4)}
                     </span>
-                  ) : <span className="opacity-30">—</span>}
+                  ) : <span className="">—</span>}
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span className={cn(
@@ -196,7 +229,7 @@ export default function RequestForQuotationList() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1">
-                    {l.status === RfqStatus.PENDING && (
+                    {l.status === 'Pending' && (
                       <>
                         <Button 
                           variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
@@ -213,7 +246,7 @@ export default function RequestForQuotationList() {
                       </>
                     )}
 
-                    {l.status === RfqStatus.ACCEPTED && (
+                    {l.status === 'Accepted' && (
                       <Button 
                         variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50"
                         onClick={(e) => handleCreateQuotation(l.id, e)}
@@ -237,7 +270,7 @@ export default function RequestForQuotationList() {
             ))}
             {filteredLeads.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-gray-400 italic text-xs tracking-widest uppercase">
+                <td colSpan={5} className="py-12 text-center text-gray-400 text-xs tracking-widest uppercase">
                   Không tìm thấy dữ liệu phù hợp
                 </td>
               </tr>
@@ -256,7 +289,7 @@ export default function RequestForQuotationList() {
             </DialogTitle>
           </DialogHeader>
           <div className="p-6 space-y-4">
-            <p className="text-[11px] text-gray-500 leading-relaxed italic">
+            <p className="text-[11px] text-gray-500 leading-relaxed">
                 * Lý do từ chối sẽ được ghi lại trong lịch sử hệ thống phục vụ mục đích quản lý.
             </p>
             <div className="space-y-2">
