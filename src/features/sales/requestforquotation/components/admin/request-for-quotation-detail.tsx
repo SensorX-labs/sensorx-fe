@@ -14,13 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/shadcn-ui/select';
-import { MOCK_RFQS } from '../../mocks/rfq-mocks';
-import { MOCK_STAFF } from '../../mocks/staff-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
 import { RfqDetail } from '../../models/rfq-detail-response';
 import { RFQServices } from '../../services/rfq-services';
+import { StaffService } from '@/features/user/staff/services/staff-service';
+import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
 
 interface RequestForQuotationDetailProps {
   id: string;
@@ -60,10 +60,10 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
+  const [staffs, setStaffs] = useState<StaffListItem[]>([]);
 
   React.useEffect(() => {
     const fetchDetail = async () => {
-      setLoading(true);
       try {
         const rfqService = new RFQServices();
         const data = await rfqService.getDetailRFQ(id);
@@ -71,12 +71,49 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         if (data.staffId) setSelectedStaffId(data.staffId);
       } catch (error) {
         console.error(">>> Lỗi khi fetch detail RFQ:", error);
-      } finally {
-        setLoading(false);
       }
     };
-    fetchDetail();
+
+    const fetchStaffs = async () => {
+      try {
+        const staffService = new StaffService();
+        const response = await staffService.getStaffs({ pageNumber: 1, pageSize: 100 });
+        console.log(">>> Danh sách nhân viên fetch được:", response.items);
+        setStaffs(response.items);
+      } catch (error) {
+        console.error(">>> Lỗi khi fetch nhân viên:", error);
+      }
+    };
+
+    const loadPage = async () => {
+      setLoading(true);
+      await Promise.all([fetchDetail(), fetchStaffs()]);
+      setLoading(false);
+    };
+
+    loadPage();
   }, [id]);
+
+  const handleStaffChange = async (staffId: string, isAccept: boolean = false) => {
+    if (!staffId && isAccept) {
+        alert("Vui lòng chọn nhân viên trước khi tiếp nhận");
+        return;
+    }
+    
+    setSelectedStaffId(staffId);
+    try {
+      const rfqService = new RFQServices();
+      await rfqService.assignStaff(id, staffId);
+      console.log(`>>> Đã phân công nhân viên ${staffId} cho RFQ ${id}`);
+      
+      if (isAccept) {
+          onBack(); // Quay lại trang danh sách
+      }
+    } catch (error: any) {
+      console.error(">>> Lỗi khi phân công nhân viên:", error);
+      alert("Lỗi: " + error.message);
+    }
+  };
 
   if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
@@ -112,7 +149,12 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         <div className="flex items-center gap-2">
           {rfq.status === 'Pending' && (
             <>
-              <Button variant="outline" className="rounded admin-btn-primary border-transparent">
+              <Button 
+                onClick={() => handleStaffChange(selectedStaffId, true)}
+                variant="outline" 
+                className="rounded admin-btn-primary border-transparent"
+                disabled={!selectedStaffId}
+              >
                 <Check className="w-4 h-4 mr-2" />
                 Tiếp nhận
               </Button>
@@ -174,12 +216,12 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên</td>
                   <td className="px-6 py-3">
-                    <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+                    <Select value={selectedStaffId} onValueChange={handleStaffChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Chọn nhân viên" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MOCK_STAFF.map((staff) => (
+                        {staffs.map((staff) => (
                           <SelectItem key={staff.id} value={staff.id}>
                             {staff.name}
                           </SelectItem>

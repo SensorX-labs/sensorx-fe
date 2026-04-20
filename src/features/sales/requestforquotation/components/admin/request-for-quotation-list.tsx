@@ -75,8 +75,10 @@ export default function RequestForQuotationList() {
   };
 
   useEffect(() => {
-    fetchRfqs();
-  }, []);
+    if (!viewDetailId) {
+      fetchRfqs();
+    }
+  }, [viewDetailId]);
 
   const stats = useMemo(() => [
     { title: 'Chờ xử lý', value: leads.filter(r => r.status === 'Pending').length.toString(), icon: TrendingUp, color: 'text-yellow-500' },

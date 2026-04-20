@@ -93,4 +93,29 @@ export class RFQServices {
 
         throw new Error(result.error || "Đã xảy ra lỗi khi tạo yêu cầu báo giá");
     }
-}
+
+    async assignStaff(rfqId: string, staffId: string): Promise<boolean> {
+        const url = `${masterUrl}/api/rfq/assign`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rfqId, staffId }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result && result.isSuccess) {
+            return true;
+        }
+
+        throw new Error(result.error || "Đã xảy ra lỗi khi phân công nhân viên");
+    }
+}
