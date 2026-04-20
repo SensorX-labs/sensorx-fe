@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
@@ -135,6 +135,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
 }
 
 export default function QuotationCreate({ id, rfqId, rfqData, onBack }: QuotationCreateProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
@@ -247,8 +248,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
 
       const quoteService = new QuoteService();
       await quoteService.createQuote(request);
-      alert("Báo giá nháp đã được lưu thành công.");
-      if (onBack) onBack();
+      router.push('/sales/quotations');
     } catch (error: any) {
       alert("Lỗi khi lưu báo giá: " + error.message);
     } finally {

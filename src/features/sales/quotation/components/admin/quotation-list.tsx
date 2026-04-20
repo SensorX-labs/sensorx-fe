@@ -1,29 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Eye, Edit, Trash2, Search } from 'lucide-react';
+import { FileText, Eye, Edit, Trash2, Search, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { MOCK_QUOTES } from '../../mocks/quote-mocks';
 import { QuoteStatus } from '../../constants/quote-status';
 import { ActionType } from '@/shared/constants/action-type';
-
-const stats = [
-  { title: 'Tổng báo giá', value: MOCK_QUOTES.length.toString(), icon: FileText, color: 'text-[#4318FF]' },
-  { title: 'Chờ duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.PENDING).length.toString(), icon: FileText, color: 'text-yellow-500' },
-  { title: 'Đã duyệt', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.APPROVED).length.toString(), icon: FileText, color: 'text-green-500' },
-  { title: 'Bị từ chối', value: MOCK_QUOTES.filter(q => q.status === QuoteStatus.RETURNED).length.toString(), icon: FileText, color: 'text-red-400' },
-];
+import { QuoteService } from '../../services/quote-service';
+import { QuoteListItem } from '../../models/quote-list-response';
+import { cn } from '@/shared/utils/cn';
 
 const statusStyles: Record<string, string> = {
-  [QuoteStatus.DRAFT]:   'bg-gray-100 text-gray-600',
-  [QuoteStatus.PENDING]: 'bg-yellow-100 text-yellow-600',
-  [QuoteStatus.APPROVED]:'bg-green-100 text-green-600',
-  [QuoteStatus.RETURNED]:'bg-red-100 text-red-600',
-  [QuoteStatus.SENT]:    'bg-blue-100 text-blue-600',
-  [QuoteStatus.ORDERED]: 'bg-purple-100 text-purple-600',
-  [QuoteStatus.EXPIRED]: 'bg-gray-100 text-gray-400',
+  [QuoteStatus.DRAFT]:   'bg-gray-100 text-gray-500 border-gray-200',
+  [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-600 border-blue-100',
+  [QuoteStatus.APPROVED]:'bg-green-50 text-green-600 border-green-100',
+  [QuoteStatus.RETURNED]:'bg-red-50 text-red-600 border-red-100',
+  [QuoteStatus.SENT]:    'bg-indigo-50 text-indigo-600 border-indigo-100',
+  [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+  [QuoteStatus.EXPIRED]: 'bg-gray-50 text-gray-400 border-gray-200',
 };
 
 const statusLabels: Record<string, string> = {
@@ -38,19 +33,47 @@ const statusLabels: Record<string, string> = {
 
 export default function QuotationList() {
   const router = useRouter();
+  const [quotes, setQuotes] = useState<QuoteListItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const filteredQuotes = MOCK_QUOTES.filter(q => {
-    const matchesSearch = 
-      q.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.customerInfo.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.customerInfo.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const fetchQuotes = async () => {
+    setLoading(true);
+    try {
+      const quoteService = new QuoteService();
+      const result = await quoteService.getListQuotes({ PageIndex: 1, PageSize: 50 });
+      setQuotes(result.items);
+    } catch (error) {
+      console.error(">>> Lỗi khi fetch báo giá:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuotes();
+  }, []);
+
+  const stats = useMemo(() => [
+    { title: 'Tổng báo giá', value: quotes.length.toString(), icon: FileText, color: 'text-[#4318FF]' },
+    { title: 'Chờ duyệt', value: quotes.filter(q => q.status === QuoteStatus.PENDING).length.toString(), icon: FileText, color: 'text-yellow-500' },
+    { title: 'Đã duyệt', value: quotes.filter(q => q.status === QuoteStatus.APPROVED).length.toString(), icon: FileText, color: 'text-green-500' },
+    { title: 'Bị từ chối', value: quotes.filter(q => q.status === QuoteStatus.RETURNED).length.toString(), icon: FileText, color: 'text-red-400' },
+  ], [quotes]);
+
+  const filteredQuotes = useMemo(() => {
+    return quotes.filter(q => {
+        const matchesSearch = 
+            q.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            q.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+    });
+  }, [quotes, searchTerm, statusFilter]);
 
   const goTo = (id: string, action: ActionType) => {
     router.push(`/sales/quotations/${id}?action=${action}`);
@@ -63,10 +86,10 @@ export default function QuotationList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#2B3674]">Quản lý Báo giá</h2>
-        <button onClick={goToCreate} className="flex items-center gap-2 admin-btn-primary">
-          <FileText className="w-4 h-4" /> Tạo báo giá mới
-        </button>
+        <h2 className="text-xl font-bold admin-title uppercase">Quản lý Báo giá</h2>
+        <Button onClick={goToCreate} className="admin-btn-primary rounded h-10 px-6">
+          <FileText className="w-4 h-4 mr-2" /> Tạo báo giá mới
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -111,72 +134,87 @@ export default function QuotationList() {
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="text-left px-6 py-4 tracking-label uppercase">Số BG</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Ngày tạo</th>
-              <th className="text-center px-6 py-4 tracking-label uppercase">Loại</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Tổng tiền</th>
-              <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
-              <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredQuotes.map((q) => (
-              <tr
-                key={q.id}
-                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors"
-              >
-                <td className="px-6 py-4 font-bold text-gray-900">{q.code}</td>
-                <td className="px-6 py-4">
-                  <div className="font-bold text-gray-900">{q.customerInfo.companyName}</div>
-                  <p className="text-[10px] text-gray-500 font-normal mt-0.5">LH: {q.customerInfo.recipientName}</p>
-                </td>
-                <td className="px-6 py-4 text-gray-700">{new Date(q.quoteDate).toLocaleDateString('vi-VN')}</td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded border ${q.parentId ? 'border-purple-200 text-purple-600' : 'border-blue-200 text-blue-600'}`}>
-                    {q.parentId ? 'Cập nhật' : 'Mới'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 font-bold text-gray-900">- đ</td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusStyles[q.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                    {statusLabels[q.status]}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 pr-4">
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                      title="Chi tiết"
-                      onClick={() => goTo(q.id, ActionType.DETAIL)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                      title="Chỉnh sửa"
-                      onClick={() => goTo(q.id, ActionType.UPDATE)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+            <thead>
+                <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="text-left px-6 py-4 tracking-label uppercase">Số BG</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Ngày tạo</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Kiểu</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase">Tổng tiền</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {filteredQuotes.map((q) => (
+                <tr
+                    key={q.id}
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors"
+                >
+                    <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{q.code}</td>
+                    <td className="px-6 py-4">
+                    <div className="font-bold text-gray-900">{q.companyName}</div>
+                    <p className="text-[10px] text-gray-500 font-normal mt-0.5 uppercase tracking-wider">{q.recipientName}</p>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">{new Date(q.quoteDate).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-6 py-4 text-center">
+                    <span className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest",
+                        q.parentId ? 'border-purple-200 text-purple-600 bg-purple-50' : 'border-blue-200 text-blue-600 bg-blue-50'
+                    )}>
+                        {q.parentId ? 'Cập nhật' : 'Mới'}
+                    </span>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.totalAmount?.toLocaleString('vi-VN')} đ</td>
+                    <td className="px-6 py-4 text-center">
+                    <span className={cn(
+                        "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                        statusStyles[q.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'
+                    )}>
+                        {statusLabels[q.status]}
+                    </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5 pr-4">
+                        <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        onClick={() => goTo(q.id, ActionType.DETAIL)}
+                        >
+                        <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-yellow-600 hover:bg-yellow-50"
+                        onClick={() => goTo(q.id, ActionType.UPDATE)}
+                        >
+                        <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                        variant="ghost" size="icon"
+                        className="h-8 w-8 text-red-500 hover:bg-red-50"
+                        >
+                        <Trash2 className="w-4 h-4" />
+                        </Button>
+                    </div>
+                    </td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+            {loading && (
+                <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
+                    Đang tải dữ liệu...
+                </div>
+            )}
+            {!loading && filteredQuotes.length === 0 && (
+                <div className="py-20 text-center text-gray-400 uppercase tracking-widest text-xs">
+                    Không tìm thấy báo giá nào
+                </div>
+            )}
+        </div>
       </div>
     </div>
   );
