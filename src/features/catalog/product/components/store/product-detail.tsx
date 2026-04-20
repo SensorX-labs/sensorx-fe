@@ -7,12 +7,14 @@ import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, P
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
 import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
 import { ProductListItem } from '../../models/product-list-response';
+import { useCart } from '@/features/sales/requestforquotation/hooks/use-cart';
 
 interface ProductDetailProps {
   product: ProductListItem;
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const { addToCart } = useCart();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
@@ -21,6 +23,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const relatedProducts = useMemo(() => [], []);
 
   const handleAddToCart = () => {
+    addToCart(product, selectedQuantity);
     setShowAddToCartMessage(true);
   };
 

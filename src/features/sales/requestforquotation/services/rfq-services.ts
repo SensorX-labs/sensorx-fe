@@ -2,6 +2,7 @@ import { masterUrl } from "@/shared/constants/environment";
 import { PaginationResponse } from "@/shared/models/pagination";
 import { RfqListItem } from "../models/rfq-list-response";
 import { RfqDetail } from "../models/rfq-detail-response";
+import { RfqCreateRequest } from "../models/rfq-create-request";
 
 export interface RfqFilter {
     PageIndex: number;
@@ -67,4 +68,29 @@ export class RFQServices {
 
         throw new Error(result.error || "Đã xảy ra lỗi khi lấy dữ liệu");
     }
-}
+
+    async createRFQ(data: RfqCreateRequest): Promise<string> {
+        const url = `${masterUrl}/api/rfq`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result && result.isSuccess) {
+            return result.value;
+        }
+
+        throw new Error(result.error || "Đã xảy ra lỗi khi tạo yêu cầu báo giá");
+    }
+}
