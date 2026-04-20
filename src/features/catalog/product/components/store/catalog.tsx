@@ -4,23 +4,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProductCard from './product-card';
 import { FilterCatalog, FilterState } from './filter-catalog';
-import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
-import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
-import { Product } from '../../models/product';
+import { ProductListItem } from '../../models/product-list-response';
+import { ProductService } from '../../services/product-service';
 
-const getCatalogProducts = (): (Product & { price: number; originalPrice?: number })[] => {
-    return MOCK_PRODUCTS.map((product: Product) => {
-        const priceData = MOCK_INTERNAL_PRICES.find(p => p.productId === product.id || p.productId === product.code);
-        const price = priceData?.suggestedPrice || 0;
-        const originalPrice = price ? price + 500000 : 0;
-
-        return {
-            ...product,
-            price,
-            originalPrice,
-        };
-    });
-};
+// type ProductWithPrice = ProductListItem & { price: number; originalPrice?: number };
 
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'popular' | 'name-asc' | 'name-desc';
 
@@ -34,18 +21,42 @@ export const Catalog: React.FC = () => {
     });
 
     const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [products, setProducts] = useState(() => getCatalogProducts());
+    const [products, setProducts] = useState<(ProductListItem & { price: number; originalPrice?: number })[]>([]);
+    const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState<string[]>([]);
     const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
     const [isMounted, setIsMounted] = useState(false);
 
     // khởi tạo bookmarks từ localStorage khi mounted
+    // Fetch products từ API
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const productService = new ProductService();
+            const result = await productService.getProducts({ PageIndex: 1, PageSize: 100 });
+            
+            // Gán thêm giá ảo vì API chưa có giá
+            const productsWithPrice = result.items.map(p => ({
+                ...p,
+                price: 1500000, // Giá mặc định cho demo
+                originalPrice: 1500000 + 500000,
+            }));
+            
+            setProducts(productsWithPrice);
+        } catch (error) {
+            console.error('>>> Lỗi khi fetch sản phẩm:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('bookmarkedProducts');
             setFavorites(saved ? JSON.parse(saved) : []);
         }
         setIsMounted(true);
+        fetchProducts();
     }, []);
 
     // lưu bookmarks vào localStorage
@@ -60,14 +71,14 @@ export const Catalog: React.FC = () => {
         let result = [...products];
 
         if (filters.categories.length > 0) {
-            result = result.filter((p) => p.category?.id && filters.categories.includes(p.category.id));
+            result = result.filter((p) => p.categoryId && filters.categories.includes(p.categoryId));
         }
 
         if (filters.search.trim()) {
             const searchTerm = filters.search.toLowerCase();
             result = result.filter((p) =>
                 p.name.toLowerCase().includes(searchTerm) ||
-                (p.manufacturer && p.manufacturer.toLowerCase().includes(searchTerm))
+                (p.manufacture && p.manufacture.toLowerCase().includes(searchTerm))
             );
         }
 
@@ -179,11 +190,17 @@ export const Catalog: React.FC = () => {
                                             name={product.name}
                                             price={product.price}
                                             originalPrice={product.originalPrice}
-                                            image={product.productImages?.[0]?.imageUrl || '/assets/images/products/default.png'}
+                                            image={
+                                                (!product.images?.[0] || product.images[0] === 'string')
+                                                    ? '/assets/images/products/default.png'
+                                                    : (product.images[0].startsWith('http') || product.images[0].startsWith('/'))
+                                                        ? product.images[0]
+                                                        : '/assets/images/products/default.png'
+                                            }
                                             isFavorite={favorites.includes(product.id!)}
                                             onAddToCart={() => handleAddToCart(product.id!)}
                                             onAddToFavorite={() => handleAddToFavorite(product.id!)}
-                                            product={product}
+                                            product={product as any}
                                         />
                                     ))}
                                 </div>
