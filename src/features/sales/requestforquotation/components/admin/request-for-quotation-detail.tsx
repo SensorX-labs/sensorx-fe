@@ -118,10 +118,11 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
 
-  if (isCreatingQuotation) {
+  if (isCreatingQuotation && rfq) {
     return (
       <QuotationCreate
         rfqId={id}
+        rfqData={rfq}
         onBack={() => setIsCreatingQuotation(false)}
       />
     );

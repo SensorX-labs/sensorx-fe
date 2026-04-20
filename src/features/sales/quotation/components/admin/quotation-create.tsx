@@ -5,9 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp
+  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Calendar as CalendarIcon
 } from 'lucide-react';
 import { QuoteAnalysisService } from '../../services/quote-analysis-service';
+import { QuoteService } from '../../services/quote-service';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
@@ -17,6 +18,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/shared/components/shadcn-ui/select";
+import { Calendar } from "@/shared/components/shadcn-ui/calendar";
 import { QuoteStatus } from '../../constants/quote-status';
 import Link from 'next/link';
 import { MOCK_RFQS } from '../../../requestforquotation/mocks/rfq-mocks';
@@ -25,10 +27,16 @@ import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
 import { PaymentMethod } from '../../constants/payment-method';
 import { PaymentTern } from '../../constants/payment-term';
 import { ActionType } from '@/shared/constants/action-type';
+import { RfqDetail } from '../../../requestforquotation/models/rfq-detail-response';
+import { QuoteCreateRequest } from '../../models/quote-create-request';
+import { cn } from '@/shared/utils/cn';
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 interface QuotationCreateProps {
   id?: string;      // quote id hoặc 'new'
   rfqId?: string;
+  rfqData?: RfqDetail;
   onBack?: () => void;
 }
 
@@ -63,12 +71,11 @@ const paymentTermLabel: Record<string, string> = {
   [PaymentTern.DEPOSIT]: '30% Cọc',
 };
 
-function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
+function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disabled }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void, disabled?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
 
-  // Đồng bộ lại state khi prop defaultValue thay đổi
   React.useEffect(() => {
     setSelectedCode(defaultValue || "");
   }, [defaultValue]);
@@ -83,42 +90,40 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
-             <span className="truncate w-full font-semibold">{displayLabel}</span>
-          </div>
-          <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
+      <PopoverTrigger asChild disabled={disabled}>
+        <Button variant="outline" className="w-full justify-between text-sm h-10 font-normal border-gray-200 rounded shadow-none">
+          <span className="truncate">{displayLabel}</span>
+          {!disabled && <Search className="h-4 w-4 opacity-50 ml-2 shrink-0" />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
-        <div className="p-2 border-b bg-gray-50/50">
+      <PopoverContent className="w-[350px] p-0 shadow-lg border-gray-200" align="start">
+        <div className="p-2 border-b bg-gray-50">
            <Input 
               placeholder="Gõ tên hoặc mã sản phẩm..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+              className="h-9 text-sm focus:ring-0 border-gray-200 shadow-none"
               autoFocus
            />
         </div>
-        <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
+        <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
            {filteredProducts.length === 0 ? (
-             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+             <div className="p-8 text-sm text-center text-gray-500">Không tìm thấy sản phẩm phù hợp</div>
            ) : (
              filteredProducts.map(p => (
                <div 
                  key={p.id}
-                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                 className="p-4 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-50 last:border-0"
                  onClick={() => {
                     setSelectedCode(p.code || "");
                     onSelect(p);
                     setOpen(false);
                  }}
                >
-                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
-                 <div className="flex justify-between items-center mt-1">
-                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
+                 <span className="text-sm font-semibold text-gray-900">{p.name}</span>
+                 <div className="flex justify-between items-center mt-1.5">
+                    <span className="text-xs text-gray-500">Mã: {p.code}</span>
+                    <span className="text-xs text-blue-600 font-medium">{p.manufacturer}</span>
                  </div>
                </div>
              ))
@@ -129,77 +134,64 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
   );
 }
 
-export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
+export default function QuotationCreate({ id, rfqId, rfqData, onBack }: QuotationCreateProps) {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
-  // Tìm dữ liệu báo giá nếu id != 'new'
-  const existingQuote = id !== 'new' ? MOCK_QUOTES.find(q => q.id === id) : null;
-  const rfq = rfqId ? MOCK_RFQS.find(r => r.id === rfqId) : null;
+  const existingQuote = id && id !== 'new' ? MOCK_QUOTES.find(q => q.id === id) : null;
+  const rfqRaw = rfqData || (rfqId ? MOCK_RFQS.find(r => r.id === rfqId) : null);
 
-  const quoteCustomer = existingQuote ? { 
-    id: existingQuote.customerId, 
-    ...existingQuote.customerInfo 
-  } : null;
+  const getCustomerInfoFromRfq = (r: any) => {
+    if (!r) return null;
+    if (r.customerInfo) return r.customerInfo;
+    return {
+      companyName: r.companyName,
+      recipientName: r.recipientName,
+      recipientPhone: r.recipientPhone,
+      email: r.email,
+      address: r.address,
+      taxCode: r.taxCode
+    };
+  };
 
-  const allCustomers = [
-    ...(quoteCustomer ? [quoteCustomer] : []),
-    ...MOCK_RFQS.map(r => ({ id: r.customerId, ...r.customerInfo }))
-  ].filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+  const currentCustomerInfo = getCustomerInfoFromRfq(rfqRaw) || existingQuote?.customerInfo;
 
-
-  // Khai báo state dựa trên dữ liệu hiện có hoặc rfq
-  const [action, setAction] = useState<ActionType>(actionParam || ActionType.DETAIL);
+  const [action, setAction] = useState<ActionType>(actionParam || (existingQuote ? ActionType.DETAIL : ActionType.CREATE));
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
-    existingQuote?.customerId || rfq?.customerId || null
+    existingQuote?.customerId || (rfqRaw as any)?.customerId || null
   );
   
   const [formData, setFormData] = useState({
     note: existingQuote?.note || '',
     paymentMethod: existingQuote?.response?.paymentMethod || PaymentMethod.BANKTRANSFER as string,
     paymentTerm: existingQuote?.response?.paymentTerm || PaymentTern.FULLPAYMENT as string,
+    shippingAddress: currentCustomerInfo?.address || '',
+    paymentTermDays: 0,
+    quoteDate: existingQuote?.quoteDate ? new Date(existingQuote.quoteDate) : new Date(),
   });
 
-  const [items, setItems] = useState(
-    existingQuote?.items.map((item, idx) => ({ ...item, key: idx })) ||
-    rfq?.items.map((item, idx) => ({
-      ...item, unitPrice: 0, taxRate: 10, key: idx,
-    })) || []
-  );
+  const [items, setItems] = useState<any[]>(() => {
+    if (existingQuote) {
+      return existingQuote.items.map((item, idx) => ({ ...item, key: idx }));
+    }
+    if (rfqRaw) {
+      return rfqRaw.items.map((item: any, idx: number) => ({
+        productId: item.productId || '',
+        productCode: item.productCode || '',
+        productName: item.productName || '',
+        quantity: item.quantity || 0,
+        unit: item.unit || '',
+        manufacturer: item.manufacturer || item.category || '',
+        unitPrice: 0, 
+        taxRate: 0, 
+        key: idx,
+      }));
+    }
+    return [];
+  });
 
-  const [analysisLoading, setAnalysisLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [expandDealStatus, setExpandDealStatus] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
-  const isDetailWithPending = action === ActionType.DETAIL && existingQuote?.status === QuoteStatus.PENDING;
-
-  // Auto gọi analysis khi ở detail view với status PENDING
-  useEffect(() => {
-    if (isDetailWithPending && !analysisResult && !analysisLoading) {
-      handleAnalyzeQuote();
-    }
-  }, [isDetailWithPending]);
-
-  const handleAnalyzeQuote = async () => {
-    setAnalysisLoading(true);
-    setAnalysisError(null);
-    try {
-      const quoteAnalysisService = new QuoteAnalysisService();
-      const result = await quoteAnalysisService.analyzeQuote('TEST-SAFE-001');
-      setAnalysisResult(result);
-      console.log('Phân tích báo giá thành công:', result);
-    } catch (error: any) {
-      setAnalysisError(error.message || 'Lỗi phân tích báo giá');
-      console.error('Lỗi phân tích báo giá:', error);
-    } finally {
-      setAnalysisLoading(false);
-    }
-  };
-
-  const selectedCustomer = allCustomers.find(c => c.id === selectedCustomerId);
-  const customerInfo = selectedCustomer || existingQuote?.customerInfo || rfq?.customerInfo;
 
   const handleItemChange = (index: number, field: string, value: any) => {
     setItems(prev => {
@@ -211,8 +203,9 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
 
   const handleAddItem = () => {
     setItems(prev => [...prev, {
+      productId: '',
       productCode: '', productName: '', quantity: 1,
-      unit: '', unitPrice: 0, taxRate: 10, key: prev.length,
+      unit: '', manufacturer: '', unitPrice: 0, taxRate: 0, key: prev.length,
     }]);
   };
 
@@ -220,18 +213,47 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
     setItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
-    console.log('Lưu nháp:', { customerInfo, ...formData, items });
-    setAction(ActionType.DETAIL);
-  };
+  const handleSaveDraft = async () => {
+    if (items.length === 0) {
+      alert("Vui lòng thêm ít nhất một sản phẩm.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const request: QuoteCreateRequest = {
+        rfqId: rfqId || rfqRaw?.id || '',
+        customerId: selectedCustomerId || (rfqRaw as any)?.customerId || '',
+        recipientName: currentCustomerInfo?.recipientName || '',
+        recipientPhone: currentCustomerInfo?.recipientPhone || '',
+        companyName: currentCustomerInfo?.companyName || '',
+        email: currentCustomerInfo?.email || '',
+        address: currentCustomerInfo?.address || '',
+        taxCode: currentCustomerInfo?.taxCode || '',
+        note: formData.note,
+        quoteDate: formData.quoteDate.toISOString(),
+        shippingAddress: formData.shippingAddress,
+        paymentTermDays: formData.paymentTermDays,
+        items: items.map(i => ({
+          productId: i.productId || '',
+          productCode: i.productCode || '',
+          manufacturer: i.manufacturer || '',
+          unit: i.unit || '',
+          quantity: i.quantity || 0,
+          unitPrice: i.unitPrice || 0,
+          taxRate: i.taxRate || 0,
+        }))
+      };
 
-  const handleSubmit = () => {
-    console.log('Gửi duyệt:', { customerInfo, ...formData, items });
-    setAction(ActionType.DETAIL);
-  };
-
-  const handleCancel = () => {
-    setAction(ActionType.DETAIL);
+      const quoteService = new QuoteService();
+      await quoteService.createQuote(request);
+      alert("Báo giá nháp đã được lưu thành công.");
+      if (onBack) onBack();
+    } catch (error: any) {
+      alert("Lỗi khi lưu báo giá: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const calculateTotal = () =>
@@ -241,308 +263,173 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
     }, 0);
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full pb-10">
       <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <h2 className="text-2xl font-bold admin-title uppercase">
-            {action === ActionType.CREATE
-              ? 'Tạo báo giá mới'
-              : action === ActionType.UPDATE
-              ? 'Chỉnh sửa báo giá'
-              : 'Chi tiết báo giá'}
-          </h2>
-          {rfq && <p className="text-xs text-gray-500 mt-1">Từ yêu cầu: {rfq.code}</p>}
+        <div className="flex items-center gap-4">
+           {onBack && (
+              <Button onClick={onBack} variant="ghost" size="icon" className="h-9 w-9 border border-gray-200 bg-white hover:bg-gray-100 rounded text-gray-600 shadow-sm">
+                 <ArrowLeft className="w-4 h-4" />
+              </Button>
+           )}
+           <div className="flex flex-col">
+              <h2 className="text-2xl font-bold admin-title uppercase">
+                {action === ActionType.CREATE ? 'Lập báo giá mới' : action === ActionType.UPDATE ? 'Chỉnh sửa báo giá' : 'Chi tiết báo giá'}
+              </h2>
+              {rfqRaw && <p className="text-xs text-gray-500 mt-1">Từ RFQ: {rfqRaw.code}</p>}
+           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button variant="outline" onClick={handleSave} className="rounded admin-btn-primary border-transparent">
-                <Save className="w-4 h-4 mr-2" />
-                Lưu nháp
-              </Button>
-              
-              {action === ActionType.CREATE ? (
-                <Link href="/sales/quotations">
-                  <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Quay lại
-                  </Button>
-                </Link>
-              ) : (
-                <Button variant="outline" onClick={handleCancel} className="rounded text-gray-700 hover:bg-gray-50">
-                  <X className="w-4 h-4 mr-2" />
-                  Hủy
-                </Button>
-              )}
-            </>
-          ) : (
-            <>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
+          {action === ActionType.CREATE && (
+             <Button 
+               onClick={handleSaveDraft} 
+               disabled={isSubmitting}
+               className="rounded admin-btn-primary border-transparent h-10 px-6"
+             >
+               <Save className="w-4 h-4 mr-2" />
+               {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
+             </Button>
+          )}
+          {action === ActionType.DETAIL && (
+             <Button variant="outline" className="rounded admin-btn-primary border-transparent h-10 px-6">
                 <FileText className="w-4 h-4 mr-2" />
                 Gửi duyệt
-              </Button>
-              <Button variant="outline" onClick={() => setAction(ActionType.UPDATE)} className="rounded text-gray-700 hover:bg-gray-50">
-                <Edit className="w-4 h-4 mr-2" />
-                Chỉnh sửa
-              </Button>
-              <Link href="/sales/quotations">
-                <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Quay lại
-                </Button>
-              </Link>
-            </>
+             </Button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* Hiển thị kết quả phân tích */}
-        {analysisResult && analysisResult.status === 'success' && (
-          <div 
-            className="md:col-span-3 border border-gray-200 bg-white rounded"
-            onMouseEnter={() => setExpandDealStatus(true)}
-            onMouseLeave={() => setExpandDealStatus(false)}
-          >
-            <div className="w-full px-6 py-4 border-b border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer">
-              <Zap className="w-4 h-4 text-gray-600" />
-              <h4 className="text-sm font-medium flex-1 text-left">Phân tích thương vụ</h4>
-              {(() => {
-                const status = analysisResult.analysis.deal_status;
-                const statusConfig: Record<string, { badge: string; badgeText: string; icon: React.ReactNode }> = {
-                  'An toàn': {
-                    badge: 'bg-green-100 text-green-700 border border-green-200',
-                    badgeText: 'An toàn',
-                    icon: <CheckCircle className="w-4 h-4" />
-                  },
-                  'Rủi ro': {
-                    badge: 'bg-amber-100 text-amber-700 border border-amber-200',
-                    badgeText: 'Rủi ro',
-                    icon: <AlertCircle className="w-4 h-4" />
-                  },
-                  'Lỗ': {
-                    badge: 'bg-red-100 text-red-700 border border-red-200',
-                    badgeText: 'Lỗ',
-                    icon: <XCircle className="w-4 h-4" />
-                  },
-                  'Tiềm năng Upsell': {
-                    badge: 'bg-blue-100 text-blue-700 border border-blue-200',
-                    badgeText: 'Tiềm năng Upsell',
-                    icon: <TrendingUp className="w-4 h-4" />
-                  }
-                };
-                const config = statusConfig[status] || statusConfig['Rủi ro'];
-                return <div className={`${config.badge} px-2.5 py-1 rounded flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider`}>{config.icon}{config.badgeText}</div>;
-              })()}
-            </div>
-
-            {expandDealStatus && (
-              <div className="divide-y divide-gray-100">
-                <div className="px-6 py-4">
-                  <p className="text-sm text-gray-900 font-semibold uppercase mb-3">Phân tích</p>
-                  <p className="text-sm text-gray-800 leading-relaxed">{analysisResult.analysis.reasoning}</p>
-                </div>
-                <div className="px-6 py-4">
-                  <p className="text-sm text-gray-900 font-semibold uppercase mb-3">Chiến lược</p>
-                  <p className="text-sm text-gray-800 leading-relaxed">{analysisResult.analysis.strategy}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Hiển thị lỗi */}
-        {analysisError && (
-          <div className="md:col-span-3 border border-red-200 bg-red-50 rounded p-4">
-            <div className="flex items-start gap-3">
-              <X className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-red-900 mb-2">Lỗi phân tích</h3>
-                <p className="text-sm text-red-800">{analysisError}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="md:col-span-1 space-y-6">
-          {/* Thông tin cơ bản */}
+          {/* Thông tin chung mới bổ sung Ngày báo giá */}
           <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 " />
-              <h4 className="text-sm font-medium">Thông tin cơ bản</h4>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
+              <ClipboardList size={16} className="text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-900">Thông tin chung</h4>
             </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Mã báo giá</td>
-                  <td className="px-6 py-3">{existingQuote?.code || '—'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Trạng thái</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[existingQuote?.status || QuoteStatus.DRAFT]}`}>
-                      {statusLabel[existingQuote?.status || QuoteStatus.DRAFT]}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Ngày tạo</td>
-                  <td className="px-6 py-3">
-                    {existingQuote?.quoteDate ? new Date(existingQuote.quoteDate).toLocaleDateString('vi-VN') : '—'}
-                  </td>
-                </tr>
-                {existingQuote?.parentId && (
-                  <tr>
-                    <td className="px-6 py-3 admin-text-primary font-semibold">Bản gốc</td>
-                    <td className="px-6 py-3 text-blue-600 hover:underline cursor-pointer">
-                      {existingQuote.parentId}
-                    </td>
-                  </tr>
+            <div className="p-6 space-y-5">
+                {action !== ActionType.CREATE && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-500">Mã báo giá</label>
+                    <p className="text-sm font-bold text-gray-900 tracking-tight">{existingQuote?.code}</p>
+                  </div>
                 )}
+                <div className="space-y-1.5">
+                   <label className="text-xs font-semibold text-gray-500">Ngày báo giá</label>
+                   <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left font-normal h-10 border-gray-200 rounded",
+                            !formData.quoteDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                          {formData.quoteDate ? format(formData.quoteDate, "dd/MM/yyyy", { locale: vi }) : <span>Chọn ngày</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.quoteDate}
+                          onSelect={(date) => date && setFormData({ ...formData, quoteDate: date })}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                </div>
+            </div>
+          </div>
+
+          <div className="border border-gray-200 bg-white rounded">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
+              <User size={16} className="text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-900">Thông tin khách hàng</h4>
+            </div>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                   <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Công ty</td>
+                   <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.companyName || '—'}</td>
+                </tr>
+                <tr>
+                   <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
+                   <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.recipientName || '—'}</td>
+                </tr>
+                <tr>
+                   <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
+                   <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.recipientPhone || '—'}</td>
+                </tr>
+                <tr>
+                   <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>
+                   <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.email || '—'}</td>
+                </tr>
+                <tr>
+                   <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ</td>
+                   <td className="px-6 py-3 font-medium text-gray-600 text-xs italic">{currentCustomerInfo?.address || '—'}</td>
+                </tr>
               </tbody>
             </table>
           </div>
 
           <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <User className="w-4 h-4 " />
-              <h4 className="text-sm font-medium">Thông tin khách hàng</h4>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
+              <DollarSign size={16} className="text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-900">Thanh toán</h4>
             </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Công ty</td>
-                  <td className="px-6 py-3">
-                    {isEditing ? (
-                      <Select
-                        value={selectedCustomerId || ''}
-                        onValueChange={setSelectedCustomerId}
-                        disabled={!!rfq}
-                      >
-                        <SelectTrigger className="w-[280px] text-sm h-10 border-gray-300 rounded focus:ring-1 focus:ring-[var(--brand-green-500)]">
-                          <SelectValue placeholder="Chọn khách hàng..." className="truncate" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allCustomers.map((c) => (
-                            <SelectItem key={c.id} value={c.id} className="text-sm">
-                              {c.companyName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <span>{customerInfo?.companyName || '—'}</span>
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3">
-                    {customerInfo?.recipientName || '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
-                  <td className="px-6 py-3">
-                    {customerInfo?.recipientPhone || '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>
-                  <td className="px-6 py-3">
-                    {customerInfo?.email || '—'}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 " />
-              <h4 className="text-sm font-medium">Điều khoản thanh toán</h4>
+            <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                   <label className="text-xs font-semibold text-gray-500">Phương thức</label>
+                   <Select value={formData.paymentMethod} onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}>
+                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded">
+                         <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                         {Object.entries(paymentMethodLabel).map(([val, label]) => (
+                            <SelectItem key={val} value={val} className="text-sm">{label}</SelectItem>
+                         ))}
+                      </SelectContent>
+                   </Select>
+                </div>
+                <div className="space-y-1.5">
+                   <label className="text-xs font-semibold text-gray-500">Hạn mức</label>
+                   <Select value={formData.paymentTerm} onValueChange={(v) => setFormData({ ...formData, paymentTerm: v })}>
+                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded">
+                         <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                         {Object.entries(paymentTermLabel).map(([val, label]) => (
+                            <SelectItem key={val} value={val} className="text-sm">{label}</SelectItem>
+                         ))}
+                      </SelectContent>
+                   </Select>
+                </div>
             </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Phương thức</td>
-                  <td className="px-6 py-3">
-                    {isEditing ? (
-                      <Select
-                        value={formData.paymentMethod}
-                        onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
-                      >
-                        <SelectTrigger className="text-xs h-8 border-gray-300 rounded focus:ring-1 focus:ring-[var(--brand-green-500)]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(paymentMethodLabel).map(([val, label]) => (
-                            <SelectItem key={val} value={val} className="text-xs">{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <span>
-                        {paymentMethodLabel[formData.paymentMethod]}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Hạn thanh toán</td>
-                  <td className="px-6 py-3">
-                    {isEditing ? (
-                      <Select
-                        value={formData.paymentTerm}
-                        onValueChange={(v) => setFormData({ ...formData, paymentTerm: v })}
-                      >
-                        <SelectTrigger className="text-xs h-8 border-gray-300 rounded focus:ring-1 focus:ring-[var(--brand-green-500)]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(paymentTermLabel).map(([val, label]) => (
-                            <SelectItem key={val} value={val} className="text-xs">{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <span>
-                        {paymentTermLabel[formData.paymentTerm]}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
 
         <div className="md:col-span-2 space-y-6">
-
-          {/* Bảng sản phẩm */}
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="border border-gray-200 bg-white rounded overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4 " />
-                <h4 className="text-base font-medium">Danh mục sản phẩm</h4>
+                <ShoppingCart size={16} className="text-gray-400" />
+                <h4 className="text-sm font-medium text-gray-900">Danh sách sản phẩm</h4>
               </div>
-              {isEditing && (
-                <Button onClick={handleAddItem} size="sm" className="rounded admin-btn-primary border-transparent text-xs">
-                  + Thêm sản phẩm
-                </Button>
-              )}
+              <Button onClick={handleAddItem} size="sm" variant="outline" className="h-8 text-xs border-gray-300 rounded bg-white">
+                + Thêm sản phẩm
+              </Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
+                <thead className="bg-gray-50/50 text-gray-500 font-medium">
                   <tr>
-                    <th className="px-6 py-3 admin-table-th text-left">Sản phẩm</th>
-                    <th className="px-6 py-3 w-24 admin-table-th text-center">SL</th>
-                    <th className="px-6 py-3 w-32 admin-table-th text-right">Đơn giá</th>
-                    <th className="px-6 py-3 w-20 admin-table-th text-center">Thuế %</th>
-                    <th className="px-6 py-3 w-32 admin-table-th text-right">Cộng</th>
-                    {isEditing && <th className="px-3 py-3 w-10" />}
+                    <th className="px-6 py-3 text-left">Sản phẩm</th>
+                    <th className="px-4 py-3 w-20 text-center">SL</th>
+                    <th className="px-4 py-3 w-32 text-right">Đơn giá</th>
+                    <th className="px-4 py-3 w-20 text-center">Thuế %</th>
+                    <th className="px-6 py-3 w-32 text-right">Thành tiền</th>
+                    <th className="px-3 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -550,122 +437,89 @@ export default function QuotationCreate({ id, rfqId }: QuotationCreateProps) {
                     const sub = (item.quantity || 0) * (item.unitPrice || 0);
                     const total = sub + sub * ((item.taxRate || 0) / 100);
                     return (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-3">
-                          {isEditing ? (
-                            <div className="min-w-[200px]">
-                              <SearchableProductSelect
-                                defaultValue={item.productCode}
-                                defaultLabel={item.productName}
-                                onSelect={(prod) => {
-                                  const updatedItems = [...items];
-                                  updatedItems[index] = {
-                                    ...updatedItems[index],
-                                    productCode: prod.code,
-                                    productName: prod.name,
-                                    unit: prod.unit || item.unit
-                                  };
-                                  setItems(updatedItems);
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <>
-                              <div>{item.productName}</div>
-                              <div className="text-xs mt-0.5">Mã: {item.productCode}</div>
-                            </>
-                          )}
+                      <tr key={index} className="hover:bg-gray-50/30">
+                        <td className="px-6 py-4">
+                          <SearchableProductSelect
+                            defaultValue={item.productCode}
+                            defaultLabel={item.productName}
+                            onSelect={(prod) => {
+                              const updatedItems = [...items];
+                              updatedItems[index] = {
+                                ...updatedItems[index],
+                                productId: prod.id,
+                                productCode: prod.code,
+                                productName: prod.name,
+                                unit: prod.unit || item.unit,
+                                manufacturer: prod.manufacturer || item.manufacturer
+                              };
+                              setItems(updatedItems);
+                            }}
+                          />
                         </td>
-                        <td className="px-6 py-3 text-center">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
-                            />
-                          ) : (
-                            <span>{item.quantity} {item.unit}</span>
-                          )}
+                        <td className="px-4 py-4">
+                          <Input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                            onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+                            className="h-10 text-sm text-center border-gray-200 shadow-none"
+                          />
                         </td>
-                        <td className="px-6 py-3 text-right">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={item.unitPrice}
-                              onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
-                            />
-                          ) : (
-                            <span>{item.unitPrice.toLocaleString('vi-VN')}đ</span>
-                          )}
+                        <td className="px-4 py-4">
+                          <Input
+                            type="number"
+                            value={item.unitPrice}
+                            onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                            onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+                            className="h-10 text-sm text-right border-gray-200 shadow-none"
+                            placeholder="0"
+                          />
                         </td>
-                        <td className="px-6 py-3 text-center">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={item.taxRate}
-                              onChange={(e) => handleItemChange(index, 'taxRate', parseFloat(e.target.value) || 0)}
-                              min="0" max="100"
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
-                            />
-                          ) : (
-                            <span>{item.taxRate}%</span>
-                          )}
+                        <td className="px-4 py-4">
+                           <Input
+                             type="number"
+                             value={item.taxRate}
+                             onChange={(e) => handleItemChange(index, 'taxRate', parseFloat(e.target.value) || 0)}
+                             onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+                             className="h-10 text-sm text-center border-gray-200 shadow-none"
+                           />
                         </td>
-                        <td className="px-6 py-3 text-right">
+                        <td className="px-6 py-4 text-right font-semibold text-gray-900 border-l border-gray-50">
                           {total.toLocaleString('vi-VN')}
                         </td>
-                        {isEditing && (
-                          <td className="px-3 py-3 text-center">
-                            <Button
-                              onClick={() => handleRemoveItem(index)}
-                              size="sm" variant="ghost"
-                              className="text-red-500 hover:bg-red-50 h-7 w-7 p-0"
-                            >
-                              <Trash className="w-3.5 h-3.5" />
-                            </Button>
-                          </td>
-                        )}
+                        <td className="px-3 py-4 text-center">
+                           <Button onClick={() => handleRemoveItem(index)} variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500">
+                              <Trash size={14} />
+                           </Button>
+                        </td>
                       </tr>
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-200 text-lg">
-                  <tr>
-                    <td colSpan={isEditing ? 5 : 4} className="px-6 py-4 text-right font-semibold">
-                      Tổng cộng:
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-[var(--brand-green-600)]">
-                      {calculateTotal().toLocaleString('vi-VN')}
-                    </td>
-                  </tr>
+                <tfoot className="bg-gray-50 border-t border-gray-200 font-bold">
+                   <tr>
+                      <td colSpan={4} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px] tracking-wider">Tổng cộng (sau thuế):</td>
+                      <td className="px-6 py-5 text-right text-blue-600 text-xl">{calculateTotal().toLocaleString('vi-VN')} đ</td>
+                      <td></td>
+                   </tr>
                 </tfoot>
               </table>
             </div>
           </div>
 
-          {/* Ghi chú */}
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 " />
-              <h4 className="text-base font-medium">Ghi chú & Điều khoản</h4>
+          <div className="border border-gray-200 bg-white rounded shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
+              <MessageSquare size={16} className="text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-900">Ghi chú & Điều khoản bổ sung</h4>
             </div>
             <div className="p-6">
-              {isEditing ? (
-                <textarea
+               <Textarea
                   value={formData.note}
                   onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                  placeholder="Nhập ghi chú, điều khoản vận chuyển, bảo hành, v.v..."
-                  rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-xs focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)] resize-none"
-                />
-              ) : (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {formData.note || <span className=" italic">Không có ghi chú.</span>}
-                </p>
-              )}
+                  placeholder="Nhập ghi chú hoặc các điều khoản bảo hành, vận chuyển, cam kết kỹ thuật..."
+                  rows={4}
+                  className="w-full text-sm border-gray-100 focus:ring-0 resize-none shadow-none bg-gray-50/20"
+               />
             </div>
           </div>
         </div>
