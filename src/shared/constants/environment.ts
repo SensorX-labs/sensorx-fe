@@ -21,6 +21,6 @@ const getServiceUrl = (localUrl: string, gatewayPath: string): string => {
 };
 
 // 2. Export các URL cụ thể cho từng Service
-export const DATA_SERVICE_URL = getServiceUrl("http://localhost:5051", "/data");
-export const AUTH_SERVICE_URL = getServiceUrl("http://localhost:5052", "/auth");
-export const MASTER_SERVICE_URL = getServiceUrl("http://localhost:5050", "/master");
+export const DATA_SERVICE_URL = getServiceUrl("http://localhost:5051/api", "/api/data");
+export const AUTH_SERVICE_URL = getServiceUrl("http://localhost:5052/api", "/api/auth");
+export const MASTER_SERVICE_URL = getServiceUrl("http://localhost:5050/api", "/api/master");
