@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Layers, FolderOpen, GitBranch } from 'lucide-react';
 import { Category } from '../../../models/category-model';
 
@@ -7,9 +7,11 @@ interface CategoryStatsProps {
 }
 
 export function CategoryStats({ categories }: CategoryStatsProps) {
-  const total = categories.length;
-  const roots = categories.filter(c => !c.parentId).length;
-  const subCategories = total - roots;
+  const { total, roots, subCategories } = useMemo(() => {
+    const total = categories.length;
+    const roots = categories.filter(c => !c.parentId).length;
+    return { total, roots, subCategories: total - roots };
+  }, [categories]);
 
   const stats = [
     {

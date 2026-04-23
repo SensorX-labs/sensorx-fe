@@ -1,18 +1,10 @@
-import { 
-  DndContext, 
-  closestCorners, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
-  useSensors, 
-  DragOverlay 
-} from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Edit, Trash2, FolderTree } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
@@ -25,12 +17,8 @@ interface CategoryTreeProps {
   matchingIds: string[];
   currentMatchIndex: number;
   activeId: string | null;
-  onDragStart: (event: any) => void;
-  onDragEnd: (event: any) => void;
   onEdit: (cat: Category) => void;
   onDelete: (id: string) => void;
-  currentPage: number;
-  pageSize: number;
 }
 
 export function CategoryTree({
@@ -39,58 +27,32 @@ export function CategoryTree({
   matchingIds,
   currentMatchIndex,
   activeId,
-  onDragStart,
-  onDragEnd,
   onEdit,
   onDelete,
-  currentPage,
-  pageSize
 }: CategoryTreeProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const tree = buildTree(categories);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-    >
-      <div className="p-6">
-        <SortableContext
-          items={categories.map(c => c.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {tree.map((node) => (
-              <TreeItem
-                key={node.id}
-                node={node}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                highlight={searchTerm}
-                activeId={matchingIds[currentMatchIndex]}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </div>
-
-      <DragOverlay>
-        {activeId ? (
-          <div className="bg-white p-4 rounded-lg shadow-xl border-2 border-blue-500 flex items-center gap-3 opacity-90">
-            <GripVertical className="w-4 h-4 text-gray-400" />
-            <span className="font-bold">{categories.find(c => c.id === activeId)?.name}</span>
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <div className="p-6">
+      <SortableContext
+        items={categories.map(c => c.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-2">
+          {tree.map((node) => (
+            <TreeItem
+              key={node.id}
+              node={node}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              highlight={searchTerm}
+              activeId={matchingIds[currentMatchIndex]}
+              isDraggingAny={!!activeId}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </div>
   );
 }
 
@@ -100,7 +62,8 @@ function TreeItem({
   onEdit,
   onDelete,
   highlight = '',
-  activeId = ''
+  activeId = '',
+  isDraggingAny = false,
 }: {
   node: TreeNode;
   depth?: number;
@@ -108,6 +71,7 @@ function TreeItem({
   onDelete: any;
   highlight?: string;
   activeId?: string;
+  isDraggingAny?: boolean;
 }) {
   const {
     attributes,
@@ -134,16 +98,16 @@ function TreeItem({
         ${isActiveMatch ? 'border-orange-500 shadow-md ring-2 ring-orange-100' : 'border-gray-100 hover:border-blue-200 hover:shadow-sm'}
       `}>
         {/* Grip Handle */}
-        <button 
-          {...attributes} 
-          {...listeners} 
+        <button
+          {...attributes}
+          {...listeners}
           className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded flex-shrink-0"
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </button>
 
         {/* Content Area */}
-        <div className={`flex-1 flex items-center gap-3 min-w-0 ${activeId ? 'pointer-events-none' : ''}`}>
+        <div className={`flex-1 flex items-center gap-3 min-w-0 ${isDraggingAny ? 'pointer-events-none' : ''}`}>
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <span className="font-semibold text-gray-900 whitespace-nowrap">
               <HighlightText text={node.name} highlight={highlight} isActive={isActiveMatch} />
@@ -162,7 +126,7 @@ function TreeItem({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+        <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ${isDraggingAny ? 'pointer-events-none' : ''}`}>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => onEdit(node)}>
             <Edit className="w-4 h-4" />
           </Button>
@@ -183,6 +147,7 @@ function TreeItem({
               onDelete={onDelete}
               highlight={highlight}
               activeId={activeId}
+              isDraggingAny={isDraggingAny}
             />
           ))}
         </div>
@@ -191,22 +156,27 @@ function TreeItem({
   );
 }
 
+// RootDropZone dùng useDroppable (không phải useSortable)
+// để không bị ảnh hưởng bởi SortableContext của cây danh mục
 export function RootDropZone() {
-  const { setNodeRef, isOver } = useSortable({ id: 'root-drop-zone' });
+  const { setNodeRef, isOver } = useDroppable({ id: 'root-drop-zone' });
 
   return (
     <div
       ref={setNodeRef}
       className={`
-        p-8 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-all
-        ${isOver ? 'border-orange-500 bg-orange-50 text-orange-600 scale-[1.02]' : 'border-gray-200 bg-gray-50/50 text-gray-400'}
+        p-3 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-200
+        ${isOver
+          ? 'border-orange-500 bg-orange-50 text-orange-600 scale-[1.01] shadow-md shadow-orange-100'
+          : 'border-gray-200 bg-gray-50/50 text-gray-400'
+        }
       `}
     >
-      <div className={`p-2 rounded-full ${isOver ? 'bg-orange-100' : 'bg-gray-100'}`}>
-        <FolderTree className="w-6 h-6" />
+      <div className={`p-1.5 rounded-full transition-colors ${isOver ? 'bg-orange-100' : 'bg-gray-100'}`}>
+        <FolderTree className="w-4 h-4" />
       </div>
-      <p className="font-medium text-sm">Thả vào đây để đưa ra ngoài làm danh mục gốc</p>
-      <p className="text-xs opacity-60">Danh mục sẽ không còn thuộc về bất kỳ danh mục cha nào</p>
+      <p className="font-semibold text-xs text-center">Thả vào đây để làm danh mục gốc</p>
+      <p className="text-[10px] opacity-60 text-center">Xóa danh mục cha hiện tại</p>
     </div>
   );
 }

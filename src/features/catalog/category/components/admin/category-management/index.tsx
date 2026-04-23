@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   FolderTree,
   Search,
@@ -8,7 +8,18 @@ import {
   ChevronRight,
   LayoutList,
   LayoutGrid,
+  GripVertical,
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from "sonner";
 
@@ -19,9 +30,16 @@ import { CategoryTree, RootDropZone } from './category-tree';
 import { CategoryForm } from './category-form';
 import CategoryService from '../../../services/category-services';
 import { Category } from '../../../models/category-model';
-import { buildTree } from './category-utils';
 
 export default function CategoryManagement() {
+  // D&D Sensors — khai báo ở đây để DndContext bao cả tree và RootDropZone
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   // State cho dữ liệu
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +68,6 @@ export default function CategoryManagement() {
 
   // Fetch dữ liệu
   const fetchData = useCallback(async () => {
-    setLoading(false); // Đã có dữ liệu từ Checkpoint trước đó? Giả sử lấy thật
     setLoading(true);
     try {
       const response = await CategoryService.getAll();
@@ -307,18 +324,18 @@ export default function CategoryManagement() {
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95"
                     onClick={handlePrevMatch}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95"
                     onClick={handleNextMatch}
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -330,8 +347,8 @@ export default function CategoryManagement() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto max-h-[70vh] min-h-[400px]">
-          {viewMode === 'table' ? (
+        {viewMode === 'table' ? (
+          <div className="flex-1 overflow-y-auto max-h-[70vh] min-h-[400px]">
             <CategoryTable
               loading={loading}
               categories={paginatedItems}
@@ -341,28 +358,44 @@ export default function CategoryManagement() {
               onEdit={openEditModal}
               onDelete={handleDelete}
             />
-          ) : (
-            <CategoryTree
-              categories={allCategories}
-              searchTerm={searchTerm}
-              matchingIds={matchingIds}
-              currentMatchIndex={currentMatchIndex}
-              activeId={activeId}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onEdit={openEditModal}
-              onDelete={handleDelete}
-              currentPage={currentPage}
-              pageSize={pageSize}
-            />
-          )}
-        </div>
-
-        {/* Root Drop Zone - Outside Scroll */}
-        {viewMode === 'tree' && activeId && (
-          <div className="p-4 border-t border-gray-100 bg-gray-50/30">
-            <RootDropZone />
           </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            {/* Tree scroll area */}
+            <div className="flex-1 overflow-y-auto max-h-[685px] min-h-[400px]">
+              <CategoryTree
+                categories={allCategories}
+                searchTerm={searchTerm}
+                matchingIds={matchingIds}
+                currentMatchIndex={currentMatchIndex}
+                activeId={activeId}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+            </div>
+
+            {/* Root Drop Zone — trong cùng DndContext nên hoạt động đúng */}
+            {activeId && (
+              <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+                <RootDropZone />
+              </div>
+            )}
+
+            {/* Drag Overlay — ghost theo con trỏ khi kéo */}
+            <DragOverlay>
+              {activeId ? (
+                <div className="bg-white px-4 py-3 rounded-lg shadow-xl border-2 border-blue-500 flex items-center gap-3 opacity-95">
+                  <GripVertical className="w-4 h-4 text-gray-400" />
+                  <span className="font-bold text-gray-900">{allCategories.find(c => c.id === activeId)?.name}</span>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
 
         {/* Local Pagination UI */}

@@ -56,10 +56,11 @@ export function buildTree(flatList: Category[]): TreeNode[] {
 }
 
 export function getAllDescendantIds(categories: Category[], parentId: string): string[] {
+  const result: string[] = [];
   const children = categories.filter(c => c.parentId === parentId);
-  let ids = children.map(c => c.id);
-  children.forEach(child => {
-    ids = [...ids, ...getAllDescendantIds(categories, child.id)];
-  });
-  return ids;
+  for (const child of children) {
+    result.push(child.id);
+    result.push(...getAllDescendantIds(categories, child.id));
+  }
+  return result;
 }
