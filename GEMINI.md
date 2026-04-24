@@ -28,7 +28,19 @@
 - Configured global `Toaster` in `RootLayout`.
 - Resolved scrolling issues by making the Category List container scrollable with a sticky header.
 
+## 🛠️ Feature: Internal Price Management (2026-04-24)
+### UI Strategy
+- **Read-Priority Dashboard**: Optimized for data consumption with expandable rows in the list view to see Price Tiers without navigating away.
+- **Tabbed Detail View**: Separates core info, tier rules, and product assignments.
+- **Rule Enforcement**: Visual validation (Suggested >= Floor, Price < Suggested, Price decreasing with Quantity) shown via tooltips and helper text instead of invasive popups.
+- **Action-Oriented**: Support for Extending, Deactivating, and Duplicating prices directly from the UI.
+
+### Data Model
+- **Price Tiers**: Quantity-based pricing where price must decrease as quantity increases.
+- **Status lifecycle**: Active, Expiring Soon, Inactive, Expired.
+
 ## ⚠️ Important Notes
 - **API Synchronization**: The `Category` model must always include `parentName` and `parentId`.
+- **Internal Price Actions**: Duplicate action should NOT copy product assignments, only the pricing rules.
 - **D&D Sensitivity**: Use the `GripVertical` handle for dragging.
 - **Pagination**: When in Table mode, the pagination bar is sticky at the bottom.
