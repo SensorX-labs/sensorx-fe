@@ -9,7 +9,7 @@ const AdminHeader: React.FC = () => {
     const activeTab = useActiveTab();
 
     return (
-        <header className="min-h-16 flex items-center justify-between px-4 md:px-6 bg-[var(--admin-background)] border-b border-gray-200 py-3 transition-all duration-300">
+        <header className="sticky top-0 z-50 min-h-16 flex items-center justify-between px-4 md:px-6 bg-[var(--admin-background)] border-b border-gray-200 py-3 transition-all duration-300">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="w-10 h-10 [&_svg]:w-5 [&_svg]:h-5 admin-muted hover:text-[--admin-title] hover:bg-admin-surface shrink-0 rounded-md" />
                 <div className="flex flex-col justify-center">

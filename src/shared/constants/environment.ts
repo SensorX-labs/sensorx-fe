@@ -15,9 +15,9 @@ const getServiceUrl = (localUrl: string, gatewayPath: string): string => {
         return `${GATEWAY_URL}${gatewayPath}`;
     }
 
-    // Nếu là Local: Bạn có thể chọn gọi trực tiếp service hoặc qua Local Gateway
-    // Hiện tại ưu tiên gọi trực tiếp để tiện phát triển khi chưa có Gateway
-    return localUrl;
+    // Nếu là Local: Luôn đi qua Local Gateway
+    // return localUrl;
+    return `${GATEWAY_URL}${gatewayPath}`;
 };
 
 // 2. Export các URL cụ thể cho từng Service
