@@ -28,8 +28,8 @@ import { CategoryStats } from './category-stats';
 import { CategoryTable } from './category-table';
 import { CategoryTree, RootDropZone } from './category-tree';
 import { CategoryForm } from './category-form';
-import CategoryService from '../../../services/category-services';
-import { Category } from '../../../models/category-model';
+import { Category } from '../../models/category-model';
+import CategoryService from '../../services/category-services';
 
 export default function CategoryManagement() {
   // D&D Sensors — khai báo ở đây để DndContext bao cả tree và RootDropZone
