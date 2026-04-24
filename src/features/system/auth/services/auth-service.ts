@@ -4,6 +4,6 @@ import { LoginResponse } from "../models/login-response";
 
 export class AuthService {
     async login(data: LoginRequest): Promise<LoginResponse> {
-        return api.post("/auth/login", data);
+        return api.auth.post("/login", data);
     }
 }
