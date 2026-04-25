@@ -43,16 +43,31 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
         return config;
     });
 
-    // Response interceptor: Xử lý data và Auto Refresh Token
+    // Response interceptor: Xử lý data
     instance.interceptors.response.use(
         (response) => {
             const result = response.data;
-            // Tự động unwrap nếu có cấu trúc { success, data } hoặc { isSuccess, value }
-            if (result && typeof result === 'object') {
-                if (result.success === true || result.isSuccess === true) {
-                    return result.data ?? result.value ?? result;
+
+            // Nếu là structure Result { isSuccess, value, message }
+            if (result && typeof result === 'object' && ('isSuccess' in result || 'success' in result)) {
+                const isSuccess = result.isSuccess ?? result.success;
+                const value = result.value ?? result.data;
+
+                // Nếu thành công và value là object, ta trả về "Universal Result":
+                // 1. Spread value để các component kiểu cũ truy cập trực tiếp (response.items)
+                // 2. Giữ nguyên .value để các component kiểu mới truy cập (result.value.items)
+                // 3. Đính kèm flag success
+                if (isSuccess && value && typeof value === 'object') {
+                    return {
+                        ...(value as object),
+                        value: value,
+                        isSuccess: true,
+                        success: true,
+                        message: result.message
+                    };
                 }
             }
+
             return result;
         },
         async (error: AxiosError<any>) => {
@@ -60,24 +75,24 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
             // Nếu lỗi 401 (Unauthorized) và không phải là request gọi API refresh
             if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh')) {
-                
+
                 if (isRefreshing) {
                     // Nếu đang refresh, đưa request hiện tại vào hàng đợi
                     return new Promise((resolve, reject) => {
                         failedQueue.push({ resolve, reject });
                     })
-                    .then((token) => {
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        return instance(originalRequest);
-                    })
-                    .catch((err) => Promise.reject(err));
+                        .then((token) => {
+                            originalRequest.headers.Authorization = `Bearer ${token}`;
+                            return instance(originalRequest);
+                        })
+                        .catch((err) => Promise.reject(err));
                 }
 
                 originalRequest._retry = true;
                 isRefreshing = true;
 
                 const refreshToken = getClientCookie("refreshToken");
-                
+
                 if (!refreshToken) {
                     isRefreshing = false;
                     Cookies.remove("token", { path: '/' });
@@ -94,7 +109,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                     // Bóc tách dữ liệu từ response.data.data (theo cấu trúc JSON của bạn)
                     const refreshResult = response.data;
                     const newData = refreshResult.data || refreshResult.value || refreshResult;
-                    
+
                     const newAccessToken = newData.accessToken || newData.token;
                     const newRefreshToken = newData.refreshToken;
 
@@ -108,7 +123,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
                     // Thực hiện lại các request trong hàng đợi
                     processQueue(null, newAccessToken);
-                    
+
                     // Thực hiện lại chính request ban đầu
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     return instance(originalRequest);
