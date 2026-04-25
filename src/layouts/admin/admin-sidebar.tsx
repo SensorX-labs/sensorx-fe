@@ -19,6 +19,7 @@ import {
   Settings,
   ChevronRight,
   UserCircle,
+  Shield,
   FileEdit,
   FolderTree,
   Scale,
@@ -169,6 +170,11 @@ const sidebarSections: {
   {
     title: 'HỆ THỐNG',
     items: [
+      {
+        name: 'Tài khoản',
+        icon: Shield,
+        href: '/users/accounts',
+      },
       {
         name: 'Nhân viên',
         icon: UserCircle,
