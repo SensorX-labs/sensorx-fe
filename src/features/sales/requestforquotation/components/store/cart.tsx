@@ -42,7 +42,7 @@ export function Cart() {
         const parsed = JSON.parse(savedForm);
         // Fix lỗi [object Object] nếu dữ liệu cũ là object địa chỉ
         if (typeof parsed.address === 'object' && parsed.address !== null) {
-            parsed.address = ''; // Hoặc convert thành chuỗi nếu muốn giữ lại
+          parsed.address = ''; // Hoặc convert thành chuỗi nếu muốn giữ lại
         }
         setFormData(parsed);
       } catch (e) {
@@ -65,9 +65,9 @@ export function Cart() {
     }
 
     setIsSubmitting(true);
-    
+
     const request: RfqCreateRequest = {
-      customerId: "af277326-224c-48c8-9bf5-54b2244fa71f", 
+      customerId: "af277326-224c-48c8-9bf5-54b2244fa71f",
       recipientName: formData.name,
       recipientPhone: formData.phone,
       companyName: formData.companyName,
@@ -80,22 +80,23 @@ export function Cart() {
         productCode: i.product.code,
         quantity: i.quantity,
         manufacturer: i.product.manufacture,
-        unit: i.product.unit
+        unit: i.product.unit || "Cái" // Chốt chặn cuối cùng: Đảm bảo luôn có unit gửi lên API
       }))
     };
 
     localStorage.setItem('lastCreatedRfq', JSON.stringify(request));
-
     try {
-      const rfqService = new RFQServices();
-      await rfqService.createRFQ(request);
-      setShowSuccessDialog(true);
-      clearCart(); 
+      const response = await RFQServices.createRFQ(request);
+      if (response.isSuccess) {
+        setShowSuccessDialog(true);
+        clearCart();
+      } else {
+        toast.warning("Gửi yêu cầu thất bại", {
+          description: response.message || "Đã xảy ra lỗi không xác định"
+        });
+      }
     } catch (error: any) {
       console.error(">>> Lỗi khi tạo RFQ:", error);
-      toast.error("Gửi yêu cầu thất bại", {
-        description: error.message || "Đã xảy ra lỗi không xác định"
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -133,9 +134,9 @@ export function Cart() {
       ) : (
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="flex flex-col lg:flex-row gap-16 items-start">
-            
+
             <div className="w-full lg:w-2/3 space-y-12">
-              
+
               <section className="bg-white border border-gray-200 p-8 md:p-12">
                 <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100">
                   <span className="w-10 h-10 bg-gray-900 text-white flex items-center justify-center text-sm font-bold">01</span>
@@ -159,9 +160,9 @@ export function Cart() {
                   <span className="w-10 h-10 bg-gray-900 text-white flex items-center justify-center text-sm font-bold">02</span>
                   <h2 className="text-2xl font-bold tracking-widest uppercase mb-0">Thông tin báo giá</h2>
                 </div>
-                <QuotationForm 
-                  formData={formData} 
-                  onChange={setFormData} 
+                <QuotationForm
+                  formData={formData}
+                  onChange={setFormData}
                 />
               </section>
             </div>
@@ -172,13 +173,13 @@ export function Cart() {
                   <ShoppingBag size={20} className="text-brand-green" />
                   TÓM TẮT YÊU CẦU
                 </h3>
-                
+
                 <div className="space-y-6 mb-12">
                   <div className="flex justify-between items-center py-4 border-y border-gray-100">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sản phẩm</span>
                     <span className="font-bold text-lg text-gray-900">{cartItems.length}</span>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 size={16} className="text-brand-green mt-0.5 flex-shrink-0" />
@@ -200,7 +201,7 @@ export function Cart() {
                     {isSubmitting ? 'ĐANG GỬI...' : 'GỬI YÊU CẦU BÁO GIÁ'}
                     {!isSubmitting && <Send size={14} />}
                   </button>
-                  
+
                   <p className="text-[10px] text-gray-400 text-center leading-relaxed font-bold uppercase tracking-widest">
                     Phản hồi trong vòng <span className="text-gray-900">24 giờ làm việc</span>.
                   </p>
@@ -221,13 +222,13 @@ export function Cart() {
               Gửi yêu cầu thành công
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-sm leading-relaxed text-gray-500 uppercase tracking-widest">
-              Yêu cầu báo giá của bạn đã được tiếp nhận. <br/> 
-              Đội ngũ chuyên gia của <strong>SensorX</strong> sẽ phản hồi <br/> 
+              Yêu cầu báo giá của bạn đã được tiếp nhận. <br />
+              Đội ngũ chuyên gia của <strong>SensorX</strong> sẽ phản hồi <br />
               trong vòng <strong>24 giờ làm việc</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8">
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => setShowSuccessDialog(false)}
               className="w-full bg-gray-900 text-white rounded-none py-6 font-bold tracking-[0.3em] uppercase text-[10px] hover:bg-brand-green transition-all"
             >

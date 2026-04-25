@@ -1,43 +1,19 @@
-import { dataUrl } from "@/shared/constants/environment";
-import { PaginationResponse } from "@/shared/models/pagination";
+import api from "@/shared/configs/axios-config";
+import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 import { StaffListItem } from "../models/staff-list-response";
 
-export interface StaffFilter {
-  pageNumber: number;
-  pageSize: number;
-  searchTerm?: string;
-}
+export type StaffFilter = BaseQueryOffsetPagedList;
 
-export class StaffService {
-  async getStaffs(params: StaffFilter): Promise<PaginationResponse<StaffListItem>> {
-    const queryParams = new URLSearchParams();
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        queryParams.append(key, value.toString());
-      }
-    });
+export const StaffService = {
+  getPagedStaffs: (params: StaffFilter) =>
+    api.data.get<any, Result<OffsetPagedResult<StaffListItem>>>(`/staff/list`, { params }),
 
-    const url = `${dataUrl}/api/staff/list?${queryParams.toString()}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  getStaffById: (id: string) =>
+    api.data.get<any, Result<StaffListItem>>(`/staff/${id}`),
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-    }
+  getStaffByAccountId: (id: string) =>
+    api.data.get<any, Result<StaffListItem>>(`/staff/account/${id}`),
+};
 
-    const result = await response.json();
-
-    if (result && result.isSuccess) {
-      return result.value;
-    }
-
-    throw new Error(result.error || "Đã xảy ra lỗi khi lấy danh sách nhân viên");
-  }
-}
+export default StaffService;

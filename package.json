@@ -69,6 +69,7 @@
     "sockjs-client": "^1.6.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
+    "tailwindcss-animate": "^1.0.7",
     "tippy.js": "^6.3.7",
     "tiptap-markdown": "^0.9.0",
     "zod": "^4.2.1"
