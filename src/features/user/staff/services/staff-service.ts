@@ -15,4 +15,12 @@ export class StaffService {
       { params }
     );
   }
+
+  async getStaffById(id: string) {
+    return api.data.get<StaffListItem>(`/staff/${id}`);
+  }
+
+  async getStaffByAccountId(id: string) {
+    return api.data.get<StaffListItem>(`/staff/account/${id}`);
+  }
 }

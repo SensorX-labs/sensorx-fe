@@ -20,6 +20,7 @@ import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
 import { RFQServices } from '../../services/rfq-services';
+import { StaffService } from '@/features/user/staff/services/staff-service';
 import { RfqListItem } from '../../models/rfq-list-response';
 import { CanAccess } from '@/shared/components/common/can-access';
 
@@ -101,13 +102,23 @@ export default function RequestForQuotationList() {
     e?.stopPropagation();
     
     if (!user?.id) {
-      toast.error("Không tìm thấy thông tin nhân viên xử lý");
+      toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
       return;
     }
 
     try {
+      const staffService = new StaffService();
       const rfqService = new RFQServices();
-      const success = await rfqService.assignStaff(id, user.id);
+      
+      // Lấy thông tin Staff từ Account ID để có Staff ID thực tế
+      const staffData = await staffService.getStaffByAccountId(user.id) as any;
+      
+      if (!staffData || !staffData.staffId) {
+        toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
+        return;
+      }
+
+      const success = await rfqService.assignStaff(id, staffData.staffId);
       
       if (success) {
         toast.success("Tiếp nhận yêu cầu thành công");
@@ -115,9 +126,10 @@ export default function RequestForQuotationList() {
       } else {
         toast.error("Tiếp nhận yêu cầu thất bại");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
-      toast.error("Đã có lỗi xảy ra khi tiếp nhận yêu cầu");
+      const message = error.response?.data?.message || "Đã có lỗi xảy ra khi tiếp nhận yêu cầu";
+      toast.error(message);
     }
   };
 
