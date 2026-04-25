@@ -1,5 +1,5 @@
 export interface PaginationRequest {
-  pageIndex: number;
+  pageNumber: number;
   pageSize: number;
   searchTerm?: string;
 }

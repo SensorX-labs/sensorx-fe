@@ -80,12 +80,11 @@ export function Cart() {
         productCode: i.product.code,
         quantity: i.quantity,
         manufacturer: i.product.manufacture,
-        unit: i.product.unit
+        unit: i.product.unit || "Cái" // Chốt chặn cuối cùng: Đảm bảo luôn có unit gửi lên API
       }))
     };
 
     localStorage.setItem('lastCreatedRfq', JSON.stringify(request));
-
     try {
       const rfqService = new RFQServices();
       await rfqService.createRFQ(request);

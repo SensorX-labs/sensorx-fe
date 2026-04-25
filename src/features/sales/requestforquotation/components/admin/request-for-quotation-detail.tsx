@@ -8,19 +8,22 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/shadcn-ui/select';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/shared/components/shadcn-ui/popover';
+import { Search, ChevronsUpDown, Check as CheckIcon } from 'lucide-react';
+import { Input } from '@/shared/components/shadcn-ui/input';
 import { RfqStatus } from '../../constants/rfq-status';
+import { useUser } from '@/shared/hooks/use-user';
+import { toast } from 'sonner';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
 import { RfqDetail } from '../../models/rfq-detail-response';
 import { RFQServices } from '../../services/rfq-services';
 import { StaffService } from '@/features/user/staff/services/staff-service';
 import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
+import { cn } from '@/shared/utils/cn';
 
 interface RequestForQuotationDetailProps {
   id: string;
@@ -59,61 +62,65 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [rfq, setRfq] = React.useState<RfqDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
-  const [staffs, setStaffs] = useState<StaffListItem[]>([]);
+  const [assignedStaff, setAssignedStaff] = useState<any | null>(null);
+  const { user } = useUser();
 
   React.useEffect(() => {
-    const fetchDetail = async () => {
+    const loadPage = async () => {
+      setLoading(true);
       try {
         const rfqService = new RFQServices();
         const data = await rfqService.getDetailRFQ(id);
         setRfq(data);
-        if (data.staffId) setSelectedStaffId(data.staffId);
+
+        if (data.staffId) {
+          try {
+            const staffService = new StaffService();
+            const staffData = await staffService.getStaffById(data.staffId) as any;
+            setAssignedStaff(staffData);
+          } catch (err) {
+            console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
+          }
+        }
       } catch (error) {
         console.error(">>> Lỗi khi fetch detail RFQ:", error);
+      } finally {
+        setLoading(false);
       }
-    };
-
-    const fetchStaffs = async () => {
-      try {
-        const staffService = new StaffService();
-        const response = await staffService.getStaffs({ pageNumber: 1, pageSize: 100 });
-        console.log(">>> Danh sách nhân viên fetch được:", response.items);
-        setStaffs(response.items);
-      } catch (error) {
-        console.error(">>> Lỗi khi fetch nhân viên:", error);
-      }
-    };
-
-    const loadPage = async () => {
-      setLoading(true);
-      await Promise.all([fetchDetail(), fetchStaffs()]);
-      setLoading(false);
     };
 
     loadPage();
   }, [id]);
 
-  const handleStaffChange = async (staffId: string, isAccept: boolean = false) => {
-    if (!staffId && isAccept) {
-        alert("Vui lòng chọn nhân viên trước khi tiếp nhận");
-        return;
+  const handleAcceptDetail = async () => {
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
+      return;
     }
-    
-    setSelectedStaffId(staffId);
+
     try {
+      const staffService = new StaffService();
       const rfqService = new RFQServices();
-      await rfqService.assignStaff(id, staffId);
-      console.log(`>>> Đã phân công nhân viên ${staffId} cho RFQ ${id}`);
       
-      if (isAccept) {
-          onBack(); // Quay lại trang danh sách
+      const staffData = await staffService.getStaffByAccountId(user.id) as any;
+      if (!staffData || !staffData.staffId) {
+        toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
+        return;
+      }
+
+      const success = await rfqService.assignStaff(id, staffData.staffId);
+      if (success) {
+        toast.success("Tiếp nhận yêu cầu thành công");
+        // Reload dữ liệu
+        const updatedRfq = await rfqService.getDetailRFQ(id);
+        setRfq(updatedRfq);
+        setAssignedStaff(staffData);
       }
     } catch (error: any) {
-      console.error(">>> Lỗi khi phân công nhân viên:", error);
-      alert("Lỗi: " + error.message);
+      toast.error(error.response?.data?.message || "Lỗi khi tiếp nhận yêu cầu");
     }
   };
+
 
   if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
@@ -151,10 +158,9 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           {rfq.status === 'Pending' && (
             <>
               <Button 
-                onClick={() => handleStaffChange(selectedStaffId, true)}
+                onClick={handleAcceptDetail}
                 variant="outline" 
                 className="rounded admin-btn-primary border-transparent"
-                disabled={!selectedStaffId}
               >
                 <Check className="w-4 h-4 mr-2" />
                 Tiếp nhận
@@ -215,20 +221,13 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên</td>
-                  <td className="px-6 py-3">
-                    <Select value={selectedStaffId} onValueChange={handleStaffChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn nhân viên" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {staffs.map((staff) => (
-                          <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên xử lý</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">
+                    {assignedStaff ? (
+                      <span>{assignedStaff.staffName}</span>
+                    ) : (
+                      <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
+                    )}
                   </td>
                 </tr>
               </tbody>

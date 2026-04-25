@@ -40,6 +40,7 @@ export const Catalog: React.FC = () => {
                 ...p,
                 price: 1500000, // Giá mặc định cho demo
                 originalPrice: 1500000 + 500000,
+                unit: p.unit ?? "cái"
             }));
             
             setProducts(productsWithPrice);
