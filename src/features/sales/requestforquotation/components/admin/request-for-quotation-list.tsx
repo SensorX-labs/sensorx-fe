@@ -14,6 +14,8 @@ import {
 } from "@/shared/components/shadcn-ui/dialog";
 import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
+import { toast } from 'sonner';
+import { useUser } from '@/shared/hooks/use-user';
 import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
@@ -56,6 +58,7 @@ export default function RequestForQuotationList() {
   const [declineReason, setDeclineReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const { user } = useUser();
 
   const fetchRfqs = async () => {
     setLoading(true);
@@ -94,11 +97,28 @@ export default function RequestForQuotationList() {
     });
   }, [leads, searchQuery, statusFilter]);
 
-  const handleAccept = (id: string, e?: React.MouseEvent) => {
+  const handleAccept = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setLeads(prev => prev.map(lead => 
-      lead.id === id ? { ...lead, status: RfqStatus.ACCEPTED, userId: 'Current Salesman' } : lead
-    ));
+    
+    if (!user?.id) {
+      toast.error("Không tìm thấy thông tin nhân viên xử lý");
+      return;
+    }
+
+    try {
+      const rfqService = new RFQServices();
+      const success = await rfqService.assignStaff(id, user.id);
+      
+      if (success) {
+        toast.success("Tiếp nhận yêu cầu thành công");
+        fetchRfqs(); // Tải lại danh sách
+      } else {
+        toast.error("Tiếp nhận yêu cầu thất bại");
+      }
+    } catch (error) {
+      console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
+      toast.error("Đã có lỗi xảy ra khi tiếp nhận yêu cầu");
+    }
   };
 
   const handleDecline = () => {
