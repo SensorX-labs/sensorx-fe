@@ -9,10 +9,6 @@ export default function LoginPage() {
   return (
     <LoginForm 
       onSwitchToRegister={() => router.push("/register")}
-      onSubmit={(username : string, password : string) => {
-        console.log("Login with:", username, password);
-        // Add login logic here
-      }}
     />
   );
 }
