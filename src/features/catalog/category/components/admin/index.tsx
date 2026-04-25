@@ -30,6 +30,7 @@ import { CategoryTree, RootDropZone } from './category-tree';
 import { CategoryForm } from './category-form';
 import { Category } from '../../models/category-model';
 import CategoryService from '../../services/category-services';
+import { LAYOUT_CONSTANTS } from '@/shared/constants/layout';
 
 export default function CategoryManagement() {
   // D&D Sensors — khai báo ở đây để DndContext bao cả tree và RootDropZone
@@ -48,7 +49,9 @@ export default function CategoryManagement() {
   // State cho tìm kiếm và phân trang local
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 6;
+  const ITEM_HEIGHT = 70; // Chiều cao ước tính của 1 treeItem (bao gồm cả padding/margin)
+  const containerHeight = (pageSize + 3) * ITEM_HEIGHT;
 
   // State cho search navigation trong Tree View
   const [matchingIds, setMatchingIds] = useState<string[]>([]);
@@ -267,54 +270,48 @@ export default function CategoryManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col space-y-6" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
       <CategoryStats categories={allCategories} />
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
-          <Button
-            variant={viewMode === 'table' ? 'default' : 'ghost'}
-            size="sm"
-            className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'table' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
-            onClick={() => { setViewMode('table'); setCurrentPage(1); setSearchTerm(''); }}
-          >
-            <LayoutList className="w-4 h-4 mr-2" />
-            Danh sách
-          </Button>
-          <Button
-            variant={viewMode === 'tree' ? 'default' : 'ghost'}
-            size="sm"
-            className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'tree' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
-            onClick={() => { setViewMode('tree'); setCurrentPage(1); setSearchTerm(''); }}
-          >
-            <LayoutGrid className="w-4 h-4 mr-2" />
-            Dạng Cây
-          </Button>
-        </div>
-        <Button
-          className="admin-btn-primary flex items-center gap-2 shadow-lg shadow-blue-500/20"
-          onClick={openCreateModal}
-        >
-          <FolderTree className="w-4 h-4" />
-          Tạo danh mục
-        </Button>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Sticky Search Header */}
-        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-50 p-4">
+        <div className="bg-white/80 backdrop-blur-md border-b border-gray-50 p-4 shrink-0 z-10">
           <div className="flex items-center gap-4">
-            <div className="relative flex-1">
+            {/* View Toggles */}
+            <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-100 shadow-sm flex-shrink-0">
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'table' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
+                onClick={() => { setViewMode('table'); setCurrentPage(1); setSearchTerm(''); }}
+              >
+                <LayoutList className="w-4 h-4 mr-2" />
+                Danh sách
+              </Button>
+              <Button
+                variant={viewMode === 'tree' ? 'default' : 'ghost'}
+                size="sm"
+                className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'tree' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
+                onClick={() => { setViewMode('tree'); setCurrentPage(1); setSearchTerm(''); }}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Dạng Cây
+              </Button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Tìm kiếm danh mục theo tên hoặc mô tả..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border-transparent rounded-lg text-sm focus:bg-white focus:border-blue-400 transition-all outline-none"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 shadow-sm rounded-lg text-sm text-gray-700 placeholder:text-gray-400 hover:border-gray-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
+            {/* Search Navigation */}
             {viewMode === 'tree' && matchingIds.length > 0 && (
               <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-100 shadow-lg shadow-blue-500/5 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="px-3 py-1 bg-blue-50 rounded-lg border border-blue-100 flex items-center gap-2">
@@ -343,12 +340,20 @@ export default function CategoryManagement() {
                 </div>
               </div>
             )}
+
+            <Button
+              className="admin-btn-primary flex items-center gap-2 shadow-lg shadow-blue-500/20 flex-shrink-0"
+              onClick={openCreateModal}
+            >
+              <FolderTree className="w-4 h-4" />
+              Tạo danh mục
+            </Button>
           </div>
         </div>
 
         {/* Main Content Area */}
         {viewMode === 'table' ? (
-          <div className="flex-1 overflow-y-auto max-h-[70vh] min-h-[400px]">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <CategoryTable
               loading={loading}
               categories={paginatedItems}
@@ -366,20 +371,6 @@ export default function CategoryManagement() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            {/* Tree scroll area */}
-            <div className="flex-1 overflow-y-auto max-h-[685px] min-h-[400px]">
-              <CategoryTree
-                categories={allCategories}
-                searchTerm={searchTerm}
-                matchingIds={matchingIds}
-                currentMatchIndex={currentMatchIndex}
-                activeId={activeId}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
-            </div>
-
-            {/* Root Drop Zone — trong cùng DndContext nên hoạt động đúng */}
             {activeId && (
               <div className="p-4 border-t border-gray-100 bg-gray-50/30">
                 <RootDropZone />
@@ -395,6 +386,19 @@ export default function CategoryManagement() {
                 </div>
               ) : null}
             </DragOverlay>
+
+            {/* Tree scroll area */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <CategoryTree
+                categories={allCategories}
+                searchTerm={searchTerm}
+                matchingIds={matchingIds}
+                currentMatchIndex={currentMatchIndex}
+                activeId={activeId}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+            </div>
           </DndContext>
         )}
 

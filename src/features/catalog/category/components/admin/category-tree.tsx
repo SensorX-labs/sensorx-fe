@@ -1,6 +1,5 @@
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
@@ -8,8 +7,8 @@ import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Edit, Trash2, FolderTree } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { Category } from '../../../models/category-model';
 import { buildTree, TreeNode, HighlightText } from './category-utils';
+import { Category } from '../../models/category-model';
 
 interface CategoryTreeProps {
   categories: Category[];
