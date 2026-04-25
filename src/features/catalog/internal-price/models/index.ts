@@ -24,16 +24,16 @@ export interface InternalPrice {
 }
 export type InternalPriceListResult = Result<OffsetPagedResult<InternalPrice>>
 export interface GetPageListInternalPriceQuery extends BaseQueryPageList {
-
+  status?: InternalPriceStatus;
 }
 
 // Api /api/catalog/internalPrices/stats
 // response
 export interface InternalPriceStats {
-  total: number;
-  active: number;
-  expiringSoon: number;
-  expired: number;
+  totalCount: number;
+  activeCount: number;
+  expiringSoonCount: number;
+  expiredCount: number;
 }
 export type InternalPriceStatsResult = Result<InternalPriceStats>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { InternalPrice } from '../../models';
 import { InternalPriceDetail } from './internal-price-detail';
 import { InternalPriceList } from './internal-price-list';

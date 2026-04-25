@@ -1,6 +1,6 @@
 export interface Result<T = void> {
   isSuccess: boolean;
-  message: string;
+  message?: string;
   value?: T;
 }
 

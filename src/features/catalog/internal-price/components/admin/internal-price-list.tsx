@@ -1,43 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/shared/components/shadcn-ui/table';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { Badge } from '@/shared/components/shadcn-ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/shared/components/shadcn-ui/dropdown-menu';
 import {
   Plus,
-  MoreHorizontal,
-  Eye,
-  Ban,
-  Copy,
   Search,
-  Filter,
-  FileDown,
-  FileUp,
-  Download,
   ChevronLast,
-  History,
-  User,
-  ArrowUpDown
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { StatCards } from './internal-price-stats';
+import { InternalPriceTable } from './internal-price-table';
 import { PriceTierTable } from './price-tier-table';
-import { InternalPrice, InternalPriceStatus } from '../../models';
-import { MOCK_INTERNAL_PRICES } from '../../mocks';
-import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
+import { InternalPrice, InternalPriceStats, InternalPriceStatus } from '../../models';
+import InternalPriceService from '../../services/internal-price-services';
+import { toast } from 'sonner';
 import {
   Sheet,
   SheetContent,
@@ -45,13 +22,6 @@ import {
   SheetTitle,
   SheetDescription
 } from '@/shared/components/shadcn-ui/sheet';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/shared/components/shadcn-ui/tooltip';
-import { Separator } from '@/shared/components/shadcn-ui/separator';
 import { LAYOUT_CONSTANTS } from '@/shared/constants/layout';
 
 interface InternalPriceListProps {
@@ -59,67 +29,68 @@ interface InternalPriceListProps {
 }
 
 export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [quickViewPrice, setQuickViewPrice] = useState<InternalPrice | null>(null);
+  const [prices, setPrices] = useState<InternalPrice[]>([]);
+  const [stats, setStats] = useState<InternalPriceStats | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const toggleSelection = (id: string) => {
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    fetchPrices();
+  }, [currentPage, searchTerm, activeTab]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeTab]);
+
+  const fetchStats = async () => {
+    const result = await InternalPriceService.getStats();
+    if (result.isSuccess && result.value) {
+      setStats(result.value);
     }
-    setSelectedIds(newSelected);
+    else {
+      toast.error(result.message ?? "Thất bại khi thống kê số lượng");
+    }
   };
 
-  const toggleAll = () => {
-    if (selectedIds.size === MOCK_INTERNAL_PRICES.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(MOCK_INTERNAL_PRICES.map(p => p.id)));
-    }
-  };
+  const fetchPrices = async () => {
+    setLoading(true);
+    try {
+      const statusMap: Record<string, InternalPriceStatus | undefined> = {
+        'active': 'Active',
+        'expiring': 'ExpiringSoon',
+        'expired': 'Expired',
+        'all': undefined
+      };
 
-  const getStatusBadge = (status: InternalPriceStatus) => {
-    const badgeMap: Record<InternalPriceStatus, { label: string, color: string, tooltip: string }> = {
-      'Active': {
-        label: 'Đang hiệu lực',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-        tooltip: 'Bảng giá đang được áp dụng cho các giao dịch hiện tại.'
-      },
-      'ExpiringSoon': {
-        label: 'Sắp hết hạn',
-        color: 'bg-amber-50 text-amber-700 border-amber-100',
-        tooltip: 'Bảng giá sẽ hết hiệu lực trong vòng 7 ngày tới.'
-      },
-      'Expired': {
-        label: 'Đã hết hạn',
-        color: 'bg-rose-50 text-rose-700 border-rose-100',
-        tooltip: 'Bảng giá đã qua ngày hết hạn và không thể sử dụng.'
+      const result = await InternalPriceService.getList({
+        searchTerm,
+        status: statusMap[activeTab],
+        pageNumber: currentPage,
+        pageSize: 10
+      });
+      if (result.isSuccess && result.value) {
+        setPrices(result.value.items);
+        setTotalPages(result.value.totalPages);
       }
-    };
-
-    const config = badgeMap[status];
-
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="outline" className={`${config.color} font-medium`}>
-              {config.label}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            <p className="text-xs max-w-[200px]">{config.tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
+      else {
+        toast.error(result.message ?? "Thất bại khi tải danh sách bảng giá");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-1200" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
-      <StatCards />
+      <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main Container */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex-1 flex flex-col min-h-0">
@@ -133,6 +104,8 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm kiếm mã giá, tên sản phẩm..."
                 className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded-lg text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none"
               />
@@ -140,148 +113,80 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
 
             {/* Action Buttons (Right) */}
             <div className="flex items-center gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 shadow-sm">
-                <FileDown className="w-4 h-4" />
-                <span className="hidden sm:inline">Nhập CSV</span>
-              </Button>
-              <Button variant="outline" size="sm" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 shadow-sm">
-                <FileUp className="w-4 h-4" />
-                <span className="hidden sm:inline">Xuất Excel</span>
-              </Button>
               <Button size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20">
                 <Plus className="w-4 h-4" />
                 Tạo bảng giá
               </Button>
             </div>
           </div>
-
-          {/* Bulk Action Bar (Visible when items selected) */}
-          {selectedIds.size > 0 && (
-            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 p-2 px-4 rounded-lg animate-in slide-in-from-top-2 duration-300">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-bold text-emerald-800">Đã chọn {selectedIds.size} mục</span>
-                <Separator orientation="vertical" className="h-4 bg-emerald-200" />
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
-                    <Ban className="w-4 h-4" /> Vô hiệu hóa
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
-                    <Download className="w-4 h-4" /> Tải về
-                  </Button>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())} className="text-emerald-700">Bỏ chọn</Button>
-            </div>
-          )}
         </div>
 
         {/* Main Data Table */}
         <div className="relative overflow-x-auto flex-1 min-h-0">
-          <Table>
-            <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
-              <TableRow className="border-none">
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={selectedIds.size === MOCK_INTERNAL_PRICES.length && MOCK_INTERNAL_PRICES.length > 0}
-                    onCheckedChange={toggleAll}
-                    className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                  />
-                </TableHead>
-                <TableHead className="admin-table-th">Mã bảng giá</TableHead>
-                <TableHead className="admin-table-th">Sản phẩm</TableHead>
-                <TableHead className="admin-table-th text-right group cursor-pointer hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center justify-end gap-1">
-                    Giá đề xuất <ArrowUpDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
-                  </div>
-                </TableHead>
-                <TableHead className="admin-table-th text-center group cursor-pointer hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center justify-center gap-1">
-                    Giá sàn <ArrowUpDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
-                  </div>
-                </TableHead>
-                <TableHead className="admin-table-th text-center group cursor-pointer hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center justify-center gap-1">
-                    Trạng thái <Filter className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
-                  </div>
-                </TableHead>
-                <TableHead className="admin-table-th group cursor-pointer hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center gap-1">
-                    Ngày hết hạn <Filter className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
-                  </div>
-                </TableHead>
-                <TableHead className="w-[60px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {MOCK_INTERNAL_PRICES.map((price) => (
-                <React.Fragment key={price.id}>
-                  <TableRow
-                    className={`group cursor-pointer hover:bg-emerald-50/30 transition-all ${selectedIds.has(price.id) ? 'bg-emerald-50' : ''}`}
-                    onClick={() => setQuickViewPrice(price)}
-                  >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selectedIds.has(price.id)}
-                        onCheckedChange={() => toggleSelection(price.id)}
-                        className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                      />
-                    </TableCell>
-                    <TableCell className="font-mono text-[11px] font-bold text-emerald-700">{price.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-bold text-slate-800 text-[13px]">{price.productName}</div>
-                        <div className="text-[10px] text-slate-400 font-medium mt-0.5">{price.productId}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-slate-700">
-                      {price.suggestedPrice.toLocaleString() + " " + price.suggestedPriceCurrency}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-md font-bold text-xs border border-rose-100">
-                        {price.floorPrice.toLocaleString() + " " + price.floorPriceCurrency}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {getStatusBadge(price.status)}
-                    </TableCell>
-                    <TableCell className="text-slate-500 font-medium text-xs">
-                      {new Date(price.expiresAt).toLocaleDateString('vi-VN')}
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem className="gap-2" onClick={() => onViewDetail(price)}>
-                            <Eye className="w-4 h-4 text-emerald-600" /> Xem chi tiết
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2">
-                            <Copy className="w-4 h-4 text-emerald-600" /> Nhân bản
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-rose-600 focus:text-rose-600">
-                            <Ban className="w-4 h-4" /> Vô hiệu hóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            </div>
+          ) : (
+            <InternalPriceTable
+              prices={prices}
+              onViewDetail={onViewDetail}
+              onQuickView={(price) => setQuickViewPrice(price)}
+            />
+          )}
         </div>
 
-        {/* Pagination */}
-        <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hiển thị 1-4 trên tổng số 128 bảng giá</p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="h-8 border-slate-200 text-slate-500" disabled>Trước</Button>
-            <Button variant="outline" size="sm" className="h-8 border-slate-200 text-slate-500">Sau</Button>
+        {/* Local Pagination UI */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 text-gray-600 sticky bottom-0 z-20">
+            <span className="text-xs font-medium">
+              Trang {currentPage} / {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-lg"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum = currentPage;
+                  if (totalPages > 5) {
+                    if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+                  } else {
+                    pageNum = i + 1;
+                  }
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      className={`h-8 w-8 p-0 rounded-lg text-xs font-bold ${currentPage === pageNum ? 'admin-btn-primary' : ''}`}
+                      onClick={() => setCurrentPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-lg"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Quick View Drawer */}
@@ -313,35 +218,14 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
-                  <History className="w-4 h-4 text-emerald-500" />
-                  Lịch sử thay đổi & Thông tin
-                </div>
-                <div className="space-y-4 border-l-2 border-emerald-100 ml-2 pl-6">
-                  <div className="relative">
-                    <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
-                    <p className="text-xs font-bold text-slate-900">Thiết lập bảng giá mới</p>
-                    <p className="text-[10px] text-slate-400 font-medium">24/04/2026 14:30</p>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                      <User className="w-3 h-3" />
-                      <span>Thực hiện bởi: <strong>Admin Nguyễn Văn A</strong></span>
-                    </div>
-                  </div>
-                  <div className="relative opacity-60">
-                    <div className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-white" />
-                    <p className="text-xs font-bold text-slate-900">Điều chỉnh giá sàn (+5%)</p>
-                    <p className="text-[10px] text-slate-400 font-medium">10/03/2026 09:15</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
+              <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
                   <ChevronLast className="w-4 h-4 text-emerald-500" />
                   Phân tầng giá hiện tại
                 </div>
-                <PriceTierTable tiers={quickViewPrice.priceTiers} compact={false} />
+                <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-100">
+                  <PriceTierTable tiers={quickViewPrice.priceTiers} compact={false} />
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -358,7 +242,7 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
   );
 }
 
-// Keep this at the top for BadgeDollarSign which was used in StatCards or Sheet
+// Helpers
 function BadgeDollarSign(props: any) {
   return (
     <svg
