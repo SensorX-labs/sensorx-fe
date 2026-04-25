@@ -19,7 +19,7 @@ const InternalPriceService = {
    * Tạo bảng giá nội bộ
    */
   create: (request: CreateInternalPriceRequest) =>
-    api.data.post<CreateInternalPriceRequest, Result<string>>("/catalog/categories/create", request),
+    api.data.post<CreateInternalPriceRequest, Result<string>>("/catalog/internalPrices/create", request),
 
   /**
    * Vô hiệu hóa bảng giá nội bộ

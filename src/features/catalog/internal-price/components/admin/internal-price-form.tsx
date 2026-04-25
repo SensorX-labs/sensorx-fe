@@ -15,13 +15,18 @@ import {
   ShieldCheck,
   TrendingDown,
   Info,
-  Box
+  Box,
+  Infinity
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
+import { Label } from '@/shared/components/shadcn-ui/label';
 import {
   ProductSelectionDialog,
   Product
 } from '@/shared/components/business/product-selection-dialog';
+import InternalPriceService from '../../services/internal-price-services';
+import { CreateInternalPriceRequest } from '../../models';
 
 interface InternalPriceFormProps {
   onBack: () => void;
@@ -39,17 +44,21 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
     suggestedPrice: 0,
     floorPrice: 0,
     expiresAt: '',
+    isInfinite: false,
     notes: '',
     tiers: [
-      { quantity: 1, price: 0 }
+      { quantity: 2, price: 0 }
     ]
   });
 
   const handleAddTier = () => {
     const lastTier = formData.tiers[formData.tiers.length - 1];
+    const nextQty = lastTier ? Math.ceil((lastTier.quantity + 1) / 10) * 10 : 2;
+    const nextPrice = lastTier ? lastTier.price : (formData.suggestedPrice || 0);
+
     setFormData({
       ...formData,
-      tiers: [...formData.tiers, { quantity: (lastTier?.quantity || 0) + 10, price: lastTier?.price || 0 }]
+      tiers: [...formData.tiers, { quantity: nextQty, price: nextPrice }]
     });
   };
 
@@ -61,7 +70,14 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
 
   const handleTierChange = (index: number, field: string, value: number) => {
     const newTiers = [...formData.tiers];
-    newTiers[index] = { ...newTiers[index], [field]: value };
+    let finalValue = value;
+
+    // Đảm bảo số lượng của bậc giá luôn >= 2
+    if (field === 'quantity' && value < 2) {
+      finalValue = 2;
+    }
+
+    newTiers[index] = { ...newTiers[index], [field]: finalValue };
     setFormData({ ...formData, tiers: newTiers });
   };
 
@@ -70,15 +86,28 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
     setLoading(true);
 
     // Logic validation
+    if (!selectedProduct) {
+      toast.error("Vui lòng chọn sản phẩm trước khi tạo bảng giá");
+      setLoading(false);
+      return;
+    }
+
     if (formData.suggestedPrice < formData.floorPrice) {
-      toast.error("Giá đề xuất không được nhỏ hơn giá sàn");
+      toast.error("Giá bán đề xuất không được nhỏ hơn giá bán tối thiểu");
       setLoading(false);
       return;
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await InternalPriceService.create({
+        productId: selectedProduct.id,
+        suggestedPrice: formData.suggestedPrice,
+        floorPrice: formData.floorPrice,
+        expiresAt: (formData.isInfinite || !formData.expiresAt) ? null : formData.expiresAt,
+        isInfinite: formData.isInfinite,
+        priceTiers: formData.tiers
+      });
+
       toast.success("Tạo bảng giá nội bộ thành công");
       onBack();
     } catch (error) {
@@ -181,9 +210,15 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
 
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      Giá đề xuất niêm yết
+                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center justify-between group">
+                      <div className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        Giá bán đề xuất
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded animate-pulse group-hover:animate-none">
+                        <Info className="w-2.5 h-2.5" />
+                        Áp dụng cho SL = 1
+                      </div>
                     </label>
                     <div className="relative">
                       <input
@@ -198,9 +233,15 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" />
-                      Giá sàn tối thiểu
+                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center justify-between group">
+                      <div className="flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        Giá bán tối thiểu
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">
+                        <AlertCircle className="w-2.5 h-2.5" />
+                        Giá sàn để có lời
+                      </div>
                     </label>
                     <div className="relative">
                       <input
@@ -214,17 +255,51 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Thời hạn hiệu lực
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full h-11 bg-white border border-slate-200 rounded-lg px-4 font-medium focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
-                      value={formData.expiresAt}
-                      onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                    />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        Thời hạn hiệu lực
+                      </label>
+                      <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 transition-all hover:bg-slate-100">
+                        <Checkbox
+                          id="isInfinite"
+                          checked={formData.isInfinite}
+                          onCheckedChange={(checked) => setFormData({
+                            ...formData,
+                            isInfinite: !!checked,
+                            expiresAt: !!checked ? '' : formData.expiresAt
+                          })}
+                        />
+                        <Label
+                          htmlFor="isInfinite"
+                          className="text-[10px] font-bold uppercase text-slate-500 cursor-pointer select-none"
+                        >
+                          Vô thời hạn
+                        </Label>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="date"
+                        disabled={formData.isInfinite}
+                        className={`w-full h-11 bg-white border border-slate-200 rounded-lg px-4 font-medium outline-none transition-all ${formData.isInfinite
+                          ? 'opacity-50 bg-slate-50 cursor-not-allowed border-dashed'
+                          : 'focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500'
+                          }`}
+                        value={formData.expiresAt}
+                        onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                      />
+                      {formData.isInfinite && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 shadow-sm">
+                            <Infinity className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Bảng giá vĩnh viễn</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -258,6 +333,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                       <div className="col-span-5 relative">
                         <input
                           type="number"
+                          min={2}
                           className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-lg pl-3 pr-8 font-bold text-sm focus:bg-white transition-all outline-none"
                           value={tier.quantity}
                           onChange={(e) => handleTierChange(index, 'quantity', Number(e.target.value))}

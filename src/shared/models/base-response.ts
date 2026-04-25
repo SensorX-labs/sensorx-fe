@@ -13,3 +13,16 @@ export interface OffsetPagedResult<T> {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 }
+
+export interface KeysetPagedResult<T> {
+  items: T[];
+
+  firstCreatedAt?: string;
+  firstId?: string;
+
+  lastCreatedAt?: string;
+  lastId?: string;
+
+  hasNext: boolean;
+  hasPrevious: boolean;
+}

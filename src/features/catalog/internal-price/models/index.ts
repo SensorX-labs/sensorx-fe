@@ -1,4 +1,4 @@
-import { BaseQueryPageList } from "@/shared/models/base-query-page-list";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 import { OffsetPagedResult, Result } from "@/shared/models/base-response";
 
 // Api /api/catalog/internalPrices/list
@@ -23,7 +23,7 @@ export interface InternalPrice {
   priceTiers: PriceTier[];
 }
 export type InternalPriceListResult = Result<OffsetPagedResult<InternalPrice>>
-export interface GetPageListInternalPriceQuery extends BaseQueryPageList {
+export interface GetPageListInternalPriceQuery extends BaseQueryOffsetPagedList {
   status?: InternalPriceStatus;
 }
 
@@ -46,7 +46,7 @@ export interface CreateInternalPriceRequest {
   productId: string;
   suggestedPrice: number;
   floorPrice: number;
-  expiresAt: string;
+  expiresAt: string | null;
   isInfinite: boolean;
   priceTiers: PriceTierOfCreate[];
 }
