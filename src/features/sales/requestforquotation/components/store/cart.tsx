@@ -8,6 +8,7 @@ import { QuotationForm, QuotationFormData } from './quote-request-form';
 import { useCart } from '../../hooks/use-cart';
 import { RFQServices } from '../../services/rfq-services';
 import { RfqCreateRequest } from '../../models/rfq-create-request';
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +58,9 @@ export function Cart() {
 
   const handleRequestQuote = async () => {
     if (!formData.name || !formData.phone || !formData.companyName || !formData.taxId || !formData.address) {
-      alert('Vui lòng nhập đầy đủ các thông tin bắt buộc có dấu *');
+      toast.warning('Thông tin chưa đầy đủ', {
+        description: 'Vui lòng nhập đầy đủ các thông tin bắt buộc có dấu *'
+      });
       return;
     }
 
@@ -90,7 +93,9 @@ export function Cart() {
       clearCart(); 
     } catch (error: any) {
       console.error(">>> Lỗi khi tạo RFQ:", error);
-      alert("Đã xảy ra lỗi khi gửi yêu cầu: " + error.message);
+      toast.error("Gửi yêu cầu thất bại", {
+        description: error.message || "Đã xảy ra lỗi không xác định"
+      });
     } finally {
       setIsSubmitting(false);
     }

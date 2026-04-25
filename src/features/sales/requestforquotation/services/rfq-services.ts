@@ -1,4 +1,4 @@
-import { masterUrl } from "@/shared/constants/environment";
+import api from "@/shared/configs/axios-config";
 import { PaginationResponse } from "@/shared/models/pagination";
 import { RfqListItem } from "../models/rfq-list-response";
 import { RfqDetail } from "../models/rfq-detail-response";
@@ -15,107 +15,25 @@ export interface RfqFilter {
 export class RFQServices {
     async getListRFQ(params: RfqFilter): Promise<PaginationResponse<RfqListItem>> {
         const queryParams = new URLSearchParams();
-        
+
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
                 queryParams.append(key, value.toString());
             }
         });
 
-        const url = `${masterUrl}/api/rfq?${queryParams.toString()}`;
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result && result.isSuccess) {
-            return result.value;
-        }
-
-        throw new Error(result.error || "Đã xảy ra lỗi khi lấy dữ liệu");
+        return api.master.get(`/rfq?${queryParams.toString()}`);
     }
 
     async getDetailRFQ(id: string): Promise<RfqDetail> {
-        const url = `${masterUrl}/api/rfq/${id}`;
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result && result.isSuccess) {
-            return result.value;
-        }
-
-        throw new Error(result.error || "Đã xảy ra lỗi khi lấy dữ liệu");
+        return api.master.get(`/rfq/${id}`);
     }
 
     async createRFQ(data: RfqCreateRequest): Promise<string> {
-        const url = `${masterUrl}/api/rfq`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result && result.isSuccess) {
-            return result.value;
-        }
-
-        throw new Error(result.error || "Đã xảy ra lỗi khi tạo yêu cầu báo giá");
+        return api.master.post(`/rfq`, data);
     }
 
     async assignStaff(rfqId: string, staffId: string): Promise<boolean> {
-        const url = `${masterUrl}/api/rfq/assign`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ rfqId, staffId }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result && result.isSuccess) {
-            return true;
-        }
-
-        throw new Error(result.error || "Đã xảy ra lỗi khi phân công nhân viên");
+        return api.master.post(`/rfq/assign`, { rfqId, staffId });
     }
 }
