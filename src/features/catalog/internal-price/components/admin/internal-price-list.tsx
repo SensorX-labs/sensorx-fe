@@ -23,27 +23,20 @@ import {
   Eye,
   Ban,
   Copy,
-  ChevronDown,
-  ChevronRight,
   Search,
   Filter,
   FileDown,
   FileUp,
   Download,
-  Calendar as CalendarIcon,
   ChevronLast,
-  Maximize2,
-  Minimize2,
   History,
-  Info,
   User,
-  Package
+  ArrowUpDown
 } from 'lucide-react';
-import { StatCards } from './stat-cards';
+import { StatCards } from './internal-price-stats';
 import { PriceTierTable } from './price-tier-table';
 import { InternalPrice, InternalPriceStatus } from '../../models';
 import { MOCK_INTERNAL_PRICES } from '../../mocks';
-import { Input } from '@/shared/components/shadcn-ui/input';
 import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
 import {
   Sheet,
@@ -59,27 +52,15 @@ import {
   TooltipTrigger
 } from '@/shared/components/shadcn-ui/tooltip';
 import { Separator } from '@/shared/components/shadcn-ui/separator';
+import { LAYOUT_CONSTANTS } from '@/shared/constants/layout';
 
 interface InternalPriceListProps {
   onViewDetail: (price: InternalPrice) => void;
 }
 
 export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isCompact, setIsCompact] = useState(false);
   const [quickViewPrice, setQuickViewPrice] = useState<InternalPrice | null>(null);
-
-  const toggleRow = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
 
   const toggleSelection = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -111,11 +92,6 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
         color: 'bg-amber-50 text-amber-700 border-amber-100',
         tooltip: 'Bảng giá sẽ hết hiệu lực trong vòng 7 ngày tới.'
       },
-      'Inactive': {
-        label: 'Vô hiệu hóa',
-        color: 'bg-slate-50 text-slate-700 border-slate-100',
-        tooltip: 'Bảng giá tạm thời không khả dụng.'
-      },
       'Expired': {
         label: 'Đã hết hạn',
         color: 'bg-rose-50 text-rose-700 border-rose-100',
@@ -142,116 +118,97 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Header Area (Actions Only) */}
-      <div className="flex justify-end items-center gap-2">
-        <Button variant="outline" className="gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700">
-          <FileDown className="w-4 h-4" />
-          <span className="hidden sm:inline">Nhập CSV</span>
-        </Button>
-        <Button variant="outline" className="gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700">
-          <FileUp className="w-4 h-4" />
-          <span className="hidden sm:inline">Xuất Excel</span>
-        </Button>
-        <Button className="admin-btn-primary gap-2 shadow-lg shadow-emerald-200 shrink-0">
-          <Plus className="w-4 h-4" />
-          Tạo bảng giá
-        </Button>
-      </div>
-
+    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-1200" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
       <StatCards />
 
-      {/* Filter & Actions Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 space-y-4">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            <div className="relative flex-1 min-w-[240px] max-w-sm">
+      {/* Main Container */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex-1 flex flex-col min-h-0">
+
+        {/* Unified Header Bar */}
+        <div className="bg-white/80 backdrop-blur-md border-b border-slate-50 p-4 shrink-0 z-10">
+          <div className="flex items-center gap-4">
+
+            {/* Search Input (Left) */}
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Mã giá, tên sản phẩm..."
-                className="pl-10 bg-slate-50 border-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              <input
+                type="text"
+                placeholder="Tìm kiếm mã giá, tên sản phẩm..."
+                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded-lg text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none"
               />
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-lg border border-slate-100">
-              <Button
-                variant={!isCompact ? "secondary" : "ghost"}
-                size="sm"
-                className={`h-8 w-8 p-0 ${!isCompact ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-emerald-600'}`}
-                onClick={() => setIsCompact(false)}
-              >
-                <Maximize2 className="w-4 h-4" />
+            {/* Action Buttons (Right) */}
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 shadow-sm">
+                <FileDown className="w-4 h-4" />
+                <span className="hidden sm:inline">Nhập CSV</span>
               </Button>
-              <Button
-                variant={isCompact ? "secondary" : "ghost"}
-                size="sm"
-                className={`h-8 w-8 p-0 ${isCompact ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-emerald-600'}`}
-                onClick={() => setIsCompact(true)}
-              >
-                <Minimize2 className="w-4 h-4" />
+              <Button variant="outline" size="sm" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 shadow-sm">
+                <FileUp className="w-4 h-4" />
+                <span className="hidden sm:inline">Xuất Excel</span>
+              </Button>
+              <Button size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20">
+                <Plus className="w-4 h-4" />
+                Tạo bảng giá
               </Button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 shrink-0">
-              <CalendarIcon className="w-4 h-4" />
-              <span>Thời hạn</span>
-              <ChevronDown className="w-3 h-3" />
+          {/* Bulk Action Bar (Visible when items selected) */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 p-2 px-4 rounded-lg animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-bold text-emerald-800">Đã chọn {selectedIds.size} mục</span>
+                <Separator orientation="vertical" className="h-4 bg-emerald-200" />
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
+                    <Ban className="w-4 h-4" /> Vô hiệu hóa
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
+                    <Download className="w-4 h-4" /> Tải về
+                  </Button>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())} className="text-emerald-700">Bỏ chọn</Button>
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 shrink-0">
-              <Filter className="w-4 h-4" />
-              <span>Trạng thái</span>
-              <ChevronDown className="w-3 h-3" />
-            </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 shrink-0">
-              <Package className="w-4 h-4" />
-              <span>Danh mục SP</span>
-              <ChevronDown className="w-3 h-3" />
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Bulk Action Bar (Visible when items selected) */}
-        {selectedIds.size > 0 && (
-          <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 p-2 px-4 rounded-lg animate-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-bold text-emerald-800">Đã chọn {selectedIds.size} mục</span>
-              <Separator orientation="vertical" className="h-4 bg-emerald-200" />
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
-                  <Ban className="w-4 h-4" /> Vô hiệu hóa
-                </Button>
-                <Button variant="ghost" size="sm" className="text-emerald-700 hover:bg-emerald-100 gap-2 h-8">
-                  <Download className="w-4 h-4" /> Tải về
-                </Button>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())} className="text-emerald-700">Bỏ chọn</Button>
-          </div>
-        )}
-      </div>
-
-      {/* Main Data Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex-1 flex flex-col min-h-[600px]">
-        <div className="relative overflow-x-auto flex-1">
+        {/* Main Data Table */}
+        <div className="relative overflow-x-auto flex-1 min-h-0">
           <Table>
             <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
               <TableRow className="border-none">
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedIds.size === MOCK_INTERNAL_PRICES.length}
+                    checked={selectedIds.size === MOCK_INTERNAL_PRICES.length && MOCK_INTERNAL_PRICES.length > 0}
                     onCheckedChange={toggleAll}
                     className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                   />
                 </TableHead>
-                <TableHead className="w-[40px]"></TableHead>
                 <TableHead className="admin-table-th">Mã bảng giá</TableHead>
                 <TableHead className="admin-table-th">Sản phẩm</TableHead>
-                <TableHead className="admin-table-th text-right">Giá đề xuất</TableHead>
-                <TableHead className="admin-table-th text-center">Giá sàn</TableHead>
-                <TableHead className="admin-table-th text-center">Trạng thái</TableHead>
-                <TableHead className="admin-table-th">Ngày hết hạn</TableHead>
+                <TableHead className="admin-table-th text-right group cursor-pointer hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center justify-end gap-1">
+                    Giá đề xuất <ArrowUpDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                  </div>
+                </TableHead>
+                <TableHead className="admin-table-th text-center group cursor-pointer hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center justify-center gap-1">
+                    Giá sàn <ArrowUpDown className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                  </div>
+                </TableHead>
+                <TableHead className="admin-table-th text-center group cursor-pointer hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center justify-center gap-1">
+                    Trạng thái <Filter className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                  </div>
+                </TableHead>
+                <TableHead className="admin-table-th group cursor-pointer hover:bg-slate-100 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Ngày hết hạn <Filter className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" />
+                  </div>
+                </TableHead>
                 <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -259,7 +216,7 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
               {MOCK_INTERNAL_PRICES.map((price) => (
                 <React.Fragment key={price.id}>
                   <TableRow
-                    className={`group cursor-pointer hover:bg-emerald-50/30 transition-all ${expandedRows.has(price.id) ? 'bg-emerald-50/10' : ''} ${selectedIds.has(price.id) ? 'bg-emerald-50' : ''}`}
+                    className={`group cursor-pointer hover:bg-emerald-50/30 transition-all ${selectedIds.has(price.id) ? 'bg-emerald-50' : ''}`}
                     onClick={() => setQuickViewPrice(price)}
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
@@ -269,40 +226,26 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
                         className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       />
                     </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={`h-7 w-7 transition-colors ${expandedRows.has(price.id) ? 'text-emerald-600' : 'text-slate-300 hover:text-emerald-600'}`}
-                        onClick={(e) => toggleRow(price.id, e)}
-                      >
-                        {expandedRows.has(price.id) ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </TableCell>
                     <TableCell className="font-mono text-[11px] font-bold text-emerald-700">{price.id}</TableCell>
                     <TableCell>
-                      <div className={isCompact ? 'flex items-center gap-2' : ''}>
+                      <div>
                         <div className="font-bold text-slate-800 text-[13px]">{price.productName}</div>
-                        <div className={`text-[10px] text-slate-400 font-medium ${isCompact ? '' : 'mt-0.5'}`}>{price.productId}</div>
+                        <div className="text-[10px] text-slate-400 font-medium mt-0.5">{price.productId}</div>
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-bold text-slate-700">
-                      {price.suggestedPrice.toLocaleString()} ₫
+                      {price.suggestedPrice.toLocaleString() + " " + price.suggestedPriceCurrency}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-md font-bold text-xs border border-rose-100">
-                        {price.floorPrice.toLocaleString()} ₫
+                        {price.floorPrice.toLocaleString() + " " + price.floorPriceCurrency}
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
                       {getStatusBadge(price.status)}
                     </TableCell>
                     <TableCell className="text-slate-500 font-medium text-xs">
-                      {new Date(price.expiryDate).toLocaleDateString('vi-VN')}
+                      {new Date(price.expiresAt).toLocaleDateString('vi-VN')}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
@@ -325,15 +268,6 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                  {expandedRows.has(price.id) && (
-                    <TableRow className="bg-slate-50/30 border-none hover:bg-slate-50/30">
-                      <TableCell colSpan={9} className="p-0">
-                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                          <PriceTierTable tiers={price.priceTiers} compact />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </React.Fragment>
               ))}
             </TableBody>

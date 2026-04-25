@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/shared/components/shadcn-ui/table';
 import { PriceTier } from '../../models';
 import { TrendingDown, Package } from 'lucide-react';

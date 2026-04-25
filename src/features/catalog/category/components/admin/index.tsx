@@ -270,7 +270,7 @@ export default function CategoryManagement() {
   };
 
   return (
-    <div className="flex flex-col space-y-6" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
+    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-1200" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
       <CategoryStats categories={allCategories} />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">

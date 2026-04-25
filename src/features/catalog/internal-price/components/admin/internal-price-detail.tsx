@@ -5,20 +5,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/sh
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Ban, 
-  Copy, 
-  History, 
-  Info, 
+import {
+  ArrowLeft,
+  Calendar,
+  Ban,
+  Copy,
+  History,
+  Info,
   AlertCircle,
   ShieldCheck,
   Tag,
   Box
 } from 'lucide-react';
 import { PriceTierTable } from './price-tier-table';
-import { ProductAssignment } from './product-assignment';
 import { InternalPrice } from '../../models';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/shadcn-ui/tooltip';
 
@@ -73,9 +72,6 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
           <TabsTrigger value="tiers" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2">
             Price Tiers
           </TabsTrigger>
-          <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2">
-            Áp dụng cho sản phẩm
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-6">
@@ -96,7 +92,7 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
                   </div>
                   <p className="text-sm text-slate-500 ml-6">{price.productId}</p>
                 </div>
-                
+
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trạng thái</label>
                   <div>
@@ -110,7 +106,7 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Giá đề xuất</label>
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-slate-400" />
-                    <p className="text-lg font-bold text-slate-900">{price.suggestedPrice.toLocaleString()} ₫</p>
+                    <p className="text-lg font-bold text-slate-900">{price.suggestedPrice.toLocaleString() + " " + price.suggestedPriceCurrency}</p>
                   </div>
                 </div>
 
@@ -130,7 +126,7 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
                   </label>
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-rose-500" />
-                    <p className="text-lg font-bold text-rose-600">{price.floorPrice.toLocaleString()} ₫</p>
+                    <p className="text-lg font-bold text-rose-600">{price.floorPrice.toLocaleString() + " " + price.floorPriceCurrency}</p>
                   </div>
                   <p className="text-[10px] text-emerald-600 font-medium">✓ Đã kiểm tra: Giá đề xuất ≥ Giá sàn</p>
                 </div>
@@ -139,7 +135,7 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ngày hết hạn</label>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-400" />
-                    <p className="font-medium text-slate-900">{new Date(price.expiryDate).toLocaleDateString('vi-VN')}</p>
+                    <p className="font-medium text-slate-900">{new Date(price.expiresAt).toLocaleDateString('vi-VN')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -184,7 +180,7 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
             </CardHeader>
             <CardContent>
               <PriceTierTable tiers={price.priceTiers} />
-              
+
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
                   <h4 className="font-semibold text-slate-700 text-sm mb-2">Phân tích hiệu quả</h4>
@@ -202,17 +198,6 @@ export function InternalPriceDetail({ price, onBack }: InternalPriceDetailProps)
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="products" className="animate-in fade-in-50 duration-500">
-          <Card className="border-none shadow-sm bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Sản phẩm áp dụng bảng giá</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductAssignment />
             </CardContent>
           </Card>
         </TabsContent>

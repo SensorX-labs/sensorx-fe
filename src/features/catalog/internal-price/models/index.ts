@@ -1,26 +1,62 @@
-export type PriceTier = {
+import { BaseQueryPageList } from "@/shared/models/base-query-page-list";
+import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+
+// Api /api/catalog/internalPrices/list
+export type InternalPriceStatus = 'Active' | 'ExpiringSoon' | 'Expired';
+export interface PriceTier {
   quantity: number;
   price: number;
-};
-
-export type InternalPriceStatus = 'Active' | 'Inactive' | 'ExpiringSoon' | 'Expired';
-
+  currency: string;
+}
 export interface InternalPrice {
   id: string;
   productId: string;
   productName: string;
+  productCode: string;
   suggestedPrice: number;
+  suggestedPriceCurrency: string;
   floorPrice: number;
+  floorPriceCurrency: string;
   status: InternalPriceStatus;
   createdAt: string;
-  expiryDate: string;
+  expiresAt: string;
   priceTiers: PriceTier[];
 }
+export type InternalPriceListResult = Result<OffsetPagedResult<InternalPrice>>
+export interface GetPageListInternalPriceQuery extends BaseQueryPageList {
 
-export interface ProductPriceAssignment {
-  id: string;
-  code: string;
-  name: string;
-  brand: string;
-  unit: string;
 }
+
+// Api /api/catalog/internalPrices/stats
+// response
+export interface InternalPriceStats {
+  total: number;
+  active: number;
+  expiringSoon: number;
+  expired: number;
+}
+export type InternalPriceStatsResult = Result<InternalPriceStats>
+
+// Api /api/catalog/internalPrices/create
+export interface PriceTierOfCreate {
+  quantity: number;
+  price: number;
+}
+export interface CreateInternalPriceRequest {
+  productId: string;
+  suggestedPrice: number;
+  floorPrice: number;
+  expiresAt: string;
+  isInfinite: boolean;
+  priceTiers: PriceTierOfCreate[];
+}
+
+// API /api/catalog/internalPrices/product/{productId}/history
+export interface ProductInternalPriceHistory {
+  productId: string,
+  productCode: string,
+  productName: string,
+  internalPrices: InternalPrice[]
+}
+
+export type ProductInternalPriceHistoryResult = Result<ProductInternalPriceHistory>

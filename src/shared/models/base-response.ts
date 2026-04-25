@@ -1,8 +1,7 @@
 export interface Result<T = void> {
   isSuccess: boolean;
-  isFailure: boolean;
-  message?: string;
-  value: T;
+  message: string;
+  value?: T;
 }
 
 export interface OffsetPagedResult<T> {

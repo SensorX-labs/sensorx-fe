@@ -20,7 +20,7 @@ export function InternalPriceManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div>
       {view === 'list' ? (
         <InternalPriceList onViewDetail={handleViewDetail} />
       ) : (
