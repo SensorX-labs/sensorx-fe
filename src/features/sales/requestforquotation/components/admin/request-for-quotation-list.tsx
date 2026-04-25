@@ -18,8 +18,8 @@ import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
 import { RFQServices } from '../../services/rfq-services';
-
 import { RfqListItem } from '../../models/rfq-list-response';
+import { CanAccess } from '@/shared/components/common/can-access';
 
 const statusStyles: Record<string, string> = {
   'Draft': 'bg-gray-50 text-gray-500 border-gray-200',
@@ -27,7 +27,6 @@ const statusStyles: Record<string, string> = {
   'Accepted': 'bg-gray-50 text-indigo-600 border-indigo-100',
   'Rejected': 'bg-gray-50 text-red-500 border-red-100',
   'Converted': 'bg-gray-50 text-green-600 border-green-100',
-  // Fallback cho enum uppercase
   [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
   [RfqStatus.PENDING]: 'bg-gray-50 text-blue-600 border-blue-100',
   [RfqStatus.ACCEPTED]: 'bg-gray-50 text-indigo-600 border-indigo-100',
@@ -41,7 +40,6 @@ const statusLabels: Record<string, string> = {
   'Accepted': 'Đã tiếp nhận',
   'Rejected': 'Đã từ chối',
   'Converted': 'Đã sinh báo giá',
-  // Fallback
   [RfqStatus.DRAFT]: 'Nháp',
   [RfqStatus.PENDING]: 'Chờ tiếp nhận',
   [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
@@ -56,12 +54,9 @@ export default function RequestForQuotationList() {
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
   const [viewDetailId, setViewDetailId] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
-  
-  // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // gọi api rfq
   const fetchRfqs = async () => {
     setLoading(true);
     try {
@@ -94,39 +89,26 @@ export default function RequestForQuotationList() {
         lead.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.recipientName?.toLowerCase().includes(searchQuery.toLowerCase());
-      
       const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-      
       return matchesSearch && matchesStatus;
     });
   }, [leads, searchQuery, statusFilter]);
 
   const handleAccept = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    // Logic: Kiểm tra trạng thái và cập nhật, gửi thông báo tự động cho khách
     setLeads(prev => prev.map(lead => 
       lead.id === id ? { ...lead, status: RfqStatus.ACCEPTED, userId: 'Current Salesman' } : lead
     ));
-    // Thông báo thành công: "Đã tiếp nhận yêu cầu. Hệ thống đã gửi email thông báo cho khách hàng."
   };
 
   const handleDecline = () => {
     if (!selectedRfqId) return;
-
-    // Logic: Ghi nhật ký lý do, chuyển cho nhân viên kế tiếp hoặc quản lý
     setLeads(prev => prev.map(lead => 
-        lead.id === selectedRfqId 
-        ? { 
-            ...lead, 
-            status: RfqStatus.REJECTED, 
-          } 
-        : lead
+        lead.id === selectedRfqId ? { ...lead, status: RfqStatus.REJECTED } : lead
     ));
-    
     setIsDeclineDialogOpen(false);
     setSelectedRfqId(null);
     setDeclineReason('');
-    // Hệ thống tự động phân bổ cho người tiếp theo hoặc báo cho manager
   };
 
   const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
@@ -141,12 +123,7 @@ export default function RequestForQuotationList() {
   };
 
   if (viewDetailId) {
-    return (
-      <RequestForQuotationDetail 
-        id={viewDetailId} 
-        onBack={() => setViewDetailId(null)} 
-      />
-    );
+    return <RequestForQuotationDetail id={viewDetailId} onBack={() => setViewDetailId(null)} />;
   }
 
   return (
@@ -233,20 +210,22 @@ export default function RequestForQuotationList() {
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center gap-1">
                     {l.status === 'Pending' && (
-                      <>
-                        <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
-                          onClick={(e) => handleAccept(l.id, e)}
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
-                          onClick={(e) => openDeclineDialog(l.id, e)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </>
+                      <CanAccess roles={['SaleStaff']}>
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            onClick={(e) => handleAccept(l.id, e)}
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
+                            onClick={(e) => openDeclineDialog(l.id, e)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CanAccess>
                     )}
 
                     {l.status === 'Accepted' && (
@@ -271,18 +250,10 @@ export default function RequestForQuotationList() {
                 </td>
               </tr>
             ))}
-            {filteredLeads.length === 0 && (
-              <tr>
-                <td colSpan={5} className="py-12 text-center text-gray-400 text-xs tracking-widest uppercase">
-                  Không tìm thấy dữ liệu phù hợp
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
 
-      {/* Decline Reason Dialog */}
       <Dialog open={isDeclineDialogOpen} onOpenChange={setIsDeclineDialogOpen}>
         <DialogContent className="sm:max-w-[400px] border-none shadow-xl gap-0 p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-gray-50 border-b border-gray-100">
@@ -292,9 +263,6 @@ export default function RequestForQuotationList() {
             </DialogTitle>
           </DialogHeader>
           <div className="p-6 space-y-4">
-            <p className="text-[11px] text-gray-500 leading-relaxed">
-                * Lý do từ chối sẽ được ghi lại trong lịch sử hệ thống phục vụ mục đích quản lý.
-            </p>
             <div className="space-y-2">
                 <label className="tracking-label uppercase block">Lý do từ chối</label>
                 <Textarea 
