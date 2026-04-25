@@ -69,17 +69,20 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
     const loadPage = async () => {
       setLoading(true);
       try {
-        const rfqService = new RFQServices();
-        const data = await rfqService.getDetailRFQ(id);
-        setRfq(data);
+        const response = await RFQServices.getDetailRFQ(id);
+        if (response.isSuccess && response.value) {
+          const data = response.value;
+          setRfq(data);
 
-        if (data.staffId) {
-          try {
-            const staffService = new StaffService();
-            const staffData = await staffService.getStaffById(data.staffId) as any;
-            setAssignedStaff(staffData);
-          } catch (err) {
-            console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
+          if (data.staffId) {
+            try {
+              const staffResponse = await StaffService.getStaffById(data.staffId);
+              if (staffResponse.isSuccess && staffResponse.value) {
+                setAssignedStaff(staffResponse.value);
+              }
+            } catch (err) {
+              console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
+            }
           }
         }
       } catch (error) {
@@ -99,25 +102,24 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
     }
 
     try {
-      const staffService = new StaffService();
-      const rfqService = new RFQServices();
-      
-      const staffData = await staffService.getStaffByAccountId(user.id) as any;
-      if (!staffData || !staffData.staffId) {
+      const staffResponse = await StaffService.getStaffByAccountId(user.id);
+      if (!staffResponse.isSuccess || !staffResponse.value) {
         toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
         return;
       }
 
-      const success = await rfqService.assignStaff(id, staffData.staffId);
-      if (success) {
+      const response = await RFQServices.assignStaff(id, staffResponse.value.id);
+      if (response.isSuccess) {
         toast.success("Tiếp nhận yêu cầu thành công");
         // Reload dữ liệu
-        const updatedRfq = await rfqService.getDetailRFQ(id);
-        setRfq(updatedRfq);
-        setAssignedStaff(staffData);
+        const updatedResponse = await RFQServices.getDetailRFQ(id);
+        if (updatedResponse.isSuccess && updatedResponse.value) {
+          setRfq(updatedResponse.value);
+          setAssignedStaff(staffResponse.value);
+        }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Lỗi khi tiếp nhận yêu cầu");
+      console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
     }
   };
 
@@ -157,9 +159,9 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         <div className="flex items-center gap-2">
           {rfq.status === 'Pending' && (
             <>
-              <Button 
+              <Button
                 onClick={handleAcceptDetail}
-                variant="outline" 
+                variant="outline"
                 className="rounded admin-btn-primary border-transparent"
               >
                 <Check className="w-4 h-4 mr-2" />

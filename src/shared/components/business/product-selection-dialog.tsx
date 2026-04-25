@@ -6,28 +6,9 @@ import { Input } from '@/shared/components/shadcn-ui/input';
 import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Search, Box, Factory, PackageSearch, CheckCircle2, Barcode } from 'lucide-react';
-import { KeysetPagedResult, Result } from '@/shared/models/base-response';
-import api from '@/shared/configs/axios-config';
+import { Product } from '@/features/catalog/product/models/product-selection';
+import ProductService from '@/features/catalog/product/services/product-service';
 import { toast } from 'sonner';
-import { BaseQueryKeysetPagedList } from '@/shared/models/base-query-page-list';
-
-export interface Product {
-  id: string;
-  name: string;
-  code: string;
-  manufacture: string;
-  categoryName: string;
-  status: string;
-  createdAt: string;
-  images: string[];
-}
-
-type ProductListResult = Result<KeysetPagedResult<Product>>;
-type ProductListQuery = BaseQueryKeysetPagedList;
-
-const ProductServices = {
-  getList: (query: ProductListQuery) => api.data.get<any, ProductListResult>("/catalog/products/load-more", { params: query }),
-};
 
 interface ProductSelectionDialogProps {
   isOpen: boolean;
@@ -73,7 +54,7 @@ export function ProductSelectionDialog({
     else setLoading(true);
 
     try {
-      const response = await ProductServices.getList({
+      const response = await ProductService.getLoadMore({
         searchTerm: search,
         pageSize: 6,
         isPrevious: false,

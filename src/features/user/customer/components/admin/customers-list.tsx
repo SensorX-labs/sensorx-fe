@@ -30,20 +30,24 @@ export default function CustomersList() {
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
-      const service = new CustomerService();
-      const response = await service.getPagedCustomers({
+      const response = await CustomerService.getPagedCustomers({
         pageNumber: currentPage,
         pageSize: pageSize,
         searchTerm: searchTerm
       });
-      
-      if (response && response.items) {
-        setCustomers(response.items);
-        setTotalCount(response.totalCount || 0);
+
+      if (response.isSuccess && response.value) {
+        setCustomers(response.value.items);
+        setTotalCount(response.value.totalCount || 0);
+      } else {
+        toast.warning(response.message || 'Không thể tải danh sách khách hàng');
+        setCustomers([]);
+        setTotalCount(0);
       }
     } catch (error: any) {
       console.error('>>> Lỗi khi fetch khách hàng:', error);
-      toast.error('Không thể tải danh sách khách hàng');
+      setCustomers([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }

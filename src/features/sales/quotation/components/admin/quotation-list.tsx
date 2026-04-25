@@ -10,23 +10,24 @@ import { ActionType } from '@/shared/constants/action-type';
 import { QuoteService } from '../../services/quote-service';
 import { QuoteListItem } from '../../models/quote-list-response';
 import { cn } from '@/shared/utils/cn';
+import { toast } from 'sonner';
 
 const statusStyles: Record<string, string> = {
-  [QuoteStatus.DRAFT]:   'bg-gray-100 text-gray-500 border-gray-200',
+  [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
   [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-600 border-blue-100',
-  [QuoteStatus.APPROVED]:'bg-green-50 text-green-600 border-green-100',
-  [QuoteStatus.RETURNED]:'bg-red-50 text-red-600 border-red-100',
-  [QuoteStatus.SENT]:    'bg-indigo-50 text-indigo-600 border-indigo-100',
+  [QuoteStatus.APPROVED]: 'bg-green-50 text-green-600 border-green-100',
+  [QuoteStatus.RETURNED]: 'bg-red-50 text-red-600 border-red-100',
+  [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-600 border-indigo-100',
   [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
   [QuoteStatus.EXPIRED]: 'bg-gray-50 text-gray-400 border-gray-200',
 };
 
 const statusLabels: Record<string, string> = {
-  [QuoteStatus.DRAFT]:   'Nháp',
+  [QuoteStatus.DRAFT]: 'Nháp',
   [QuoteStatus.PENDING]: 'Chờ duyệt',
-  [QuoteStatus.APPROVED]:'Đã phê duyệt',
-  [QuoteStatus.RETURNED]:'Từ chối',
-  [QuoteStatus.SENT]:    'Đã gửi khách',
+  [QuoteStatus.APPROVED]: 'Đã phê duyệt',
+  [QuoteStatus.RETURNED]: 'Từ chối',
+  [QuoteStatus.SENT]: 'Đã gửi khách',
   [QuoteStatus.ORDERED]: 'Đã sinh đơn',
   [QuoteStatus.EXPIRED]: 'Hết hạn',
 };
@@ -41,10 +42,11 @@ export default function QuotationList() {
   const fetchQuotes = async () => {
     setLoading(true);
     try {
-      const quoteService = new QuoteService();
-      const result = await quoteService.getListQuotes({ PageIndex: 1, PageSize: 50 });
-      setQuotes(result.items);
-    } catch (error) {
+      const response = await QuoteService.getListQuotes({ pageNumber: 1, pageSize: 50 });
+      if (response.isSuccess && response.value) {
+        setQuotes(response.value.items);
+      }
+    } catch (error: any) {
       console.error(">>> Lỗi khi fetch báo giá:", error);
     } finally {
       setLoading(false);
@@ -64,14 +66,14 @@ export default function QuotationList() {
 
   const filteredQuotes = useMemo(() => {
     return quotes.filter(q => {
-        const matchesSearch = 
-            q.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            q.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            q.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
-        
-        return matchesSearch && matchesStatus;
+      const matchesSearch =
+        q.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
     });
   }, [quotes, searchTerm, statusFilter]);
 
@@ -135,9 +137,9 @@ export default function QuotationList() {
         </div>
 
         <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <table className="w-full text-sm">
             <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
+              <tr className="bg-gray-50/50 border-b border-gray-100">
                 <th className="text-left px-6 py-4 tracking-label uppercase">Số BG</th>
                 <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
                 <th className="text-left px-6 py-4 tracking-label uppercase">Ngày tạo</th>
@@ -145,75 +147,75 @@ export default function QuotationList() {
                 <th className="text-right px-6 py-4 tracking-label uppercase">Tổng tiền</th>
                 <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
                 <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hành động</th>
-                </tr>
+              </tr>
             </thead>
             <tbody>
-                {filteredQuotes.map((q) => (
+              {filteredQuotes.map((q) => (
                 <tr
-                    key={q.id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors"
+                  key={q.id}
+                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors"
                 >
-                    <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{q.code}</td>
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{q.code}</td>
+                  <td className="px-6 py-4">
                     <div className="font-bold text-gray-900">{q.companyName}</div>
                     <p className="text-[10px] text-gray-500 font-normal mt-0.5 uppercase tracking-wider">{q.recipientName}</p>
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{new Date(q.quoteDate).toLocaleDateString('vi-VN')}</td>
-                    <td className="px-6 py-4 text-center">
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">{new Date(q.quoteDate).toLocaleDateString('vi-VN')}</td>
+                  <td className="px-6 py-4 text-center">
                     <span className={cn(
-                        "text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest",
-                        q.parentId ? 'border-purple-200 text-purple-600 bg-purple-50' : 'border-blue-200 text-blue-600 bg-blue-50'
+                      "text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest",
+                      q.parentId ? 'border-purple-200 text-purple-600 bg-purple-50' : 'border-blue-200 text-blue-600 bg-blue-50'
                     )}>
-                        {q.parentId ? 'Cập nhật' : 'Mới'}
+                      {q.parentId ? 'Cập nhật' : 'Mới'}
                     </span>
-                    </td>
-                    <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.grandTotal?.toLocaleString('vi-VN')} đ</td>
-                    <td className="px-6 py-4 text-center">
+                  </td>
+                  <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.grandTotal?.toLocaleString('vi-VN')} đ</td>
+                  <td className="px-6 py-4 text-center">
                     <span className={cn(
-                        "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                        statusStyles[q.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'
+                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                      statusStyles[q.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'
                     )}>
-                        {statusLabels[q.status]}
+                      {statusLabels[q.status]}
                     </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
+                  </td>
+                  <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1.5 pr-4">
-                        <Button
+                      <Button
                         variant="ghost" size="icon"
                         className="h-8 w-8 text-blue-600 hover:bg-blue-50"
                         onClick={() => goTo(q.id, ActionType.DETAIL)}
-                        >
+                      >
                         <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
+                      </Button>
+                      <Button
                         variant="ghost" size="icon"
                         className="h-8 w-8 text-yellow-600 hover:bg-yellow-50"
                         onClick={() => goTo(q.id, ActionType.UPDATE)}
-                        >
+                      >
                         <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
+                      </Button>
+                      <Button
                         variant="ghost" size="icon"
                         className="h-8 w-8 text-red-500 hover:bg-red-50"
-                        >
+                      >
                         <Trash2 className="w-4 h-4" />
-                        </Button>
+                      </Button>
                     </div>
-                    </td>
+                  </td>
                 </tr>
-                ))}
+              ))}
             </tbody>
-            </table>
-            {loading && (
-                <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
-                    Đang tải dữ liệu...
-                </div>
-            )}
-            {!loading && filteredQuotes.length === 0 && (
-                <div className="py-20 text-center text-gray-400 uppercase tracking-widest text-xs">
-                    Không tìm thấy báo giá nào
-                </div>
-            )}
+          </table>
+          {loading && (
+            <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
+              Đang tải dữ liệu...
+            </div>
+          )}
+          {!loading && filteredQuotes.length === 0 && (
+            <div className="py-20 text-center text-gray-400 uppercase tracking-widest text-xs">
+              Không tìm thấy báo giá nào
+            </div>
+          )}
         </div>
       </div>
     </div>

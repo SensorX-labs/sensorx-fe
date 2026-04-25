@@ -1,30 +1,32 @@
 import api from "@/shared/configs/axios-config";
 import { Customer } from "../models/customer";
-import { PaginationResponse, PaginationRequest } from "@/shared/models/pagination";
+import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 
-export class CustomerService {
-
-    async getPagedCustomers(params : PaginationRequest): Promise<PaginationResponse<Customer>> {
+export const CustomerService = {
+    getPagedCustomers: async (params : BaseQueryOffsetPagedList): Promise<Result<OffsetPagedResult<Customer>>> => {
         return api.data.get('/customer/list', {params});
-    }
+    },
 
-    async createCustomer(customer : Customer) {
+    createCustomer: async (customer : Customer) => {
         const response = await api.data.post('/customer', customer);
         return response.data;
-    }
+    },
 
-    async updateCustomer(id : string, customer : Customer) {
+    updateCustomer: async (id : string, customer : Customer) => {
         const response = await api.data.put(`/customer/${id}`, customer);
         return response.data;
-    }
+    },
 
-    async getCustomerById(id : string) {
+    getCustomerById: async (id : string) => {
         const response = await api.data.get(`/customer/${id}`);
         return response.data;
-    }
+    },
 
-    async deleteCustomer(id : string) {
+    deleteCustomer: async (id : string) => {
         const response = await api.data.delete(`/customer/${id}`);
         return response.data;
     }
-}
+};
+
+export default CustomerService;

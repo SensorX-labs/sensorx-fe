@@ -5,12 +5,12 @@ import { TrendingUp, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCirc
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
 } from "@/shared/components/shadcn-ui/dialog";
 import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
@@ -64,11 +64,13 @@ export default function RequestForQuotationList() {
   const fetchRfqs = async () => {
     setLoading(true);
     try {
-      const rfqService = new RFQServices();
-      const result = await rfqService.getListRFQ({ PageIndex: 1, PageSize: 50 });
-      setLeads(result.items);
-    } catch (error) {
+      const response = await RFQServices.getListRFQ({ pageNumber: 1, pageSize: 50 });
+      if (response.isSuccess && response.value) {
+        setLeads(response.value.items);
+      }
+    } catch (error: any) {
       console.error(">>> Lỗi khi fetch RFQ:", error);
+      setLeads([]);
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ export default function RequestForQuotationList() {
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      const matchesSearch = 
+      const matchesSearch =
         lead.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.recipientName?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -100,36 +102,29 @@ export default function RequestForQuotationList() {
 
   const handleAccept = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    
+
     if (!user?.id) {
       toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
       return;
     }
 
     try {
-      const staffService = new StaffService();
-      const rfqService = new RFQServices();
-      
       // Lấy thông tin Staff từ Account ID để có Staff ID thực tế
-      const staffData = await staffService.getStaffByAccountId(user.id) as any;
-      
-      if (!staffData || !staffData.staffId) {
+      const staffResponse = await StaffService.getStaffByAccountId(user.id);
+
+      if (!staffResponse.isSuccess || !staffResponse.value) {
         toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
         return;
       }
 
-      const success = await rfqService.assignStaff(id, staffData.staffId);
-      
-      if (success) {
+      const response = await RFQServices.assignStaff(id, staffResponse.value.id);
+
+      if (response.isSuccess) {
         toast.success("Tiếp nhận yêu cầu thành công");
         fetchRfqs(); // Tải lại danh sách
-      } else {
-        toast.error("Tiếp nhận yêu cầu thất bại");
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
-      const message = error.response?.data?.message || "Đã có lỗi xảy ra khi tiếp nhận yêu cầu";
-      toast.error(message);
     }
   };
 
@@ -137,21 +132,17 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      const rfqService = new RFQServices();
-      const success = await rfqService.rejectRFQ(selectedRfqId);
-      
-      if (success) {
+      const response = await RFQServices.rejectRFQ(selectedRfqId);
+
+      if (response.isSuccess) {
         toast.success("Đã từ chối yêu cầu thành công");
         fetchRfqs(); // Tải lại danh sách
         setIsDeclineDialogOpen(false);
         setSelectedRfqId(null);
         setDeclineReason('');
-      } else {
-        toast.error("Từ chối yêu cầu thất bại");
       }
     } catch (error) {
       console.error(">>> Lỗi khi từ chối RFQ:", error);
-      toast.error("Đã có lỗi xảy ra khi từ chối yêu cầu");
     }
   };
 
@@ -192,16 +183,16 @@ export default function RequestForQuotationList() {
         <div className="flex flex-col md:flex-row gap-4 items-center p-4">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input 
-              placeholder="Tìm mã RFQ, công ty, khách hàng..." 
+            <input
+              placeholder="Tìm mã RFQ, công ty, khách hàng..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="w-full md:w-[200px]">
-            <select 
-              value={statusFilter} 
+            <select
+              value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
             >
@@ -225,8 +216,8 @@ export default function RequestForQuotationList() {
           </thead>
           <tbody>
             {filteredLeads.map((l) => (
-              <tr 
-                key={l.id} 
+              <tr
+                key={l.id}
                 className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors cursor-pointer group"
                 onClick={() => setViewDetailId(l.id)}
               >
@@ -256,13 +247,13 @@ export default function RequestForQuotationList() {
                     {l.status === 'Pending' && (
                       <CanAccess roles={['SaleStaff']}>
                         <div className="flex items-center gap-1">
-                          <Button 
+                          <Button
                             variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
                             onClick={(e) => handleAccept(l.id, e)}
                           >
                             <Check className="w-4 h-4" />
                           </Button>
-                          <Button 
+                          <Button
                             variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
                             onClick={(e) => openDeclineDialog(l.id, e)}
                           >
@@ -273,7 +264,7 @@ export default function RequestForQuotationList() {
                     )}
 
                     {l.status === 'Accepted' && (
-                      <Button 
+                      <Button
                         variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50"
                         onClick={(e) => handleCreateQuotation(l.id, e)}
                       >
@@ -281,7 +272,7 @@ export default function RequestForQuotationList() {
                       </Button>
                     )}
 
-                    <Button 
+                    <Button
                       variant="ghost" size="icon" className="h-8 w-8 text-gray-400 group-hover:text-blue-600 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -308,23 +299,23 @@ export default function RequestForQuotationList() {
           </DialogHeader>
           <div className="p-6 space-y-4">
             <div className="space-y-2">
-                <label className="tracking-label uppercase block">Lý do từ chối</label>
-                <Textarea 
-                    placeholder="Nhập lý do tại đây..." 
-                    className="text-xs min-h-[100px] border-gray-200 focus:border-gray-300 focus:ring-0 shadow-none resize-none px-3 py-2"
-                    value={declineReason}
-                    onChange={(e) => setDeclineReason(e.target.value)}
-                />
+              <label className="tracking-label uppercase block">Lý do từ chối</label>
+              <Textarea
+                placeholder="Nhập lý do tại đây..."
+                className="text-xs min-h-[100px] border-gray-200 focus:border-gray-300 focus:ring-0 shadow-none resize-none px-3 py-2"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter className="p-4 bg-gray-50 border-t border-gray-100 flex gap-2 justify-end">
             <Button variant="ghost" onClick={() => setIsDeclineDialogOpen(false)} className="text-[10px] font-bold uppercase tracking-widest border border-gray-200 bg-white h-9 px-4">Hủy</Button>
-            <Button 
-                onClick={handleDecline} 
-                className="text-[10px] font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white shadow-none h-9 px-4"
-                disabled={!declineReason.trim()}
+            <Button
+              onClick={handleDecline}
+              className="text-[10px] font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white shadow-none h-9 px-4"
+              disabled={!declineReason.trim()}
             >
-                Xác nhận từ chối
+              Xác nhận từ chối
             </Button>
           </DialogFooter>
         </DialogContent>

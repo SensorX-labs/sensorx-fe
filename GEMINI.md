@@ -4,21 +4,18 @@
 - **Goal**: Professional Catalog/Category Management system.
 - **Tech Stack**: Next.js, TypeScript, Tailwind CSS, Shadcn UI, Sonner (Toasts), Dnd-kit (Drag & Drop).
 
-## 🛠️ Feature: Category Management
+## 🛠️ Feature: API Standardization & Model Refactoring (2026-04-25)
 ### Data Architecture
-- **API Strategy**: Unified `getAll` (list-all) approach. All categories are fetched at once for high-performance Tree and Table operations.
-- **Client-side Logic**: 
-  - Filtering (Search) and Pagination (10 per page) are handled on the frontend.
-  - Search is case-insensitive and scans both **Name** and **Description**.
-  - **Circular Hierarchy Prevention**: When selecting a Parent Category, the system recursively filters out all descendants of the current category to prevent circular dependencies.
+- **Unified Result Pattern**: System-wide migration to `Result<T>` and `OffsetPagedResult<T>` from `base-response.ts`.
+- **Universal Axios Interceptor**:
+  - **Success**: Transparently wraps responses. Spreads data fields into the root for legacy compatibility while keeping the `.value` property for new logic.
+  - **Error**: Enriches `AxiosError` with `isSuccess: false` and a robustly extracted `message` (scans for `message`, `Message`, or the first entry in `errors` array/object).
+- **Service Pattern**: Phased out class-based services in favor of constant objects (e.g., `export const ProductService = { ... }`) for better performance and singleton consistency.
+- **Pagination**: Standardized on `BaseQueryOffsetPagedList` for requests. Keyset pagination is supported via `BaseQueryKeysetPagedList` where `lastCreatedAt` and `lastId` are used.
 
 ### UI/UX Implementation
-- **Dual View**: Toggle between **Table View** and **Tree View**.
-- **Refactored Architecture**: Split into focused components under `category-management/`.
-- **Typography Standards**:
-  - Labels: `text-[10px] font-semibold uppercase text-slate-400 tracking-wider`.
-  - Values: `text-sm font-bold text-slate-900`.
-  - Titles: `text-xl font-bold text-slate-800`.
+- **Result Handling**: Components now consistently check `response.isSuccess` before accessing `response.value`.
+- **Toast Integration**: `axios-config.ts` handles global error toasting, reducing boilerplate in components.
 
 ## 🛠️ Feature: Internal Price Management (2026-04-25)
 ### UI Strategy
@@ -32,6 +29,7 @@
 - **Status lifecycle**: Active, Expiring Soon, Inactive, Expired.
 
 ## ⚠️ Important Notes
+- **Legacy Compatibility**: `PaginationResponse` and `PaginationRequest` are deprecated. Use `OffsetPagedResult` and `BaseQueryOffsetPagedList` instead.
 - **Layout Consistency**: Always use `w-full` for admin dashboard features to maximize usable space.
 - **Import Constraints**: `lucide-react` is strictly for icons. UI components must be imported from `@/shared/components/shadcn-ui/...`.
 - **Admin Header Buffer**: Use `-mt-4` and carefully calculated `100vh` offsets to keep content flush with the breadcrumbs/header.

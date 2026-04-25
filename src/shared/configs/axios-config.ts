@@ -72,6 +72,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
         },
         async (error: AxiosError<any>) => {
             const originalRequest: any = error.config;
+            const errorData = error.response?.data;
 
             // Nếu lỗi 401 (Unauthorized) và không phải là request gọi API refresh
             if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh')) {
@@ -106,7 +107,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                         refreshToken: refreshToken
                     });
 
-                    // Bóc tách dữ liệu từ response.data.data (theo cấu trúc JSON của bạn)
+                    // Bóc tách dữ liệu linh hoạt (theo cả structure Result cũ và mới)
                     const refreshResult = response.data;
                     const newData = refreshResult.data || refreshResult.value || refreshResult;
 
@@ -127,13 +128,15 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                     // Thực hiện lại chính request ban đầu
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     return instance(originalRequest);
-                } catch (refreshError) {
+                } catch (refreshError: any) {
                     // Nếu refresh token cũng thất bại, đăng xuất người dùng
                     processQueue(refreshError, null);
                     Cookies.remove("token", { path: '/' });
                     Cookies.remove("refreshToken", { path: '/' });
                     Cookies.remove("user", { path: '/' });
-                    toast.error("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+                    
+                    const logoutMessage = refreshError.response?.data?.message || refreshError.message || "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+                    toast.error(logoutMessage);
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
@@ -141,19 +144,50 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
             }
 
             // Xử lý các lỗi khác
+            let errorMessage = "Đã xảy ra lỗi không xác định";
+            
             if (error.response) {
-                const message = error.response.data?.message || "Đã xảy ra lỗi không xác định";
-                // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh
+                // Trích xuất message linh hoạt từ Result structure (message, Message, hoặc errors)
+                if (errorData && typeof errorData === 'object') {
+                    errorMessage = errorData.message || errorData.Message || errorMessage;
+                    
+                    // Nếu có chi tiết lỗi Validation
+                    if (errorData.errors) {
+                        if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+                            errorMessage = errorData.errors[0];
+                        } else if (typeof errorData.errors === 'object') {
+                            const firstError = Object.values(errorData.errors)[0];
+                            if (Array.isArray(firstError) && firstError.length > 0) {
+                                errorMessage = firstError[0] as string;
+                            }
+                        }
+                    }
+                } else if (typeof errorData === 'string') {
+                    errorMessage = errorData;
+                }
+
+                // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh ở trên
                 if (error.response.status !== 401) {
-                    toast.error(message);
+                    toast.error(errorMessage);
                 }
             } else if (error.request) {
-                toast.error("Không thể kết nối tới server");
+                errorMessage = "Không thể kết nối tới server";
+                toast.error(errorMessage);
             } else {
-                toast.error(error.message);
+                errorMessage = error.message;
+                toast.error(errorMessage);
             }
 
-            return Promise.reject(error);
+            // Enrich error object để tương thích với cả component kiểu cũ và kiểu mới
+            // Component mới: err.isSuccess === false, err.message
+            // Component cũ: err.response.data
+            const enrichedError = Object.assign(error, {
+                isSuccess: false,
+                success: false,
+                message: errorMessage
+            });
+
+            return Promise.reject(enrichedError);
         }
     );
 
