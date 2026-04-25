@@ -26,9 +26,10 @@ import { LAYOUT_CONSTANTS } from '@/shared/constants/layout';
 
 interface InternalPriceListProps {
   onViewDetail: (price: InternalPrice) => void;
+  onCreate: () => void;
 }
 
-export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
+export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListProps) {
   const [quickViewPrice, setQuickViewPrice] = useState<InternalPrice | null>(null);
   const [prices, setPrices] = useState<InternalPrice[]>([]);
   const [stats, setStats] = useState<InternalPriceStats | undefined>();
@@ -113,7 +114,7 @@ export function InternalPriceList({ onViewDetail }: InternalPriceListProps) {
 
             {/* Action Buttons (Right) */}
             <div className="flex items-center gap-2 shrink-0">
-              <Button size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20">
+              <Button onClick={onCreate} size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20">
                 <Plus className="w-4 h-4" />
                 Tạo bảng giá
               </Button>
