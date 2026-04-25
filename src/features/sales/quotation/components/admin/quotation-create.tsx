@@ -22,19 +22,19 @@ import { Calendar } from "@/shared/components/shadcn-ui/calendar";
 import { QuoteStatus } from '../../constants/quote-status';
 import Link from 'next/link';
 import { MOCK_RFQS } from '../../../requestforquotation/mocks/rfq-mocks';
-import { MOCK_QUOTES } from '../../mocks/quote-mocks';
 import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
 import { PaymentMethod } from '../../constants/payment-method';
 import { PaymentTern } from '../../constants/payment-term';
 import { ActionType } from '@/shared/constants/action-type';
 import { RfqDetail } from '../../../requestforquotation/models/rfq-detail-response';
 import { QuoteCreateRequest } from '../../models/quote-create-request';
+import { QuoteDetail } from '../../models/quote-detail-response';
 import { cn } from '@/shared/utils/cn';
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
 interface QuotationCreateProps {
-  id?: string;      // quote id hoặc 'new'
+  id?: string;
   rfqId?: string;
   rfqData?: RfqDetail;
   onBack?: () => void;
@@ -139,8 +139,102 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
-  const existingQuote = id && id !== 'new' ? MOCK_QUOTES.find(q => q.id === id) : null;
+  const [quoteDetail, setQuoteDetail] = useState<QuoteDetail | null>(null);
+  const [loading, setLoading] = useState(false);
   const rfqRaw = rfqData || (rfqId ? MOCK_RFQS.find(r => r.id === rfqId) : null);
+
+  const [action, setAction] = useState<ActionType>(actionParam || ActionType.CREATE);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({
+    note: '',
+    paymentMethod: PaymentMethod.BANKTRANSFER as string,
+    paymentTerm: PaymentTern.FULLPAYMENT as string,
+    shippingAddress: '',
+    paymentTermDays: 0,
+    quoteDate: new Date(),
+  });
+
+  const [items, setItems] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // AI analysis states
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id && id !== 'new') {
+        const fetchDetail = async () => {
+            setLoading(true);
+            try {
+                const quoteService = new QuoteService();
+                const detail = await quoteService.getQuoteById(id);
+                setQuoteDetail(detail);
+                
+                setFormData({
+                    note: detail.note || '',
+                    paymentMethod: detail.paymentTerm || PaymentMethod.BANKTRANSFER,
+                    paymentTerm: detail.paymentTerm || PaymentTern.FULLPAYMENT,
+                    shippingAddress: detail.shippingAddress || '',
+                    paymentTermDays: 0,
+                    quoteDate: new Date(detail.quoteDate),
+                });
+                setSelectedCustomerId(detail.customerId);
+                setItems(detail.items.map((item, idx) => ({ 
+                    ...item, 
+                    key: `init-${idx}`,
+                    manufacturer: item.manufacturer || '',
+                    taxRate: item.taxRate || 0,
+                })));
+                if (!actionParam) setAction(ActionType.DETAIL);
+
+                if (detail.status === QuoteStatus.DRAFT || detail.status === QuoteStatus.PENDING) {
+                    handleAnalyzeQuote(detail.code);
+                }
+
+            } catch (error) {
+                console.error(">>> Lỗi khi fetch chi tiết báo giá:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDetail();
+    } else if (rfqRaw) {
+        const info = getCustomerInfoFromRfq(rfqRaw);
+        setFormData(prev => ({
+            ...prev,
+            shippingAddress: info?.address || '',
+        }));
+        setSelectedCustomerId((rfqRaw as any).customerId);
+        setItems(rfqRaw.items.map((item: any, idx: number) => ({
+            productId: item.productId || '',
+            productCode: item.productCode || '',
+            productName: item.productName || '',
+            quantity: item.quantity || 0,
+            unit: item.unit || '',
+            manufacturer: item.manufacturer || item.category || '',
+            unitPrice: 0, 
+            taxRate: 0, 
+            key: `rfq-${idx}`,
+        })));
+    }
+  }, [id, rfqRaw, actionParam]);
+
+  const handleAnalyzeQuote = async (quoteCode: string) => {
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const quoteAnalysisService = new QuoteAnalysisService();
+      const response = await quoteAnalysisService.analyzeQuote(quoteCode);
+      const data = response.value || response;
+      setAnalysisResult(data);
+    } catch (error: any) {
+      setAnalysisError(error.message || 'Lỗi phân tích báo giá');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
 
   const getCustomerInfoFromRfq = (r: any) => {
     if (!r) return null;
@@ -155,49 +249,14 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     };
   };
 
-  const currentCustomerInfo = getCustomerInfoFromRfq(rfqRaw) || existingQuote?.customerInfo;
+  const currentCustomerInfo = quoteDetail || getCustomerInfoFromRfq(rfqRaw);
 
-  const [action, setAction] = useState<ActionType>(actionParam || (existingQuote ? ActionType.DETAIL : ActionType.CREATE));
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
-    existingQuote?.customerId || (rfqRaw as any)?.customerId || null
-  );
-  
-  const [formData, setFormData] = useState({
-    note: existingQuote?.note || '',
-    paymentMethod: existingQuote?.response?.paymentMethod || PaymentMethod.BANKTRANSFER as string,
-    paymentTerm: existingQuote?.response?.paymentTerm || PaymentTern.FULLPAYMENT as string,
-    shippingAddress: currentCustomerInfo?.address || '',
-    paymentTermDays: 0,
-    quoteDate: existingQuote?.quoteDate ? new Date(existingQuote.quoteDate) : new Date(),
-  });
-
-  const [items, setItems] = useState<any[]>(() => {
-    if (existingQuote) {
-      return existingQuote.items.map((item, idx) => ({ ...item, key: idx }));
-    }
-    if (rfqRaw) {
-      return rfqRaw.items.map((item: any, idx: number) => ({
-        productId: item.productId || '',
-        productCode: item.productCode || '',
-        productName: item.productName || '',
-        quantity: item.quantity || 0,
-        unit: item.unit || '',
-        manufacturer: item.manufacturer || item.category || '',
-        unitPrice: 0, 
-        taxRate: 0, 
-        key: idx,
-      }));
-    }
-    return [];
-  });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
-
-  const handleItemChange = (index: number, field: string, value: any) => {
+  const handleUpdateItem = (index: number, changes: any) => {
     setItems(prev => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
+      if (updated[index]) {
+        updated[index] = { ...updated[index], ...changes };
+      }
       return updated;
     });
   };
@@ -206,7 +265,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     setItems(prev => [...prev, {
       productId: '',
       productCode: '', productName: '', quantity: 1,
-      unit: '', manufacturer: '', unitPrice: 0, taxRate: 0, key: prev.length,
+      unit: '', manufacturer: '', unitPrice: 0, taxRate: 0, key: `new-${Date.now()}-${prev.length}`,
     }]);
   };
 
@@ -215,16 +274,12 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
   };
 
   const handleSaveDraft = async () => {
-    if (items.length === 0) {
-      alert("Vui lòng thêm ít nhất một sản phẩm.");
-      return;
-    }
-    
+    if (items.length === 0) return alert("Vui lòng thêm sản phẩm");
     setIsSubmitting(true);
     try {
       const request: QuoteCreateRequest = {
-        rfqId: rfqId || rfqRaw?.id || '',
-        customerId: selectedCustomerId || (rfqRaw as any)?.customerId || '',
+        rfqId: rfqId || rfqRaw?.id || quoteDetail?.rfqId || '',
+        customerId: selectedCustomerId || '',
         recipientName: currentCustomerInfo?.recipientName || '',
         recipientPhone: currentCustomerInfo?.recipientPhone || '',
         companyName: currentCustomerInfo?.companyName || '',
@@ -245,12 +300,10 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
           taxRate: i.taxRate || 0,
         }))
       };
-
-      const quoteService = new QuoteService();
-      await quoteService.createQuote(request);
+      await (new QuoteService()).createQuote(request);
       router.push('/sales/quotations');
     } catch (error: any) {
-      alert("Lỗi khi lưu báo giá: " + error.message);
+      alert("Lỗi: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -258,9 +311,13 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
 
   const calculateTotal = () =>
     items.reduce((sum, item) => {
-      const sub = (item.quantity || 0) * (item.unitPrice || 0);
-      return sum + sub + sub * ((item.taxRate || 0) / 100);
+      const q = Number(item.quantity) || 0;
+      const p = Number(item.unitPrice) || 0;
+      const t = Number(item.taxRate) || 0;
+      return sum + Math.round((q * p) * (1 + t / 100));
     }, 0);
+
+  if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
 
   return (
     <div className="space-y-6 w-full pb-10">
@@ -276,66 +333,102 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                 {action === ActionType.CREATE ? 'Lập báo giá mới' : action === ActionType.UPDATE ? 'Chỉnh sửa báo giá' : 'Chi tiết báo giá'}
               </h2>
               {rfqRaw && <p className="text-xs text-gray-500 mt-1">Từ RFQ: {rfqRaw.code}</p>}
+              {quoteDetail && <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-bold">Số báo giá: {quoteDetail.code}</p>}
            </div>
         </div>
         <div className="flex items-center gap-2">
           {action === ActionType.CREATE && (
-             <Button 
-               onClick={handleSaveDraft} 
-               disabled={isSubmitting}
-               className="rounded admin-btn-primary border-transparent h-10 px-6"
-             >
-               <Save className="w-4 h-4 mr-2" />
-               {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
+             <Button onClick={handleSaveDraft} disabled={isSubmitting} className="rounded admin-btn-primary h-10 px-6">
+               <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
              </Button>
           )}
           {action === ActionType.DETAIL && (
-             <Button variant="outline" className="rounded admin-btn-primary border-transparent h-10 px-6">
-                <FileText className="w-4 h-4 mr-2" />
-                Gửi duyệt
+             <Button variant="outline" className="rounded admin-btn-primary h-10 px-6">
+                <FileText className="w-4 h-4 mr-2" /> Gửi duyệt
              </Button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* AI Analysis Section */}
+        {analysisResult && (
+           <div className="md:col-span-3 bg-white border border-gray-100 rounded p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-50 pb-3">
+                 <div className="flex items-center gap-2 text-blue-600">
+                    <Zap size={16} className={cn(analysisResult.status === 'pending' && "animate-pulse")} />
+                    <span className="font-bold uppercase tracking-wider text-sm">Phân tích từ AI</span>
+                 </div>
+                 {analysisResult.status !== 'pending' && (
+                    <div className={cn(
+                       "text-xl font-black uppercase tracking-tighter px-4 py-1.5 rounded-lg border-2",
+                       (() => {
+                         const status = analysisResult.analysis?.deal_status || analysisResult.deal_status || "";
+                         const s = status.toLowerCase();
+                         if (s.includes('rủi ro') || s.includes('risk') || s.includes('cảnh báo')) return 'bg-red-50 text-red-600 border-red-200';
+                         if (s.includes('tiềm năng') || s.includes('potential') || s.includes('tốt')) return 'bg-green-50 text-green-600 border-green-200';
+                         return 'bg-blue-50 text-blue-600 border-blue-200';
+                       })()
+                    )}>
+                       {analysisResult.analysis?.deal_status || analysisResult.deal_status || "N/A"}
+                    </div>
+                 )}
+              </div>
+
+              {analysisResult.status === 'pending' ? (
+                <div className="flex flex-col items-center justify-center py-6 space-y-3">
+                   <div className="flex items-center gap-3 text-blue-600 font-medium">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+                      <span>{analysisResult.message || "Hệ thống đang tiến hành phân tích báo giá..."}</span>
+                   </div>
+                   <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.code)}
+                      className="text-xs text-gray-500 hover:text-blue-600"
+                   >
+                     Cập nhật lại
+                   </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Phân tích</span> 
+                    {analysisResult.analysis?.reasoning}
+                  </p>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Chiến lược</span> 
+                    {analysisResult.analysis?.strategy}
+                  </p>
+                </div>
+              )}
+           </div>
+        )}
 
         <div className="md:col-span-1 space-y-6">
-          {/* Thông tin chung mới bổ sung Ngày báo giá */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2 bg-gray-50">
               <ClipboardList size={16} className="text-gray-400" />
               <h4 className="text-sm font-medium text-gray-900">Thông tin chung</h4>
             </div>
             <div className="p-6 space-y-5">
-                {action !== ActionType.CREATE && (
+                {(action !== ActionType.CREATE || quoteDetail) && (
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-gray-500">Mã báo giá</label>
-                    <p className="text-sm font-bold text-gray-900 tracking-tight">{existingQuote?.code}</p>
+                    <p className="text-sm font-bold text-gray-900 tracking-tight">{quoteDetail?.code || '—'}</p>
                   </div>
                 )}
                 <div className="space-y-1.5">
                    <label className="text-xs font-semibold text-gray-500">Ngày báo giá</label>
                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal h-10 border-gray-200 rounded",
-                            !formData.quoteDate && "text-muted-foreground"
-                          )}
-                        >
+                      <PopoverTrigger asChild disabled={action === ActionType.DETAIL}>
+                        <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal h-10 border-gray-200 rounded disabled:opacity-100", !formData.quoteDate && "text-muted-foreground")}>
                           <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                           {formData.quoteDate ? format(formData.quoteDate, "dd/MM/yyyy", { locale: vi }) : <span>Chọn ngày</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.quoteDate}
-                          onSelect={(date) => date && setFormData({ ...formData, quoteDate: date })}
-                          initialFocus
-                        />
+                        <Calendar mode="single" selected={formData.quoteDate} onSelect={(date) => date && setFormData({ ...formData, quoteDate: date })} initialFocus />
                       </PopoverContent>
                     </Popover>
                 </div>
@@ -381,10 +474,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
             <div className="p-6 space-y-4">
                 <div className="space-y-1.5">
                    <label className="text-xs font-semibold text-gray-500">Phương thức</label>
-                   <Select value={formData.paymentMethod} onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}>
-                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded">
-                         <SelectValue />
-                      </SelectTrigger>
+                   <Select disabled={action === ActionType.DETAIL} value={formData.paymentMethod} onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}>
+                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded disabled:opacity-100"><SelectValue /></SelectTrigger>
                       <SelectContent>
                          {Object.entries(paymentMethodLabel).map(([val, label]) => (
                             <SelectItem key={val} value={val} className="text-sm">{label}</SelectItem>
@@ -394,10 +485,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                 </div>
                 <div className="space-y-1.5">
                    <label className="text-xs font-semibold text-gray-500">Hạn mức</label>
-                   <Select value={formData.paymentTerm} onValueChange={(v) => setFormData({ ...formData, paymentTerm: v })}>
-                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded">
-                         <SelectValue />
-                      </SelectTrigger>
+                   <Select disabled={action === ActionType.DETAIL} value={formData.paymentTerm} onValueChange={(v) => setFormData({ ...formData, paymentTerm: v })}>
+                      <SelectTrigger className="h-10 text-sm border-gray-200 rounded disabled:opacity-100"><SelectValue /></SelectTrigger>
                       <SelectContent>
                          {Object.entries(paymentTermLabel).map(([val, label]) => (
                             <SelectItem key={val} value={val} className="text-sm">{label}</SelectItem>
@@ -416,91 +505,71 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                 <ShoppingCart size={16} className="text-gray-400" />
                 <h4 className="text-sm font-medium text-gray-900">Danh sách sản phẩm</h4>
               </div>
-              <Button onClick={handleAddItem} size="sm" variant="outline" className="h-8 text-xs border-gray-300 rounded bg-white">
-                + Thêm sản phẩm
-              </Button>
+              {action !== ActionType.DETAIL && (
+                  <Button onClick={handleAddItem} size="sm" variant="outline" className="h-8 text-xs border-gray-300 rounded bg-white">+ Thêm sản phẩm</Button>
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50/50 text-gray-500 font-medium">
                   <tr>
                     <th className="px-6 py-3 text-left">Sản phẩm</th>
-                    <th className="px-4 py-3 w-20 text-center">SL</th>
+                    <th className="px-4 py-3 w-28 text-center">SL</th>
                     <th className="px-4 py-3 w-32 text-right">Đơn giá</th>
-                    <th className="px-4 py-3 w-20 text-center">Thuế %</th>
+                    <th className="px-4 py-3 w-28 text-center">Thuế %</th>
                     <th className="px-6 py-3 w-32 text-right">Thành tiền</th>
-                    <th className="px-3 py-3 w-10"></th>
+                    {action !== ActionType.DETAIL && <th className="px-3 py-3 w-10"></th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {items.map((item, index) => {
-                    const sub = (item.quantity || 0) * (item.unitPrice || 0);
-                    const total = sub + sub * ((item.taxRate || 0) / 100);
+                    const q = Number(item.quantity) || 0;
+                    const p = Number(item.unitPrice) || 0;
+                    const t = Number(item.taxRate) || 0;
+                    const lineValue = Math.round((q * p) * (1 + t / 100));
+
                     return (
-                      <tr key={index} className="hover:bg-gray-50/30">
-                        <td className="px-6 py-4">
+                      <tr key={item.key || index} className="hover:bg-gray-50/30">
+                        <td className="px-6 py-4 min-w-[200px]">
                           <SearchableProductSelect
+                            disabled={action === ActionType.DETAIL}
                             defaultValue={item.productCode}
                             defaultLabel={item.productName}
                             onSelect={(prod) => {
-                              const updatedItems = [...items];
-                              updatedItems[index] = {
-                                ...updatedItems[index],
+                              handleUpdateItem(index, {
                                 productId: prod.id,
                                 productCode: prod.code,
                                 productName: prod.name,
                                 unit: prod.unit || item.unit,
                                 manufacturer: prod.manufacturer || item.manufacturer
-                              };
-                              setItems(updatedItems);
+                              });
                             }}
                           />
                         </td>
                         <td className="px-4 py-4">
-                          <Input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                            onFocus={(e) => setTimeout(() => e.target.select(), 0)}
-                            className="h-10 text-sm text-center border-gray-200 shadow-none"
-                          />
+                          <Input disabled={action === ActionType.DETAIL} type="number" value={item.quantity} onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />
                         </td>
                         <td className="px-4 py-4">
-                          <Input
-                            type="number"
-                            value={item.unitPrice}
-                            onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                            onFocus={(e) => setTimeout(() => e.target.select(), 0)}
-                            className="h-10 text-sm text-right border-gray-200 shadow-none"
-                            placeholder="0"
-                          />
+                          <Input disabled={action === ActionType.DETAIL} type="number" value={item.unitPrice} onChange={(e) => handleUpdateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-right border-gray-200 shadow-none disabled:opacity-100" placeholder="0" />
                         </td>
                         <td className="px-4 py-4">
-                           <Input
-                             type="number"
-                             value={item.taxRate}
-                             onChange={(e) => handleItemChange(index, 'taxRate', parseFloat(e.target.value) || 0)}
-                             onFocus={(e) => setTimeout(() => e.target.select(), 0)}
-                             className="h-10 text-sm text-center border-gray-200 shadow-none"
-                           />
+                           <Input disabled={action === ActionType.DETAIL} type="number" value={item.taxRate} onChange={(e) => handleUpdateItem(index, { taxRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />
                         </td>
-                        <td className="px-6 py-4 text-right font-semibold text-gray-900 border-l border-gray-50">
-                          {total.toLocaleString('vi-VN')}
-                        </td>
-                        <td className="px-3 py-4 text-center">
-                           <Button onClick={() => handleRemoveItem(index)} variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500">
-                              <Trash size={14} />
-                           </Button>
-                        </td>
+                        <td className="px-6 py-4 text-right font-semibold text-gray-900 border-l border-gray-50">{lineValue.toLocaleString('vi-VN')}</td>
+                        {action !== ActionType.DETAIL && (
+                            <td className="px-3 py-4 text-center">
+                               <Button onClick={() => handleRemoveItem(index)} variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500"><Trash size={14} /></Button>
+                            </td>
+                        )}
                       </tr>
                     );
                   })}
                 </tbody>
                 <tfoot className="bg-gray-50 border-t border-gray-200 font-bold">
                    <tr>
-                      <td colSpan={4} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px] tracking-wider">Tổng cộng (sau thuế):</td>
+                      <td colSpan={4} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px]">Tổng cộng (sau thuế):</td>
                       <td className="px-6 py-5 text-right text-blue-600 text-xl">{calculateTotal().toLocaleString('vi-VN')} đ</td>
-                      <td></td>
+                      {action !== ActionType.DETAIL && <td></td>}
                    </tr>
                 </tfoot>
               </table>
@@ -513,13 +582,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
               <h4 className="text-sm font-medium text-gray-900">Ghi chú & Điều khoản bổ sung</h4>
             </div>
             <div className="p-6">
-               <Textarea
-                  value={formData.note}
-                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                  placeholder="Nhập ghi chú hoặc các điều khoản bảo hành, vận chuyển, cam kết kỹ thuật..."
-                  rows={4}
-                  className="w-full text-sm border-gray-100 focus:ring-0 resize-none shadow-none bg-gray-50/20"
-               />
+               <Textarea disabled={action === ActionType.DETAIL} value={formData.note} onChange={(e) => setFormData({ ...formData, note: e.target.value })} rows={4} className="w-full text-sm border-gray-100 focus:ring-0 resize-none shadow-none bg-gray-50/20 disabled:opacity-100" />
             </div>
           </div>
         </div>

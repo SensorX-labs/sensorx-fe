@@ -61,6 +61,7 @@ export default function RequestForQuotationList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  // gọi api rfq
   const fetchRfqs = async () => {
     setLoading(true);
     try {

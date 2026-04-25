@@ -9,8 +9,7 @@ export interface CartItemData {
 export function useCart() {
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
 
-  // Load giỏ hàng từ localStorage khi mount
-  useEffect(() => {
+  const loadCart = () => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       try {
@@ -18,7 +17,21 @@ export function useCart() {
       } catch (e) {
         console.error('Lỗi khi parse giỏ hàng:', e);
       }
+    } else {
+      setCartItems([]);
     }
+  };
+
+  // Load giỏ hàng từ localStorage khi mount và khi có cập nhật
+  useEffect(() => {
+    loadCart();
+
+    const handleUpdate = () => {
+      loadCart();
+    };
+
+    window.addEventListener('cart-updated', handleUpdate);
+    return () => window.removeEventListener('cart-updated', handleUpdate);
   }, []);
 
   // Lưu giỏ hàng vào localStorage mỗi khi thay đổi
@@ -30,13 +43,17 @@ export function useCart() {
   };
 
   const addToCart = (product: ProductListItem, quantity: number = 1) => {
-    const existingIndex = cartItems.findIndex(item => item.product.id === product.id);
+    // Đọc trực tiếp từ localStorage để tránh state cũ
+    const savedCart = localStorage.getItem('cart');
+    const currentItems: CartItemData[] = savedCart ? JSON.parse(savedCart) : [];
+    
+    const existingIndex = currentItems.findIndex(item => item.product.id === product.id);
     let newItems;
     if (existingIndex > -1) {
-      newItems = [...cartItems];
+      newItems = [...currentItems];
       newItems[existingIndex].quantity += quantity;
     } else {
-      newItems = [...cartItems, { product, quantity }];
+      newItems = [...currentItems, { product, quantity }];
     }
     saveCart(newItems);
   };

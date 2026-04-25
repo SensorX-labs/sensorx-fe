@@ -167,7 +167,7 @@ export default function QuotationList() {
                         {q.parentId ? 'Cập nhật' : 'Mới'}
                     </span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.totalAmount?.toLocaleString('vi-VN')} đ</td>
+                    <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.grandTotal?.toLocaleString('vi-VN')} đ</td>
                     <td className="px-6 py-4 text-center">
                     <span className={cn(
                         "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
