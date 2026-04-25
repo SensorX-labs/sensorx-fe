@@ -224,17 +224,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên xử lý</td>
                   <td className="px-6 py-3 font-medium text-gray-900">
                     {assignedStaff ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
-                          <User className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <span>{assignedStaff.staffName}</span>
-                        {assignedStaff.staffCode && (
-                          <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
-                            {assignedStaff.staffCode}
-                          </span>
-                        )}
-                      </div>
+                      <span>{assignedStaff.staffName}</span>
                     ) : (
                       <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
                     )}
