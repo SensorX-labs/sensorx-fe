@@ -1,9 +1,9 @@
 export enum QuoteStatus {
-    DRAFT = 'DRAFT', // Nháp
-    PENDING = 'PENDING', // Chờ duyệt
-    RETURNED = 'RETURNED', // Sếp từ chối
-    APPROVED = 'APPROVED', // Đã duyệt
-    SENT = 'SENT', // Đã gửi khách
-    ORDERED = 'ORDERED', // Đã sinh đơn hàng 
-    EXPIRED = 'EXPIRED', // Hết hạn
+    DRAFT = 'Draft',        // Nháp
+    PENDING = 'Pending',    // Chờ duyệt
+    RETURNED = 'Returned',  // Sếp từ chối
+    APPROVED = 'Approved',  // Đã duyệt
+    SENT = 'Sent',          // Đã gửi khách
+    ORDERED = 'Ordered',    // Đã sinh đơn hàng 
+    EXPIRED = 'Expired',    // Hết hạn
 }

@@ -6,29 +6,24 @@ import Link from 'next/link';
 import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, Phone, Mail } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
 import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
-import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
-import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
-import { Product } from '../../models/product';
+import { ProductListItem } from '../../models/product-list-response';
+import { useCart } from '@/features/sales/requestforquotation/hooks/use-cart';
 
 interface ProductDetailProps {
-  product: Product;
+  product: ProductListItem;
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const { addToCart } = useCart();
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
 
-  // product cùng thể loại
-  const relatedProducts = useMemo(
-    () =>
-      MOCK_PRODUCTS
-        .filter((p) => p.category?.id === product.category?.id && p.id !== product.id)
-        .slice(0, 4),
-    [product.category?.id, product.id]
-  );
+  // product cùng thể loại (Tạm để trống)
+  const relatedProducts = useMemo(() => [], []);
 
   const handleAddToCart = () => {
+    addToCart(product, selectedQuantity);
     setShowAddToCartMessage(true);
   };
 
@@ -56,14 +51,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <div className="space-y-4">
 
             {/* ảnh to */}
-            {product.productImages && product.productImages.length > 0 && (
+            {(product.images && product.images.length > 0) ? (
               <Carousel className="w-full">
                 <CarouselContent>
-                  {product.productImages.map((image, idx) => (
+                  {product.images.map((img, idx) => (
                     <CarouselItem key={idx}>
                       <div className="relative bg-product-card-bg aspect-square overflow-hidden border border-product-card-border">
                         <Image
-                          src={image.imageUrl}
+                          src={(img === 'string' || !img.startsWith('/') && !img.startsWith('http')) ? '/assets/images/products/default.png' : img}
                           alt={product.name}
                           fill
                           className="object-cover"
@@ -76,18 +71,28 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <CarouselPrevious className="left-4 top-1/2 -translate-y-1/2 bg-black/50 border-0 hover:bg-black/70 text-white hover:text-white drop-shadow-2xl size-14 transition-all" />
                 <CarouselNext className="right-4 top-1/2 -translate-y-1/2 bg-black/50 border-0 hover:bg-black/70 text-white hover:text-white drop-shadow-2xl size-14 transition-all" />
               </Carousel>
+            ) : (
+                <div className="relative bg-product-card-bg aspect-square overflow-hidden border border-product-card-border">
+                    <Image
+                        src="/assets/images/products/default.png"
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                </div>
             )}
 
             {/* ảnh bên dưới */}
-            {product.productImages && product.productImages.length > 1 && (
+            {product.images && product.images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.productImages.map((image, index) => (
+                {product.images.map((img, index) => (
                   <button
                     key={index}
                     className={`flex-shrink-0 w-20 h-20 border-2 overflow-hidden transition-all bg-product-card-bg border-product-card-border`}
                   >
                     <Image
-                      src={image.imageUrl}
+                      src={(img === 'string' || !img.startsWith('/') && !img.startsWith('http')) ? '/assets/images/products/default.png' : img}
                       alt={`${product.name} ${index + 1}`}
                       width={80}
                       height={80}
@@ -106,7 +111,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <div className="flex items-center gap-4 meta-label">
                 <span>Mã sản phẩm: {product.code}</span>
                 <span>•</span>
-                <span>Thương hiệu: {product.manufacturer}</span>
+                <span>Thương hiệu: {product.manufacture}</span>
               </div>
             </div>
 
@@ -177,55 +182,16 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </div>
 
         {/* thông số sản phẩm*/}
-        {product.productAttributes && product.productAttributes.length > 0 && (
+        {product.attributes && product.attributes.length > 0 && (
           <div className="mt-12 py-8">
             <h2 className="tracking-title-lg">Thông số kỹ thuật</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-20">
-              {product.productAttributes.map((attr, idx) => (
+              {product.attributes.map((attr, idx) => (
                 <div key={idx} className="flex justify-between border-b border-gray-100 pb-4">
                   <span className="text-gray-600 font-medium">{attr.attributeName}</span>
                   <span className="text-gray-900 font-semibold">{attr.attributeValue}</span>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/*sản phẩm liên quan*/}
-        {relatedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="tracking-title-lg">Sản phẩm liên quan</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => {
-                const priceData = MOCK_INTERNAL_PRICES.find(p => p.productId === relatedProduct.id || p.productId === relatedProduct.code);
-                const price = priceData?.suggestedPrice || 0;
-                const primaryImg = relatedProduct.productImages?.[0]?.imageUrl || '/assets/images/products/default.webp';
-
-                return (
-                  <Link
-                    key={relatedProduct.id}
-                    href={`/shop/${relatedProduct.id}`}
-                    className="group"
-                  >
-                    <div className="relative bg-product-card-bg overflow-hidden aspect-square border border-product-card-border hover:border-gray-400 transition-all cursor-pointer">
-                      <Image
-                        src={primaryImg}
-                        alt={relatedProduct.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="mt-4 space-y-2">
-                      <h3 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:text-brand-green transition-colors">
-                        {relatedProduct.name}
-                      </h3>
-                      {price > 0 && (
-                        <div className="font-bold text-gray-900">{price.toLocaleString('vi-VN')} đ</div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
             </div>
           </div>
         )}
@@ -268,7 +234,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
       </div>
 
       <AddCartItemMessage
-        product={product}
+        product={product as any}
         quantity={selectedQuantity}
         isVisible={showAddToCartMessage}
         onClose={() => setShowAddToCartMessage(false)}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { MOCK_CATEGORIES } from '@/features/catalog/category/components/mocks/product-category-mocks';
+import { MOCK_CATEGORIES } from '@/features/catalog/category/mocks/category-mocks';
 
 interface FilterCatalogProps {
     onFiltersChange?: (filters: FilterState) => void;
