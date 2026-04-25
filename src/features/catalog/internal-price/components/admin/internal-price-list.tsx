@@ -90,8 +90,13 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
   };
 
   return (
-    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-1200" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
-      <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
+    <div
+      className="flex flex-col space-y-4 animate-in fade-in slide-in-from-left-4 duration-1000 -mt-2 overflow-hidden"
+      style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT + 40}px)` }}
+    >
+      <div className="shrink-0">
+        <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
       {/* Main Container */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex-1 flex flex-col min-h-0">
@@ -114,7 +119,7 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
 
             {/* Action Buttons (Right) */}
             <div className="flex items-center gap-2 shrink-0">
-              <Button onClick={onCreate} size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20">
+              <Button onClick={onCreate} size="sm" className="h-9 admin-btn-primary gap-2 shadow-lg shadow-emerald-500/20 font-bold">
                 <Plus className="w-4 h-4" />
                 Tạo bảng giá
               </Button>
@@ -139,8 +144,8 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
 
         {/* Local Pagination UI */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 text-gray-600 sticky bottom-0 z-20">
-            <span className="text-xs font-medium">
+          <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 text-gray-600 sticky bottom-0 z-20">
+            <span className="text-xs font-bold text-slate-500">
               Trang {currentPage} / {totalPages}
             </span>
             <div className="flex items-center gap-2">

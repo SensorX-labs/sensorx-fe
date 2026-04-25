@@ -27,7 +27,7 @@ export function InternalPriceManagement() {
   };
 
   return (
-    <div className="w-full max-h-[calc(100vh-300px)]">
+    <div className="w-full">
       {view === 'list' && (
         <InternalPriceList
           onViewDetail={handleViewDetail}

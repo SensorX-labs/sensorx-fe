@@ -63,8 +63,8 @@ export function StatCards({ stats, activeTab, onTabChange }: StatCardsProps) {
             <card.icon className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">{card.label}</p>
-            <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+            <p className="text-base text-gray-500 font-bold mb-0.5">{card.label}</p>
+            <p className="text-3xl font-black text-gray-900 tracking-tight">{card.value}</p>
           </div>
         </div>
       ))}

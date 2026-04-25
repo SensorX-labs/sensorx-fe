@@ -103,8 +103,8 @@ function DetailHeader({ price, onBack }: InternalPriceDetailProps) {
 
 function InfoTabContent({ price }: { price: InternalPrice }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="md:col-span-2 border-none shadow-sm bg-white">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
+      <Card className="md:col-span-3 border-none shadow-sm bg-white">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <Info className="w-5 h-5 text-indigo-500" />
@@ -113,25 +113,25 @@ function InfoTabContent({ price }: { price: InternalPrice }) {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 p-6">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sản phẩm chính</label>
+            <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Sản phẩm chính</label>
             <div className="flex items-center gap-2">
-              <Box className="w-4 h-4 text-slate-400" />
-              <p className="font-medium text-slate-900">{price.productName}</p>
+              <Box className="w-5 h-5 text-slate-400" />
+              <p className="text-sm font-bold text-slate-900">{price.productName}</p>
             </div>
-            <p className="text-sm text-slate-500 ml-6">{price.productId}</p>
+            <p className="text-xs text-slate-500 ml-7">{price.productId}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Trạng thái</label>
+            <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Trạng thái</label>
             <div>
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none px-3">
+              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none px-2 py-0.5 text-[10px] font-medium">
                 Đang hoạt động
               </Badge>
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Giá đề xuất</label>
+            <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Giá đề xuất</label>
             <div className="flex items-center gap-2">
               <Tag className="w-4 h-4 text-slate-400" />
               <p className="text-lg font-bold text-slate-900">{price.suggestedPrice.toLocaleString() + " " + price.suggestedPriceCurrency}</p>
@@ -139,12 +139,12 @@ function InfoTabContent({ price }: { price: InternalPrice }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-1">
               Giá sàn
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <AlertCircle className="w-3 h-3 text-slate-300" />
+                    <AlertCircle className="w-3.5 h-3.5 text-slate-300" />
                   </TooltipTrigger>
                   <TooltipContent>
                     Giá sàn là mức giá thấp nhất được phép bán.
@@ -160,10 +160,10 @@ function InfoTabContent({ price }: { price: InternalPrice }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ngày hết hạn</label>
+            <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Ngày hết hạn</label>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-slate-400" />
-              <p className="font-medium text-slate-900">{new Date(price.expiresAt).toLocaleDateString('vi-VN')}</p>
+              <p className="text-sm font-bold text-slate-900">{new Date(price.expiresAt).toLocaleDateString('vi-VN')}</p>
             </div>
           </div>
         </CardContent>
@@ -283,10 +283,10 @@ function MetricCard({ icon: Icon, label, value, unit, colorClass, tooltip }: any
         <Icon className="w-5 h-5" />
       </div>
       <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+        <p className="text-[10px] font-semibold uppercase text-slate-400 tracking-wider mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
-          <span className={`text-2xl font-black ${colorClass.split(' ')[1]}`}>{value}</span>
-          <span className={`text-sm font-bold ${colorClass.split(' ')[1]}`}>{unit}</span>
+          <span className={`text-2xl font-bold ${colorClass.split(' ')[1]}`}>{value}</span>
+          <span className={`text-xs font-medium ${colorClass.split(' ')[1]}`}>{unit}</span>
         </div>
       </div>
     </div>
@@ -300,8 +300,8 @@ function MetricCard({ icon: Icon, label, value, unit, colorClass, tooltip }: any
         <TooltipTrigger asChild>
           <div className="cursor-help h-full">{content}</div>
         </TooltipTrigger>
-        <TooltipContent className="bg-slate-900 text-white border-slate-800">
-          <p className="text-xs font-medium">{tooltip}</p>
+        <TooltipContent className="bg-slate-900 text-white border-slate-800 p-2 max-w-xs shadow-xl">
+          <p className="text-[11px] font-medium leading-relaxed">{tooltip}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
