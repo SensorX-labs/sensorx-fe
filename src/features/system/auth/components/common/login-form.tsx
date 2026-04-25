@@ -1,18 +1,54 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
+
+import { loginSchema, LoginFormValues } from '../../schemas/login-schema';
+import { AuthService } from '../../services/auth-service';
+
+const authService = new AuthService();
 
 interface LoginFormProps {
-  onSubmit?: (username: string, password: string) => void;
   onSwitchToRegister?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({
-  onSubmit,
-  onSwitchToRegister,
-}) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      const response = await authService.login(data);
+      console.log("DEBUG - Login Response from API:", response);
+
+      // Lấy token từ accessToken
+      const token = response.accessToken;
+      const refreshToken = response.refreshToken;
+
+      // Lưu tokens và thông tin user vào cookie
+      if (token) Cookies.set('token', token, { expires: 7, path: '/' });
+      if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
+      if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
+
+      toast.success('Đăng nhập thành công!');
+      router.push('/');
+    } catch {
+      // Lỗi đã được xử lý bởi axios interceptor (hiển thị toast.error)
+    }
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -21,34 +57,32 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           My SensorX Account
         </h1>
         <p className="text-xs tracking-widest text-gray-400 uppercase">
-          Precision & Luxury Redefined
+          Precision &amp; Luxury Redefined
         </p>
       </div>
 
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const username = formData.get('username') as string;
-          const password = formData.get('password') as string;
-          onSubmit?.(username, password);
-        }}
-        className="space-y-6"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        {/* Email */}
         <div>
           <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
-            Username
+            Email
           </label>
           <input
-            type="text"
-            name="username"
-            placeholder="johndoe"
-            required
-            className="w-full px-0 py-3 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
+            type="email"
+            {...register('email')}
+            placeholder="johndoe@example.com"
+            className={`w-full px-0 py-3 bg-transparent border-b focus:outline-none text-gray-900 placeholder-gray-400 transition-colors ${
+              errors.email
+                ? 'border-red-400 focus:border-red-500'
+                : 'border-gray-300 focus:border-blue-500'
+            }`}
           />
+          {errors.email && (
+            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+          )}
         </div>
 
-        {/* mật khẩu */}
+        {/* Mật khẩu */}
         <div>
           <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
             Mật khẩu
@@ -56,10 +90,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              name="password"
+              {...register('password')}
               placeholder="••••••••"
-              required
-              className="w-full px-0 py-3 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
+              className={`w-full px-0 py-3 bg-transparent border-b focus:outline-none text-gray-900 placeholder-gray-400 transition-colors pr-8 ${
+                errors.password
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
+              }`}
             />
             <button
               type="button"
@@ -69,18 +106,25 @@ export const LoginForm: React.FC<LoginFormProps> = ({
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+          {errors.password && (
+            <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+          )}
         </div>
 
+        {/* Submit */}
         <div className="pt-6">
           <button
             type="submit"
-            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-6 tracking-wider uppercase transition-colors"
+            disabled={isSubmitting}
+            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-6 tracking-wider uppercase transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Đăng nhập
+            {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </div>
       </form>
 
+      {/* Divider */}
       <div className="relative my-8">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-200"></div>
@@ -90,7 +134,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </div>
       </div>
 
-        {/* đăng nhập bằng phương thức khác */}
+      {/* Social login */}
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
@@ -115,6 +159,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </button>
       </div>
 
+      {/* Footer links */}
       <div className="mt-8 space-y-2 text-center">
         <div>
           <span className="text-xs text-gray-500">Chưa có tài khoản? </span>
@@ -127,19 +172,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           </button>
         </div>
         <div>
-          <a
-            href="#"
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <a href="#" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
             Quên mật khẩu?
           </a>
         </div>
       </div>
 
       <div className="mt-12 pt-8 border-t border-gray-200">
-        <p className="text-xs text-gray-400 text-center">
-          Bảo mật cấp doanh nghiệp
-        </p>
+        <p className="text-xs text-gray-400 text-center">Bảo mật cấp doanh nghiệp</p>
       </div>
     </div>
   );

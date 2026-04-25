@@ -2,16 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart, Bookmark } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart, Bookmark, LayoutDashboard, ChevronRight } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
+import Cookies from 'js-cookie';
 
 export const StoreHeader = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+    
+    // Kiểm tra quyền từ cookie
+    const userCookie = Cookies.get('user');
+    if (userCookie) {
+      try {
+        const user = JSON.parse(userCookie);
+        const roles = Array.isArray(user.roles) ? user.roles : [user.roles];
+        // Nếu bất kỳ role nào khác "Customer" hoặc "0"
+        const hasStaffAccess = roles.some((r: any) => {
+          const roleStr = String(r);
+          return roleStr !== "Customer" && roleStr !== "0" && roleStr !== "";
+        });
+        setIsAdmin(hasStaffAccess);
+      } catch (e) {
+        console.error("Error parsing user cookie", e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -126,10 +145,75 @@ export const StoreHeader = () => {
               <Link href="/profile" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
                 <User size={20} />
               </Link>
-              <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">
-                <Menu size={20} />
-                Menu
-              </button>
+              {isMounted && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">
+                      <Menu size={20} />
+                      <span className="hidden sm:inline">Menu</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[350px] sm:w-[450px] p-0 border-l border-gray-100 shadow-2xl">
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Menu điều hướng</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col h-full bg-white">
+                      {/* Menu Header */}
+                      <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <span className="text-sm font-bold tracking-[0.3em] uppercase text-gray-400">Điều hướng</span>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="flex-1 overflow-y-auto py-6">
+                        <nav className="flex flex-col">
+                          {isAdmin && (
+                            <Link href="/dashboard" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
+                              <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Quản trị hệ thống</span>
+                              <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
+                            </Link>
+                          )}
+
+                          <Link href="/shop" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
+                            <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Tất cả sản phẩm</span>
+                            <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
+                          </Link>
+
+                          <Link href="/catalog" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
+                            <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Danh mục giải pháp</span>
+                            <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
+                          </Link>
+
+                          <div className="px-8 py-10">
+                            <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 block mb-6">Thương hiệu đối tác</span>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-4 border border-gray-100 flex items-center justify-center grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
+                                <span className="font-bold tracking-tighter text-lg">OMRON</span>
+                              </div>
+                              <div className="p-4 border border-gray-100 flex items-center justify-center grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
+                                <span className="font-bold tracking-tighter text-lg">SIEMENS</span>
+                              </div>
+                            </div>
+                          </div>
+                        </nav>
+                      </div>
+
+                      {/* Menu Footer */}
+                      <div className="p-8 bg-gray-900 text-white">
+                        <div className="flex flex-col gap-6">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">Hỗ trợ kỹ thuật</span>
+                            <span className="text-sm font-medium tracking-wider">+84 382 116 944</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 leading-relaxed uppercase tracking-widest">
+                            © 2024 SensorX Labs. <br/>
+                            Giải pháp công nghiệp tiên tiến.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
             </div>
           </div>
         </div>

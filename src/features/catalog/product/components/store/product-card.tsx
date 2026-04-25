@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Bookmark, ShoppingBag } from 'lucide-react';
 import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
-import { Product } from '../../models/product';
+import { ProductListItem } from '../../models/product-list-response';
+import { useCart } from '@/features/sales/requestforquotation/hooks/use-cart';
 
 interface ProductCardProps {
     id: string;
@@ -16,7 +17,7 @@ interface ProductCardProps {
     isFavorite?: boolean;
     onAddToCart?: () => void;
     onAddToFavorite?: () => void;
-    product?: Product;
+    product?: ProductListItem;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -31,6 +32,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     product,
 }) => {
     const router = useRouter();
+    const { addToCart } = useCart();
     const [isHovered, setIsHovered] = useState(false);
     const [isFav, setIsFav] = useState(isFavorite);
     const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
@@ -47,6 +49,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     const handleCardClick = () => {
+        if (product) {
+            localStorage.setItem('selectedProduct', JSON.stringify(product));
+        }
         router.push(`/shop/${id}`);
     };
 
@@ -108,8 +113,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 type="button"
                 onClick={(e) => {
                     e.stopPropagation();
-                    setShowAddToCartMessage(true);
-                    onAddToCart?.();
+                    if (product) {
+                        addToCart(product, 1);
+                        setShowAddToCartMessage(true);
+                        onAddToCart?.();
+                    }
                 }}
                 className="w-full mt-4 py-3 bg-brand-green text-white text-sm font-medium uppercase tracking-wider hover:bg-brand-green-hover transition-colors duration-300 rounded-none flex items-center justify-center gap-2"
             >

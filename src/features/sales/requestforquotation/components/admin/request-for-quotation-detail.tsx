@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import {
@@ -8,17 +8,22 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/shadcn-ui/select';
-import { MOCK_RFQS } from '../../mocks/rfq-mocks';
-import { MOCK_STAFF } from '../../mocks/staff-mocks';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/shared/components/shadcn-ui/popover';
+import { Search, ChevronsUpDown, Check as CheckIcon } from 'lucide-react';
+import { Input } from '@/shared/components/shadcn-ui/input';
 import { RfqStatus } from '../../constants/rfq-status';
+import { useUser } from '@/shared/hooks/use-user';
+import { toast } from 'sonner';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
+import { RfqDetail } from '../../models/rfq-detail-response';
+import { RFQServices } from '../../services/rfq-services';
+import { StaffService } from '@/features/user/staff/services/staff-service';
+import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
+import { cn } from '@/shared/utils/cn';
 
 interface RequestForQuotationDetailProps {
   id: string;
@@ -26,6 +31,12 @@ interface RequestForQuotationDetailProps {
 }
 
 const statusColor: Record<string, string> = {
+  'Draft': 'bg-gray-50 text-gray-500 border-gray-200',
+  'Pending': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Accepted': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  'Rejected': 'bg-red-50 text-red-700 border-red-200',
+  'Converted': 'bg-green-50 text-green-700 border-green-200',
+  // Fallback
   [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
   [RfqStatus.PENDING]: 'bg-blue-50 text-blue-700 border-blue-200',
   [RfqStatus.ACCEPTED]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -34,6 +45,12 @@ const statusColor: Record<string, string> = {
 };
 
 const statusLabel: Record<string, string> = {
+  'Draft': 'Nháp',
+  'Pending': 'Đang chờ',
+  'Accepted': 'Đã tiếp nhận',
+  'Rejected': 'Đã từ chối',
+  'Converted': 'Đã chốt đơn',
+  // Fallback
   [RfqStatus.DRAFT]: 'Nháp',
   [RfqStatus.PENDING]: 'Đang chờ',
   [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
@@ -42,16 +59,77 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function RequestForQuotationDetail({ id, onBack }: RequestForQuotationDetailProps) {
-  const rfq = MOCK_RFQS.find(r => r.id === id);
+  const [rfq, setRfq] = React.useState<RfqDetail | null>(null);
+  const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
+  const [assignedStaff, setAssignedStaff] = useState<any | null>(null);
+  const { user } = useUser();
 
+  React.useEffect(() => {
+    const loadPage = async () => {
+      setLoading(true);
+      try {
+        const rfqService = new RFQServices();
+        const data = await rfqService.getDetailRFQ(id);
+        setRfq(data);
+
+        if (data.staffId) {
+          try {
+            const staffService = new StaffService();
+            const staffData = await staffService.getStaffById(data.staffId) as any;
+            setAssignedStaff(staffData);
+          } catch (err) {
+            console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
+          }
+        }
+      } catch (error) {
+        console.error(">>> Lỗi khi fetch detail RFQ:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPage();
+  }, [id]);
+
+  const handleAcceptDetail = async () => {
+    if (!user?.id) {
+      toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
+      return;
+    }
+
+    try {
+      const staffService = new StaffService();
+      const rfqService = new RFQServices();
+      
+      const staffData = await staffService.getStaffByAccountId(user.id) as any;
+      if (!staffData || !staffData.staffId) {
+        toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
+        return;
+      }
+
+      const success = await rfqService.assignStaff(id, staffData.staffId);
+      if (success) {
+        toast.success("Tiếp nhận yêu cầu thành công");
+        // Reload dữ liệu
+        const updatedRfq = await rfqService.getDetailRFQ(id);
+        setRfq(updatedRfq);
+        setAssignedStaff(staffData);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Lỗi khi tiếp nhận yêu cầu");
+    }
+  };
+
+
+  if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
 
-  if (isCreatingQuotation) {
+  if (isCreatingQuotation && rfq) {
     return (
       <QuotationCreate
         rfqId={id}
+        rfqData={rfq}
         onBack={() => setIsCreatingQuotation(false)}
       />
     );
@@ -77,9 +155,13 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {rfq.status === RfqStatus.PENDING && (
+          {rfq.status === 'Pending' && (
             <>
-              <Button variant="outline" className="rounded admin-btn-primary border-transparent">
+              <Button 
+                onClick={handleAcceptDetail}
+                variant="outline" 
+                className="rounded admin-btn-primary border-transparent"
+              >
                 <Check className="w-4 h-4 mr-2" />
                 Tiếp nhận
               </Button>
@@ -89,7 +171,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               </Button>
             </>
           )}
-          {rfq.status === RfqStatus.ACCEPTED && (
+          {rfq.status === 'Accepted' && (
             <Button
               onClick={() => setIsCreatingQuotation(true)}
               variant="outline"
@@ -139,20 +221,13 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên</td>
-                  <td className="px-6 py-3">
-                    <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn nhân viên" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MOCK_STAFF.map((staff) => (
-                          <SelectItem key={staff.id} value={staff.id}>
-                            {staff.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên xử lý</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">
+                    {assignedStaff ? (
+                      <span>{assignedStaff.staffName}</span>
+                    ) : (
+                      <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -170,33 +245,33 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 <tr>
                   <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Công ty</td>
                   <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.customerInfo.companyName}
+                    {rfq.companyName}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.customerInfo.recipientName}</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientName}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Mã số thuế</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.customerInfo.taxCode}</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.taxCode}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
                   <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.customerInfo.recipientPhone}
+                    {rfq.recipientPhone}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>
                   <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.customerInfo.email}
+                    {rfq.email}
                   </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ</td>
                   <td className="px-6 py-3 font-medium text-gray-900 flex items-start gap-2">
-                    {rfq.customerInfo.address}
+                    {rfq.address}
                   </td>
                 </tr>
               </tbody>
@@ -248,11 +323,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               <h4 className="text-base font-medium text-gray-900">Ghi chú</h4>
             </div>
             <div className="p-6">
-              {rfq.notes ? (
-                <p className="text-sm text-gray-700 leading-relaxed">{rfq.notes}</p>
-              ) : (
-                <p className="text-sm text-gray-400 italic">Không có ghi chú.</p>
-              )}
+              <p className="text-sm text-gray-400 italic">Không có ghi chú.</p>
             </div>
           </div>
         </div>

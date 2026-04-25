@@ -6,6 +6,7 @@ import ProductCard from './product-card';
 import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
 import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
 import { Product } from '../../models/product';
+import { ProductListItem } from '../../models/product-list-response';
 
 const getCatalogProducts = (): (Product & { price: number; originalPrice?: number })[] => {
     return MOCK_PRODUCTS.map((product : Product) => {
@@ -148,7 +149,7 @@ export const BookmarkedProducts: React.FC = () => {
                                     isFavorite={favorites.includes(product.id!)}
                                     onAddToCart={() => handleAddToCart(product.id!)}
                                     onAddToFavorite={() => handleAddToFavorite(product.id!)}
-                                    product={product}
+                                    product={product as any as ProductListItem}
                                 />
                             ))}
                         </div>

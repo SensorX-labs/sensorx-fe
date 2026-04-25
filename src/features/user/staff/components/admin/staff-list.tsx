@@ -14,6 +14,10 @@ import {
 } from 'lucide-react';
 import {Card, CardContent} from '@/shared/components/shadcn-ui/card';
 import {Button} from '@/shared/components/shadcn-ui/button';
+import { StaffService } from '../../services/staff-service';
+import { StaffListItem } from '../../models/staff-list-response';
+import { toast } from 'sonner';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const stats = [
     {
@@ -39,43 +43,6 @@ const stats = [
     },
 ];
 
-const staff = [
-    {
-        id: 'NV001',
-        name: 'Nguyễn Thanh Hùng',
-        email: 'hung.nt@axetic.vn',
-        phone: '0901 111 222',
-        department: 'Kinh doanh'
-    },
-    {
-        id: 'NV002',
-        name: 'Trần Thị Kim Loan',
-        email: 'loan.ttk@axetic.vn',
-        phone: '0912 222 333',
-        department: 'Kế toán'
-    },
-    {
-        id: 'NV003',
-        name: 'Lê Văn Phong',
-        email: 'phong.lv@axetic.vn',
-        phone: '0923 333 444',
-        department: 'Giám đốc'
-    },
-    {
-        id: 'NV004',
-        name: 'Phạm Minh Quân',
-        email: 'quan.pm@axetic.vn',
-        phone: '0934 444 555',
-        department: 'Kho vận'
-    }, {
-        id: 'NV005',
-        name: 'Hoàng Thị Lan',
-        email: 'lan.ht@axetic.vn',
-        phone: '0945 555 666',
-        department: 'Mua hàng'
-    },
-];
-
 const departmentColor: Record < string,
     string > = {
         'Giám đốc': 'bg-red-50 text-red-600 border border-red-100',
@@ -88,21 +55,45 @@ const departmentColor: Record < string,
 export default function StaffList() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
-    const [departmentFilter, setDepartmentFilter] = useState('ALL');
+    const [staffList, setStaffList] = useState<StaffListItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
 
-    const filteredStaff = useMemo(() => {
-        return staff.filter(item => {
-            const matchesSearch = 
-                (item.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-                (item.name?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-                (item.email?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-                (item.phone?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
+    const fetchStaffs = React.useCallback(async () => {
+        setLoading(true);
+        try {
+            const service = new StaffService();
+            const data = await service.getPagedStaffs({
+                pageNumber: currentPage,
+                pageSize: pageSize,
+                searchTerm: searchTerm
+            }) as any;
             
-            const matchesDepartment = departmentFilter === 'ALL' || item.department === departmentFilter;
-            
-            return matchesSearch && matchesDepartment;
-        });
-    }, [searchTerm, departmentFilter]);
+            if (data && data.items) {
+                setStaffList(data.items);
+                setTotalCount(data.totalCount || 0);
+            }
+        } catch (error: any) {
+            console.error('>>> Lỗi khi fetch nhân viên:', error);
+            toast.error('Không thể tải danh sách nhân viên');
+        } finally {
+            setLoading(false);
+        }
+    }, [currentPage, searchTerm]);
+
+    React.useEffect(() => {
+        fetchStaffs();
+    }, [fetchStaffs]);
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -139,34 +130,33 @@ export default function StaffList() {
                             placeholder="Tìm mã NV, họ tên, email, điện thoại..."
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         />
                     </div>
-                    <select
-                        value={departmentFilter}
-                        onChange={(e) => setDepartmentFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 whitespace-nowrap"
-                    >
-                        <option value="ALL">Tất cả phòng ban</option>
-                        {Array.from(new Set(staff.map(s => s.department))).map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
                 </div>
 
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            <th className="text-left px-6 py-4 tracking-label uppercase">Mã NV</th>
-                            <th className="text-left px-6 py-4 tracking-label uppercase">Họ tên</th>
-                            <th className="text-left px-6 py-4 tracking-label uppercase">Email</th>
-                            <th className="text-left px-6 py-4 tracking-label uppercase">Điện thoại</th>
-                            <th className="text-left px-6 py-4 tracking-label uppercase">Phòng ban</th>
-                            <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredStaff.map((s) => (
+                <div className="relative">
+                    {loading && (
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center min-h-[200px]">
+                            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                        </div>
+                    )}
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Mã NV</th>
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Họ tên</th>
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Email</th>
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Điện thoại</th>
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Phòng ban</th>
+                                <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {staffList.map((s) => (
                             <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
                                 <td className="px-6 py-4 font-bold text-gray-900">{s.id}</td>
                                 <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
@@ -174,7 +164,7 @@ export default function StaffList() {
                                 <td className="px-6 py-4 text-gray-700">{s.phone}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
-                                        {s.department}
+                                        {s.department || '---'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
@@ -197,8 +187,60 @@ export default function StaffList() {
                                 </td>
                             </tr>
                         ))}
+                        {!loading && staffList.length === 0 && (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
+                                    Không có nhân viên nào được tìm thấy.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination Footer */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
+                        <span className="text-sm">
+                            Hiển thị {(currentPage - 1) * pageSize + 1} đến {Math.min(currentPage * pageSize, totalCount)} trong tổng số {totalCount} nhân viên
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8 p-0 rounded"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            {Array.from({ length: totalPages }).map((_, idx) => {
+                                const pageNum = idx + 1;
+                                const isActive = currentPage === pageNum;
+                                return (
+                                    <Button
+                                        key={pageNum}
+                                        variant={isActive ? "default" : "outline"}
+                                        size="sm"
+                                        className={`h-8 w-8 p-0 rounded ${isActive ? "bg-[var(--admin-primary)] text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+                                        onClick={() => goToPage(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </Button>
+                                );
+                            })}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8 p-0 rounded"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,8 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, LogOut, ChevronRight, Building, MapPin, Shield, FileText, ShoppingCart } from 'lucide-react';
+import { User, LogOut, ChevronRight, Building, MapPin, Shield, FileText, ShoppingCart, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { AuthService } from '@/features/system/auth/services/auth-service';
+
+const authService = new AuthService();
 import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
@@ -56,6 +62,34 @@ export function UserProfile() {
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
     const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
+
+    const router = useRouter();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const handleLogout = async () => {
+        // Đọc refreshToken trực tiếp tại đây (Client Component - có document)
+        const match = document.cookie.match(/(^| )refreshToken=([^;]+)/);
+        const refreshToken = match ? decodeURIComponent(match[2]) : undefined;
+
+        try {
+            setIsLoggingOut(true);
+            // Gọi trực tiếp bằng fetch để chắc chắn body được gửi đúng
+            await fetch('http://localhost:5053/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken }),
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            Cookies.remove('token', { path: '/' });
+            Cookies.remove('refreshToken', { path: '/' });
+            Cookies.remove('user', { path: '/' });
+            toast.success('Đã đăng xuất thành công');
+            router.push('/');
+            setIsLoggingOut(false);
+        }
+    };
 
     // Mock user data
     const userData: UserData = {
@@ -158,9 +192,13 @@ export function UserProfile() {
                                     </button>
                                 );
                             })}
-                            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none border border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 mt-4">
-                                <LogOut size={18} />
-                                <span>Đăng xuất</span>
+                            <button 
+                                onClick={handleLogout}
+                                disabled={isLoggingOut}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none border border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isLoggingOut ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                                <span>{isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</span>
                             </button>
                         </nav>
                     </aside>
