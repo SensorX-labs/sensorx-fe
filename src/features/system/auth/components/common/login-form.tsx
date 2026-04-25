@@ -33,9 +33,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     try {
       const response = await authService.login(data);
 
-      // Lưu tokens vào cookie
+      // Lưu tokens và thông tin user vào cookie
       Cookies.set('token', response.accessToken, { expires: 7 });
       Cookies.set('refreshToken', response.refreshToken, { expires: 30 });
+      Cookies.set('user', JSON.stringify(response.user), { expires: 7 });
 
       toast.success('Đăng nhập thành công!');
       router.push('/');
