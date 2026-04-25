@@ -1,24 +1,27 @@
 import api from "@/shared/configs/axios-config";
-import {PaginationResponse} from "@/shared/models/pagination";
-import {ProductListItem} from "../models/product-list-response";
+import { KeysetPagedResult, OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { BaseQueryKeysetPagedList, BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { ProductListItem } from "../models/product-list-response";
+import { Product } from "../models/product-selection";
 
-export interface ProductFilter {
-    PageNumber: number;
-    PageSize: number;
-    SearchTerm?: string;
-    CategoryId?: string;
+export interface ProductFilter extends BaseQueryOffsetPagedList {
+    categoryId?: string;
 }
 
-export class ProductService {
-    async getProducts(params: ProductFilter): Promise<PaginationResponse<ProductListItem>> {
-        const queryParams = new URLSearchParams();
+export type ProductLoadMoreQuery = BaseQueryKeysetPagedList;
 
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                queryParams.append(key, value.toString());
-            }
-        });
+export const ProductService = {
+    /**
+     * Lấy danh sách sản phẩm phân trang (Offset Pagination)
+     */
+    getProducts: async (params: ProductFilter) =>
+        api.data.get<any, Result<OffsetPagedResult<ProductListItem>>>('/catalog/products/list', { params }),
 
-        return api.data.get(`/catalog/products/list?${queryParams.toString()}`);
-    }
-}
+    /**
+     * Lấy danh sách sản phẩm theo kiểu load-more (Keyset Pagination)
+     */
+    getLoadMore: (query: ProductLoadMoreQuery) =>
+        api.data.get<any, Result<KeysetPagedResult<Product>>>("/catalog/products/load-more", { params: query }),
+};
+
+export default ProductService;

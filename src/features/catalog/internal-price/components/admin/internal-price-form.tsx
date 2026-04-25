@@ -22,11 +22,10 @@ import { toast } from 'sonner';
 import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
 import { Label } from '@/shared/components/shadcn-ui/label';
 import {
-  ProductSelectionDialog,
-  Product
+  ProductSelectionDialog
 } from '@/shared/components/business/product-selection-dialog';
+import { Product } from '@/features/catalog/product/models/product-selection';
 import InternalPriceService from '../../services/internal-price-services';
-import { CreateInternalPriceRequest } from '../../models';
 
 interface InternalPriceFormProps {
   onBack: () => void;

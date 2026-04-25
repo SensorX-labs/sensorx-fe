@@ -6,6 +6,7 @@ import ProductCard from './product-card';
 import { FilterCatalog, FilterState } from './filter-catalog';
 import { ProductListItem } from '../../models/product-list-response';
 import { ProductService } from '../../services/product-service';
+import { toast } from 'sonner';
 
 // type ProductWithPrice = ProductListItem & { price: number; originalPrice?: number };
 
@@ -32,20 +33,25 @@ export const Catalog: React.FC = () => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const productService = new ProductService();
-            const result = await productService.getProducts({ PageNumber: 1, PageSize: 100 });
-            
-            // Gán thêm giá ảo vì API chưa có giá
-            const productsWithPrice = result.items.map(p => ({
-                ...p,
-                price: 1500000, // Giá mặc định cho demo
-                originalPrice: 1500000 + 500000,
-                unit: p.unit ?? "cái"
-            }));
-            
-            setProducts(productsWithPrice);
-        } catch (error) {
+            const result = await ProductService.getProducts({ pageNumber: 1, pageSize: 100 });
+
+            if (result.isSuccess && result.value) {
+                // Gán thêm giá ảo vì API chưa có giá
+                const productsWithPrice = result.value.items.map(p => ({
+                    ...p,
+                    price: 1500000, // Giá mặc định cho demo
+                    originalPrice: 1500000 + 500000,
+                    unit: p.unit ?? "cái"
+                }));
+                setProducts(productsWithPrice);
+            } else {
+                toast.error(result.message || 'Không thể tải danh sách sản phẩm');
+                setProducts([]);
+            }
+        } catch (error: any) {
             console.error('>>> Lỗi khi fetch sản phẩm:', error);
+            toast.error(error.message || 'Không thể tải danh sách sản phẩm');
+            setProducts([]);
         } finally {
             setLoading(false);
         }
