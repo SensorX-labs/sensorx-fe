@@ -66,22 +66,6 @@ export default function CustomersList() {
     }
   };
 
-  const handleDeleteCustomer = async () => {
-    if (!customerToDelete) return;
-    
-    try {
-      const service = new CustomerService();
-      await service.deleteCustomer(customerToDelete);
-      toast.success('Xóa khách hàng thành công');
-      fetchCustomers();
-    } catch (error: any) {
-      console.error('>>> Lỗi khi xóa khách hàng:', error);
-      toast.error('Không thể xóa khách hàng');
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setCustomerToDelete(null);
-    }
-  };
 
   const confirmDelete = (id: string) => {
     setCustomerToDelete(id);
@@ -140,7 +124,6 @@ export default function CustomersList() {
                 <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Email</th>
                 <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Điện thoại</th>
                 <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Địa chỉ</th>
-                <th className="text-center px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -151,21 +134,6 @@ export default function CustomersList() {
                   <td className="px-6 py-4">{c.email}</td>
                   <td className="px-6 py-4">{c.phoneNumber || '---'}</td>
                   <td className="px-6 py-4 max-w-[200px] truncate">{c.address || '---'}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => c.id && confirmDelete(c.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
                 </tr>
               ))}
               {!loading && customers.length === 0 && (
@@ -226,26 +194,6 @@ export default function CustomersList() {
           </div>
         )}
       </div>
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Hành động này không thể hoàn tác. Khách hàng sẽ bị xóa vĩnh viễn khỏi hệ thống.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteCustomer}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Xác nhận xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
