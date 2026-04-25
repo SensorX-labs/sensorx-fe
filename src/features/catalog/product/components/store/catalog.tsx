@@ -33,7 +33,7 @@ export const Catalog: React.FC = () => {
         setLoading(true);
         try {
             const productService = new ProductService();
-            const result = await productService.getProducts({ PageIndex: 1, PageSize: 100 });
+            const result = await productService.getProducts({ PageNumber: 1, PageSize: 100 });
             
             // Gán thêm giá ảo vì API chưa có giá
             const productsWithPrice = result.items.map(p => ({

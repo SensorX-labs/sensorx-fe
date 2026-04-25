@@ -3,7 +3,7 @@ import {PaginationResponse} from "@/shared/models/pagination";
 import {ProductListItem} from "../models/product-list-response";
 
 export interface ProductFilter {
-    PageIndex: number;
+    PageNumber: number;
     PageSize: number;
     SearchTerm?: string;
     CategoryId?: string;
@@ -19,6 +19,6 @@ export class ProductService {
             }
         });
 
-        return api.data.get(`/catalog/products?${queryParams.toString()}`);
+        return api.data.get(`/catalog/products/list?${queryParams.toString()}`);
     }
 }
