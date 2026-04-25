@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
     UserCircle,
     UserCheck,
@@ -12,8 +12,8 @@ import {
     Trash2,
     Search
 } from 'lucide-react';
-import {Card, CardContent} from '@/shared/components/shadcn-ui/card';
-import {Button} from '@/shared/components/shadcn-ui/button';
+import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
 import { StaffService } from '../../services/staff-service';
 import { StaffListItem } from '../../models/staff-list-response';
 import { toast } from 'sonner';
@@ -43,14 +43,14 @@ const stats = [
     },
 ];
 
-const departmentColor: Record < string,
-    string > = {
-        'Giám đốc': 'bg-red-50 text-red-600 border border-red-100',
-        'Kho vận': 'bg-blue-50 text-blue-600 border border-blue-100',
-        'Kinh doanh': 'bg-green-50 text-green-600 border border-green-100',
-        'Kế toán': 'bg-orange-50 text-orange-600 border border-orange-100',
-        'Mua hàng': 'bg-indigo-50 text-indigo-600 border border-indigo-100'
-    };
+const departmentColor: Record<string,
+    string> = {
+    'Giám đốc': 'bg-red-50 text-red-600 border border-red-100',
+    'Kho vận': 'bg-blue-50 text-blue-600 border border-blue-100',
+    'Kinh doanh': 'bg-green-50 text-green-600 border border-green-100',
+    'Kế toán': 'bg-orange-50 text-orange-600 border border-orange-100',
+    'Mua hàng': 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+};
 
 export default function StaffList() {
     const router = useRouter();
@@ -64,20 +64,20 @@ export default function StaffList() {
     const fetchStaffs = React.useCallback(async () => {
         setLoading(true);
         try {
-            const service = new StaffService();
-            const data = await service.getPagedStaffs({
+            const response = await StaffService.getPagedStaffs({
                 pageNumber: currentPage,
                 pageSize: pageSize,
                 searchTerm: searchTerm
-            }) as any;
-            
-            if (data && data.items) {
-                setStaffList(data.items);
-                setTotalCount(data.totalCount || 0);
+            });
+
+            if (response.isSuccess && response.value) {
+                setStaffList(response.value.items);
+                setTotalCount(response.value.totalCount || 0);
+            } else {
+                toast.warning(response.message);
             }
         } catch (error: any) {
             console.error('>>> Lỗi khi fetch nhân viên:', error);
-            toast.error('Không thể tải danh sách nhân viên');
         } finally {
             setLoading(false);
         }
@@ -99,7 +99,7 @@ export default function StaffList() {
         <div className="space-y-6">
             <div className="flex items-center justify-end">
                 <button className="admin-btn-primary flex items-center gap-2">
-                    <UserCircle className="w-4 h-4"/>
+                    <UserCircle className="w-4 h-4" />
                     Tạo nhân viên
                 </button>
             </div>
@@ -156,49 +156,49 @@ export default function StaffList() {
                             </tr>
                         </thead>
                         <tbody>
-                        {staffList.map((s) => (
-                            <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                                <td className="px-6 py-4 font-bold text-gray-900">{s.id}</td>
-                                <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
-                                <td className="px-6 py-4 text-gray-700">{s.email}</td>
-                                <td className="px-6 py-4 text-gray-700">{s.phone}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
-                                        {s.department || '---'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                            onClick={() => router.push(`/users/staff/${s.id}`)}
-                                        >
-                                            <Eye className="w-4 h-4"/>
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                                            <Edit className="w-4 h-4"/>
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                                            <Trash2 className="w-4 h-4"/>
-                                        </Button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {!loading && staffList.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
-                                    Không có nhân viên nào được tìm thấy.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                            {staffList.map((s) => (
+                                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                                    <td className="px-6 py-4 font-bold text-gray-900">{s.id}</td>
+                                    <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
+                                    <td className="px-6 py-4 text-gray-700">{s.email}</td>
+                                    <td className="px-6 py-4 text-gray-700">{s.phone}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
+                                            {s.department || '---'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => router.push(`/users/staff/${s.id}`)}
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                                                <Edit className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {!loading && staffList.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
+                                        Không có nhân viên nào được tìm thấy.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-            {/* Pagination Footer */}
+                {/* Pagination Footer */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
                         <span className="text-sm">

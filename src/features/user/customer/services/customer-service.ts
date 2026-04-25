@@ -1,10 +1,10 @@
 import api from "@/shared/configs/axios-config";
 import { Customer } from "../models/customer";
 import { OffsetPagedResult, Result } from "@/shared/models/base-response";
-import { PaginationRequest } from "@/shared/models/pagination";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 
 export const CustomerService = {
-    getPagedCustomers: async (params : PaginationRequest): Promise<Result<OffsetPagedResult<Customer>>> => {
+    getPagedCustomers: async (params : BaseQueryOffsetPagedList): Promise<Result<OffsetPagedResult<Customer>>> => {
         return api.data.get('/customer/list', {params});
     },
 

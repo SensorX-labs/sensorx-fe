@@ -40,13 +40,12 @@ export default function CustomersList() {
         setCustomers(response.value.items);
         setTotalCount(response.value.totalCount || 0);
       } else {
-        toast.error(response.message || 'Không thể tải danh sách khách hàng');
+        toast.warning(response.message || 'Không thể tải danh sách khách hàng');
         setCustomers([]);
         setTotalCount(0);
       }
     } catch (error: any) {
       console.error('>>> Lỗi khi fetch khách hàng:', error);
-      toast.error(error.message || 'Không thể tải danh sách khách hàng');
       setCustomers([]);
       setTotalCount(0);
     } finally {

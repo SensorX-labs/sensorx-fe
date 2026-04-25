@@ -79,7 +79,6 @@ export default function CategoryManagement() {
       }
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      toast.error("Lỗi kết nối Server");
     } finally {
       setLoading(false);
     }
@@ -158,8 +157,6 @@ export default function CategoryManagement() {
           toast.success(response.message || "Cập nhật danh mục thành công");
           setIsModalOpen(false);
           fetchData();
-        } else {
-          toast.error(response.message || "Không thể cập nhật danh mục");
         }
       } else {
         const response = await CategoryService.create({
@@ -172,13 +169,10 @@ export default function CategoryManagement() {
           setIsModalOpen(false);
           setFormData({ name: '', description: '', parentId: 'root' });
           fetchData();
-        } else {
-          toast.error(response.message || "Không thể tạo danh mục");
         }
       }
     } catch (error: any) {
       console.error('Submit error:', error);
-      toast.error("Đã có lỗi xảy ra");
     } finally {
       setSubmitting(false);
     }
@@ -191,12 +185,9 @@ export default function CategoryManagement() {
       if (response.isSuccess) {
         toast.success(response.message || "Xóa danh mục thành công");
         fetchData();
-      } else {
-        toast.error(response.message || "Không thể xóa danh mục");
       }
     } catch (error) {
       console.error('Failed to delete category:', error);
-      toast.error("Lỗi khi xóa danh mục");
     }
   };
 

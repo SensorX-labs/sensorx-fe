@@ -2,33 +2,22 @@ import api from "@/shared/configs/axios-config";
 import { QuoteCreateRequest } from "../models/quote-create-request";
 import { QuoteListItem } from "../models/quote-list-response";
 import { QuoteDetail } from "../models/quote-detail-response";
-import { PaginationResponse } from "@/shared/models/pagination";
+import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 
-export interface QuoteFilter {
-  PageIndex: number;
-  PageSize: number;
-  SearchTerm?: string;
-  CustomerId?: string;
+export interface QuoteFilter extends BaseQueryOffsetPagedList {
+  customerId?: string;
 }
 
-export class QuoteService {
-  async createQuote(data: QuoteCreateRequest): Promise<string> {
-    return api.master.post(`/quotes`, data);
-  }
+export const QuoteService = {
+  createQuote: (data: QuoteCreateRequest) =>
+    api.master.post<any, Result<string>>(`/quotes`, data),
 
-  async getListQuotes(params: QuoteFilter): Promise<PaginationResponse<QuoteListItem>> {
-    const queryParams = new URLSearchParams();
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        queryParams.append(key, value.toString());
-      }
-    });
+  getListQuotes: (params: QuoteFilter) =>
+    api.master.get<any, Result<OffsetPagedResult<QuoteListItem>>>(`/quotes`, { params }),
 
-    return api.master.get(`/quotes?${queryParams.toString()}`);
-  }
+  getQuoteById: (id: string) =>
+    api.master.get<any, Result<QuoteDetail>>(`/quotes/${id}`),
+};
 
-  async getQuoteById(id: string): Promise<QuoteDetail> {
-    return api.master.get(`/quotes/${id}`);
-  }
-}
+export default QuoteService;

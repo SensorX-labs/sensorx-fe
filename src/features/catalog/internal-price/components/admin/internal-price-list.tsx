@@ -56,9 +56,6 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
     if (result.isSuccess && result.value) {
       setStats(result.value);
     }
-    else {
-      toast.error(result.message ?? "Thất bại khi thống kê số lượng");
-    }
   };
 
   const fetchPrices = async () => {
@@ -80,9 +77,6 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
       if (result.isSuccess && result.value) {
         setPrices(result.value.items);
         setTotalPages(result.value.totalPages);
-      }
-      else {
-        toast.error(result.message ?? "Thất bại khi tải danh sách bảng giá");
       }
     } finally {
       setLoading(false);

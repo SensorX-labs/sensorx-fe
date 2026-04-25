@@ -44,13 +44,9 @@ export const Catalog: React.FC = () => {
                     unit: p.unit ?? "cái"
                 }));
                 setProducts(productsWithPrice);
-            } else {
-                toast.error(result.message || 'Không thể tải danh sách sản phẩm');
-                setProducts([]);
             }
         } catch (error: any) {
             console.error('>>> Lỗi khi fetch sản phẩm:', error);
-            toast.error(error.message || 'Không thể tải danh sách sản phẩm');
             setProducts([]);
         } finally {
             setLoading(false);

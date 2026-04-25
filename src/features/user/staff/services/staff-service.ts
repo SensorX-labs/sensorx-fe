@@ -1,26 +1,19 @@
 import api from "@/shared/configs/axios-config";
-import { PaginationRequest, PaginationResponse } from "@/shared/models/pagination";
+import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 import { StaffListItem } from "../models/staff-list-response";
 
-export interface StaffFilter {
-  pageNumber: number;
-  pageSize: number;
-  searchTerm?: string;
-}
+export type StaffFilter = BaseQueryOffsetPagedList;
 
-export class StaffService {
-  async getPagedStaffs (params : PaginationRequest) {
-    return api.data.get<PaginationResponse<StaffListItem>>(
-      `/staff/list`,
-      { params }
-    );
-  }
+export const StaffService = {
+  getPagedStaffs: (params: StaffFilter) =>
+    api.data.get<any, Result<OffsetPagedResult<StaffListItem>>>(`/staff/list`, { params }),
 
-  async getStaffById(id: string) {
-    return api.data.get<StaffListItem>(`/staff/${id}`);
-  }
+  getStaffById: (id: string) =>
+    api.data.get<any, Result<StaffListItem>>(`/staff/${id}`),
 
-  async getStaffByAccountId(id: string) {
-    return api.data.get<StaffListItem>(`/staff/account/${id}`);
-  }
-}
+  getStaffByAccountId: (id: string) =>
+    api.data.get<any, Result<StaffListItem>>(`/staff/account/${id}`),
+};
+
+export default StaffService;
