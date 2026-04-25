@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Table,
   TableBody,
@@ -23,37 +22,71 @@ export function PriceTierTable({ tiers, compact = false }: PriceTierTableProps) 
   });
 
   return (
-    <div className={`rounded-lg border bg-slate-50/50 ${compact ? 'mx-4 mb-4' : ''}`}>
+    <div className={`overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${compact ? 'mx-4 mb-4' : ''}`}>
       <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[150px]">
+        <TableHeader className="bg-slate-50/50">
+          <TableRow className="hover:bg-transparent border-b border-slate-200">
+            <TableHead className="w-[80px] text-center font-bold text-slate-500 uppercase text-[10px] tracking-wider">
+              Tier
+            </TableHead>
+            <TableHead className="font-bold text-slate-500 uppercase text-[10px] tracking-wider">
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-slate-400" />
-                Số lượng
+                <Package className="w-3.5 h-3.5" />
+                Khoảng số lượng
               </div>
             </TableHead>
-            <TableHead>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="w-4 h-4 text-slate-400" />
-                Đơn giá
+            <TableHead className="text-right font-bold text-slate-500 uppercase text-[10px] tracking-wider pr-6">
+              <div className="flex items-center justify-end gap-2">
+                <TrendingDown className="w-3.5 h-3.5" />
+                Đơn giá áp dụng
               </div>
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedTiers.map((tier, idx) => (
-            <TableRow key={idx} className="hover:bg-slate-100/50 transition-colors">
-              <TableCell className="font-medium">Từ {tier.quantity} sản phẩm</TableCell>
-              <TableCell className="text-emerald-600 font-semibold">
-                {tier.price.toLocaleString('vi-VN')} ₫
+            <TableRow key={idx} className="group hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+              <TableCell className="text-center">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
+                  {idx + 1}
+                </span>
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Từ {tier.quantity.toLocaleString('vi-VN')} sản phẩm
+                  </span>
+                  {!compact && (
+                    <span className="text-[10px] text-slate-400 font-medium italic">
+                      {idx < sortedTiers.length - 1
+                        ? `Áp dụng cho đến ${sortedTiers[idx + 1].quantity - 1} sản phẩm`
+                        : 'Áp dụng cho mọi số lượng lớn hơn'}
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-right pr-6">
+                <div className="flex flex-col items-end">
+                  <span className="text-base font-bold text-emerald-600 tracking-tight">
+                    {tier.price.toLocaleString('vi-VN')}
+                    <span className="ml-1 text-[10px] font-bold uppercase text-emerald-500/70">₫</span>
+                  </span>
+                  {!compact && idx > 0 && (
+                    <span className="text-[10px] text-rose-500 font-bold flex items-center gap-1">
+                      ↓ Giảm {((1 - tier.price / sortedTiers[0].price) * 100).toFixed(1)}% so với Tier 1
+                    </span>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           ))}
           {sortedTiers.length === 0 && (
             <TableRow>
-              <TableCell colSpan={2} className="text-center py-4 text-slate-400">
-                Chưa có Price Tier nào được thiết lập
+              <TableCell colSpan={3} className="text-center py-8">
+                <div className="flex flex-col items-center justify-center text-slate-400 gap-2">
+                  <Package className="w-8 h-8 opacity-20" />
+                  <p className="text-sm font-medium">Chưa có Price Tier nào được thiết lập</p>
+                </div>
               </TableCell>
             </TableRow>
           )}
