@@ -1,8 +1,7 @@
 export interface Result<T = void> {
   isSuccess: boolean;
-  isFailure: boolean;
   message?: string;
-  value: T;
+  value?: T;
 }
 
 export interface OffsetPagedResult<T> {
@@ -13,4 +12,17 @@ export interface OffsetPagedResult<T> {
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+}
+
+export interface KeysetPagedResult<T> {
+  items: T[];
+
+  firstCreatedAt?: string;
+  firstId?: string;
+
+  lastCreatedAt?: string;
+  lastId?: string;
+
+  hasNext: boolean;
+  hasPrevious: boolean;
 }

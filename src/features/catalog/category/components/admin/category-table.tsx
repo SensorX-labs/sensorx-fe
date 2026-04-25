@@ -1,8 +1,7 @@
-import React from 'react';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { Category } from '../../../models/category-model';
 import { HighlightText } from './category-utils';
+import { Category } from '../../models/category-model';
 
 interface CategoryTableProps {
   loading: boolean;
