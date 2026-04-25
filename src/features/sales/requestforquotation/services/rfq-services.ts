@@ -36,4 +36,8 @@ export class RFQServices {
     async assignStaff(rfqId: string, staffId: string): Promise<boolean> {
         return api.master.post(`/rfq/assign`, { rfqId, staffId });
     }
+
+    async rejectRFQ(rfqId: string): Promise<boolean> {
+        return api.master.post(`/rfq/reject`, { RfqId: rfqId });
+    }
 }

@@ -121,14 +121,26 @@ export default function RequestForQuotationList() {
     }
   };
 
-  const handleDecline = () => {
+  const handleDecline = async () => {
     if (!selectedRfqId) return;
-    setLeads(prev => prev.map(lead => 
-        lead.id === selectedRfqId ? { ...lead, status: RfqStatus.REJECTED } : lead
-    ));
-    setIsDeclineDialogOpen(false);
-    setSelectedRfqId(null);
-    setDeclineReason('');
+
+    try {
+      const rfqService = new RFQServices();
+      const success = await rfqService.rejectRFQ(selectedRfqId);
+      
+      if (success) {
+        toast.success("Đã từ chối yêu cầu thành công");
+        fetchRfqs(); // Tải lại danh sách
+        setIsDeclineDialogOpen(false);
+        setSelectedRfqId(null);
+        setDeclineReason('');
+      } else {
+        toast.error("Từ chối yêu cầu thất bại");
+      }
+    } catch (error) {
+      console.error(">>> Lỗi khi từ chối RFQ:", error);
+      toast.error("Đã có lỗi xảy ra khi từ chối yêu cầu");
+    }
   };
 
   const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
