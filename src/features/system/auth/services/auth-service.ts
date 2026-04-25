@@ -27,4 +27,12 @@ export class AuthService {
     async getUsers(): Promise<UserResponse[]> {
         return api.auth.get("/users");
     }
+
+    async createStaffAccount(data: { email: string; password: string }): Promise<any> {
+        return api.auth.post("/create", data);
+    }
+
+    async toggleUserLock(userId: string): Promise<any> {
+        return api.auth.post(`/users/${userId}/toggle-lock`);
+    }
 }

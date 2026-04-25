@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL } from "../constants/environment";
+import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL, GATEWAY_URL } from "../constants/environment";
 
 // Đọc cookie trực tiếp từ document.cookie (chỉ chạy ở client-side)
 const getClientCookie = (name: string): string | undefined => {
@@ -149,6 +149,7 @@ const api = {
     data: createApiInstance(DATA_SERVICE_URL),
     auth: createApiInstance(AUTH_SERVICE_URL),
     master: createApiInstance(MASTER_SERVICE_URL),
+    gateway: createApiInstance(GATEWAY_URL),
 };
 
 export default api;
