@@ -3,6 +3,13 @@ import { toast } from "sonner";
 import Cookies from "js-cookie";
 import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL } from "../constants/environment";
 
+// Đọc cookie trực tiếp từ document.cookie (chỉ chạy ở client-side)
+const getClientCookie = (name: string): string | undefined => {
+    if (typeof document === 'undefined') return undefined;
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : undefined;
+};
+
 // Trạng thái để quản lý việc refresh token
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -29,14 +36,25 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
     // Request interceptor: Thêm token vào header
     instance.interceptors.request.use((config) => {
-        const token = Cookies.get("token");
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+        const token = getClientCookie("token");
+        if (token && token !== 'undefined') {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     });
 
     // Response interceptor: Xử lý data và Auto Refresh Token
     instance.interceptors.response.use(
-        (response) => response.data,
+        (response) => {
+            const result = response.data;
+            // Tự động unwrap nếu có cấu trúc { success, data } hoặc { isSuccess, value }
+            if (result && typeof result === 'object') {
+                if (result.success === true || result.isSuccess === true) {
+                    return result.data ?? result.value ?? result;
+                }
+            }
+            return result;
+        },
         async (error: AxiosError<any>) => {
             const originalRequest: any = error.config;
 
@@ -58,43 +76,48 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 originalRequest._retry = true;
                 isRefreshing = true;
 
-                const refreshToken = Cookies.get("refreshToken");
+                const refreshToken = getClientCookie("refreshToken");
                 
                 if (!refreshToken) {
                     isRefreshing = false;
-                    Cookies.remove("token");
-                    Cookies.remove("user");
-                    // Chuyển hướng người dùng về trang login nếu cần
-                    // window.location.href = '/login';
+                    Cookies.remove("token", { path: '/' });
+                    Cookies.remove("user", { path: '/' });
                     return Promise.reject(error);
                 }
 
                 try {
-                    // Gọi API refresh token (sử dụng axios trực tiếp để tránh interceptor loop)
+                    // Gọi API refresh token
                     const response = await axios.post(`${AUTH_SERVICE_URL}/refresh`, {
                         refreshToken: refreshToken
                     });
 
-                    const { accessToken, refreshToken: newRefreshToken } = response.data;
+                    // Bóc tách dữ liệu từ response.data.data (theo cấu trúc JSON của bạn)
+                    const refreshResult = response.data;
+                    const newData = refreshResult.data || refreshResult.value || refreshResult;
+                    
+                    const newAccessToken = newData.accessToken || newData.token;
+                    const newRefreshToken = newData.refreshToken;
+
+                    if (!newAccessToken) throw new Error("No access token returned");
 
                     // Cập nhật token mới vào cookie
-                    Cookies.set("token", accessToken, { expires: 7 });
+                    Cookies.set("token", newAccessToken, { expires: 7, path: '/' });
                     if (newRefreshToken) {
-                        Cookies.set("refreshToken", newRefreshToken, { expires: 30 });
+                        Cookies.set("refreshToken", newRefreshToken, { expires: 30, path: '/' });
                     }
 
                     // Thực hiện lại các request trong hàng đợi
-                    processQueue(null, accessToken);
+                    processQueue(null, newAccessToken);
                     
                     // Thực hiện lại chính request ban đầu
-                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                     return instance(originalRequest);
                 } catch (refreshError) {
                     // Nếu refresh token cũng thất bại, đăng xuất người dùng
                     processQueue(refreshError, null);
-                    Cookies.remove("token");
-                    Cookies.remove("refreshToken");
-                    Cookies.remove("user");
+                    Cookies.remove("token", { path: '/' });
+                    Cookies.remove("refreshToken", { path: '/' });
+                    Cookies.remove("user", { path: '/' });
                     toast.error("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
                     return Promise.reject(refreshError);
                 } finally {

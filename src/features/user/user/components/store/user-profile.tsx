@@ -67,16 +67,24 @@ export function UserProfile() {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleLogout = async () => {
+        // Đọc refreshToken trực tiếp tại đây (Client Component - có document)
+        const match = document.cookie.match(/(^| )refreshToken=([^;]+)/);
+        const refreshToken = match ? decodeURIComponent(match[2]) : undefined;
+
         try {
             setIsLoggingOut(true);
-            await authService.logout();
+            // Gọi trực tiếp bằng fetch để chắc chắn body được gửi đúng
+            await fetch('http://localhost:5053/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken }),
+            });
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            // Luôn dọn dẹp local cho dù API có lỗi hay không
-            Cookies.remove('token');
-            Cookies.remove('refreshToken');
-            Cookies.remove('user');
+            Cookies.remove('token', { path: '/' });
+            Cookies.remove('refreshToken', { path: '/' });
+            Cookies.remove('user', { path: '/' });
             toast.success('Đã đăng xuất thành công');
             router.push('/');
             setIsLoggingOut(false);

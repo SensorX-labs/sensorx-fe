@@ -32,11 +32,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const response = await authService.login(data);
+      console.log("DEBUG - Login Response from API:", response);
+
+      // Lấy token từ accessToken
+      const token = response.accessToken;
+      const refreshToken = response.refreshToken;
 
       // Lưu tokens và thông tin user vào cookie
-      Cookies.set('token', response.accessToken, { expires: 7 });
-      Cookies.set('refreshToken', response.refreshToken, { expires: 30 });
-      Cookies.set('user', JSON.stringify(response.user), { expires: 7 });
+      if (token) Cookies.set('token', token, { expires: 7, path: '/' });
+      if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
+      if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
 
       toast.success('Đăng nhập thành công!');
       router.push('/');

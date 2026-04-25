@@ -7,15 +7,19 @@ export class AuthService {
         return api.auth.post("/login", data);
     }
 
-    async logout(): Promise<void> {
-        return api.auth.post("/logout");
+    // refreshToken được truyền vào từ Client Component
+    async logout(refreshToken: string | undefined): Promise<void> {
+        return api.auth.post("/logout", { 
+            refreshToken,       // camelCase
+            RefreshToken: refreshToken  // PascalCase (dùng nếu server dùng Newtonsoft mặc định)
+        });
     }
 
     async register(data: any): Promise<any> {
         return api.auth.post("/register", data);
     }
 
-    async refreshToken(): Promise<any> {
-        return api.auth.post("/refresh");
+    async refreshToken(refreshToken: string | undefined): Promise<any> {
+        return api.auth.post("/refresh", { refreshToken });
     }
 }
