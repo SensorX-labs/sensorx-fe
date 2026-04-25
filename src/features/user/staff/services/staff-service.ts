@@ -1,4 +1,4 @@
-import { dataUrl } from "@/shared/constants/environment";
+import api from "@/shared/configs/axios-config";
 import { PaginationResponse } from "@/shared/models/pagination";
 import { StaffListItem } from "../models/staff-list-response";
 
@@ -18,26 +18,6 @@ export class StaffService {
       }
     });
 
-    const url = `${dataUrl}/api/staff/list?${queryParams.toString()}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Lỗi hệ thống: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    if (result && result.isSuccess) {
-      return result.value;
-    }
-
-    throw new Error(result.error || "Đã xảy ra lỗi khi lấy danh sách nhân viên");
+    return api.data.get(`/staff/list?${queryParams.toString()}`);
   }
 }
