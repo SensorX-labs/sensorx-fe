@@ -3,6 +3,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Trash2, Eye, Edit, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/components/shadcn-ui/alert-dialog";
 import { CustomerService } from '../../services/customer-service';
 import { Customer } from '../../models/customer';
 import { toast } from 'sonner';
@@ -13,6 +23,8 @@ export default function CustomersList() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
   const pageSize = 10;
 
   const fetchCustomers = useCallback(async () => {
@@ -54,6 +66,28 @@ export default function CustomersList() {
     }
   };
 
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    
+    try {
+      const service = new CustomerService();
+      await service.deleteCustomer(customerToDelete);
+      toast.success('Xóa khách hàng thành công');
+      fetchCustomers();
+    } catch (error: any) {
+      console.error('>>> Lỗi khi xóa khách hàng:', error);
+      toast.error('Không thể xóa khách hàng');
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setCustomerToDelete(null);
+    }
+  };
+
+  const confirmDelete = (id: string) => {
+    setCustomerToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
   const stats = [
     { title: 'Tổng khách hàng', value: totalCount.toString(), icon: Users, color: 'admin-text-primary' },
     { title: 'Hoạt động', value: totalCount.toString(), icon: Users, color: 'text-green-500' },
@@ -83,7 +117,7 @@ export default function CustomersList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm mã, công ty, email..."
+              placeholder="Tìm theo tên, mã khách hàng, mã số thuế, email, số điện thoại ..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,20 +146,22 @@ export default function CustomersList() {
             <tbody>
               {customers.map((c) => (
                 <tr key={c.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-4 font-medium text-blue-600">#{c.code || c.id?.substring(0, 8)}</td>
-                  <td className="px-6 py-4 font-bold text-gray-900">{c.name}</td>
-                  <td className="px-6 py-4 text-gray-700">{c.email}</td>
-                  <td className="px-6 py-4 text-gray-700">{c.phoneNumber || '---'}</td>
-                  <td className="px-6 py-4 text-gray-700 max-w-[200px] truncate">{c.address || '---'}</td>
+                  <td className="px-6 py-4 font-bold">#{c.code || c.id?.substring(0, 8)}</td>
+                  <td className="px-6 py-4">{c.name}</td>
+                  <td className="px-6 py-4">{c.email}</td>
+                  <td className="px-6 py-4">{c.phoneNumber || '---'}</td>
+                  <td className="px-6 py-4 max-w-[200px] truncate">{c.address || '---'}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
-                        <Eye className="w-4 h-4" />
-                      </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => c.id && confirmDelete(c.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -190,6 +226,26 @@ export default function CustomersList() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Khách hàng sẽ bị xóa vĩnh viễn khỏi hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteCustomer}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Xác nhận xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
