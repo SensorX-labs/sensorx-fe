@@ -15,6 +15,7 @@ import {
 } from '@/shared/components/admin/layout';
 import { toast } from 'sonner';
 import { ProductStatus } from '../../../enums/product-status';
+import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 
 interface ProductListProps {
   onViewDetail: (product: ProductPageList) => void;
@@ -31,6 +32,13 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
+
+  // State for delete confirmation
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; product: ProductPageList | null }>({
+    isOpen: false,
+    product: null
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchStats = useCallback(async () => {
     const statsRes = await ProductService.getStats();
@@ -73,6 +81,23 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
     setCurrentPage(1);
   }, [searchTerm, activeTab]);
 
+  const handleDelete = async () => {
+    if (!deleteConfirm.product) return;
+    
+    setIsDeleting(true);
+    try {
+      const res = await ProductService.deleteProduct(deleteConfirm.product.id);
+      if (res.isSuccess) {
+        toast.success("Xóa sản phẩm thành công");
+        setDeleteConfirm({ isOpen: false, product: null });
+        fetchStats();
+        fetchData();
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
@@ -110,16 +135,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
             products={products}
             onViewDetail={onViewDetail}
             onEdit={onEdit}
-            onDelete={async (p) => {
-              if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm ${p.name}?`)) {
-                const res = await ProductService.deleteProduct(p.id);
-                if (res.isSuccess) {
-                  toast.success("Xóa sản phẩm thành công");
-                  fetchStats();
-                  fetchData();
-                }
-              }
-            }}
+            onDelete={(p) => setDeleteConfirm({ isOpen: true, product: p })}
           />
 
           {loading && (
@@ -139,6 +155,17 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
           className="py-3"
         />
       </AdminContentCard>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onOpenChange={(open) => setDeleteConfirm({ ...deleteConfirm, isOpen: open })}
+        title="Xác nhận xóa hàng hóa"
+        description={`Bạn có chắc chắn muốn xóa sản phẩm "${deleteConfirm.product?.name}"? Hành động này không thể hoàn tác.`}
+        onConfirm={handleDelete}
+        confirmText="Xác nhận xóa"
+        type="danger"
+        loading={isDeleting}
+      />
     </AdminPageContainer>
   );
 }
