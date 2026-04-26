@@ -1,27 +1,40 @@
 import api from "@/shared/configs/axios-config";
-import { KeysetPagedResult, OffsetPagedResult, Result } from "@/shared/models/base-response";
-import { BaseQueryKeysetPagedList, BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
-import { ProductListItem } from "../models/product-list-response";
-import { Product } from "../models/product-selection";
-
-export interface ProductFilter extends BaseQueryOffsetPagedList {
-    categoryId?: string;
-}
-
-export type ProductLoadMoreQuery = BaseQueryKeysetPagedList;
+import { ProductCommand, ProductDetailResult, ProductLoadMoreForModalQuery, ProductLoadMoreForModalResult, ProductPageListQuery, ProductPageListResult, ProductStatsResult } from "../models";
+import { ProductStatus } from "../enums/product-status";
 
 export const ProductService = {
     /**
      * Lấy danh sách sản phẩm phân trang (Offset Pagination)
      */
-    getProducts: async (params: ProductFilter) =>
-        api.data.get<any, Result<OffsetPagedResult<ProductListItem>>>('/catalog/products/list', { params }),
+    getProducts: async (params: ProductPageListQuery) =>
+        api.data.get<any, ProductPageListResult>('/catalog/products/list', { params }),
 
     /**
      * Lấy danh sách sản phẩm theo kiểu load-more (Keyset Pagination)
      */
-    getLoadMore: (query: ProductLoadMoreQuery) =>
-        api.data.get<any, Result<KeysetPagedResult<Product>>>("/catalog/products/load-more", { params: query }),
+    getLoadMore: (query: ProductLoadMoreForModalQuery) =>
+        api.data.get<any, ProductLoadMoreForModalResult>("/catalog/products/load-more-products-for-modal", { params: query }),
+
+    /**
+     * Lấy chi tiết sản phẩm
+     */
+    getDetail: (id: string) =>
+        api.data.get<any, ProductDetailResult>(`/catalog/products/${id}`),
+
+    getStats: () =>
+        api.data.get<any, ProductStatsResult>('/catalog/products/list-stats'),
+
+    changeStatus: (id: string, status: ProductStatus) =>
+        api.data.patch<{ status: ProductStatus }, ProductPageListResult>(`/catalog/products/${id}/status`, { status }),
+
+    deleteProduct: (id: string) =>
+        api.data.delete<any, ProductPageListResult>(`/catalog/products/${id}`),
+
+    create: (command: ProductCommand) =>
+        api.data.post<ProductCommand, any>(`/catalog/products`, command),
+
+    update: (id: string, command: ProductCommand) =>
+        api.data.put<ProductCommand, any>(`/catalog/products/${id}`, command),
 };
 
 export default ProductService;

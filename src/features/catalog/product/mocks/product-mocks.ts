@@ -1,5 +1,5 @@
-import { Product } from "../models/product";
 import { ProductStatus } from "../enums/product-status";
+import { Product } from "../models";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -22,10 +22,10 @@ export const MOCK_PRODUCTS: Product[] = [
       { attributeName: "Điện áp", attributeValue: "12-24 VDC" }
     ],
     productShowcases: [
-      { 
-        id: "sc-001", 
-        summary: "Cảm biến tiệm cận chất lượng cao từ Omron.", 
-        body: "Dòng E2E của Omron là tiêu chuẩn thế giới cho độ bền và độ tin cậy trong môi trường công nghiệp." 
+      {
+        id: "sc-001",
+        summary: "Cảm biến tiệm cận chất lượng cao từ Omron.",
+        body: "Dòng E2E của Omron là tiêu chuẩn thế giới cho độ bền và độ tin cậy trong môi trường công nghiệp."
       }
     ]
   },
@@ -49,10 +49,10 @@ export const MOCK_PRODUCTS: Product[] = [
       { attributeName: "Nguồn cấp", attributeValue: "24 VDC" }
     ],
     productShowcases: [
-      { 
-        id: "sc-002", 
-        summary: "Bộ điều khiển logic lập trình linh hoạt cho các giải pháp tự động hóa vừa và nhỏ.", 
-        body: "Siemens S7-1200 cung cấp khả năng tích hợp mạnh mẽ với TIA Portal và hỗ trợ nhiều giao diện truyền thông." 
+      {
+        id: "sc-002",
+        summary: "Bộ điều khiển logic lập trình linh hoạt cho các giải pháp tự động hóa vừa và nhỏ.",
+        body: "Siemens S7-1200 cung cấp khả năng tích hợp mạnh mẽ với TIA Portal và hỗ trợ nhiều giao diện truyền thông."
       }
     ]
   },

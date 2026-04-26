@@ -1,56 +1,190 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
+import {
+  DndContext,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  useDroppable
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Edit, Trash2, FolderTree } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { buildTree, TreeNode, HighlightText } from './category-utils';
 import { Category } from '../../models/category-model';
+import { CategoryDeleteDialog } from './category-delete-dialog';
+import { CategoryMoveDialog } from './category-move-dialog';
 
 interface CategoryTreeProps {
   categories: Category[];
   searchTerm: string;
-  matchingIds: string[];
-  currentMatchIndex: number;
   activeId: string | null;
   onEdit: (cat: Category) => void;
-  onDelete: (id: string) => void;
+  onRefresh: () => void;
+  onMatchesChange?: (matches: string[]) => void;
 }
 
 export function CategoryTree({
   categories,
   searchTerm,
-  matchingIds,
-  currentMatchIndex,
   activeId,
   onEdit,
-  onDelete,
+  onRefresh,
+  onMatchesChange,
 }: CategoryTreeProps) {
   const tree = buildTree(categories);
+  
+  // Logic tìm kiếm các node khớp - Vẫn nằm ở Tree vì nó liên quan đến cấu trúc dữ liệu
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      const matches = categories
+        .filter(cat =>
+          cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .map(cat => cat.id);
+      onMatchesChange?.(matches);
+    } else {
+      onMatchesChange?.([]);
+    }
+  }, [searchTerm, categories]);
+
+  // Logic cuộn - Tree tự lo việc hiển thị
+  useEffect(() => {
+    if (activeId) {
+      const element = document.getElementById(`tree-item-${activeId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [activeId]);
+  // D&D Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // States cho Dialogs
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const [isMoveOpen, setIsMoveOpen] = useState(false);
+  const [moveConfig, setMoveConfig] = useState<{
+    active: Category | null;
+    target: Category | null;
+  }>({ active: null, target: null });
+
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  const handleDragStart = (event: any) => {
+    setDraggingId(event.active.id);
+  };
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over } = event;
+    setDraggingId(null);
+
+    const activeItem = categories.find(c => c.id === active.id);
+    if (!activeItem) return;
+
+    if (over === null || over.id === 'root-drop-zone') {
+      if (activeItem.parentId === null) return;
+      setMoveConfig({ active: activeItem, target: null });
+      setIsMoveOpen(true);
+      return;
+    }
+
+    if (active.id === over.id) return;
+    const overItem = categories.find(c => c.id === over.id);
+
+    if (overItem) {
+      setMoveConfig({ active: activeItem, target: overItem });
+      setIsMoveOpen(true);
+    }
+  };
 
   return (
     <div className="p-6">
-      <SortableContext
-        items={categories.map(c => c.id)}
-        strategy={verticalListSortingStrategy}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
-        <div className="space-y-2">
-          {tree.map((node) => (
-            <TreeItem
-              key={node.id}
-              node={node}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              highlight={searchTerm}
-              activeId={matchingIds[currentMatchIndex]}
-              isDraggingAny={!!activeId}
-            />
-          ))}
-        </div>
-      </SortableContext>
+        <SortableContext
+          items={categories.map(c => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2">
+            {tree.map((node) => (
+              <TreeItem
+                key={node.id}
+                node={node}
+                onEdit={onEdit}
+                onDelete={(cat) => {
+                  setDeletingCategory(cat);
+                  setIsDeleteOpen(true);
+                }}
+                highlight={searchTerm}
+                activeId={activeId || ''}
+                isDraggingAny={!!draggingId}
+              />
+            ))}
+          </div>
+        </SortableContext>
+
+        {activeId && (
+          <div className="mt-4 p-4 border-t border-gray-100 bg-gray-50/30">
+            <RootDropZone />
+          </div>
+        )}
+
+        <DragOverlay>
+          {draggingId ? (
+            <div className="bg-white px-4 py-3 rounded-lg shadow-xl border-2 border-emerald-500 flex items-center gap-3 opacity-95">
+              <GripVertical className="w-4 h-4 text-gray-400" />
+              <span className="font-bold text-gray-900">
+                {categories.find(c => c.id === draggingId)?.name}
+              </span>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Dialogs đóng gói bên trong */}
+      <CategoryDeleteDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        categoryId={deletingCategory?.id ?? null}
+        categoryName={deletingCategory?.name ?? null}
+        onSuccess={() => {
+          setIsDeleteOpen(false);
+          onRefresh();
+        }}
+      />
+
+      <CategoryMoveDialog
+        isOpen={isMoveOpen}
+        onOpenChange={setIsMoveOpen}
+        activeCategory={moveConfig.active}
+        targetCategory={moveConfig.target}
+        onSuccess={() => {
+          setIsMoveOpen(false);
+          onRefresh();
+        }}
+      />
     </div>
   );
 }
@@ -66,8 +200,8 @@ function TreeItem({
 }: {
   node: TreeNode;
   depth?: number;
-  onEdit: any;
-  onDelete: any;
+  onEdit: (cat: any) => void;
+  onDelete: (cat: any) => void;
   highlight?: string;
   activeId?: string;
   isDraggingAny?: boolean;
@@ -129,7 +263,7 @@ function TreeItem({
           <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => onEdit(node)}>
             <Edit className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => onDelete(node.id)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => onDelete(node)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -155,8 +289,6 @@ function TreeItem({
   );
 }
 
-// RootDropZone dùng useDroppable (không phải useSortable)
-// để không bị ảnh hưởng bởi SortableContext của cây danh mục
 export function RootDropZone() {
   const { setNodeRef, isOver } = useDroppable({ id: 'root-drop-zone' });
 

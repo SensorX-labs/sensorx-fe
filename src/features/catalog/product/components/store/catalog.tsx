@@ -4,11 +4,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProductCard from './product-card';
 import { FilterCatalog, FilterState } from './filter-catalog';
-import { ProductListItem } from '../../models/product-list-response';
 import { ProductService } from '../../services/product-service';
-import { toast } from 'sonner';
+import { ProductPageList } from '../../models';
 
-// type ProductWithPrice = ProductListItem & { price: number; originalPrice?: number };
+// type ProductWithPrice = ProductPageList & { price: number; originalPrice?: number };
 
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'popular' | 'name-asc' | 'name-desc';
 
@@ -22,7 +21,7 @@ export const Catalog: React.FC = () => {
     });
 
     const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [products, setProducts] = useState<(ProductListItem & { price: number; originalPrice?: number })[]>([]);
+    const [products, setProducts] = useState<(ProductPageList & { price: number; originalPrice?: number })[]>([]);
     const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState<string[]>([]);
     const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);

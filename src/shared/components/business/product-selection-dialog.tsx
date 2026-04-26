@@ -6,14 +6,14 @@ import { Input } from '@/shared/components/shadcn-ui/input';
 import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Search, Box, Factory, PackageSearch, CheckCircle2, Barcode } from 'lucide-react';
-import { Product } from '@/features/catalog/product/models/product-selection';
 import ProductService from '@/features/catalog/product/services/product-service';
 import { toast } from 'sonner';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models';
 
 interface ProductSelectionDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (product: Product) => void;
+  onSelect: (product: ProductLoadMoreForModal) => void;
 }
 
 export function ProductSelectionDialog({
@@ -22,7 +22,7 @@ export function ProductSelectionDialog({
   onSelect
 }: ProductSelectionDialogProps) {
   const [search, setSearch] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductLoadMoreForModal[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -33,12 +33,9 @@ export function ProductSelectionDialog({
 
   const [pagination, setPagination] = useState<{
     hasNext: boolean;
-    hasPrevious: boolean;
-    lastCreatedAt?: string;
+    lastValue?: string;
     lastId?: string;
-    firstCreatedAt?: string;
-    firstId?: string;
-  }>({ hasNext: false, hasPrevious: false });
+  }>({ hasNext: false });
 
   /**
    * Core data fetching logic with concurrency locking and cooldown
@@ -57,19 +54,20 @@ export function ProductSelectionDialog({
       const response = await ProductService.getLoadMore({
         searchTerm: search,
         pageSize: 6,
-        isPrevious: false,
-        lastCreatedAt: isLoadMore ? pagination.lastCreatedAt : undefined,
-        lastId: isLoadMore ? pagination.lastId : undefined,
-        firstCreatedAt: undefined,
-        firstId: undefined
+        isDescending: true,
+        lastValue: pagination.lastValue,
+        lastId: pagination.lastId,
       });
 
       if (response.isSuccess && response.value) {
-        const { items, hasNext, hasPrevious, lastCreatedAt, lastId, firstCreatedAt, firstId } = response.value;
+        const { items, hasNext, lastValue, lastId } = response.value;
 
         if (isLoadMore) {
-          setProducts(prev => [...prev, ...items]);
-          console.log(items.length);
+          setProducts(prev => {
+            // Lọc bỏ những sản phẩm đã tồn tại trong danh sách để tránh trùng key
+            const newItems = items.filter(item => !prev.some(p => p.id === item.id));
+            return [...prev, ...newItems];
+          });
 
           // Subtle scroll bounce effect to provide visual feedback for new items
           setTimeout(() => {
@@ -81,7 +79,7 @@ export function ProductSelectionDialog({
           setProducts(items);
         }
 
-        setPagination({ hasNext, hasPrevious, lastCreatedAt, lastId, firstCreatedAt, firstId });
+        setPagination({ hasNext, lastValue, lastId });
       } else {
         toast.error(response.message);
       }

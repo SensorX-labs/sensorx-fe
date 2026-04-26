@@ -12,17 +12,15 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/shared/components/shadcn-ui/tooltip';
-import { InternalPrice, InternalPriceStatus } from '../../models';
+import { InternalPrice, InternalPriceStatus } from '../../../models';
 
 interface InternalPriceTableProps {
   prices: InternalPrice[];
-  onViewDetail: (price: InternalPrice) => void;
   onQuickView: (price: InternalPrice) => void;
 }
 
 export function InternalPriceTable({
   prices,
-  onViewDetail,
   onQuickView
 }: InternalPriceTableProps) {
 

@@ -29,7 +29,7 @@ import { cn } from '@/shared/utils';
 
 interface NotionEditorProps {
   content: string; // Chuỗi Markdown
-  onChange: (content: string) => void;
+  onChange?: (content: string) => void;
   editable?: boolean;
 }
 
@@ -144,7 +144,7 @@ export function NotionEditor({ content, onChange, editable = true }: NotionEdito
     editable,
     onUpdate: ({ editor }) => {
       const markdown = (editor.storage as any).markdown.getMarkdown();
-      onChange(markdown);
+      onChange?.(markdown);
     },
     editorProps: {
       handleKeyDown: (view, event) => {

@@ -1,6 +1,6 @@
 import api from "@/shared/configs/axios-config";
 import { Result } from "@/shared/models/base-response";
-import { CreateInternalPriceRequest, GetPageListInternalPriceQuery, InternalPriceListResult, InternalPriceStatsResult, ProductInternalPriceHistoryResult } from "../models";
+import { CreateInternalPriceRequest, ExtendInternalPriceRequest, GetPageListInternalPriceQuery, InternalPriceListResult, InternalPriceStatsResult, ProductInternalPriceHistoryResult } from "../models";
 
 const InternalPriceService = {
   /**
@@ -25,13 +25,13 @@ const InternalPriceService = {
    * Vô hiệu hóa bảng giá nội bộ
    */
   deactivate: (id: string) =>
-    api.data.post<any, Result<string>>(`/catalog/internalPrices/${id}/deactivate`),
+    api.data.patch<any, Result<string>>(`/catalog/internalPrices/${id}/deactivate`),
 
   /**
    * Gia hạn bảng giá nội bộ
    */
-  extend: (id: string) =>
-    api.data.post<any, Result<string>>(`/catalog/internalPrices/${id}/extend`),
+  extend: (id: string, request: ExtendInternalPriceRequest) =>
+    api.data.patch<ExtendInternalPriceRequest, Result<string>>(`/catalog/internalPrices/${id}/extend`, request),
 
   /**
    * Lấy lịch sử bảng giá nội bộ

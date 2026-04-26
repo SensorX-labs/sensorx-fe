@@ -1,7 +1,11 @@
+'use client';
+
+import React, { useState } from 'react';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { HighlightText } from './category-utils';
 import { Category } from '../../models/category-model';
+import { CategoryDeleteDialog } from './category-delete-dialog';
 
 interface CategoryTableProps {
   loading: boolean;
@@ -10,7 +14,7 @@ interface CategoryTableProps {
   matchingIds: string[];
   currentMatchIndex: number;
   onEdit: (cat: Category) => void;
-  onDelete: (id: string) => void;
+  onRefresh: () => void;
 }
 
 export function CategoryTable({
@@ -20,11 +24,20 @@ export function CategoryTable({
   matchingIds,
   currentMatchIndex,
   onEdit,
-  onDelete,
+  onRefresh,
 }: CategoryTableProps) {
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const handleDeleteClick = (cat: Category) => {
+    setDeletingCategory(cat);
+    setIsDeleteOpen(true);
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
+        {/* ... thead ... */}
         <thead>
           <tr className="bg-gray-50/50 border-b border-gray-100 text-left">
             <th className="px-6 py-4 tracking-label uppercase font-semibold text-gray-400 text-[10px]">Tên danh mục</th>
@@ -91,7 +104,7 @@ export function CategoryTable({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => onDelete(cat.id)}
+                      onClick={() => handleDeleteClick(cat)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -102,6 +115,17 @@ export function CategoryTable({
           )}
         </tbody>
       </table>
+
+      <CategoryDeleteDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        categoryId={deletingCategory?.id ?? null}
+        categoryName={deletingCategory?.name ?? null}
+        onSuccess={() => {
+          setIsDeleteOpen(false);
+          onRefresh();
+        }}
+      />
     </div>
   );
 }

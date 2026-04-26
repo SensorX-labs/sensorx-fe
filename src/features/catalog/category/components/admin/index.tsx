@@ -1,46 +1,22 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  FolderTree,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  LayoutList,
-  LayoutGrid,
-  GripVertical,
-} from 'lucide-react';
-import {
-  DndContext,
-  closestCorners,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-} from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { Button } from '@/shared/components/shadcn-ui/button';
-import { toast } from "sonner";
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 // Sub-components
 import { CategoryStats } from './category-stats';
+import { CategoryHeader } from './category-header';
 import { CategoryTable } from './category-table';
-import { CategoryTree, RootDropZone } from './category-tree';
+import { CategoryTree } from './category-tree';
 import { CategoryForm } from './category-form';
+import { LocalPagination } from '@/shared/components/admin/local-pagination';
+import {
+  AdminPageContainer,
+  AdminContentCard,
+} from '@/shared/components/admin/layout';
 import { Category } from '../../models/category-model';
 import CategoryService from '../../services/category-services';
-import { LAYOUT_CONSTANTS } from '@/shared/constants/layout';
 
 export default function CategoryManagement() {
-  // D&D Sensors — khai báo ở đây để DndContext bao cả tree và RootDropZone
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   // State cho dữ liệu
   const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,26 +24,17 @@ export default function CategoryManagement() {
 
   // State cho tìm kiếm và phân trang local
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
-  const ITEM_HEIGHT = 70; // Chiều cao ước tính của 1 treeItem (bao gồm cả padding/margin)
-  const containerHeight = (pageSize + 3) * ITEM_HEIGHT;
 
-  // State cho search navigation trong Tree View
+  // Search Navigation state
   const [matchingIds, setMatchingIds] = useState<string[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
 
   // State cho Modal Tạo/Sửa
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [parentSearch, setParentSearch] = useState('');
-  const [isParentPopoverOpen, setIsParentPopoverOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    parentId: 'root'
-  });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   // Fetch dữ liệu
   const fetchData = useCallback(async () => {
@@ -89,10 +56,19 @@ export default function CategoryManagement() {
   }, [fetchData]);
 
   // Filter dữ liệu local cho Table View
-  const filteredCategories = allCategories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredCategories = allCategories.filter(cat => {
+    // 1. Filter by Tab
+    const matchesTab =
+      activeTab === 'all' ||
+      (activeTab === 'root' && !cat.parentId) ||
+      (activeTab === 'sub' && cat.parentId);
+
+    if (!matchesTab) return false;
+
+    // 2. Filter by Search Term
+    return cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
 
   // Pagination local logic
   const totalPages = Math.ceil(filteredCategories.length / pageSize);
@@ -102,34 +78,10 @@ export default function CategoryManagement() {
   );
 
   useEffect(() => {
-    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+    setCurrentPage(1);
+  }, [searchTerm, viewMode, activeTab]);
 
-    if (viewMode === 'tree' && searchTerm.trim()) {
-      const matches = allCategories
-        .filter(cat =>
-          cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (cat.description && cat.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        )
-        .map(cat => cat.id);
-      setMatchingIds(matches);
-      setCurrentMatchIndex(matches.length > 0 ? 0 : -1);
-    } else {
-      setMatchingIds([]);
-      setCurrentMatchIndex(-1);
-    }
-  }, [searchTerm, viewMode, allCategories]);
-
-  // Logic cuộn đến phần tử đang focus
-  useEffect(() => {
-    if (viewMode === 'tree' && currentMatchIndex !== -1 && matchingIds[currentMatchIndex]) {
-      const targetId = matchingIds[currentMatchIndex];
-      const element = document.getElementById(`tree-item-${targetId}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [currentMatchIndex, matchingIds, viewMode]);
-
+  // Điều khiển Next/Prev
   const handleNextMatch = () => {
     if (matchingIds.length === 0) return;
     setCurrentMatchIndex(prev => (prev + 1) % matchingIds.length);
@@ -140,207 +92,42 @@ export default function CategoryManagement() {
     setCurrentMatchIndex(prev => (prev - 1 + matchingIds.length) % matchingIds.length);
   };
 
-  // Xử lý Tạo/Sửa
-  const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      toast.error("Vui lòng nhập tên danh mục");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      if (editingId) {
-        const response = await CategoryService.updateParent(editingId, {
-          parentId: formData.parentId === 'root' ? undefined : formData.parentId
-        });
-        if (response.isSuccess) {
-          toast.success(response.message || "Cập nhật danh mục thành công");
-          setIsModalOpen(false);
-          fetchData();
-        }
-      } else {
-        const response = await CategoryService.create({
-          name: formData.name,
-          description: formData.description,
-          parentId: formData.parentId === 'root' ? undefined : formData.parentId
-        });
-        if (response.isSuccess) {
-          toast.success(response.message || "Tạo danh mục thành công");
-          setIsModalOpen(false);
-          setFormData({ name: '', description: '', parentId: 'root' });
-          fetchData();
-        }
-      }
-    } catch (error: any) {
-      console.error('Submit error:', error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
-    try {
-      const response = await CategoryService.delete(id);
-      if (response.isSuccess) {
-        toast.success(response.message || "Xóa danh mục thành công");
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Failed to delete category:', error);
-    }
-  };
-
   const openEditModal = (cat: Category) => {
-    setEditingId(cat.id);
-    setParentSearch('');
-    setFormData({
-      name: cat.name,
-      description: cat.description || '',
-      parentId: cat.parentId || 'root'
-    });
-    setIsModalOpen(true);
+    setSelectedCategory(cat);
+    setIsFormOpen(true);
   };
 
   const openCreateModal = () => {
-    setEditingId(null);
-    setParentSearch('');
-    setFormData({ name: '', description: '', parentId: 'root' });
-    setIsModalOpen(true);
-  };
-
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
-  };
-
-  const handleDragEnd = async (event: any) => {
-    const { active, over } = event;
-    setActiveId(null);
-
-    const activeItem = allCategories.find(c => c.id === active.id);
-    if (!activeItem) return;
-
-    if (over === null || over.id === 'root-drop-zone') {
-      if (activeItem.parentId === null) return;
-      if (confirm(`Bạn muốn đưa "${activeItem.name}" ra làm danh mục gốc?`)) {
-        try {
-          const res = await CategoryService.updateParent(activeItem.id, { parentId: undefined });
-          if (res.isSuccess) {
-            toast.success(res.message || "Đã chuyển thành danh mục gốc");
-            fetchData();
-          } else {
-            toast.error(res.message || "Thất bại khi chuyển thành danh mục gốc");
-          }
-        } catch (error) {
-          toast.error("Lỗi khi thay đổi vị trí");
-        }
-      }
-      return;
-    }
-
-    if (active.id === over.id) return;
-    const overItem = allCategories.find(c => c.id === over.id);
-
-    if (overItem) {
-      if (confirm(`Bạn muốn chuyển "${activeItem.name}" vào làm con của "${overItem.name}"?`)) {
-        try {
-          const res = await CategoryService.updateParent(activeItem.id, { parentId: overItem.id });
-          if (res.isSuccess) {
-            toast.success(res.message || "Đã thay đổi danh mục cha");
-            fetchData();
-          } else {
-            toast.error(res.message || "Thất bại khi thay đổi danh mục cha");
-          }
-        } catch (error) {
-          toast.error("Lỗi khi thay đổi vị trí");
-        }
-      }
-    }
+    setSelectedCategory(null);
+    setIsFormOpen(true);
   };
 
   return (
-    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-1200" style={{ height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT}px)` }}>
-      <CategoryStats categories={allCategories} />
+    <AdminPageContainer>
+      <CategoryStats
+        categories={allCategories}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
-        {/* Sticky Search Header */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-50 p-4 shrink-0 z-10">
-          <div className="flex items-center gap-4">
-            {/* View Toggles */}
-            <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-100 shadow-sm flex-shrink-0">
-              <Button
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'table' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
-                onClick={() => { setViewMode('table'); setCurrentPage(1); setSearchTerm(''); }}
-              >
-                <LayoutList className="w-4 h-4 mr-2" />
-                Danh sách
-              </Button>
-              <Button
-                variant={viewMode === 'tree' ? 'default' : 'ghost'}
-                size="sm"
-                className={`h-8 px-3 rounded-lg transition-all ${viewMode === 'tree' ? 'admin-btn-primary shadow-sm' : 'hover:bg-gray-100 text-gray-600'}`}
-                onClick={() => { setViewMode('tree'); setCurrentPage(1); setSearchTerm(''); }}
-              >
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Dạng Cây
-              </Button>
-            </div>
-
-            {/* Search Input */}
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm danh mục theo tên hoặc mô tả..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 shadow-sm rounded-lg text-sm text-gray-700 placeholder:text-gray-400 hover:border-gray-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* Search Navigation */}
-            {viewMode === 'tree' && matchingIds.length > 0 && (
-              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-100 shadow-lg shadow-blue-500/5 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="px-3 py-1 bg-blue-50 rounded-lg border border-blue-100 flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Kết quả</span>
-                  <span className="text-xs font-black text-blue-700 min-w-[3rem] text-center">
-                    {currentMatchIndex + 1} <span className="text-blue-300 mx-0.5">/</span> {matchingIds.length}
-                  </span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95"
-                    onClick={handlePrevMatch}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-95"
-                    onClick={handleNextMatch}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <Button
-              className="admin-btn-primary flex items-center gap-2 shadow-lg shadow-blue-500/20 flex-shrink-0"
-              onClick={openCreateModal}
-            >
-              <FolderTree className="w-4 h-4" />
-              Tạo danh mục
-            </Button>
-          </div>
-        </div>
+      <AdminContentCard>
+        <CategoryHeader
+          viewMode={viewMode}
+          onViewModeChange={(mode) => {
+            setViewMode(mode);
+            setCurrentPage(1);
+            setSearchTerm('');
+            setMatchingIds([]);
+            setCurrentMatchIndex(-1);
+          }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          matchingIds={matchingIds}
+          currentMatchIndex={currentMatchIndex}
+          onPrevMatch={handlePrevMatch}
+          onNextMatch={handleNextMatch}
+          onCreateClick={openCreateModal}
+        />
 
         {/* Main Content Area */}
         {viewMode === 'table' ? (
@@ -349,117 +136,49 @@ export default function CategoryManagement() {
               loading={loading}
               categories={paginatedItems}
               searchTerm={searchTerm}
-              matchingIds={matchingIds}
-              currentMatchIndex={currentMatchIndex}
+              matchingIds={[]}
+              currentMatchIndex={-1}
               onEdit={openEditModal}
-              onDelete={handleDelete}
+              onRefresh={fetchData}
             />
           </div>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            {activeId && (
-              <div className="p-4 border-t border-gray-100 bg-gray-50/30">
-                <RootDropZone />
-              </div>
-            )}
-
-            {/* Drag Overlay — ghost theo con trỏ khi kéo */}
-            <DragOverlay>
-              {activeId ? (
-                <div className="bg-white px-4 py-3 rounded-lg shadow-xl border-2 border-blue-500 flex items-center gap-3 opacity-95">
-                  <GripVertical className="w-4 h-4 text-gray-400" />
-                  <span className="font-bold text-gray-900">{allCategories.find(c => c.id === activeId)?.name}</span>
-                </div>
-              ) : null}
-            </DragOverlay>
-
-            {/* Tree scroll area */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <CategoryTree
-                categories={allCategories}
-                searchTerm={searchTerm}
-                matchingIds={matchingIds}
-                currentMatchIndex={currentMatchIndex}
-                activeId={activeId}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
-            </div>
-          </DndContext>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <CategoryTree
+              categories={allCategories}
+              searchTerm={searchTerm}
+              activeId={currentMatchIndex !== -1 ? matchingIds[currentMatchIndex] : null}
+              onEdit={openEditModal}
+              onRefresh={fetchData}
+              onMatchesChange={(matches) => {
+                setMatchingIds(matches);
+                if (matches.length > 0 && currentMatchIndex === -1) {
+                  setCurrentMatchIndex(0);
+                } else if (matches.length === 0) {
+                  setCurrentMatchIndex(-1);
+                }
+              }}
+            />
+          </div>
         )}
 
         {/* Local Pagination UI */}
-        {viewMode === 'table' && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30 text-gray-600 sticky bottom-0 z-20">
-            <span className="text-xs font-medium">
-              Trang {currentPage} / {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-lg"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum = currentPage;
-                  if (totalPages > 5) {
-                    if (currentPage <= 3) pageNum = i + 1;
-                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
-                    else pageNum = currentPage - 2 + i;
-                  } else {
-                    pageNum = i + 1;
-                  }
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      className={`h-8 w-8 p-0 rounded-lg text-xs font-bold ${currentPage === pageNum ? 'admin-btn-primary' : ''}`}
-                      onClick={() => setCurrentPage(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-lg"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+        {viewMode === 'table' && (
+          <LocalPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         )}
-      </div>
+      </AdminContentCard>
 
       <CategoryForm
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        submitting={submitting}
-        editingId={editingId}
-        formData={formData}
-        setFormData={setFormData}
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        category={selectedCategory}
         allCategories={allCategories}
-        parentSearch={parentSearch}
-        setParentSearch={setParentSearch}
-        isParentPopoverOpen={isParentPopoverOpen}
-        setIsParentPopoverOpen={setIsParentPopoverOpen}
-        onSubmit={handleSubmit}
+        onSuccess={fetchData}
       />
-    </div>
+    </AdminPageContainer>
   );
 }

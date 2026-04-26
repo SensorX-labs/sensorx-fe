@@ -25,7 +25,7 @@ import {
   ProductSelectionDialog
 } from '@/shared/components/business/product-selection-dialog';
 import { Product } from '@/features/catalog/product/models/product-selection';
-import InternalPriceService from '../../services/internal-price-services';
+import InternalPriceService from '../../../services/internal-price-services';
 
 interface InternalPriceFormProps {
   onBack: () => void;
