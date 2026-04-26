@@ -1,36 +1,71 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ShoppingBag, Bookmark, Share2, Truck, Shield, RotateCcw, Phone, Mail } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/shared/components/shadcn-ui/carousel';
 import { AddCartItemMessage } from '@/features/sales/requestforquotation/components/store/add-cartitem-message';
-import { ProductListItem } from '../../models/product-list-response';
+import { useParams } from 'next/navigation';
+import { ProductService } from '../../services/product-service';
+import { ProductDetail as ProductDetailModel } from '../../models';
 import { useCart } from '@/features/sales/requestforquotation/hooks/use-cart';
 
-interface ProductDetailProps {
-  product: ProductListItem;
-}
-
-export function ProductDetail({ product }: ProductDetailProps) {
+export function ProductDetail() {
+  const { id } = useParams();
   const { addToCart } = useCart();
+  const [product, setProduct] = useState<ProductDetailModel | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAddToCartMessage, setShowAddToCartMessage] = useState(false);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const response = await ProductService.getDetail(id as string);
+        if (response.isSuccess && response.value) {
+          setProduct(response.value);
+        }
+      } catch (error) {
+        console.error(">>> Lỗi khi lấy chi tiết sản phẩm:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   // product cùng thể loại (Tạm để trống)
   const relatedProducts = useMemo(() => [], []);
 
   const handleAddToCart = () => {
-    addToCart(product, selectedQuantity);
-    setShowAddToCartMessage(true);
+    if (product) {
+      addToCart(product as any, selectedQuantity);
+      setShowAddToCartMessage(true);
+    }
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const quantity = parseInt(e.target.value) || 1;
     setSelectedQuantity(Math.max(1, quantity));
   };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green"></div>
+    </div>
+  );
+
+  if (!product) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <p className="text-gray-600 font-medium">Không tìm thấy sản phẩm này.</p>
+      <a href="/shop" className="text-brand-green hover:underline">Quay lại cửa hàng</a>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-page-background">
@@ -188,8 +223,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-20">
               {product.attributes.map((attr, idx) => (
                 <div key={idx} className="flex justify-between border-b border-gray-100 pb-4">
-                  <span className="text-gray-600 font-medium">{attr.attributeName}</span>
-                  <span className="text-gray-900 font-semibold">{attr.attributeValue}</span>
+                  <span className="text-gray-600 font-medium">{attr.name}</span>
+                  <span className="text-gray-900 font-semibold">{attr.value}</span>
                 </div>
               ))}
             </div>

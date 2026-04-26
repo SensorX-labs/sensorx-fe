@@ -4,12 +4,10 @@ export interface BaseQueryOffsetPagedList {
     pageSize?: number;
 }
 
-export interface BaseQueryKeysetPagedList {
+export interface BaseQueryLoadMore {
+    pageSize?: number;
     searchTerm?: string;
-    pageSize: number;
-    lastCreatedAt?: string;
+    lastValue?: string;
     lastId?: string;
-    firstCreatedAt?: string;
-    firstId?: string;
-    isPrevious: boolean;
+    isDescending: boolean;
 }

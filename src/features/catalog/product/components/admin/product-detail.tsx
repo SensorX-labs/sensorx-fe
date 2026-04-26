@@ -16,11 +16,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import Link from 'next/link';
-import { MOCK_PRODUCTS } from '../../mocks/product-mocks';
 import { MOCK_INTERNAL_PRICES } from '../../mocks/internal-price-mocks';
 import { ProductStatus } from '../../enums/product-status';
 import { NotionEditor } from '@/shared/components/notion-editor';
-import { Product } from '../../models/product';
+import { ProductService } from '../../services/product-service';
+import { ProductDetail as ProductDetailModel } from '../../models';
+import { toast } from 'sonner';
 
 interface ProductDetailProps {
   id: string;
@@ -40,26 +41,50 @@ export function ProductDetail({ id }: ProductDetailProps) {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action');
 
-  const isCreate = actionParam === ActionType.CREATE;
-
-  const initialProduct = isCreate ? {
-    id: '',
-    code: '',
-    name: '',
-    manufacturer: '',
-    status: ProductStatus.ACTIVE,
-    category: {
-      id: '',
-      name: ''
-    },
-    unit: '',
-    productAttributes: [],
-    productImages: [],
-    productShowcases: []
-  } as Product : MOCK_PRODUCTS.find(p => p.id === id);
-
   const [action, setAction] = useState<ActionType>((actionParam as ActionType) || ActionType.DETAIL);
-  const [formData, setFormData] = useState<any>(initialProduct || {});
+  const [formData, setFormData] = useState<any>({});
+  const [loading, setLoading] = useState(id !== 'new');
+  const [initialProduct, setInitialProduct] = useState<any>(null);
+
+  const isCreate = action === ActionType.CREATE || id === 'new';
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (id === 'new') {
+        const newProduct = {
+          productAttributes: [],
+          productImages: [],
+          productShowcases: []
+        };
+        setFormData(newProduct);
+        setInitialProduct(newProduct);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await ProductService.getDetail(id);
+        if (response.isSuccess && response.value) {
+          const data = {
+            ...response.value,
+            productAttributes: response.value.attributes || [],
+            productImages: response.value.images?.map(url => ({ imageUrl: url })) || [],
+            productShowcases: response.value.showcase ? [response.value.showcase] : []
+          };
+          setFormData(data);
+          setInitialProduct(data);
+        }
+      } catch (error) {
+        console.error(">>> Lỗi khi lấy chi tiết sản phẩm:", error);
+        toast.error("Không thể tải thông tin sản phẩm");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
   const [selectedImg, setSelectedImg] = useState(0);
 
   // Lấy dữ liệu giá mẫu cho sản phẩm này
@@ -73,6 +98,15 @@ export function ProductDetail({ id }: ProductDetailProps) {
         setAction(ActionType.DETAIL);
     }
   }, [actionParam, isCreate]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="w-10 h-10 border-4 border-brand-green/30 border-t-brand-green rounded-full animate-spin"></div>
+        <p className="text-sm text-gray-500 font-medium">Đang tải dữ liệu sản phẩm...</p>
+      </div>
+    );
+  }
 
   if (!isCreate && !initialProduct)
     return <div className="p-6 text-gray-600">Không tìm thấy hàng hóa</div>;
@@ -184,13 +218,13 @@ export function ProductDetail({ id }: ProductDetailProps) {
                     {isEditing ? (
                       <input
                         type="text"
-                        value={formData.manufacturer || ''}
-                        onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+                        value={formData.manufacture || ''}
+                        onChange={(e) => setFormData({ ...formData, manufacture: e.target.value })}
                         className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green"
                         placeholder="Tên nhà sản xuất"
                       />
                     ) : (
-                      <span className="text-gray-900 font-medium italic">{formData.manufacturer || '--'}</span>
+                      <span className="text-gray-900 font-medium italic">{formData.manufacture || '--'}</span>
                     )}
                   </td>
                 </tr>
@@ -279,8 +313,8 @@ export function ProductDetail({ id }: ProductDetailProps) {
                         key={idx}
                         onClick={() => setSelectedImg(idx)}
                         className={`w-12 h-12 rounded border-2 overflow-hidden transition-all ${selectedImg === idx
-                            ? 'border-brand-green ring-2 ring-brand-green/20'
-                            : 'border-gray-100 hover:border-gray-300'
+                          ? 'border-brand-green ring-2 ring-brand-green/20'
+                          : 'border-gray-100 hover:border-gray-300'
                           }`}
                       >
                         <img src={img.imageUrl} alt={`thumb-${idx + 1}`} className="w-full h-full object-cover" />
@@ -365,8 +399,8 @@ export function ProductDetail({ id }: ProductDetailProps) {
                   <tbody className="divide-y divide-gray-100">
                     {formData.productAttributes.map((attr: any, idx: number) => (
                       <tr key={idx} className="hover:bg-gray-50/30">
-                        <td className="px-6 py-3 w-1/3 admin-text-primary font-bold bg-gray-50/20">{attr.attributeName}</td>
-                        <td className="px-6 py-3 font-medium text-gray-900">{attr.attributeValue}</td>
+                        <td className="px-6 py-3 w-1/3 admin-text-primary font-bold bg-gray-50/20">{attr.name}</td>
+                        <td className="px-6 py-3 font-medium text-gray-900">{attr.value}</td>
                       </tr>
                     ))}
                   </tbody>
