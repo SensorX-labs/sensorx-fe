@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow
 } from '@/shared/components/shadcn-ui/table';
-import { PriceTier } from '../../models';
+import { PriceTier } from '../../../models';
 import { TrendingDown, Package } from 'lucide-react';
 
 interface PriceTierTableProps {

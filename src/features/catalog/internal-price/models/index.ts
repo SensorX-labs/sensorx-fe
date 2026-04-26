@@ -60,3 +60,7 @@ export interface ProductInternalPriceHistory {
 }
 
 export type ProductInternalPriceHistoryResult = Result<ProductInternalPriceHistory>
+
+export interface ExtendInternalPriceRequest {
+  expiresAt: string;
+}

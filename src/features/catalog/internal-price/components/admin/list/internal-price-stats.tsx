@@ -1,5 +1,5 @@
 import { BadgeDollarSign, CheckCircle2, Clock, Ban } from 'lucide-react';
-import { InternalPriceStats } from '../../models';
+import { InternalPriceStats } from '../../../models';
 
 interface StatCardsProps {
   stats?: InternalPriceStats;

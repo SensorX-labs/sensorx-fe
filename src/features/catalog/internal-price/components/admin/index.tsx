@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 
 import { InternalPrice } from '../../models';
-import { InternalPriceDetail } from './internal-price-detail';
-import { InternalPriceList } from './internal-price-list';
-import { InternalPriceForm } from './internal-price-form';
+import { InternalPriceDetail } from './detail/internal-price-detail';
+import { InternalPriceList } from './list/internal-price-list';
+import { InternalPriceForm } from './form/internal-price-form';
 
 export function InternalPriceManagement() {
   const [selectedPrice, setSelectedPrice] = useState<InternalPrice | null>(null);
@@ -39,6 +39,12 @@ export function InternalPriceManagement() {
         <InternalPriceDetail
           price={selectedPrice}
           onBack={handleBackToList}
+          onRefresh={() => {
+            // In a real app, we might re-fetch the specific price detail
+            // For now, since we're using mocks/local state, we'll just go back to list
+            // or we could potentially update the selectedPrice if we had a getById service
+            handleBackToList();
+          }}
         />
       )}
 
