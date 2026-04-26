@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { CategorySelectionDialog } from '@/shared/components/admin/selection-modal';
 import ProductService from '../../../services/product-service';
+import imageService from '@/shared/services/image-service';
 
 // Import sub-components
 import {
@@ -13,7 +14,7 @@ import {
   ProductAttributeSection,
   ProductShowcaseSection
 } from './sections';
-import { ProductCommand, ProductDetail } from '../../../models';
+import { ProductDetail } from '../../../models';
 import { ProductStatus } from '../../../enums/product-status';
 
 interface ProductFormProps {
@@ -25,6 +26,7 @@ interface ProductFormProps {
 export function ProductForm({ product: initialProduct, mode, onBack }: ProductFormProps) {
   const [loading, setLoading] = useState(mode === 'update');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState<ProductDetail>({
@@ -65,12 +67,11 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
 
     try {
       setIsSaving(true);
-      const command: ProductCommand = {
-        name: formData.name,
-        manufacture: formData.manufacture,
+      const command = {
+        ...formData,
         categoryId: formData.categoryId,
-        unit: formData.unit,
-        showcase: formData.showcase,
+        unit: formData.unit || '',
+        showcase: formData.showcase || '',
         images: formData.images || [],
         attributes: formData.attributes || []
       };
@@ -91,10 +92,37 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
   };
 
   // Helper handlers for complex fields
-  const handleRemoveImage = (index: number) => {
-    const newImages = [...(formData.images || [])];
-    newImages.splice(index, 1);
-    setFormData({ ...formData, images: newImages });
+  const handleUploadImage = async (file: File) => {
+    try {
+      setIsUploading(true);
+      const res = await imageService.upload(file, 'products');
+
+      if (res.isSuccess && res.value) {
+        setFormData({
+          ...formData,
+          images: [...(formData.images || []), res.value]
+        });
+
+        toast.success("Tải ảnh lên thành công");
+      }
+    } catch (error) {
+      toast.error("Lỗi khi tải ảnh lên");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    const image = formData.images[index];
+    if (!image) return;
+    try {
+      await imageService.deleteImage(image);
+      const newImages = [...(formData.images || [])];
+      newImages.splice(index, 1);
+      setFormData({ ...formData, images: newImages });
+    } catch (error) {
+      toast.error("Lỗi khi xóa ảnh");
+    }
   };
 
   const handleAddAttribute = () => {
@@ -151,6 +179,8 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           <ProductImageSection
             imageUrls={formData.images || []}
             onRemoveImage={handleRemoveImage}
+            onUploadImage={handleUploadImage}
+            isUploading={isUploading}
           />
         </div>
 
