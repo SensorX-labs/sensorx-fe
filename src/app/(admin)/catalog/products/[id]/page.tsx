@@ -2,23 +2,21 @@
 
 import { ProductDetail } from '@/features/catalog/product/components/admin/detail/product-detail';
 import { ProductForm } from '@/features/catalog/product/components/admin/form/product-form';
-import { use } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { use, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const searchParams = useSearchParams();
   const router = useRouter();
   
-  const action = searchParams.get('action');
-  const isEditing = action === 'update';
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleEdit = () => {
-    router.push(`/catalog/products/${resolvedParams.id}?action=update`);
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
-    router.push(`/catalog/products/${resolvedParams.id}`);
+    setIsEditing(false);
   };
 
   const handleBackToList = () => {
