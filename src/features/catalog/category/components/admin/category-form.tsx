@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+'use client';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import { Search, ChevronRight, FolderTree } from 'lucide-react';
 import {
   Dialog,
@@ -17,73 +19,112 @@ import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
 import { getAllDescendantIds } from './category-utils';
 import { Category } from '../../models/category-model';
-
-interface CategoryFormData {
-  name: string;
-  description: string;
-  parentId: string;
-}
+import CategoryService from '../../services/category-services';
+import { toast } from 'sonner';
 
 interface CategoryFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  submitting: boolean;
-  editingId: string | null;
-  formData: CategoryFormData;
-  setFormData: (data: CategoryFormData) => void;
+  category: Category | null; // null = Create, Category = Edit
   allCategories: Category[];
-  parentSearch: string;
-  setParentSearch: (search: string) => void;
-  isParentPopoverOpen: boolean;
-  setIsParentPopoverOpen: (open: boolean) => void;
-  onSubmit: () => void;
+  onSuccess: () => void;
 }
 
 export function CategoryForm({
   isOpen,
   onOpenChange,
-  submitting,
-  editingId,
-  formData,
-  setFormData,
+  category,
   allCategories,
-  parentSearch,
-  setParentSearch,
-  isParentPopoverOpen,
-  setIsParentPopoverOpen,
-  onSubmit
+  onSuccess
 }: CategoryFormProps) {
-  // Tính descendants 1 lần khi editingId/categories thay đổi, không re-compute khi gõ search
+  const [submitting, setSubmitting] = useState(false);
+  const [parentSearch, setParentSearch] = useState('');
+  const [isParentPopoverOpen, setIsParentPopoverOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    parentId: 'root'
+  });
+
+  // Populate form when category changes (Edit mode)
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name,
+        description: category.description || '',
+        parentId: category.parentId || 'root'
+      });
+    } else {
+      setFormData({ name: '', description: '', parentId: 'root' });
+    }
+    setParentSearch('');
+  }, [category, isOpen]);
+
   const descendants = useMemo(
-    () => (editingId ? getAllDescendantIds(allCategories, editingId) : []),
-    [editingId, allCategories]
+    () => (category ? getAllDescendantIds(allCategories, category.id) : []),
+    [category, allCategories]
   );
 
   const filteredParents = useMemo(
     () => allCategories.filter(c => {
-      const isSelf = c.id === editingId;
+      const isSelf = c.id === category?.id;
       const isDescendant = descendants.includes(c.id);
       const matchesSearch = c.name.toLowerCase().includes(parentSearch.toLowerCase());
       return !isSelf && !isDescendant && matchesSearch;
     }),
-    [allCategories, editingId, descendants, parentSearch]
+    [allCategories, category, descendants, parentSearch]
   );
+
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) {
+      toast.error("Vui lòng nhập tên danh mục");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      if (category) {
+        // Chế độ Sửa (Hiện tại server đang hỗ trợ updateParent)
+        const response = await CategoryService.updateParent(category.id, {
+          parentId: formData.parentId === 'root' ? undefined : formData.parentId
+        });
+        if (response.isSuccess) {
+          toast.success(response.message || "Cập nhật danh mục thành công");
+          onSuccess();
+          onOpenChange(false);
+        }
+      } else {
+        // Chế độ Tạo
+        const response = await CategoryService.create({
+          name: formData.name,
+          description: formData.description,
+          parentId: formData.parentId === 'root' ? undefined : formData.parentId
+        });
+        if (response.isSuccess) {
+          toast.success(response.message || "Tạo danh mục thành công");
+          onSuccess();
+          onOpenChange(false);
+        }
+      }
+    } catch (error: any) {
+      console.error('Submit error:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[620px]">
         <DialogHeader>
           <DialogTitle className="tracking-title text-xl">
-            {editingId ? 'Chỉnh sửa danh mục' : 'Tạo danh mục mới'}
+            {category ? 'Chỉnh sửa danh mục' : 'Tạo danh mục mới'}
           </DialogTitle>
-          {editingId && (() => {
-            const cat = allCategories.find(c => c.id === editingId);
-            return cat ? (
-              <p className="text-xs text-gray-400 mt-0.5">
-                Tạo lúc: {new Date(cat.createdAt).toLocaleString('vi-VN', { dateStyle: 'medium', timeStyle: 'short' })}
-              </p>
-            ) : null;
-          })()}
+          {category && (
+            <p className="text-xs text-gray-400 mt-0.5">
+              Tạo lúc: {new Date(category.createdAt).toLocaleString('vi-VN', { dateStyle: 'medium', timeStyle: 'short' })}
+            </p>
+          )}
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -93,7 +134,7 @@ export function CategoryForm({
                 placeholder="Nhập tên danh mục..."
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                disabled={!!editingId}
+                disabled={!!category}
                 className="focus-visible:ring-blue-500/20"
               />
             </div>
@@ -178,7 +219,7 @@ export function CategoryForm({
               placeholder="Nhập mô tả danh mục..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              disabled={!!editingId}
+              disabled={!!category}
               className="focus-visible:ring-blue-500/20 min-h-[100px] border-gray-200"
             />
           </div>
@@ -187,11 +228,11 @@ export function CategoryForm({
           <Button variant="outline" className="rounded-lg text-sm font-semibold" onClick={() => onOpenChange(false)}>Hủy</Button>
           <Button
             className="admin-btn-primary rounded-lg"
-            onClick={onSubmit}
+            onClick={handleSubmit}
             disabled={submitting}
           >
             {submitting && <FolderTree className="w-4 h-4 mr-2 animate-spin" />}
-            {editingId ? 'Cập nhật' : 'Tạo mới'}
+            {category ? 'Cập nhật' : 'Tạo mới'}
           </Button>
         </DialogFooter>
       </DialogContent>

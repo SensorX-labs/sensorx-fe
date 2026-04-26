@@ -19,10 +19,10 @@ export function StatGroup({ items, gridCols = 4, className }: StatGroupProps) {
       gridCols === 5 && "lg:grid-cols-5",
       className
     )}>
-      {items.map((item, index) => (
+      {items.map(({ key, ...itemProps }, index) => (
         <StatCard 
-          key={item.key ?? index} 
-          {...item} 
+          key={key ?? index} 
+          {...itemProps} 
         />
       ))}
     </div>
