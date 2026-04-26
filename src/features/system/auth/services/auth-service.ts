@@ -1,6 +1,7 @@
 import api from "@/shared/configs/axios-config";
 import { LoginRequest } from "../models/login-request";
 import { LoginResponse } from "../models/login-response";
+import { UserResponse } from "../models/user-response";
 
 export class AuthService {
     async login(data: LoginRequest): Promise<LoginResponse> {
@@ -21,5 +22,17 @@ export class AuthService {
 
     async refreshToken(refreshToken: string | undefined): Promise<any> {
         return api.auth.post("/refresh", { refreshToken });
+    }
+
+    async getUsers(): Promise<UserResponse[]> {
+        return api.auth.get("/users");
+    }
+
+    async createStaffAccount(data: { email: string; password: string }): Promise<any> {
+        return api.auth.post("/create", data);
+    }
+
+    async toggleUserLock(userId: string): Promise<any> {
+        return api.auth.post(`/users/${userId}/toggle-lock`);
     }
 }

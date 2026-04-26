@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL } from "../constants/environment";
+import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL, GATEWAY_URL } from "../constants/environment";
 
 // Đọc cookie trực tiếp từ document.cookie (chỉ chạy ở client-side)
 const getClientCookie = (name: string): string | undefined => {
@@ -58,6 +58,15 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 // 2. Giữ nguyên .value để các component kiểu mới truy cập (result.value.items)
                 // 3. Đính kèm flag success
                 if (isSuccess && value && typeof value === 'object') {
+                    // Nếu value là array, giữ nguyên cấu trúc để caller truy cập .value
+                    if (Array.isArray(value)) {
+                        return {
+                            value: value,
+                            isSuccess: true,
+                            success: true,
+                            message: result.message
+                        };
+                    }
                     return {
                         ...(value as object),
                         value: value,
@@ -198,6 +207,7 @@ const api = {
     data: createApiInstance(DATA_SERVICE_URL),
     auth: createApiInstance(AUTH_SERVICE_URL),
     master: createApiInstance(MASTER_SERVICE_URL),
+    gateway: createApiInstance(GATEWAY_URL),
 };
 
 export default api;
