@@ -36,11 +36,12 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     code: '',
     manufacture: '',
     unit: '',
-    status: ProductStatus.ACTIVE,
+    categoryId: '',
     productAttributes: [],
     productImages: [],
     productShowcases: []
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -50,6 +51,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           if (response.isSuccess && response.value) {
             const data = {
               ...response.value,
+              categoryId: response.value.categoryId || undefined,
               productAttributes: response.value.attributes || [],
               productImages: response.value.images?.map(url => ({ imageUrl: url })) || [],
               productShowcases: response.value.showcase ? [response.value.showcase] : []
@@ -67,9 +69,40 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     fetchProduct();
   }, [mode, initialProduct]);
 
-  const handleSave = () => {
-    toast.success(mode === 'create' ? "Tạo sản phẩm thành công" : "Cập nhật sản phẩm thành công");
-    onBack();
+  const handleSave = async () => {
+    if (!formData.name || !formData.code) {
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const command = {
+        name: formData.name,
+        manufacture: formData.manufacture || '',
+        categoryId: formData.categoryId || undefined,
+        unit: formData.unit || '',
+        showcase: formData.productShowcases?.[0]?.body || '',
+        imageUrls: formData.productImages?.map((img: any) => img.imageUrl) || [],
+        attributes: formData.productAttributes?.map((attr: any) => ({
+          attributeName: attr.name,
+          attributeValue: attr.value
+        })) || []
+      };
+
+      const res = mode === 'create'
+        ? await ProductService.create(command)
+        : await ProductService.update(initialProduct.id, command);
+
+      if (res.isSuccess) {
+        toast.success(mode === 'create' ? "Tạo hàng hóa thành công" : "Cập nhật hàng hóa thành công");
+        onBack();
+      }
+    } catch (error) {
+      toast.error("Đã có lỗi xảy ra khi lưu dữ liệu");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
@@ -102,8 +135,17 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           <Button variant="outline" className="rounded-xl border-slate-200 text-slate-700 font-bold hover:bg-slate-50" onClick={onBack}>
             <X className="w-4 h-4 mr-2" /> Hủy
           </Button>
-          <Button onClick={handleSave} className="admin-btn-primary h-10 px-6 rounded-xl shadow-lg shadow-emerald-500/20 font-black uppercase tracking-widest text-[10px]">
-            <Save className="w-4 h-4 mr-2" /> Lưu hàng hóa
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="admin-btn-primary h-10 px-6 rounded-xl shadow-lg shadow-emerald-500/20 font-black uppercase tracking-widest text-[10px]"
+          >
+            {isSaving ? (
+              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Đang lưu...' : 'Lưu hàng hóa'}
           </Button>
         </div>
       </div>
@@ -128,7 +170,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã hàng (SKU) <span className="text-rose-500">*</span></label>
                   <input
@@ -138,17 +180,6 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
                     className="admin-input-premium w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-mono font-bold text-slate-700 uppercase"
                     placeholder="VD: SP001"
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Trạng thái</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 appearance-none"
-                  >
-                    <option value={ProductStatus.ACTIVE}>{statusLabel[ProductStatus.ACTIVE]}</option>
-                    <option value={ProductStatus.INACTIVE}>{statusLabel[ProductStatus.INACTIVE]}</option>
-                  </select>
                 </div>
               </div>
 

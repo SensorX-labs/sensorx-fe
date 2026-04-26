@@ -1,5 +1,5 @@
 import api from "@/shared/configs/axios-config";
-import { ProductDetailResult, ProductLoadMoreForModalQuery, ProductLoadMoreForModalResult, ProductPageListQuery, ProductPageListResult, ProductStatsResult } from "../models";
+import { ProductCommand, ProductDetailResult, ProductLoadMoreForModalQuery, ProductLoadMoreForModalResult, ProductPageListQuery, ProductPageListResult, ProductStatsResult } from "../models";
 import { ProductStatus } from "../enums/product-status";
 
 export const ProductService = {
@@ -30,6 +30,11 @@ export const ProductService = {
     deleteProduct: (id: string) =>
         api.data.delete<any, ProductPageListResult>(`/catalog/products/${id}`),
 
+    create: (command: ProductCommand) =>
+        api.data.post<ProductCommand, any>(`/catalog/products`, command),
+
+    update: (id: string, command: ProductCommand) =>
+        api.data.put<ProductCommand, any>(`/catalog/products/${id}`, command),
 };
 
 export default ProductService;

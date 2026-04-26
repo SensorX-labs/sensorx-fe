@@ -11,13 +11,18 @@ import {
   BookOpen,
   Barcode,
   Factory,
-  Box
+  Box,
+  XCircle,
+  CheckCircle2,
+  Ban,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { MOCK_INTERNAL_PRICES } from '../../../mocks/internal-price-mocks';
 import { ProductStatus } from '../../../enums/product-status';
 import { NotionEditor } from '@/shared/components/notion-editor';
 import { ProductService } from '../../../services/product-service';
+import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 import { toast } from 'sonner';
 
 interface ProductDetailProps {
@@ -40,6 +45,10 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImg, setSelectedImg] = useState(0);
+
+  // State for Confirm Dialogs
+  const [statusConfirm, setStatusConfirm] = useState({ isOpen: false, loading: false });
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, loading: false });
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -77,7 +86,40 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
     );
   }
 
-  if (!product) return <div className="p-6 text-slate-600">Không tìm thấy hàng hóa</div>;
+  const handleToggleStatus = async () => {
+    if (!product) return;
+    const newStatus = product.status === ProductStatus.ACTIVE ? ProductStatus.INACTIVE : ProductStatus.ACTIVE;
+
+    setStatusConfirm({ ...statusConfirm, loading: true });
+    try {
+      const res = await ProductService.changeStatus(product.id, newStatus);
+      if (res.isSuccess) {
+        toast.success(product.status === ProductStatus.ACTIVE ? "Đã ngừng kinh doanh sản phẩm" : "Đã kích hoạt sản phẩm thành công");
+        setStatusConfirm({ isOpen: false, loading: false });
+        // Quay lại trang list để xem thay đổi
+        onBack();
+      }
+    } catch (error) {
+      toast.error("Lỗi khi thay đổi trạng thái");
+      setStatusConfirm({ ...statusConfirm, loading: false });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!product) return;
+    setDeleteConfirm({ ...deleteConfirm, loading: true });
+    try {
+      const res = await ProductService.deleteProduct(product.id);
+      if (res.isSuccess) {
+        toast.success("Xóa sản phẩm thành công");
+        onBack();
+      }
+    } catch (error) {
+      toast.error("Lỗi khi xóa sản phẩm");
+    } finally {
+      setDeleteConfirm({ isOpen: false, loading: false });
+    }
+  };
 
   const images = product.productImages ?? [];
 
@@ -94,6 +136,23 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {product.status === ProductStatus.ACTIVE ? (
+            <Button
+              variant="outline"
+              className="rounded-xl border-amber-100 text-amber-600 font-bold hover:bg-amber-50"
+              onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
+            >
+              <Ban className="w-4 h-4 mr-2" /> Ngừng kinh doanh
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="rounded-xl border-emerald-100 text-emerald-600 font-bold hover:bg-emerald-50"
+              onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
+            >
+              <Zap className="w-4 h-4 mr-2 text-emerald-500 fill-emerald-500" /> Kích hoạt lại
+            </Button>
+          )}
           <Button
             variant="outline"
             className="rounded-xl border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
@@ -101,13 +160,18 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           >
             <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
           </Button>
-          <Button variant="outline" className="rounded-xl border-rose-100 text-rose-600 font-bold hover:bg-rose-50">
+          <Button
+            variant="outline"
+            className="rounded-xl border-rose-100 text-rose-600 font-bold hover:bg-rose-50"
+            onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: true })}
+          >
             <Trash2 className="w-4 h-4 mr-2" /> Xóa
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ... rest of the grid ... */}
         <div className="lg:col-span-1 space-y-6">
           {/* Thông tin chính */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -281,6 +345,30 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={statusConfirm.isOpen}
+        onOpenChange={(open) => setStatusConfirm({ ...statusConfirm, isOpen: open })}
+        title={product.status === ProductStatus.ACTIVE ? "Xác nhận ngừng kinh doanh" : "Xác nhận kích hoạt"}
+        description={product.status === ProductStatus.ACTIVE
+          ? `Bạn có chắc chắn muốn ngừng kinh doanh sản phẩm "${product.name}"?`
+          : `Bạn có muốn kích hoạt lại sản phẩm "${product.name}"?`}
+        onConfirm={handleToggleStatus}
+        confirmText="Xác nhận"
+        type={product.status === ProductStatus.ACTIVE ? "warning" : "question"}
+        loading={statusConfirm.loading}
+      />
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onOpenChange={(open) => setDeleteConfirm({ ...deleteConfirm, isOpen: open })}
+        title="Xác nhận xóa hàng hóa"
+        description={`Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`}
+        onConfirm={handleDelete}
+        confirmText="Xác nhận xóa"
+        type="danger"
+        loading={deleteConfirm.loading}
+      />
     </div>
   );
 }

@@ -61,7 +61,8 @@ export interface ProductDetail {
   code: string;
   name: string;
   manufacture: string;
-  categoryName: string;
+  categoryId?: string;
+  categoryName?: string;
   unit: string;
   showcase?: string;
   attributes: ProductAttribute[];
@@ -72,3 +73,19 @@ export interface ProductDetail {
 }
 export type ProductDetailResult = Result<ProductDetail>
 
+/**
+ * Interface cho API change status
+ */
+export interface ProductAttributeCommand {
+  attributeName: string,
+  attributeValue: string
+}
+export interface ProductCommand {
+  name: string,
+  manufacture: string,
+  categoryId?: string,
+  unit: string,
+  showcase?: string,
+  imageUrls: string[],
+  attributes: ProductAttributeCommand[]
+}
