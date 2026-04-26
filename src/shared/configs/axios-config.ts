@@ -58,6 +58,15 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 // 2. Giữ nguyên .value để các component kiểu mới truy cập (result.value.items)
                 // 3. Đính kèm flag success
                 if (isSuccess && value && typeof value === 'object') {
+                    // Nếu value là array, giữ nguyên cấu trúc để caller truy cập .value
+                    if (Array.isArray(value)) {
+                        return {
+                            value: value,
+                            isSuccess: true,
+                            success: true,
+                            message: result.message
+                        };
+                    }
                     return {
                         ...(value as object),
                         value: value,

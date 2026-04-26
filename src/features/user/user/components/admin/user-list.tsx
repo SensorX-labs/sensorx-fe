@@ -44,6 +44,12 @@ const roleColor: Record<string, string> = {
   Admin: 'bg-red-100 text-red-600',
 };
 
+function extractArray<T>(raw: unknown): T[] {
+  if (Array.isArray(raw)) return raw;
+  const candidate = (raw as Record<string, unknown> | null | undefined)?.value;
+  return Array.isArray(candidate) ? (candidate as T[]) : [];
+}
+
 export default function UserList() {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
@@ -54,8 +60,8 @@ export default function UserList() {
 
   const fetchUsers = async () => {
     try {
-      const data = await authService.getUsers();
-      setUsers(data);
+      const result = await authService.getUsers();
+      setUsers(extractArray<UserResponse>(result));
     } catch {
       toast.error('Không thể tải danh sách tài khoản');
     }
@@ -63,8 +69,8 @@ export default function UserList() {
 
   const fetchRoles = async () => {
     try {
-      const data = await rolesService.getRoles();
-      setRoles(data);
+      const result = await rolesService.getRoles();
+      setRoles(extractArray<RoleItem>(result));
     } catch {
       // silently fail – roles dropdown will fallback to local labels
     }
