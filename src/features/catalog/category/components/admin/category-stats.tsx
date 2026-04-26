@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Layers, FolderOpen, GitBranch } from 'lucide-react';
 import { Category } from '../../models/category-model';
+import { StatGroup } from '@/shared/components/admin/stat-card';
 
 interface CategoryStatsProps {
   categories: Category[];
@@ -37,22 +38,5 @@ export function CategoryStats({ categories }: CategoryStatsProps) {
     },
   ];
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
-      {stats.map((stat, i) => (
-        <div
-          key={i}
-          className={`bg-white p-5 rounded-xl border ${stat.borderColor} shadow-sm flex items-center gap-4 transition-all hover:shadow-md hover:-translate-y-1`}
-        >
-          <div className={`p-3 rounded-lg ${stat.color}`}>
-            <stat.icon className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 font-medium">{stat.label}</p>
-            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <StatGroup items={stats} gridCols={3} />;
 }
