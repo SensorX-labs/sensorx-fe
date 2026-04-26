@@ -14,6 +14,7 @@ import {
   AdminHeaderBar
 } from '@/shared/components/admin/layout';
 import { toast } from 'sonner';
+import { ProductStatus } from '../../../enums/product-status';
 
 interface ProductListProps {
   onViewDetail: (product: ProductPageList) => void;
@@ -31,21 +32,21 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
+  const fetchStats = useCallback(async () => {
+    const statsRes = await ProductService.getStats();
+    if (statsRes.isSuccess && statsRes.value) {
+      setStats(statsRes.value);
+    }
+  }, []);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Fetch Stats
-      const statsRes = await ProductService.getStats();
-      if (statsRes.isSuccess && statsRes.value) {
-        setStats(statsRes.value);
-      }
-
-      // 2. Fetch Products
       const listRes = await ProductService.getProducts({
         pageNumber: currentPage,
         pageSize: itemsPerPage,
         searchTerm: searchTerm || undefined,
-        // status: activeTab !== 'all' ? activeTab : undefined
+        status: activeTab !== 'all' ? (activeTab === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE) : undefined
       });
 
       if (listRes.isSuccess && listRes.value) {
@@ -59,6 +60,10 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
       setLoading(false);
     }
   }, [currentPage, searchTerm, activeTab]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   useEffect(() => {
     fetchData();

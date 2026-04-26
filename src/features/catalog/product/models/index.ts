@@ -7,6 +7,7 @@ import { ProductStatus } from "../enums/product-status";
  */
 export interface ProductPageListQuery extends BaseQueryOffsetPagedList {
   categoryId?: string;
+  status?: ProductStatus;
 }
 export interface ProductPageList {
   id: string;
