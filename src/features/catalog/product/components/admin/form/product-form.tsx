@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from 'sonner';
-import { CategorySelectionDialog } from '@/shared/components/business/category-selection-dialog';
+import { CategorySelectionDialog } from '@/shared/components/admin/selection-modal';
 import { NotionEditor } from '@/shared/components/notion-editor';
 import ProductService from '../../../services/product-service';
 import { ProductStatus } from '../../../enums/product-status';

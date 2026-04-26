@@ -23,8 +23,8 @@ import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
 import { Label } from '@/shared/components/shadcn-ui/label';
 import {
   ProductSelectionDialog
-} from '@/shared/components/business/product-selection-dialog';
-import { Product } from '@/features/catalog/product/models/product-selection';
+} from '@/shared/components/admin/selection-modal/product-selection-dialog';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models';
 import InternalPriceService from '../../../services/internal-price-services';
 
 interface InternalPriceFormProps {
@@ -35,7 +35,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
   const [loading, setLoading] = useState(false);
 
   // Mock product selection state
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductLoadMoreForModal | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Form state
