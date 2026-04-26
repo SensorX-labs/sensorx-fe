@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Edit, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { HighlightText } from './category-utils';
-import { Category } from '../../models/category-model';
+import { Category } from '../../models';
 import { CategoryDeleteDialog } from './category-delete-dialog';
 
 interface CategoryTableProps {

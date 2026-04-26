@@ -14,13 +14,13 @@ interface ProductTableProps {
 }
 
 const statusColor: Record<string, string> = {
-  [ProductStatus.ACTIVE]: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  [ProductStatus.INACTIVE]: 'bg-slate-50 text-slate-500 border-slate-100'
+  [ProductStatus.ACTIVE]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+  [ProductStatus.INACTIVE]: 'bg-amber-50 text-amber-600 border-amber-100'
 };
 
 const statusLabel: Record<string, string> = {
   [ProductStatus.ACTIVE]: 'Đang hoạt động',
-  [ProductStatus.INACTIVE]: 'Tạm ngưng'
+  [ProductStatus.INACTIVE]: 'Ngừng kinh doanh'
 };
 
 export function ProductTable({ products, onViewDetail, onEdit, onDelete }: ProductTableProps) {
@@ -40,7 +40,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
           <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
             <td className="px-6 py-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-slate-100 overflow-hidden bg-white flex-shrink-0 shadow-sm group-hover:border-emerald-200 transition-colors">
+                <div className="w-12 h-12 rounded border border-slate-100 overflow-hidden bg-white flex-shrink-0 shadow-sm group-hover:border-emerald-200 transition-colors">
                   {p.images && p.images.length > 0 ? (
                     <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   ) : (
@@ -65,16 +65,16 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
               </div>
             </td>
             <td className="px-6 py-4">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider border border-blue-100">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider border border-blue-100">
                 {p.categoryName || 'Chưa phân loại'}
               </span>
             </td>
             <td className="px-6 py-4">
               <span className={`
-                inline-flex items-center px-2.5 py-0.5 rounded-lg border text-[10px] font-black uppercase tracking-wider
+                inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider
                 ${statusColor[p.status as ProductStatus] ?? 'bg-slate-50 text-slate-400 border-slate-100'}
               `}>
-                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse ${p.status === ProductStatus.ACTIVE ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse ${p.status === ProductStatus.ACTIVE ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                 {statusLabel[p.status as ProductStatus] || p.status}
               </span>
             </td>
@@ -83,7 +83,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all"
+                  className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-all"
                   title="Xem chi tiết"
                   onClick={() => onViewDetail(p)}
                 >
@@ -92,16 +92,16 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-xl transition-all"
+                  className="h-9 w-9 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded transition-all"
                   title="Chỉnh sửa"
                   onClick={() => onEdit(p)}
                 >
                   <Edit className="w-4.5 h-4.5" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-all" 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-all"
                   title="Xóa"
                   onClick={() => onDelete?.(p)}
                 >

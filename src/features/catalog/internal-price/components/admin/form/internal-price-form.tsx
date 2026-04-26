@@ -23,8 +23,8 @@ import { Checkbox } from '@/shared/components/shadcn-ui/checkbox';
 import { Label } from '@/shared/components/shadcn-ui/label';
 import {
   ProductSelectionDialog
-} from '@/shared/components/business/product-selection-dialog';
-import { Product } from '@/features/catalog/product/models/product-selection';
+} from '@/shared/components/admin/selection-modal/product-selection-dialog';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models';
 import InternalPriceService from '../../../services/internal-price-services';
 
 interface InternalPriceFormProps {
@@ -35,7 +35,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
   const [loading, setLoading] = useState(false);
 
   // Mock product selection state
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductLoadMoreForModal | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Form state
@@ -131,9 +131,9 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="h-11 rounded-xl text-sm font-bold border-slate-200 px-6" onClick={onBack} disabled={loading}>Hủy bỏ</Button>
+            <Button variant="outline" className="h-11 rounded text-sm font-bold border-slate-200 px-6" onClick={onBack} disabled={loading}>Hủy bỏ</Button>
             <Button
-              className="h-11 rounded-xl text-sm font-bold admin-btn-primary gap-2 px-8 shadow-lg shadow-emerald-500/20"
+              className="h-11 rounded text-sm font-bold admin-btn-primary gap-2 px-8 shadow-lg shadow-emerald-500/20"
               onClick={handleSubmit}
               disabled={loading}
             >
@@ -168,7 +168,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                   {!selectedProduct ? (
                     <div
                       onClick={() => setIsDialogOpen(true)}
-                      className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-all group"
+                      className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-all group"
                     >
                       <Plus className="w-6 h-6 text-slate-300 mb-1 group-hover:text-emerald-500 transition-colors" />
                       <span className="text-sm font-medium text-slate-400 group-hover:text-slate-600 transition-colors">Nhấn để tìm kiếm sản phẩm</span>
@@ -176,10 +176,10 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                   ) : (
                     <div
                       onClick={() => setIsDialogOpen(true)}
-                      className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all"
+                      className="p-3 bg-white border border-slate-200 rounded flex items-center justify-between cursor-pointer hover:border-emerald-300 hover:shadow-sm transition-all"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center overflow-hidden border border-emerald-100">
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded flex items-center justify-center overflow-hidden border border-emerald-100">
                           {selectedProduct.images.length > 0 ? (
                             <img src={selectedProduct.images[0]} alt={selectedProduct.name} className="w-full h-full object-cover" />
                           ) : (
@@ -222,7 +222,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                     <div className="relative">
                       <input
                         type="number"
-                        className="w-full h-11 bg-white border border-slate-200 rounded-lg pl-4 pr-10 text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                        className="w-full h-11 bg-white border border-slate-200 rounded pl-4 pr-10 text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                         placeholder="0"
                         value={formData.suggestedPrice || ''}
                         onChange={(e) => setFormData({ ...formData, suggestedPrice: Number(e.target.value) })}
@@ -245,7 +245,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                     <div className="relative">
                       <input
                         type="number"
-                        className="w-full h-11 bg-white border border-slate-200 rounded-lg pl-4 pr-10 text-sm font-bold focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all"
+                        className="w-full h-11 bg-white border border-slate-200 rounded pl-4 pr-10 text-sm font-bold focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all"
                         placeholder="0"
                         value={formData.floorPrice || ''}
                         onChange={(e) => setFormData({ ...formData, floorPrice: Number(e.target.value) })}
@@ -260,7 +260,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                         <Calendar className="w-3 h-3" />
                         Thời hạn hiệu lực
                       </label>
-                      <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 transition-all hover:bg-slate-100">
+                      <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-100 transition-all hover:bg-slate-100">
                         <Checkbox
                           id="isInfinite"
                           checked={formData.isInfinite}
@@ -283,7 +283,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                       <input
                         type="date"
                         disabled={formData.isInfinite}
-                        className={`w-full h-11 bg-white border border-slate-200 rounded-lg px-4 font-medium outline-none transition-all ${formData.isInfinite
+                        className={`w-full h-11 bg-white border border-slate-200 rounded px-4 font-medium outline-none transition-all ${formData.isInfinite
                           ? 'opacity-50 bg-slate-50 cursor-not-allowed border-dashed'
                           : 'focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500'
                           }`}
@@ -333,7 +333,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                         <input
                           type="number"
                           min={2}
-                          className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-lg pl-3 pr-8 font-bold text-sm focus:bg-white transition-all outline-none"
+                          className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded pl-3 pr-8 font-bold text-sm focus:bg-white transition-all outline-none"
                           value={tier.quantity}
                           onChange={(e) => handleTierChange(index, 'quantity', Number(e.target.value))}
                         />
@@ -342,7 +342,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                       <div className="col-span-5 relative">
                         <input
                           type="number"
-                          className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-lg pl-3 pr-8 font-bold text-sm focus:bg-white transition-all outline-none"
+                          className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded pl-3 pr-8 font-bold text-sm focus:bg-white transition-all outline-none"
                           value={tier.price || ''}
                           onChange={(e) => handleTierChange(index, 'price', Number(e.target.value))}
                         />

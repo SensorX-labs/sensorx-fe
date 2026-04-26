@@ -28,7 +28,7 @@ export function LocalPagination({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-8 w-8 p-0 rounded"
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
         >
@@ -49,7 +49,7 @@ export function LocalPagination({
                 key={pageNum}
                 variant={currentPage === pageNum ? "default" : "outline"}
                 size="sm"
-                className={`h-8 w-8 p-0 rounded-lg text-xs font-bold ${currentPage === pageNum ? 'admin-btn-primary' : ''}`}
+                className={`h-8 w-8 p-0 rounded text-xs font-bold ${currentPage === pageNum ? 'admin-btn-primary' : ''}`}
                 onClick={() => onPageChange(pageNum)}
               >
                 {pageNum}
@@ -60,7 +60,7 @@ export function LocalPagination({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0 rounded-lg"
+          className="h-8 w-8 p-0 rounded"
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
         >
