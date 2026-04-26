@@ -30,7 +30,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const fetchStats = useCallback(async () => {
     const statsRes = await ProductService.getStats();
@@ -76,7 +76,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
-    <AdminPageContainer offsetBottom={40}>
+    <AdminPageContainer>
       <div className="shrink-0">
         <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
@@ -106,16 +106,29 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
 
         {/* Main Data Table */}
         <div className="relative overflow-x-auto flex-1 min-h-0 custom-scrollbar">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="w-8 h-8 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+          <ProductTable
+            products={products}
+            onViewDetail={onViewDetail}
+            onEdit={onEdit}
+            onDelete={async (p) => {
+              if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm ${p.name}?`)) {
+                const res = await ProductService.deleteProduct(p.id);
+                if (res.isSuccess) {
+                  toast.success("Xóa sản phẩm thành công");
+                  fetchStats();
+                  fetchData();
+                }
+              }
+            }}
+          />
+
+          {loading && (
+            <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-300">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 animate-pulse">Đang tải dữ liệu...</p>
+              </div>
             </div>
-          ) : (
-            <ProductTable
-              products={products}
-              onViewDetail={onViewDetail}
-              onEdit={onEdit}
-            />
           )}
         </div>
 

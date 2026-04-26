@@ -80,7 +80,7 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
   };
 
   return (
-    <AdminPageContainer offsetBottom={40}>
+    <AdminPageContainer>
       <div className="shrink-0">
         <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
