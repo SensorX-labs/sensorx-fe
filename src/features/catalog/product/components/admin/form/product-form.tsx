@@ -18,18 +18,11 @@ import { toast } from 'sonner';
 import { CategorySelectionDialog } from '@/shared/components/admin/selection-modal';
 import { NotionEditor } from '@/shared/components/notion-editor';
 import ProductService from '../../../services/product-service';
-import { ProductStatus } from '../../../enums/product-status';
-
 interface ProductFormProps {
   product?: any;
   mode: 'create' | 'update';
   onBack: () => void;
 }
-
-const statusLabel: Record<string, string> = {
-  [ProductStatus.ACTIVE]: 'Đang hoạt động',
-  [ProductStatus.INACTIVE]: 'Tạm ngưng'
-};
 
 export function ProductForm({ product: initialProduct, mode, onBack }: ProductFormProps) {
   const [loading, setLoading] = useState(mode === 'update');
