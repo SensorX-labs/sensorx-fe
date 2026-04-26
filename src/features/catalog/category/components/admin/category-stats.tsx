@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Layers, FolderOpen, GitBranch } from 'lucide-react';
-import { Category } from '../../models/category-model';
+import { Category } from '../../models';
 import { StatGroup } from '@/shared/components/admin/stat-card';
 
 interface CategoryStatsProps {

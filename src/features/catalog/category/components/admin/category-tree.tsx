@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Edit, Trash2, FolderTree } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { buildTree, TreeNode, HighlightText } from './category-utils';
-import { Category } from '../../models/category-model';
+import { Category } from '../../models';
 import { CategoryDeleteDialog } from './category-delete-dialog';
 import { CategoryMoveDialog } from './category-move-dialog';
 
@@ -43,7 +43,7 @@ export function CategoryTree({
   onMatchesChange,
 }: CategoryTreeProps) {
   const tree = buildTree(categories);
-  
+
   // Logic tìm kiếm các node khớp - Vẫn nằm ở Tree vì nó liên quan đến cấu trúc dữ liệu
   useEffect(() => {
     if (searchTerm.trim()) {

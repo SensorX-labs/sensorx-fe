@@ -18,7 +18,7 @@ import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
 import { getAllDescendantIds } from './category-utils';
-import { Category } from '../../models/category-model';
+import { Category } from '../../models';
 import CategoryService from '../../services/category-services';
 import { toast } from 'sonner';
 

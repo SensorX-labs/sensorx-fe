@@ -1,4 +1,4 @@
-import { Category } from "../../models/category-model";
+import { Category } from "../../models";
 
 // --- SEARCH HIGHLIGHT ---
 export function HighlightText({
