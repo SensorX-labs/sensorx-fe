@@ -10,13 +10,15 @@ import {
   Trash2,
   Layers,
   Box,
-  LayoutGrid
+  LayoutGrid,
+  FolderTree
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { ProductStatus } from '../../../enums/product-status';
-import { NotionEditor } from '@/shared/components/notion-editor';
-import { ProductService } from '../../../services/product-service';
 import { toast } from 'sonner';
+import { CategorySelectionDialog } from '@/shared/components/business/category-selection-dialog';
+import { NotionEditor } from '@/shared/components/notion-editor';
+import ProductService from '../../../services/product-service';
+import { ProductStatus } from '../../../enums/product-status';
 
 interface ProductFormProps {
   product?: any;
@@ -42,6 +44,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     productShowcases: []
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -197,12 +200,16 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Danh mục</label>
-                  <input
-                    type="text"
-                    value={formData.categoryName || ''}
-                    className="admin-input-premium w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
-                    placeholder="Loại hàng..."
-                  />
+                  <div className="relative group cursor-pointer" onClick={() => setIsCategoryDialogOpen(true)}>
+                    <input
+                      type="text"
+                      readOnly
+                      value={formData.categoryName || ''}
+                      className="admin-input-premium w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 cursor-pointer pr-10"
+                      placeholder="Chọn danh mục..."
+                    />
+                    <FolderTree className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đơn vị tính</label>
@@ -299,6 +306,20 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           </div>
         </div>
       </div>
+
+      <CategorySelectionDialog
+        isOpen={isCategoryDialogOpen}
+        onOpenChange={setIsCategoryDialogOpen}
+        onSelect={(cat) => {
+          setFormData({
+            ...formData,
+            categoryId: cat.id,
+            categoryName: cat.name
+          });
+          setIsCategoryDialogOpen(false);
+          toast.success(`Đã chọn danh mục: ${cat.name}`);
+        }}
+      />
     </div>
   );
 }

@@ -47,6 +47,7 @@ export type LoadMoreCategoriesForModalQuery = BaseQueryLoadMore;
 export interface LoadMoreCategoriesForModalResponse {
   id: string,
   name: string,
+  description: string,
   createAt: string
 }
 
