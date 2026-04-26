@@ -13,9 +13,11 @@ import {
   ProductAttributeSection,
   ProductShowcaseSection
 } from './sections';
+import { ProductCommand, ProductDetail } from '../../../models';
+import { ProductStatus } from '../../../enums/product-status';
 
 interface ProductFormProps {
-  product?: any;
+  product?: ProductDetail;
   mode: 'create' | 'update';
   onBack: () => void;
 }
@@ -25,16 +27,20 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
   const [isSaving, setIsSaving] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
-  const [formData, setFormData] = useState<any>({
-    name: '',
+  const [formData, setFormData] = useState<ProductDetail>({
+    id: '',
     code: '',
+    name: '',
     manufacture: '',
-    categoryName: '',
     categoryId: null,
+    categoryName: '',
     unit: '',
-    productImages: [],
-    productAttributes: [],
-    productShowcases: []
+    images: [],
+    attributes: [],
+    showcase: '',
+    status: ProductStatus.ACTIVE,
+    createdAt: '',
+    updatedAt: ''
   });
 
   useEffect(() => {
@@ -42,7 +48,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       const fetchProduct = async () => {
         setLoading(true);
         const res = await ProductService.getDetail(initialProduct.id);
-        if (res.isSuccess) {
+        if (res.isSuccess && res.value) {
           setFormData(res.value);
         }
         setLoading(false);
@@ -59,21 +65,19 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
 
     try {
       setIsSaving(true);
-      const command = {
-        ...formData,
+      const command: ProductCommand = {
+        name: formData.name,
+        manufacture: formData.manufacture,
         categoryId: formData.categoryId,
-        unit: formData.unit || '',
-        showcase: formData.productShowcases?.[0]?.body || '',
-        imageUrls: formData.productImages?.map((img: any) => img.imageUrl) || [],
-        attributes: formData.productAttributes?.map((attr: any) => ({
-          attributeName: attr.name,
-          attributeValue: attr.value
-        })) || []
+        unit: formData.unit,
+        showcase: formData.showcase,
+        images: formData.images || [],
+        attributes: formData.attributes || []
       };
 
       const res = mode === 'create'
         ? await ProductService.create(command)
-        : await ProductService.update(initialProduct.id, command);
+        : await ProductService.update(initialProduct?.id || '', command);
 
       if (res.isSuccess) {
         toast.success(mode === 'create' ? "Tạo hàng hóa thành công" : "Cập nhật hàng hóa thành công");
@@ -88,35 +92,32 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
 
   // Helper handlers for complex fields
   const handleRemoveImage = (index: number) => {
-    const newImages = [...(formData.productImages || [])];
+    const newImages = [...(formData.images || [])];
     newImages.splice(index, 1);
-    setFormData({ ...formData, productImages: newImages });
+    setFormData({ ...formData, images: newImages });
   };
 
   const handleAddAttribute = () => {
     setFormData({
       ...formData,
-      productAttributes: [...(formData.productAttributes || []), { name: '', value: '' }]
+      attributes: [...(formData.attributes || []), { name: '', value: '' }]
     });
   };
 
   const handleRemoveAttribute = (index: number) => {
-    const newAttrs = [...(formData.productAttributes || [])];
+    const newAttrs = [...(formData.attributes || [])];
     newAttrs.splice(index, 1);
-    setFormData({ ...formData, productAttributes: newAttrs });
+    setFormData({ ...formData, attributes: newAttrs });
   };
 
   const handleAttributeChange = (index: number, field: 'name' | 'value', value: string) => {
-    const newAttrs = [...(formData.productAttributes || [])];
+    const newAttrs = [...(formData.attributes || [])];
     newAttrs[index] = { ...newAttrs[index], [field]: value };
-    setFormData({ ...formData, productAttributes: newAttrs });
+    setFormData({ ...formData, attributes: newAttrs });
   };
 
   const handleShowcaseChange = (content: string) => {
-    const newShowcases = [...(formData.productShowcases || [])];
-    if (newShowcases[0]) newShowcases[0].body = content;
-    else newShowcases.push({ summary: '', body: content });
-    setFormData({ ...formData, productShowcases: newShowcases });
+    setFormData({ ...formData, showcase: content });
   };
 
   if (loading) {
@@ -148,7 +149,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           />
 
           <ProductImageSection
-            imageUrls={formData.productImages?.map((img: any) => img.imageUrl) || []}
+            imageUrls={formData.images || []}
             onRemoveImage={handleRemoveImage}
           />
         </div>
@@ -156,14 +157,14 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
         {/* Right Column */}
         <div className="lg:col-span-2 space-y-6">
           <ProductAttributeSection
-            attributes={formData.productAttributes || []}
+            attributes={formData.attributes || []}
             onAddAttribute={handleAddAttribute}
             onRemoveAttribute={handleRemoveAttribute}
             onAttributeChange={handleAttributeChange}
           />
 
           <ProductShowcaseSection
-            content={formData.productShowcases?.[0]?.body || ''}
+            content={formData.showcase || ''}
             onChange={handleShowcaseChange}
           />
         </div>

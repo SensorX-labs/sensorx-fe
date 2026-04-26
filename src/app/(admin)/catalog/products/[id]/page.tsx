@@ -1,6 +1,6 @@
 'use client';
 
-import { ProductDetail } from '@/features/catalog/product/components/admin/detail/product-detail';
+import { ProductDetailView } from '@/features/catalog/product/components/admin/detail/product-detail';
 import { ProductForm } from '@/features/catalog/product/components/admin/form/product-form';
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   if (isEditing) {
     return (
       <ProductForm 
-        product={{ id: resolvedParams.id }} 
+        product={{ id: resolvedParams.id } as any} 
         mode="update" 
         onBack={handleCancel} 
       />
@@ -34,7 +34,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <ProductDetail 
+    <ProductDetailView 
       productId={resolvedParams.id} 
       onBack={handleBackToList}
       onEdit={handleEdit}

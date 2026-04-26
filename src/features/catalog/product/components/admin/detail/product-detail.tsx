@@ -24,6 +24,7 @@ import { NotionEditor } from '@/shared/components/notion-editor';
 import { ProductService } from '../../../services/product-service';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 import { toast } from 'sonner';
+import { ProductDetail } from '../../../models';
 
 interface ProductDetailProps {
   productId: string;
@@ -41,8 +42,8 @@ const statusLabel: Record<string, string> = {
   [ProductStatus.INACTIVE]: 'Tạm ngưng'
 };
 
-export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps) {
-  const [product, setProduct] = useState<any>(null);
+export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailProps) {
+  const [product, setProduct] = useState<ProductDetail>();
   const [loading, setLoading] = useState(true);
   const [selectedImg, setSelectedImg] = useState(0);
 
@@ -55,13 +56,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
       try {
         const response = await ProductService.getDetail(productId);
         if (response.isSuccess && response.value) {
-          const data = {
-            ...response.value,
-            productAttributes: response.value.attributes || [],
-            productImages: response.value.images?.map(url => ({ imageUrl: url })) || [],
-            productShowcases: response.value.showcase ? [response.value.showcase] : []
-          };
-          setProduct(data);
+          setProduct(response.value);
         }
       } catch (error) {
         console.error(">>> Error fetching product detail:", error);
@@ -121,7 +116,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
     }
   };
 
-  const images = product.productImages ?? [];
+  const images = product?.images ?? [];
 
   return (
     <div className="space-y-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
@@ -132,11 +127,11 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </Button>
           <div>
             <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Chi tiết hàng hóa</h2>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{product.code}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{product?.code}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {product.status === ProductStatus.ACTIVE ? (
+          {product?.status === ProductStatus.ACTIVE ? (
             <Button
               variant="outline"
               className="rounded border-amber-100 text-amber-600 font-bold hover:bg-amber-50"
@@ -171,7 +166,6 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ... rest of the grid ... */}
         <div className="lg:col-span-1 space-y-6">
           {/* Thông tin chính */}
           <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
@@ -181,20 +175,20 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
             <div className="p-6 space-y-4">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên hàng hóa</p>
-                <p className="text-base font-bold text-slate-800">{product.name}</p>
+                <p className="text-base font-bold text-slate-800">{product?.name}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mã hàng</p>
                   <div className="flex items-center gap-1.5 text-slate-700 font-mono font-bold uppercase">
                     <Barcode className="w-3.5 h-3.5 text-slate-400" />
-                    {product.code}
+                    {product?.code}
                   </div>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Trạng thái</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider ${statusColor[product.status]}`}>
-                    {statusLabel[product.status]}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider ${product?.status ? statusColor[product.status] : ''}`}>
+                    {product?.status ? statusLabel[product.status] : '--'}
                   </span>
                 </div>
               </div>
@@ -202,19 +196,19 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nhà sản xuất</p>
                 <div className="flex items-center gap-1.5 text-slate-700 font-bold">
                   <Factory className="w-3.5 h-3.5 text-slate-400" />
-                  {product.manufacture || '--'}
+                  {product?.manufacture || '--'}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Danh mục</p>
                   <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider">
-                    {product.categoryName || '--'}
+                    {product?.categoryName || '--'}
                   </span>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đơn vị tính</p>
-                  <span className="text-slate-700 font-bold italic">{product.unit || '--'}</span>
+                  <span className="text-slate-700 font-bold italic">{product?.unit || '--'}</span>
                 </div>
               </div>
             </div>
@@ -230,9 +224,9 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
               <div className="aspect-square rounded bg-slate-50 border border-slate-100 overflow-hidden group">
                 {images.length > 0 ? (
                   <img
-                    src={images[selectedImg]?.imageUrl}
+                    src={images[selectedImg]}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    alt={product.name}
+                    alt={product?.name}
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
@@ -243,7 +237,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                  {images.map((img: any, idx: number) => (
+                  {images.map((img: string, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImg(idx)}
@@ -252,7 +246,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
                         ${selectedImg === idx ? 'border-emerald-500 scale-95' : 'border-slate-100 hover:border-slate-200'}
                       `}
                     >
-                      <img src={img.imageUrl} className="w-full h-full object-cover" alt="" />
+                      <img src={img} className="w-full h-full object-cover" alt="" />
                     </button>
                   ))}
                 </div>
@@ -280,7 +274,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
                   <tbody className="divide-y divide-slate-50">
                     {internalPrice.priceTiers.map((tier: any, idx: number) => (
                       <tr key={idx} className="hover:bg-slate-50/30 transition-colors">
-                        <td className="px-6 py-4 text-slate-700 font-bold">Từ {tier.fromQuantity} {product.unit}</td>
+                        <td className="px-6 py-4 text-slate-700 font-bold">Từ {tier.fromQuantity} {product?.unit}</td>
                         <td className="px-6 py-4 text-right">
                           <span className="text-base font-black text-emerald-600">{tier.price.toLocaleString('vi-VN')}</span>
                           <span className="ml-1 text-[10px] font-bold text-slate-400 uppercase">đ</span>
@@ -305,10 +299,10 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
               <Layers className="w-4 h-4 text-slate-300" />
             </div>
             <div className="p-0">
-              {product.productAttributes && product.productAttributes.length > 0 ? (
+              {product?.attributes && product.attributes.length > 0 ? (
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-slate-50">
-                    {product.productAttributes.map((attr: any, idx: number) => (
+                    {product.attributes.map((attr: any, idx: number) => (
                       <tr key={idx} className="hover:bg-slate-50/30">
                         <td className="px-6 py-4 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
                         <td className="px-6 py-4 font-bold text-slate-800">{attr.value}</td>
@@ -333,10 +327,10 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
             </div>
             <div className="p-6 min-h-[200px]">
               <NotionEditor
-                content={product.productShowcases?.[0]?.body || ''}
+                content={product?.showcase || ''}
                 editable={false}
               />
-              {(!product.productShowcases || product.productShowcases.length === 0) && (
+              {!product?.showcase && (
                 <div className="flex flex-col items-center justify-center text-slate-300 py-10">
                   <p className="text-xs font-bold uppercase tracking-widest italic text-slate-400">Chưa có nội dung mô tả</p>
                 </div>
@@ -349,13 +343,13 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
       <ConfirmDialog
         isOpen={statusConfirm.isOpen}
         onOpenChange={(open) => setStatusConfirm({ ...statusConfirm, isOpen: open })}
-        title={product.status === ProductStatus.ACTIVE ? "Xác nhận ngừng kinh doanh" : "Xác nhận kích hoạt"}
-        description={product.status === ProductStatus.ACTIVE
-          ? `Bạn có chắc chắn muốn ngừng kinh doanh sản phẩm "${product.name}"?`
-          : `Bạn có muốn kích hoạt lại sản phẩm "${product.name}"?`}
+        title={product?.status === ProductStatus.ACTIVE ? "Xác nhận ngừng kinh doanh" : "Xác nhận kích hoạt"}
+        description={product?.status === ProductStatus.ACTIVE
+          ? `Bạn có chắc chắn muốn ngừng kinh doanh sản phẩm "${product?.name}"?`
+          : `Bạn có muốn kích hoạt lại sản phẩm "${product?.name}"?`}
         onConfirm={handleToggleStatus}
         confirmText="Xác nhận"
-        type={product.status === ProductStatus.ACTIVE ? "warning" : "question"}
+        type={product?.status === ProductStatus.ACTIVE ? "warning" : "question"}
         loading={statusConfirm.loading}
       />
 
@@ -363,7 +357,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
         isOpen={deleteConfirm.isOpen}
         onOpenChange={(open) => setDeleteConfirm({ ...deleteConfirm, isOpen: open })}
         title="Xác nhận xóa hàng hóa"
-        description={`Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`}
+        description={`Bạn có chắc chắn muốn xóa sản phẩm "${product?.name}"? Hành động này không thể hoàn tác.`}
         onConfirm={handleDelete}
         confirmText="Xác nhận xóa"
         type="danger"
