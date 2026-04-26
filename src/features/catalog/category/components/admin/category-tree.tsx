@@ -153,7 +153,7 @@ export function CategoryTree({
 
         <DragOverlay>
           {draggingId ? (
-            <div className="bg-white px-4 py-3 rounded-lg shadow-xl border-2 border-emerald-500 flex items-center gap-3 opacity-95">
+            <div className="bg-white px-4 py-3 rounded shadow-xl border-2 border-emerald-500 flex items-center gap-3 opacity-95">
               <GripVertical className="w-4 h-4 text-gray-400" />
               <span className="font-bold text-gray-900">
                 {categories.find(c => c.id === draggingId)?.name}
@@ -227,7 +227,7 @@ function TreeItem({
   return (
     <div ref={setNodeRef} style={style} className="group" id={`tree-item-${node.id}`}>
       <div className={`
-        flex items-center gap-3 bg-white p-3 rounded-lg border transition-all
+        flex items-center gap-3 bg-white p-3 rounded border transition-all
         ${isActiveMatch ? 'border-orange-500 shadow-md ring-2 ring-orange-100' : 'border-gray-100 hover:border-blue-200 hover:shadow-sm'}
       `}>
         {/* Grip Handle */}
@@ -296,7 +296,7 @@ export function RootDropZone() {
     <div
       ref={setNodeRef}
       className={`
-        p-3 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-200
+        p-3 border-2 border-dashed rounded flex flex-col items-center justify-center gap-1 transition-all duration-200
         ${isOver
           ? 'border-orange-500 bg-orange-50 text-orange-600 scale-[1.01] shadow-md shadow-orange-100'
           : 'border-gray-200 bg-gray-50/50 text-gray-400'

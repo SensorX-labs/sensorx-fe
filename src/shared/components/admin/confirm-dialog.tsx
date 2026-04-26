@@ -81,7 +81,7 @@ export function ConfirmDialog({
           )}
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-6 gap-3">
-          <AlertDialogCancel disabled={loading} className="rounded-lg border-slate-200">
+          <AlertDialogCancel disabled={loading} className="rounded border-slate-200">
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction
@@ -91,7 +91,7 @@ export function ConfirmDialog({
             }}
             disabled={loading}
             className={cn(
-              "rounded-lg font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50",
+              "rounded font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50",
               getVariantClasses(),
               type === 'danger' && "shadow-rose-500/20",
               type === 'warning' && "shadow-amber-500/20",

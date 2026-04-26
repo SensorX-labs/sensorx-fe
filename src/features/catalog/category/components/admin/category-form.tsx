@@ -159,10 +159,10 @@ export function CategoryForm({
                 </PopoverTrigger>
                 <PopoverContent className="w-[450px] p-0 shadow-2xl border-gray-200" align="start">
                   <div className="p-3 border-b border-gray-100 bg-gray-50/50">
-                    <div className="flex items-center px-3 bg-white rounded-lg border border-gray-200 focus-within:border-blue-400 transition-colors">
+                    <div className="flex items-center px-3 bg-white rounded border border-gray-200 focus-within:border-blue-400 transition-colors">
                       <Search className="w-4 h-4 text-gray-400 mr-2" />
                       <input
-                        className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-gray-400"
+                        className="flex h-10 w-full rounded bg-transparent py-3 text-sm outline-none placeholder:text-gray-400"
                         placeholder="Tìm kiếm danh mục..."
                         value={parentSearch}
                         onChange={(e) => setParentSearch(e.target.value)}
@@ -175,7 +175,7 @@ export function CategoryForm({
                     onWheel={(e) => e.stopPropagation()}
                   >
                     <button
-                      className={`w-full text-left px-4 py-2.5 text-sm rounded-lg mb-1 transition-all ${formData.parentId === 'root' ? 'bg-blue-600 text-white font-bold shadow-md' : 'hover:bg-gray-100 text-gray-700'}`}
+                      className={`w-full text-left px-4 py-2.5 text-sm rounded mb-1 transition-all ${formData.parentId === 'root' ? 'bg-blue-600 text-white font-bold shadow-md' : 'hover:bg-gray-100 text-gray-700'}`}
                       onClick={() => {
                         setFormData({ ...formData, parentId: 'root' });
                         setIsParentPopoverOpen(false);
@@ -188,7 +188,7 @@ export function CategoryForm({
                       filteredParents.map((c) => (
                         <button
                           key={c.id}
-                          className={`w-full text-left px-4 py-2.5 text-sm rounded-lg mb-1 transition-all flex items-center justify-between ${formData.parentId === c.id ? 'bg-blue-600 text-white font-bold shadow-md' : 'hover:bg-gray-100 text-gray-700'}`}
+                          className={`w-full text-left px-4 py-2.5 text-sm rounded mb-1 transition-all flex items-center justify-between ${formData.parentId === c.id ? 'bg-blue-600 text-white font-bold shadow-md' : 'hover:bg-gray-100 text-gray-700'}`}
                           onClick={() => {
                             setFormData({ ...formData, parentId: c.id });
                             setIsParentPopoverOpen(false);
@@ -225,9 +225,9 @@ export function CategoryForm({
           </div>
         </div>
         <DialogFooter className="bg-gray-50/50 p-4 -mx-6 -mb-6 rounded-b-lg border-t border-gray-100">
-          <Button variant="outline" className="rounded-lg text-sm font-semibold" onClick={() => onOpenChange(false)}>Hủy</Button>
+          <Button variant="outline" className="rounded text-sm font-semibold" onClick={() => onOpenChange(false)}>Hủy</Button>
           <Button
-            className="admin-btn-primary rounded-lg"
+            className="admin-btn-primary rounded"
             onClick={handleSubmit}
             disabled={submitting}
           >

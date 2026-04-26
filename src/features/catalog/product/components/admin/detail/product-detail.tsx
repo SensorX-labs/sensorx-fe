@@ -125,7 +125,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
 
   return (
     <div className="space-y-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-      <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+      <div className="flex items-center justify-between bg-white p-4 rounded border border-slate-100 shadow-sm">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full hover:bg-slate-50">
             <ArrowLeft className="w-5 h-5 text-slate-500" />
@@ -139,7 +139,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           {product.status === ProductStatus.ACTIVE ? (
             <Button
               variant="outline"
-              className="rounded-xl border-amber-100 text-amber-600 font-bold hover:bg-amber-50"
+              className="rounded border-amber-100 text-amber-600 font-bold hover:bg-amber-50"
               onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
             >
               <Ban className="w-4 h-4 mr-2" /> Ngừng kinh doanh
@@ -147,7 +147,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           ) : (
             <Button
               variant="outline"
-              className="rounded-xl border-emerald-100 text-emerald-600 font-bold hover:bg-emerald-50"
+              className="rounded border-emerald-100 text-emerald-600 font-bold hover:bg-emerald-50"
               onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
             >
               <Zap className="w-4 h-4 mr-2 text-emerald-500 fill-emerald-500" /> Kích hoạt lại
@@ -155,14 +155,14 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           )}
           <Button
             variant="outline"
-            className="rounded-xl border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
+            className="rounded border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
             onClick={() => onEdit(product)}
           >
             <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
           </Button>
           <Button
             variant="outline"
-            className="rounded-xl border-rose-100 text-rose-600 font-bold hover:bg-rose-50"
+            className="rounded border-rose-100 text-rose-600 font-bold hover:bg-rose-50"
             onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: true })}
           >
             <Trash2 className="w-4 h-4 mr-2" /> Xóa
@@ -174,7 +174,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
         {/* ... rest of the grid ... */}
         <div className="lg:col-span-1 space-y-6">
           {/* Thông tin chính */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông tin chính</h4>
             </div>
@@ -193,7 +193,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Trạng thái</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-lg border text-[10px] font-black uppercase tracking-wider ${statusColor[product.status]}`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider ${statusColor[product.status]}`}>
                     {statusLabel[product.status]}
                   </span>
                 </div>
@@ -221,13 +221,13 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </div>
 
           {/* Hình ảnh */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hình ảnh sản phẩm</h4>
               <ImageIcon className="w-4 h-4 text-slate-300" />
             </div>
             <div className="p-4 space-y-4">
-              <div className="aspect-square rounded-xl bg-slate-50 border border-slate-100 overflow-hidden group">
+              <div className="aspect-square rounded bg-slate-50 border border-slate-100 overflow-hidden group">
                 {images.length > 0 ? (
                   <img
                     src={images[selectedImg]?.imageUrl}
@@ -248,7 +248,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
                       key={idx}
                       onClick={() => setSelectedImg(idx)}
                       className={`
-                        w-16 h-16 rounded-lg border-2 flex-shrink-0 overflow-hidden transition-all
+                        w-16 h-16 rounded border-2 flex-shrink-0 overflow-hidden transition-all
                         ${selectedImg === idx ? 'border-emerald-500 scale-95' : 'border-slate-100 hover:border-slate-200'}
                       `}
                     >
@@ -263,7 +263,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
 
         <div className="lg:col-span-2 space-y-6">
           {/* Chính sách giá */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Chính sách giá áp dụng</h4>
               <DollarSign className="w-4 h-4 text-slate-300" />
@@ -299,7 +299,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </div>
 
           {/* Thuộc tính & Thông số */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông số kỹ thuật</h4>
               <Layers className="w-4 h-4 text-slate-300" />
@@ -326,7 +326,7 @@ export function ProductDetail({ productId, onBack, onEdit }: ProductDetailProps)
           </div>
 
           {/* Mô tả Notion */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mô tả chi tiết</h4>
               <BookOpen className="w-4 h-4 text-slate-300" />

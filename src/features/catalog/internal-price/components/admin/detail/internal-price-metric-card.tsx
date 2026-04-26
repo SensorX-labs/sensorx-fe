@@ -14,8 +14,8 @@ interface MetricCardProps {
 
 export function MetricCard({ icon: Icon, label, value, unit, colorClass, tooltip }: MetricCardProps) {
   const content = (
-    <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-center gap-4 w-full h-full">
-      <div className={`p-3 rounded-lg ${colorClass}`}>
+    <div className="p-4 rounded border border-slate-100 bg-white shadow-sm flex items-center gap-4 w-full h-full">
+      <div className={`p-3 rounded ${colorClass}`}>
         <Icon className="w-5 h-5" />
       </div>
       <div>

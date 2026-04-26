@@ -86,7 +86,7 @@ export function InfoTabContent({ price }: InfoTabContentProps) {
           <CardTitle className="text-lg font-bold tracking-tight text-white">Ghi chú & Quy tắc</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm relative z-10">
-          <div className="p-3.5 bg-white/10 rounded-lg border border-white/10 backdrop-blur-sm">
+          <div className="p-3.5 bg-white/10 rounded border border-white/10 backdrop-blur-sm">
             <p className="font-semibold mb-2 flex items-center gap-2 text-indigo-50">
               <AlertCircle className="w-4 h-4 text-indigo-300" />
               Quy tắc áp dụng giá

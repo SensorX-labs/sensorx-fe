@@ -116,7 +116,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm kiếm mã SKU, tên hàng hóa..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded-xl text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none"
             />
           </div>
 

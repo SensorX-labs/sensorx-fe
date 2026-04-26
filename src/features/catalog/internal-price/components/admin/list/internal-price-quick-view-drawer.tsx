@@ -32,7 +32,7 @@ export function QuickViewDrawer({ price, onClose, onViewDetail }: QuickViewDrawe
 
             <SheetHeader className="relative z-10">
               <div className="flex items-center gap-2 text-emerald-600 mb-2">
-                <div className="p-1 bg-emerald-100 rounded-md">
+                <div className="p-1 bg-emerald-100 rounded">
                   <BadgeDollarSign className="w-3.5 h-3.5" />
                 </div>
                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">Quick View</span>
@@ -59,14 +59,14 @@ export function QuickViewDrawer({ price, onClose, onViewDetail }: QuickViewDrawe
                 Bảng giá cơ sở
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                <div className="p-4 bg-white rounded border border-slate-100 shadow-sm">
                   <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Giá đề xuất</p>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xl font-black text-slate-900">{price.suggestedPrice.toLocaleString()}</span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase">₫</span>
                   </div>
                 </div>
-                <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                <div className="p-4 bg-white rounded border border-slate-100 shadow-sm">
                   <p className="text-[9px] font-bold text-rose-400 uppercase mb-1">Giá sàn</p>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xl font-black text-rose-700">{price.floorPrice.toLocaleString()}</span>
@@ -95,10 +95,10 @@ export function QuickViewDrawer({ price, onClose, onViewDetail }: QuickViewDrawe
 
           {/* Action Footer */}
           <div className="p-6 bg-white border-t border-slate-100 mt-auto flex gap-3">
-            <Button className="flex-[1.5] h-10 rounded-lg text-xs font-bold admin-btn-primary shadow-lg shadow-emerald-500/20" onClick={() => onViewDetail(price)}>
+            <Button className="flex-[1.5] h-10 rounded text-xs font-bold admin-btn-primary shadow-lg shadow-emerald-500/20" onClick={() => onViewDetail(price)}>
               Xem chi tiết
             </Button>
-            <Button variant="outline" className="flex-1 h-10 rounded-lg text-xs font-bold border-slate-200 text-slate-600 shadow-sm" onClick={onClose}>
+            <Button variant="outline" className="flex-1 h-10 rounded text-xs font-bold border-slate-200 text-slate-600 shadow-sm" onClick={onClose}>
               Đóng
             </Button>
           </div>
