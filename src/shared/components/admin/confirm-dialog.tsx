@@ -42,19 +42,19 @@ export function ConfirmDialog({
   
   const getIcon = () => {
     switch (type) {
-      case 'danger': return <Trash2 className="w-6 h-6 text-rose-500" />;
-      case 'warning': return <AlertTriangle className="w-6 h-6 text-amber-500" />;
-      case 'info': return <Info className="w-6 h-6 text-blue-500" />;
-      default: return <HelpCircle className="w-6 h-6 text-emerald-500" />;
+      case 'danger': return <Trash2 className="w-5 h-5 text-rose-600" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-amber-600" />;
+      case 'info': return <Info className="w-5 h-5 text-sky-600" />;
+      default: return <HelpCircle className="w-5 h-5 text-emerald-600" />;
     }
   };
 
   const getVariantClasses = () => {
     switch (type) {
-      case 'danger': return "bg-rose-600 hover:bg-rose-700 focus:ring-rose-500";
-      case 'warning': return "bg-amber-600 hover:bg-amber-700 focus:ring-amber-500";
-      case 'info': return "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500";
-      default: return "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500";
+      case 'danger': return "bg-rose-500 hover:bg-rose-600 focus:ring-rose-500 shadow-rose-500/20";
+      case 'warning': return "bg-amber-500 hover:bg-amber-600 focus:ring-amber-500 shadow-amber-500/20";
+      case 'info': return "bg-sky-500 hover:bg-sky-600 focus:ring-sky-500 shadow-sky-500/20";
+      default: return "bg-emerald-500 hover:bg-emerald-600 focus:ring-emerald-500 shadow-emerald-500/20";
     }
   };
 
@@ -64,15 +64,17 @@ export function ConfirmDialog({
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className={cn(
-              "p-2 rounded-full",
-              type === 'danger' && "bg-rose-50",
-              type === 'warning' && "bg-amber-50",
-              type === 'info' && "bg-blue-50",
-              type === 'question' && "bg-emerald-50",
+              "w-10 h-10 rounded flex items-center justify-center shrink-0 border",
+              type === 'danger' && "bg-rose-50 border-rose-100",
+              type === 'warning' && "bg-amber-50 border-amber-100",
+              type === 'info' && "bg-sky-50 border-sky-100",
+              type === 'question' && "bg-emerald-50 border-emerald-100",
             )}>
               {getIcon()}
             </div>
-            <AlertDialogTitle className="text-xl font-bold">{title}</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-black text-slate-800 uppercase tracking-tight">
+              {title}
+            </AlertDialogTitle>
           </div>
           {description && (
             <AlertDialogDescription className="text-slate-500 leading-relaxed">
@@ -91,12 +93,8 @@ export function ConfirmDialog({
             }}
             disabled={loading}
             className={cn(
-              "rounded font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50",
-              getVariantClasses(),
-              type === 'danger' && "shadow-rose-500/20",
-              type === 'warning' && "shadow-amber-500/20",
-              type === 'info' && "shadow-blue-500/20",
-              type === 'question' && "shadow-emerald-500/20",
+              "rounded px-6 font-black uppercase tracking-widest text-[10px] text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 h-10",
+              getVariantClasses()
             )}
           >
             {loading ? (
