@@ -50,7 +50,10 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarFooter,
 } from '@/shared/components/shadcn-ui/sidebar';
+import { LogOut } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 export type SidebarItemType = {
   name: string;
@@ -317,6 +320,27 @@ export default function AdminSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
+      
+      <SidebarFooter className="px-2 pb-6 group-data-[collapsible=icon]:px-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => {
+                Cookies.remove('token');
+                Cookies.remove('user');
+                window.location.href = '/login';
+              }}
+              className="h-10 px-2 text-sidebar-foreground hover:bg-red-500 hover:text-white transition-all group/logout"
+              tooltip="Đăng xuất"
+            >
+              <LogOut className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/logout:text-white transition-colors" />
+              <span className="text-[13px] font-medium group-data-[collapsible=icon]:hidden">
+                Đăng xuất tài khoản
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar >
   );
 }
