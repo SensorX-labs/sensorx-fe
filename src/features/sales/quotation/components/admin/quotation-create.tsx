@@ -422,6 +422,43 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     }
   };
 
+  const handleUpdateQuote = async () => {
+    if (!id || items.length === 0) return;
+    setIsSubmitting(true);
+    try {
+      const request = {
+        id: id,
+        note: formData.note,
+        quoteDate: formData.quoteDate.toISOString(),
+        paymentMethod: formData.paymentMethod,
+        paymentTerm: formData.paymentTerm,
+        items: items.map(i => ({
+          productId: i.productId,
+          productCode: i.productCode,
+          manufacturer: i.manufacturer,
+          unit: i.unit,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          taxRate: i.taxRate,
+        }))
+      };
+      const response = await QuoteService.updateQuote(request);
+      if (response.isSuccess) {
+        toast.success("Cập nhật báo giá thành công");
+        setAction(ActionType.DETAIL);
+        // Refresh data
+        const res = await QuoteService.getQuoteById(id);
+        if (res.isSuccess) setQuoteDetail(res.value || null);
+      } else {
+        toast.error(response.message || "Lỗi khi cập nhật");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
 
   return (
@@ -442,15 +479,37 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* TRẠNG THÁI TẠO MỚI */}
           {action === ActionType.CREATE && (
             <Button onClick={handleSaveDraft} disabled={isSubmitting} className="rounded admin-btn-primary h-10 px-6">
               <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
             </Button>
           )}
+
+          {/* TRẠNG THÁI CHỈNH SỬA (UPDATE) */}
+          {action === ActionType.UPDATE && (
+            <>
+              <Button 
+                onClick={() => setAction(ActionType.DETAIL)} 
+                variant="outline"
+                className="rounded border-gray-300 h-10 px-6 shadow-sm"
+              >
+                <X className="w-4 h-4 mr-2" /> Hủy
+              </Button>
+              <Button 
+                onClick={handleUpdateQuote} 
+                disabled={isSubmitting} 
+                className="rounded admin-btn-primary h-10 px-6"
+              >
+                <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Cập nhật thay đổi"}
+              </Button>
+            </>
+          )}
           
+          {/* TRẠNG THÁI XEM CHI TIẾT (DETAIL) */}
           {action === ActionType.DETAIL && quoteDetail && (
             <>
-              <CanAccess roles={['SaleStaff', 2]}>
+              <CanAccess roles={['SaleStaff', 'Manager', 'Admin', 2, 3, 4]}>
                 {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
                   <>
                     <Button 
