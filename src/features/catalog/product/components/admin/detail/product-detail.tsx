@@ -213,6 +213,35 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
             </div>
           </div>
 
+          {/* Thuộc tính & Thông số */}
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông số kỹ thuật</h4>
+              <Layers className="w-4 h-4 text-slate-300" />
+            </div>
+            <div className="p-0">
+              {product?.attributes && product.attributes.length > 0 ? (
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-slate-50">
+                    {product.attributes.map((attr: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-slate-50/30">
+                        <td className="px-6 py-2.5 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
+                        <td className="px-6 py-2.5 font-bold text-slate-800">{attr.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400">
+                  <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                    <Layers className="w-6 h-6 opacity-20" />
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-widest italic opacity-60">Không có thuộc tính mở rộng</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Hình ảnh */}
           <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
@@ -354,32 +383,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
             </div>
           </div>
 
-          {/* Thuộc tính & Thông số */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông số kỹ thuật</h4>
-              <Layers className="w-4 h-4 text-slate-300" />
-            </div>
-            <div className="p-0">
-              {product?.attributes && product.attributes.length > 0 ? (
-                <table className="w-full text-sm">
-                  <tbody className="divide-y divide-slate-50">
-                    {product.attributes.map((attr: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50/30">
-                        <td className="px-6 py-2.5 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
-                        <td className="px-6 py-2.5 font-bold text-slate-800">{attr.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-                  <Layers className="w-10 h-10 mb-2 opacity-20" />
-                  <p className="text-xs font-bold uppercase tracking-widest italic">Không có thuộc tính mở rộng</p>
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Mô tả Notion */}
           <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
@@ -387,13 +390,17 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mô tả chi tiết</h4>
               <BookOpen className="w-4 h-4 text-slate-300" />
             </div>
-            <div className="p-6 min-h-[200px]">
-              <NotionEditor
-                content={product?.showcase || ''}
-                editable={false}
-              />
-              {!product?.showcase && (
-                <div className="flex flex-col items-center justify-center text-slate-300 py-10">
+            <div className={`p-6 min-h-[200px] ${!product?.showcase ? 'flex flex-col items-center justify-center' : ''}`}>
+              {product?.showcase ? (
+                <NotionEditor
+                  content={product.showcase}
+                  editable={false}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center text-slate-300">
+                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+                    <BookOpen className="w-8 h-8 opacity-10" />
+                  </div>
                   <p className="text-xs font-bold uppercase tracking-widest italic text-slate-400">Chưa có nội dung mô tả</p>
                 </div>
               )}
