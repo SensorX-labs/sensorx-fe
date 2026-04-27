@@ -80,10 +80,16 @@ export function QuotationDetailView({ onBack, quotationId }: {
     }, [quotationId]);
 
     const handleAccept = async () => {
-        if (!quotationId) return;
+        if (!quotationId || !quote) return;
         try {
             setLoading(true);
-            const response = await QuoteService.accept(quotationId);
+            const data = {
+                responseType: 0, // Chấp nhận
+                paymentTerm: 1, // Thanh toán toàn bộ
+                shippingAddress: quote.address,
+                feedback: "Khách hàng đã chốt báo giá trực tuyến."
+            };
+            const response = await QuoteService.accept(quotationId, data);
             if (response.isSuccess) {
                 // Cập nhật local state
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });

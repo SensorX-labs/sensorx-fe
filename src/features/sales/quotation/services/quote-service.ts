@@ -20,7 +20,7 @@ export const QuoteService = {
 
     approve: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/approve`),
 
-    accept: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/accept`),
+    accept: (id: string, data: any = {}) => api.master.post<any, Result<string>>(`/quotes/${id}/accept`, data),
 };
 
 export default QuoteService;

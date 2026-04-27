@@ -27,14 +27,8 @@ export const CanAccess: React.FC<CanAccessProps> = ({
   // Danh sách các role cần kiểm tra (cũng chuyển về lowercase)
   const targetRoles = roles.map(r => String(r).toLowerCase());
 
-  // DEBUG: Bạn có thể bật dòng này lên để xem role thực tế trong Console F12
-  // console.log("User Roles:", userRoles, "Target Roles:", targetRoles);
-
-  // Kiểm tra nếu người dùng có ít nhất một trong các role yêu cầu
-  // Hỗ trợ cả kiểm tra theo tên (SaleStaff) hoặc theo số (2)
   const hasRole = roles.length === 0 || targetRoles.some(target => 
     userRoles.includes(target) || 
-    // Map thử một số giá trị enum phổ biến nếu cần
     (target === 'salestaff' && userRoles.includes('2')) ||
     (target === 'manager' && userRoles.includes('3')) ||
     (target === 'admin' && userRoles.includes('4'))

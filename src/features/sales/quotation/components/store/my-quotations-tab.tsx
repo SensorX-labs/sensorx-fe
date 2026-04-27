@@ -63,7 +63,7 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
           const response = await QuoteService.getListQuotes({
             customerId: customerId,
             pageNumber: 1,
-            pageSize: 50
+            pageSize: 10
           });
 
           if (response.isSuccess && response.value) {
