@@ -26,6 +26,11 @@ export const CustomerService = {
     deleteCustomer: async (id : string) => {
         const response = await api.data.delete(`/customer/${id}`);
         return response.data;
+    } , 
+
+    getDetailCustomerByAccountId: async (accountId : string) : Promise<Customer> => {
+        const response = await api.data.get<any, Result<Customer>>(`/customer/account/${accountId}`);
+        return response.value!;
     }
 };
 
