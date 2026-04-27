@@ -37,27 +37,31 @@ export function Cart() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { user } = useUser();
 
-  // Load form data từ localStorage nếu có
+  // Tự động điền thông tin từ API khi có user
   useEffect(() => {
-    const savedForm = localStorage.getItem('quotationFormData');
-    if (savedForm) {
-      try {
-        const parsed = JSON.parse(savedForm);
-        // Fix lỗi [object Object] nếu dữ liệu cũ là object địa chỉ
-        if (typeof parsed.address === 'object' && parsed.address !== null) {
-          parsed.address = ''; // Hoặc convert thành chuỗi nếu muốn giữ lại
+    const fetchAndPopulate = async () => {
+      if (user?.id) {
+        try {
+          const response = await CustomerService.getDetailCustomerByAccountId(user.id);
+          if (response.isSuccess && response.value) {
+            const customer = response.value;
+            setFormData({
+              name: customer.receiverName || customer.name || '',
+              email: customer.email || '',
+              phone: customer.receiverPhone || customer.phone || '',
+              companyName: customer.name || '',
+              taxId: customer.taxCode || '',
+              address: customer.address || '',
+            });
+          }
+        } catch (error) {
+          console.error("Lỗi tự động điền thông tin:", error);
         }
-        setFormData(parsed);
-      } catch (e) {
-        console.error('Lỗi khi parse form data:', e);
       }
-    }
-  }, []);
+    };
 
-  // Lưu form data khi thay đổi
-  useEffect(() => {
-    localStorage.setItem('quotationFormData', JSON.stringify(formData));
-  }, [formData]);
+    fetchAndPopulate();
+  }, [user?.id]);
 
   const handleRequestQuote = async () => {
     if (!formData.name || !formData.phone || !formData.companyName || !formData.taxId || !formData.address) {
@@ -69,28 +73,28 @@ export function Cart() {
 
     setIsSubmitting(true);
 
-    const customer = await CustomerService.getDetailCustomerByAccountId(user?.id || "");
-
-    const request: RfqCreateRequest = {
-      customerId: customer.id || "",
-      recipientName: formData.name,
-      recipientPhone: formData.phone,
-      companyName: formData.companyName,
-      email: formData.email,
-      address: formData.address,
-      taxCode: formData.taxId,
-      items: cartItems.map(i => ({
-        productId: i.product.id,
-        productName: i.product.name,
-        productCode: i.product.code,
-        quantity: i.quantity,
-        manufacturer: i.product.manufacture,
-        unit: i.product.unit || "Cái" // Chốt chặn cuối cùng: Đảm bảo luôn có unit gửi lên API
-      }))
-    };
-
-    localStorage.setItem('lastCreatedRfq', JSON.stringify(request));
     try {
+      // Lấy customerId thực tế từ accountId
+      const customerRes = await CustomerService.getDetailCustomerByAccountId(user?.id || "");
+      
+      const request: RfqCreateRequest = {
+        customerId: customerRes.value?.id || "",
+        recipientName: formData.name,
+        recipientPhone: formData.phone,
+        companyName: formData.companyName,
+        email: formData.email,
+        address: formData.address,
+        taxCode: formData.taxId,
+        items: cartItems.map(i => ({
+          productId: i.product.id,
+          productName: i.product.name,
+          productCode: i.product.code,
+          quantity: i.quantity,
+          manufacturer: i.product.manufacture,
+          unit: i.product.unit || "Cái"
+        }))
+      };
+
       const response = await RFQServices.createRFQ(request);
       if (response.isSuccess) {
         setShowSuccessDialog(true);
@@ -102,6 +106,7 @@ export function Cart() {
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi tạo RFQ:", error);
+      toast.error("Đã xảy ra lỗi hệ thống");
     } finally {
       setIsSubmitting(false);
     }

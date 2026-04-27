@@ -18,6 +18,9 @@ import { QuotationDetailView } from '../../../../sales/quotation/components/stor
 import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
 import { MyRfqsTab } from '../../../../sales/requestforquotation/components/store/my-rfqs-tab';
 import { SecurityTab } from './security-tab';
+import { AuthService } from '@/features/system/auth/services/auth-service';
+
+const authService = new AuthService();
 
 interface Order {
     id: string;
@@ -65,11 +68,7 @@ export function UserProfile() {
 
         try {
             setIsLoggingOut(true);
-            await fetch('http://localhost:5053/auth/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refreshToken }),
-            });
+            await authService.logout(refreshToken);
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
