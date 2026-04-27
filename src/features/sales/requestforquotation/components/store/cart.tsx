@@ -18,6 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/components/shadcn-ui/alert-dialog";
+import { useUser } from '@/shared/hooks/use-user';
+import CustomerService from '@/features/user/customer/services/customer-service';
 
 const initialFormData: QuotationFormData = {
   name: '',
@@ -33,6 +35,7 @@ export function Cart() {
   const [formData, setFormData] = useState<QuotationFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const { user } = useUser();
 
   // Load form data từ localStorage nếu có
   useEffect(() => {
@@ -66,8 +69,10 @@ export function Cart() {
 
     setIsSubmitting(true);
 
+    const customer = await CustomerService.getDetailCustomerByAccountId(user?.id || "");
+
     const request: RfqCreateRequest = {
-      customerId: "af277326-224c-48c8-9bf5-54b2244fa71f",
+      customerId: customer.id || "",
       recipientName: formData.name,
       recipientPhone: formData.phone,
       companyName: formData.companyName,

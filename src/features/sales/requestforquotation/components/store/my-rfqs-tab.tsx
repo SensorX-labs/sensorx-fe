@@ -86,7 +86,7 @@ export function MyRfqsTab({ onViewDetail }: { onViewDetail?: (id: string) => voi
                             <div
                                 key={request.id}
                                 className="group border border-gray-100 bg-white hover:bg-gray-50/50 transition-all duration-200 cursor-pointer shadow-sm"
-                                onClick={() => onViewDetail?.(request.code)}
+                                onClick={() => onViewDetail?.(request.id)}
                             >
                                 <div className="p-6 flex items-center justify-between">
                                     <div className="flex items-center gap-6">
