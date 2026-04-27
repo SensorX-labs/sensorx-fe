@@ -5,10 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Calendar as CalendarIcon
+  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Download, Calendar as CalendarIcon,
+  Bot
 } from 'lucide-react';
+import { useUser } from '@/shared/hooks/use-user';
 import { QuoteAnalysisService } from '../../services/quote-analysis-service';
 import { QuoteService } from '../../services/quote-service';
+import { CanAccess } from '@/shared/components/common/can-access';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
@@ -135,8 +138,66 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
   );
 }
 
+function InternalPricePopover({ 
+  onSelect, 
+  children,
+  disabled 
+}: { 
+  onSelect: (price: number) => void; 
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  
+  const priceList = [
+    { qty: 1, price: 100000 },
+    { qty: 10, price: 95000 },
+    { qty: 50, price: 90000 },
+    { qty: 100, price: 85000 },
+  ];
+
+  if (disabled) return <>{children}</>;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div onFocus={() => setOpen(true)}>
+          {children}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent 
+        side="bottom" 
+        align="end" 
+        className="w-48 p-1 shadow-md border border-gray-200"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex flex-col">
+          {priceList.map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item.price);
+                setOpen(false);
+              }}
+              className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
+            >
+              <span className="text-gray-500">SL {item.qty}:</span>
+              <span className="font-semibold text-gray-900">
+                {item.price.toLocaleString('vi-VN')}
+              </span>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function QuotationCreate({ id, rfqId, rfqData, onBack }: QuotationCreateProps) {
   const router = useRouter();
+  const { user } = useUser();
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
@@ -192,7 +253,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
             if (!actionParam) setAction(ActionType.DETAIL);
 
             if (detail.status === QuoteStatus.DRAFT || detail.status === QuoteStatus.PENDING) {
-              handleAnalyzeQuote(detail.code);
+              handleAnalyzeQuote(detail.id);
             }
           }
         } catch (error: any) {
@@ -223,12 +284,12 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     }
   }, [id, rfqRaw, actionParam]);
 
-  const handleAnalyzeQuote = async (quoteCode: string) => {
+  const handleAnalyzeQuote = async (quoteId: string) => {
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
       const quoteAnalysisService = new QuoteAnalysisService();
-      const response = await quoteAnalysisService.analyzeQuote(quoteCode);
+      const response = await quoteAnalysisService.analyzeQuote(quoteId);
       const data = response.value || response;
       setAnalysisResult(data);
     } catch (error: any) {
@@ -323,6 +384,81 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
       return sum + Math.round((q * p) * (1 + t / 100));
     }, 0);
 
+  const handleSubmitForApproval = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      const response = await QuoteService.submitForApproval(id);
+      if (response.isSuccess) {
+        toast.success("Đã gửi yêu cầu duyệt báo giá");
+        router.refresh();
+        if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.PENDING });
+      } else {
+        toast.error(response.message || "Lỗi khi gửi duyệt");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      const response = await QuoteService.approve(id);
+      if (response.isSuccess) {
+        toast.success("Phê duyệt báo giá thành công");
+        router.refresh();
+        if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.APPROVED });
+      } else {
+        toast.error(response.message || "Lỗi khi phê duyệt");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateQuote = async () => {
+    if (!id || items.length === 0) return;
+    setIsSubmitting(true);
+    try {
+      const request = {
+        id: id,
+        note: formData.note,
+        quoteDate: formData.quoteDate.toISOString(),
+        paymentMethod: formData.paymentMethod,
+        paymentTerm: formData.paymentTerm,
+        items: items.map(i => ({
+          productId: i.productId,
+          productCode: i.productCode,
+          manufacturer: i.manufacturer,
+          unit: i.unit,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          taxRate: i.taxRate,
+        }))
+      };
+      const response = await QuoteService.updateQuote(request);
+      if (response.isSuccess) {
+        toast.success("Cập nhật báo giá thành công");
+        setAction(ActionType.DETAIL);
+        // Refresh data
+        const res = await QuoteService.getQuoteById(id);
+        if (res.isSuccess) setQuoteDetail(res.value || null);
+      } else {
+        toast.error(response.message || "Lỗi khi cập nhật");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
 
   return (
@@ -343,29 +479,88 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* TRẠNG THÁI TẠO MỚI */}
           {action === ActionType.CREATE && (
             <Button onClick={handleSaveDraft} disabled={isSubmitting} className="rounded admin-btn-primary h-10 px-6">
               <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
             </Button>
           )}
-          {action === ActionType.DETAIL && (
-            <Button variant="outline" className="rounded admin-btn-primary h-10 px-6">
-              <FileText className="w-4 h-4 mr-2" /> Gửi duyệt
-            </Button>
+
+          {/* TRẠNG THÁI CHỈNH SỬA (UPDATE) */}
+          {action === ActionType.UPDATE && (
+            <>
+              <Button 
+                onClick={() => setAction(ActionType.DETAIL)} 
+                variant="outline"
+                className="rounded border-gray-300 h-10 px-6 shadow-sm"
+              >
+                <X className="w-4 h-4 mr-2" /> Hủy
+              </Button>
+              <Button 
+                onClick={handleUpdateQuote} 
+                disabled={isSubmitting} 
+                className="rounded admin-btn-primary h-10 px-6"
+              >
+                <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Cập nhật thay đổi"}
+              </Button>
+            </>
+          )}
+          
+          {/* TRẠNG THÁI XEM CHI TIẾT (DETAIL) */}
+          {action === ActionType.DETAIL && quoteDetail && (
+            <>
+              <CanAccess roles={['SaleStaff', 'Manager', 'Admin', 2, 3, 4]}>
+                {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
+                  <>
+                    <Button 
+                      onClick={() => setAction(ActionType.UPDATE)} 
+                      variant="outline"
+                      className="rounded border-blue-200 text-blue-600 hover:bg-blue-50 h-10 px-6 shadow-sm"
+                    >
+                      <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
+                    </Button>
+                    <Button 
+                      onClick={handleSubmitForApproval} 
+                      disabled={isSubmitting}
+                      className="rounded bg-blue-600 hover:bg-blue-700 h-10 px-6 text-white"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" /> 
+                      {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu duyệt"}
+                    </Button>
+                  </>
+                )}
+              </CanAccess>
+
+              <CanAccess roles={['Manager', 'Admin', 3, 4]}>
+                {quoteDetail.status?.toLowerCase() === QuoteStatus.PENDING.toLowerCase() && (
+                  <Button 
+                    onClick={handleApprove} 
+                    disabled={isSubmitting}
+                    className="rounded bg-green-600 hover:bg-green-700 h-10 px-6 text-white"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" /> 
+                    {isSubmitting ? "Đang xử lý..." : "Duyệt báo giá"}
+                  </Button>
+                )}
+              </CanAccess>
+
+              <Button variant="outline" className="rounded border-gray-200 h-10 px-6 shadow-sm">
+                <Download className="w-4 h-4 mr-2" /> Xuất PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* AI Analysis Section */}
-        {analysisResult && (
+        <CanAccess roles={['Admin', 4]}>
           <div className="md:col-span-3 bg-white border border-gray-100 rounded p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-gray-50 pb-3">
               <div className="flex items-center gap-2 text-blue-600">
-                <Zap size={16} className={cn(analysisResult.status === 'pending' && "animate-pulse")} />
+                <Bot size={16} className={cn((analysisResult?.status === 'pending' || analysisLoading) && "animate-pulse")} />
                 <span className="font-bold uppercase tracking-wider text-sm">Phân tích từ AI</span>
               </div>
-              {analysisResult.status !== 'pending' && (
+              {analysisResult && analysisResult.status !== 'pending' && (
                 <div className={cn(
                   "text-xl font-black uppercase tracking-tighter px-4 py-1.5 rounded-lg border-2",
                   (() => {
@@ -381,22 +576,14 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
               )}
             </div>
 
-            {analysisResult.status === 'pending' ? (
+            {analysisLoading || analysisResult?.status === 'pending' ? (
               <div className="flex flex-col items-center justify-center py-6 space-y-3">
                 <div className="flex items-center gap-3 text-blue-600 font-medium">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-                  <span>{analysisResult.message || "Hệ thống đang tiến hành phân tích báo giá..."}</span>
+                  <span>{analysisResult?.message || "Hệ thống đang tiến hành phân tích báo giá..."}</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.code)}
-                  className="text-xs text-gray-500 hover:text-blue-600"
-                >
-                  Cập nhật lại
-                </Button>
               </div>
-            ) : (
+            ) : analysisResult ? (
               <div className="space-y-4">
                 <p className="text-sm text-gray-700 leading-relaxed">
                   <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Phân tích</span>
@@ -407,9 +594,24 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                   {analysisResult.analysis?.strategy}
                 </p>
               </div>
+            ) : (
+              <div className="py-10 flex flex-col items-center justify-center space-y-4 bg-blue-50/30 rounded-lg border border-dashed border-blue-100">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-20"></div>
+                  <div className="relative bg-white p-3 rounded-full shadow-sm border border-blue-100">
+                    <Bot className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 mb-1">Đang chờ phân tích</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest leading-relaxed">
+                    Hệ thống AI đang chuẩn bị dữ liệu <br /> và phân tích báo giá này
+                  </p>
+                </div>
+              </div>
             )}
           </div>
-        )}
+        </CanAccess>
 
         <div className="md:col-span-1 space-y-6">
           <div className="border border-gray-200 bg-white rounded">
@@ -556,7 +758,20 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                           <Input disabled={action === ActionType.DETAIL} type="number" value={item.quantity} onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />
                         </td>
                         <td className="px-4 py-4">
-                          <Input disabled={action === ActionType.DETAIL} type="number" value={item.unitPrice} onChange={(e) => handleUpdateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-right border-gray-200 shadow-none disabled:opacity-100" placeholder="0" />
+                          <InternalPricePopover 
+                            disabled={action === ActionType.DETAIL}
+                            onSelect={(price) => handleUpdateItem(index, { unitPrice: price })}
+                          >
+                            <Input 
+                              disabled={action === ActionType.DETAIL} 
+                              type="number" 
+                              value={item.unitPrice} 
+                              onChange={(e) => handleUpdateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })} 
+                              onFocus={(e) => setTimeout(() => e.target.select(), 0)} 
+                              className="h-10 text-sm text-right border-gray-200 shadow-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all disabled:opacity-100" 
+                              placeholder="0" 
+                            />
+                          </InternalPricePopover>
                         </td>
                         <td className="px-4 py-4">
                           <Input disabled={action === ActionType.DETAIL} type="number" value={item.taxRate} onChange={(e) => handleUpdateItem(index, { taxRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />

@@ -4,8 +4,8 @@ import React from 'react';
 import { useUser } from '@/shared/hooks/use-user';
 
 interface CanAccessProps {
-  roles?: string[];
-  permissions?: string[]; // Để dành cho tương lai nếu dùng permission-based
+  roles?: (string | number)[];
+  permissions?: string[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
@@ -21,12 +21,17 @@ export const CanAccess: React.FC<CanAccessProps> = ({
 
   if (!user) return <>{fallback}</>;
 
-  // Chuyển đổi roles của user về mảng để xử lý thống nhất
-  const userRoles = Array.isArray(user.roles) ? user.roles : [user.roles];
+  // Chuyển đổi roles của user về mảng chuỗi để so sánh dễ hơn
+  const userRoles = (Array.isArray(user.roles) ? user.roles : [user.roles]).map(r => String(r).toLowerCase());
   
-  // Kiểm tra nếu người dùng có ít nhất một trong các role yêu cầu
-  const hasRole = roles.length === 0 || roles.some(role => 
-    userRoles.some(userRole => userRole.toLowerCase() === role.toLowerCase())
+  // Danh sách các role cần kiểm tra (cũng chuyển về lowercase)
+  const targetRoles = roles.map(r => String(r).toLowerCase());
+
+  const hasRole = roles.length === 0 || targetRoles.some(target => 
+    userRoles.includes(target) || 
+    (target === 'salestaff' && userRoles.includes('2')) ||
+    (target === 'manager' && userRoles.includes('3')) ||
+    (target === 'admin' && userRoles.includes('4'))
   );
 
   if (hasRole) {

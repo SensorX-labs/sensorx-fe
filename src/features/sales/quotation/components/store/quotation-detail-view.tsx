@@ -1,327 +1,319 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     MapPin,
     ChevronLeft,
     Phone,
     Mail,
     User,
-    Package
+    Package,
+    Loader2,
+    FileText,
+    Calendar,
+    DollarSign,
+    CheckCircle2
 } from 'lucide-react';
-import {cn} from '@/shared/utils';
-import {MOCK_QUOTES} from '@/features/sales/quotation/mocks/quote-mocks';
-import {QuoteStatus} from '@/features/sales/quotation/constants/quote-status';
+import { cn } from '@/shared/utils';
+import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
+import { QuoteService } from '../../services/quote-service';
+import { CanAccess } from '@/shared/components/common/can-access';
+import CustomerService from '@/features/user/customer/services/customer-service';
+import { QuoteDetail } from '../../models/quote-detail-response';
+import { Customer } from '@/features/user/customer/models/customer';
 
-export function QuotationDetailView({onBack, quotationId} : {
-    onBack : () => void,
-    quotationId? : string
-}) { // Tìm Báo giá từ mock dữ liệu
-    const [quote, setQuote] = React.useState(MOCK_QUOTES.find(q => q.code === quotationId || q.id === quotationId) || MOCK_QUOTES[0]);
+const statusStyles: Record<string, string> = {
+    [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
+    [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-600 border-blue-100',
+    [QuoteStatus.APPROVED]: 'bg-green-50 text-green-600 border-green-100',
+    [QuoteStatus.RETURNED]: 'bg-red-50 text-red-600 border-red-100',
+    [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    [QuoteStatus.EXPIRED]: 'bg-gray-50 text-gray-400 border-gray-200',
+};
 
-    const handleConfirmClose = () => {
-        setQuote(prev => ({
-            ...prev,
-            status: QuoteStatus.ORDERED
-        }));
-    };
+const statusLabels: Record<string, string> = {
+    [QuoteStatus.DRAFT]: 'Nháp',
+    [QuoteStatus.PENDING]: 'Chờ duyệt',
+    [QuoteStatus.APPROVED]: 'Đã phê duyệt',
+    [QuoteStatus.RETURNED]: 'Từ chối',
+    [QuoteStatus.SENT]: 'Đã gửi khách',
+    [QuoteStatus.ORDERED]: 'Đã sinh đơn',
+    [QuoteStatus.EXPIRED]: 'Hết hạn',
+};
 
-    const handleReject = () => {
-        setQuote(prev => ({
-            ...prev,
-            status: QuoteStatus.RETURNED
-        }));
-    };
+export function QuotationDetailView({ onBack, quotationId }: {
+    onBack: () => void,
+    quotationId?: string
+}) {
+    const [quote, setQuote] = useState<QuoteDetail | null>(null);
+    const [customer, setCustomer] = useState<Customer | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const statusConfig: any = {
-        [QuoteStatus.PENDING]: {
-            label: 'Đang chờ xử lý',
-            className: 'bg-yellow-50 text-yellow-700 border-yellow-200'
-        },
-        [QuoteStatus.SENT]: {
-            label: 'Đã gửi khách',
-            className: 'bg-blue-50 text-blue-700 border-blue-200'
-        },
-        [QuoteStatus.APPROVED]: {
-            label: 'Đã duyệt',
-            className: 'bg-green-50 text-green-700 border-green-200'
-        },
-        [QuoteStatus.ORDERED]: {
-            label: 'Đã chốt',
-            className: 'bg-[var(--brand-green)] text-white border-transparent shadow-sm'
-        },
-        [QuoteStatus.EXPIRED]: {
-            label: 'Hết hạn',
-            className: 'bg-red-50 text-red-700 border-red-200'
-        },
-        [QuoteStatus.RETURNED]: {
-            label: 'Đã từ chối',
-            className: 'bg-gray-100 text-gray-500 border-gray-200'
+    useEffect(() => {
+        const fetchDetail = async () => {
+            if (!quotationId) return;
+            try {
+                setLoading(true);
+                // 1. Lấy chi tiết báo giá
+                const response = await QuoteService.getQuoteById(quotationId);
+                if (response.isSuccess && response.value) {
+                    const quoteData = response.value;
+                    setQuote(quoteData);
+
+                    // 2. Lấy thông tin khách hàng
+                    if (quoteData.customerId) {
+                        const customerRes = await CustomerService.getCustomerById(quoteData.customerId);
+                        if (customerRes.isSuccess && customerRes.value) {
+                            setCustomer(customerRes.value);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching quotation detail:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDetail();
+    }, [quotationId]);
+
+    const handleAccept = async () => {
+        if (!quotationId || !quote) return;
+        try {
+            setLoading(true);
+            const data = {
+                responseType: 0, // Chấp nhận
+                paymentTerm: 1, // Thanh toán toàn bộ
+                shippingAddress: quote.address,
+                feedback: "Khách hàng đã chốt báo giá trực tuyến."
+            };
+            const response = await QuoteService.accept(quotationId, data);
+            if (response.isSuccess) {
+                // Cập nhật local state
+                if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
+            }
+        } catch (error) {
+            console.error("Error accepting quotation:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const config = statusConfig[quote.status] || statusConfig[QuoteStatus.SENT];
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 space-y-4">
+                <Loader2 className="w-10 h-10 text-gray-300 animate-spin" />
+                <p className="meta-label uppercase tracking-widest text-gray-400">Đang tải chi tiết báo giá...</p>
+            </div>
+        );
+    }
+
+    if (!quote) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 space-y-6">
+                <FileText className="w-16 h-16 text-gray-100" />
+                <p className="meta-label uppercase tracking-widest text-gray-400">Không tìm thấy báo giá này</p>
+                <button onClick={onBack} className="btn-tracking border border-gray-900 px-8 py-3 uppercase text-[10px] font-bold">
+                    Quay lại danh sách
+                </button>
+            </div>
+        );
+    }
+
+    const statusStyle = statusStyles[quote.status] || 'bg-gray-100 text-gray-700 border-gray-200';
+    const statusLabel = statusLabels[quote.status] || quote.status;
 
     return (
-        <div className="space-y-10 pb-24">
-            <div className="flex items-center justify-between border-b border-gray-100">
-                <button onClick={onBack}
-                    className="flex items-center gap-2 tracking-breadcrumb group">
-                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform"/>
-                    Quay lại danh sách báo giá
+        <div className="space-y-8 pb-20">
+            <div className="flex items-center justify-between">
+                <button
+                    onClick={onBack}
+                    className="flex items-center gap-2 tracking-breadcrumb group"
+                >
+                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    Quay lại danh sách
                 </button>
-                <div className="flex items-center gap-4">
-                    {
-                    quote.status === QuoteStatus.SENT && (
-                        <>
-                            <button onClick={handleConfirmClose}
-                                className="flex items-center gap-2 px-8 py-2.5 bg-brand-green !text-white uppercase btn-tracking transition-all hover:bg-brand-green-hover shadow-lg shadow-brand-green/20 !text-[10px] font-bold">
-                                Chốt báo giá
-                            </button>
-                            <button onClick={handleReject}
-                                className="flex items-center gap-2 px-8 py-2.5 border border-red-200 text-red-600 tracking-label uppercase btn-tracking transition-all hover:bg-red-600 hover:text-white !text-[10px]">
-                                Từ chối
-                            </button>
-                        </>
-                    )
-                } </div>
+
+                {/* Nút Chốt báo giá cho khách hàng */}
+                <CanAccess roles={['Customer']}>
+                    {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
+                        <button 
+                            onClick={handleAccept}
+                            className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2"
+                        >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Chốt báo giá
+                        </button>
+                    )}
+                </CanAccess>
             </div>
 
-            <div className="bg-white p-10 border border-gray-100">
-                <div className="flex justify-between items-start">
-                    <div className="space-y-4">
-                        <h1 className="tracking-title-xl">
-                            {
-                            quote.code
-                        }</h1>
-                        <div className="flex items-center gap-8">
-                            <span className="tracking-label uppercase">Ngày báo giá: {
-                                new Date(quote.quoteDate).toLocaleDateString('vi-VN')
-                            }</span>
-                            {
-                            quote.REQId && (
-                                <span className="tracking-label uppercase">Từ yêu cầu:
-                                    <span className="text-gray-900">
-                                        {
-                                        quote.REQId
-                                    }</span>
-                                </span>
-                            )
-                        } </div>
-                    </div>
-                    <div className={
-                        cn("px-6 py-2 border-2 tracking-label uppercase font-bold text-[11px]", config.className)
-                    }>
-                        {
-                        config.label
-                    } </div>
-                </div>
-            </div>
+            <div className="w-full space-y-10">
+                {/* Header Info */}
+                <div className="bg-white border border-gray-100 shadow-sm">
+                    <div className="p-8">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="meta-label uppercase text-gray-400 mb-2">Số báo giá</p>
+                                <h2 className="tracking-title-xl">{quote.code}</h2>
+                            </div>
+                            <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold", statusStyle)}>
+                                {statusLabel}
+                            </div>
+                        </div>
 
-            <div className="bg-white border border-gray-100">
-                <div className="px-10 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Package className="w-5 h-5 text-gray-400"/>
-                        <h3 className="tracking-title uppercase text-lg">Chi tiết danh mục thiết bị</h3>
+                        <div className="grid grid-cols-3 gap-8 mt-10 pt-8 border-t border-gray-50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                                    <Calendar className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Ngày báo giá</p>
+                                    <p className="text-sm font-bold text-gray-900">{new Date(quote.quoteDate).toLocaleDateString('vi-VN')}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded bg-blue-50 flex items-center justify-center">
+                                    <DollarSign className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Tổng giá trị</p>
+                                    <p className="text-sm font-bold">{quote.grandTotal.toLocaleString('vi-VN')} VNĐ</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số lượng dòng</p>
+                                    <p className="text-sm font-bold text-gray-900">{quote.items.length} hạng mục</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Items Table */}
+                    <div className="border-t border-gray-100 pb-10">
+                        <div className="px-8 py-6 bg-gray-50/30">
+                            <h3 className="tracking-title uppercase text-lg flex items-center gap-2">
+                                <Package className="w-5 h-5 text-gray-400" />
+                                Nội dung báo giá chi tiết
+                            </h3>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse border-t border-b border-gray-100">
+                                <thead>
+                                    <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
+                                        <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[40%]">Sản phẩm</th>
+                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">ĐVT</th>
+                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">SL</th>
+                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-right w-[15%]">Đơn giá</th>
+                                        <th className="px-8 py-4 tracking-label text-right w-[25%]">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {quote.items.map((item, idx) => (
+                                        <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
+                                            <td className="px-8 py-5">
+                                                <p className="breadcrumb-text uppercase font-bold text-gray-900">Sản phẩm #{idx + 1}</p>
+                                                <div className="mt-1">
+                                                    <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">{item.productCode}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5 text-center meta-label uppercase">{item.unit}</td>
+                                            <td className="px-6 py-5 text-center qty-label font-bold">{item.quantity}</td>
+                                            <td className="px-6 py-5 text-right font-medium text-gray-600">{item.unitPrice.toLocaleString('vi-VN')}</td>
+                                            <td className="px-8 py-5 text-right font-bold text-gray-900">{item.totalLineAmount.toLocaleString('vi-VN')}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Totals */}
+                        <div className="mt-8 px-8 flex justify-end">
+                            <div className="w-80 space-y-3">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Tạm tính</span>
+                                    <span className="font-bold text-gray-900">{quote.subtotal.toLocaleString('vi-VN')} đ</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Thuế VAT</span>
+                                    <span className="font-bold text-gray-900">{quote.totalTax.toLocaleString('vi-VN')} đ</span>
+                                </div>
+                                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                                    <span className="text-blue-600 uppercase tracking-widest font-black text-xs">Tổng cộng</span>
+                                    <span className="text-xl font-black text-blue-600">{quote.grandTotal.toLocaleString('vi-VN')} đ</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <table className="w-full text-left border-collapse table-fixed">
-                    <thead>
-                        <tr className="bg-gray-100 border-b border-gray-100 uppercase">
-                            <th className="px-10 py-5 tracking-label border-r border-gray-50 w-[45%]">Sản phẩm</th>
-                            <th className="px-4 py-5 tracking-label border-r border-gray-50 text-center w-[10%]">ĐVT</th>
-                            <th className="px-4 py-5 tracking-label border-r border-gray-50 text-center w-[10%]">SL</th>
-                            <th className="px-8 py-5 tracking-label border-r border-gray-50 text-right w-[15%]">Đôn giá</th>
-                            <th className="px-10 py-5 tracking-label text-right w-[20%] bg-gray-50/30">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody> {
-                        (quote.items || []).map((item, idx) => (
-                            <tr key={
-                                    item.id
-                                }
-                                className={
-                                    cn("border-b border-gray-50 last:border-0", idx % 2 === 1 && "bg-gray-50/30")
-                            }>
-                                <td className="px-10 py-6">
-                                    <p className="breadcrumb-text uppercase mb-2 leading-snug">
-                                        {
-                                        item.productName
-                                    }</p>
-                                    <div>
-                                        <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase text-[9px] font-bold">
-                                            {
-                                            item.productCode
-                                        }</span>
+                {/* Customer Info Section */}
+                <div className="grid grid-cols-2 gap-8">
+                    <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
+                                <User className="w-4 h-4 text-gray-400" />
+                                Thông tin khách hàng
+                            </div>
+                            <div className="space-y-4">
+                                <p className="breadcrumb-text uppercase !text-xl font-bold">
+                                    {customer?.name || quote.recipientName}
+                                </p>
+                                {(quote.companyName) && (
+                                    <p className="meta-label uppercase text-[#B48F4E] font-bold">
+                                        {quote.companyName}
+                                    </p>
+                                )}
+                                <div className="pt-2 space-y-3 border-t border-gray-50 mt-6">
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="w-3.5 h-3.5 text-gray-300" />
+                                        <span className="qty-label tracking-widest">
+                                            {customer?.phoneNumber || quote.recipientPhone}
+                                        </span>
                                     </div>
-                                </td>
-                                <td className="px-4 py-6 text-center meta-label uppercase">
-                                    {
-                                    item.unit
-                                }</td>
-                                <td className="px-4 py-6 text-center qty-label">
-                                    {
-                                    item.quantity
-                                }</td>
-                                <td className="px-8 py-6 text-right meta-label font-bold">
-                                    {
-                                    (item.unitPrice || 0).toLocaleString('vi-VN')
-                                } </td>
-                                <td className="px-10 py-6 text-right qty-label bg-gray-50/20 text-base">
-                                    {
-                                    ((item.unitPrice || 0) * item.quantity).toLocaleString('vi-VN')
-                                } </td>
-                            </tr>
-                        ))
-                    } </tbody>
-                </table>
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="w-3.5 h-3.5 text-gray-300" />
+                                        <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase">
+                                            {customer?.email || quote.email}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div className="flex justify-end p-10 border-t border-gray-100">
-                    <div className="w-96 space-y-5">
-                        <div className="flex justify-between meta-label uppercase">
-                            <span className="text-gray-400 font-bold">Tổng tiền (Chưa thuế):</span>
-                            <span className="qty-label">
-                                {
-                                (quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0).toLocaleString('vi-VN')
-                            }
-                            </span>
-                        </div>
-                        <div className="flex justify-between meta-label uppercase">
-                            <span className="text-gray-400 font-bold">Thuế VAT (10%):</span>
-                            <span className="qty-label">
-                                {
-                                ((quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0) * 0.1).toLocaleString('vi-VN')
-                            }
-                            </span>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t-2 border-gray-900 items-baseline">
-                            <span className="tracking-label uppercase text-sm">Tổng cộng:</span>
-                            <span className="tracking-title-xl text-3xl text-brand-green tracking-tighter">
-                                {
-                                ((quote.items || []).reduce((acc : number, item : any) => acc + (item.unitPrice * item.quantity), 0) * 1.1).toLocaleString('vi-VN')
-                            }
-                            </span>
+                    <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
+                                <MapPin className="w-4 h-4 text-gray-400" />
+                                Địa chỉ và Mã số thuế
+                            </div>
+                            <div className="space-y-4">
+                                <p className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase text-gray-600">
+                                    {customer?.address || quote.address}
+                                </p>
+                                {quote.taxCode && (
+                                    <div className="pt-10 border-t border-gray-50">
+                                        <div className="bg-gray-50 p-6 border border-gray-100">
+                                            <p className="meta-label uppercase mb-2 text-gray-400">Mã số thuế:</p>
+                                            <p className="qty-label tracking-[0.1em] !text-xl font-bold">
+                                                {quote.taxCode}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-8">
-                <div className="bg-white p-10 border border-gray-100 space-y-6">
-                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-                        <User className="w-4 h-4 text-gray-400"/>
-                        <h4 className="tracking-label uppercase">Người liên hệ trực tiếp</h4>
-                    </div>
-                    <div className="space-y-4 pt-2">
-                        <div>
-                            <p className="breadcrumb-text uppercase text-xl mb-1">
-                                {
-                                quote.customerInfo.recipientName
-                            }</p>
-                            {
-                            quote.customerInfo.companyName && (
-                                <p className="meta-label uppercase text-[#B48F4E]">
-                                    {
-                                    quote.customerInfo.companyName
-                                } </p>
-                            )
-                        } </div>
-                        <div className="space-y-3 pt-6 border-t border-gray-50">
-                            <div className="flex items-center gap-3">
-                                <Phone className="w-4 h-4 text-gray-300"/>
-                                <span className="qty-label text-sm">
-                                    {
-                                    quote.customerInfo.recipientPhone
-                                }</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Mail className="w-4 h-4 text-gray-300"/>
-                                <span className="meta-label">
-                                    {
-                                    quote.customerInfo.email
-                                }</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white p-10 border border-gray-100 space-y-6">
-                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-                        <MapPin className="w-4 h-4 text-gray-400"/>
-                        <h4 className="tracking-label uppercase">Địa điểm nhận báo giá</h4>
-                    </div>
-                    <div className="space-y-6 pt-2">
-                        <p className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase">
-                            {
-                            quote.customerInfo.address
-                        } </p>
-                        {
-                        quote.customerInfo.taxCode && (
-                            <div className="mt-10 p-6 bg-gray-50/50 border border-gray-100">
-                                <p className="meta-label uppercase mb-2">Mã số thuế doanh nghiệp:</p>
-                                <p className="qty-label text-xl tracking-[0.15em]">
-                                    {
-                                    quote.customerInfo.taxCode
-                                }</p>
-                            </div>
-                        )
-                    } </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-8 items-stretch">
-                {
-                quote.note && (
-                    <div className="p-10 bg-gray-50 border border-gray-100 flex flex-col justify-center">
-                        <p className="tracking-label uppercase mb-4 text-gray-900">Ghi chú từ SensorX</p>
-                        <p className="qty-label text-sm leading-relaxed italic font-medium text-gray-600">
-                            "{
-                            quote.note
-                        }"
-                        </p>
-                    </div>
-                )
-            }
-
-                {
-                quote.response ? (
-                    <div className="p-10 bg-white border border-gray-100 space-y-6">
-                        <div className="flex items-center justify-between border-b border-gray-50 pb-4">
-                            <span className="meta-label uppercase">Phản hồi từ bạn</span>
-                            <span className="px-4 py-1 tracking-label text-[10px] uppercase bg-blue-50 text-blue-800 border-2 border-blue-100 font-bold">
-                                {
-                                quote.response.responseType
-                            }</span>
-                        </div>
-                        <p className="meta-label text-[13px] italic leading-relaxed py-3 px-4 bg-gray-50 border-l-4 border-gray-200 font-normal">
-                            "{
-                            quote.response.feedback
-                        }"
-                        </p>
-                        <div className="flex gap-8">
-                            <div className="flex-1">
-                                <p className="meta-label uppercase text-gray-400 mb-1">Thanh toán</p>
-                                <p className="breadcrumb-text uppercase text-xs">
-                                    {
-                                    quote.response.paymentMethod
-                                }</p>
-                            </div>
-                            <div className="flex-1">
-                                <p className="meta-label uppercase text-gray-400 mb-1">Điều khoản</p>
-                                <p className="breadcrumb-text uppercase text-xs">
-                                    {
-                                    quote.response.paymentTerm || 'Tiêu chuẩn'
-                                }</p>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="p-10 bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center text-center">
-                        <p className="meta-label uppercase text-gray-400">Chưa có phản hồi từ khách hàng</p>
-                    </div>
-                )
-            } </div>
         </div>
     );
 }

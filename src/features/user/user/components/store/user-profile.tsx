@@ -1,52 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, LogOut, ChevronRight, Building, MapPin, Shield, FileText, ShoppingCart, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { AuthService } from '@/features/system/auth/services/auth-service';
+import { useUser } from '@/shared/hooks/use-user';
+import { CustomerService } from '@/features/user/customer/services/customer-service';
 
-const authService = new AuthService();
 import { ProfileTab } from './profile-tab';
-import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
 import { AddressesTab } from './addresses-tab';
-import { MyQuotationsTab } from './my-quotations-tab';
+import { MyQuotationsTab } from '../../../../sales/quotation/components/store/my-quotations-tab';
 import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
 import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
 import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
-import { MyRfqsTab } from './my-rfqs-tab';
+import { MyRfqsTab } from '../../../../sales/requestforquotation/components/store/my-rfqs-tab';
 import { SecurityTab } from './security-tab';
+import { AuthService } from '@/features/system/auth/services/auth-service';
 
-interface UserData {
-    name: string;
-    email: string;
-    phone: string;
-    avatar?: string;
-    address: {
-        street: string;
-        ward: string;
-        district: string;
-        province: string;
-    };
-}
-
-interface BusinessData {
-    companyName: string;
-    taxId: string;
-    businessType: string;
-    businessAddress: {
-        street: string;
-        ward: string;
-        district: string;
-        province: string;
-    };
-    representativeName: string;
-    representativePhone: string;
-    representativeEmail: string;
-}
+const authService = new AuthService();
 
 interface Order {
     id: string;
@@ -57,28 +31,44 @@ interface Order {
 }
 
 export function UserProfile() {
-    const [activeTab, setActiveTab] = useState<'profile' | 'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'security'>('profile');
+    const [activeTab, setActiveTab] = useState<'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'security'>('business');
+    const [customerData, setCustomerData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
     const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
 
+    const { user } = useUser();
     const router = useRouter();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+    const fetchCustomer = async () => {
+        if (!user?.id) return;
+        try {
+            setLoading(true);
+            const response = await CustomerService.getDetailCustomerByAccountId(user.id);
+            if (response.isSuccess) {
+                setCustomerData(response.value);
+            }
+        } catch (error) {
+            console.error("Fetch customer error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCustomer();
+    }, [user?.id]);
+
     const handleLogout = async () => {
-        // Đọc refreshToken trực tiếp tại đây (Client Component - có document)
         const match = document.cookie.match(/(^| )refreshToken=([^;]+)/);
         const refreshToken = match ? decodeURIComponent(match[2]) : undefined;
 
         try {
             setIsLoggingOut(true);
-            // Gọi trực tiếp bằng fetch để chắc chắn body được gửi đúng
-            await fetch('http://localhost:5053/auth/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refreshToken }),
-            });
+            await authService.logout(refreshToken);
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
@@ -91,81 +81,30 @@ export function UserProfile() {
         }
     };
 
-    // Mock user data
-    const userData: UserData = {
-        name: 'Nguyễn Văn A',
-        email: 'nguyenvanа@email.com',
-        phone: '0912345678',
-        avatar: 'assets/images/avatar-placeholder.jpg',
-        address: {
-            street: '123 Đường ABC',
-            ward: 'Phường 1',
-            district: 'Quận 1',
-            province: 'TP. Hồ Chí Minh',
-        },
-    };
-
-    // Mock business data
-    const businessData: BusinessData = {
-        companyName: 'Công Ty TNHH SensorX',
-        taxId: '0123456789',
-        businessType: 'Xuất nhập khẩu linh kiện điện tử',
-        businessAddress: {
-            street: '456 Đường XYZ',
-            ward: 'Phường 2',
-            district: 'Quận 1',
-            province: 'TP. Hồ Chí Minh',
-        },
-        representativeName: 'Nguyễn Văn A',
-        representativePhone: '0912345678',
-        representativeEmail: 'contact@sensorx.com',
-    };
-
     // Mock orders data
     const orders: Order[] = [
-        {
-            id: 'ORD-001',
-            date: '2024-12-15',
-            total: 5250000,
-            status: 'completed',
-            items: 3,
-        },
-        {
-            id: 'ORD-002',
-            date: '2024-12-10',
-            total: 2150000,
-            status: 'completed',
-            items: 2,
-        },
-        {
-            id: 'ORD-003',
-            date: '2024-12-05',
-            total: 8750000,
-            status: 'pending',
-            items: 5,
-        },
+        { id: 'ORD-001', date: '2024-12-15', total: 5250000, status: 'completed', items: 3 },
+        { id: 'ORD-002', date: '2024-12-10', total: 2150000, status: 'completed', items: 2 },
+        { id: 'ORD-003', date: '2024-12-05', total: 8750000, status: 'pending', items: 5 },
     ];
 
     return (
         <div className="min-h-screen bg-page-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {/* header */}
                 <div className="mb-8">
                     <h1 className="tracking-title-xl mb-2">Tài khoản của tôi</h1>
                 </div>
 
                 <div className="grid grid-cols-4 gap-8">
-                    {/* sidebar menu */}
                     <aside className="lg:col-span-1">
                         <nav className="space-y-2">
                             {[
-                                { id: 'profile', label: 'Thông tin cá nhân', icon: User },
                                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
                                 { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
                                 { id: 'my-quotations', label: 'Báo giá của tôi', icon: FileText },
                                 { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
-                                { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield }, // Generalized from "Quên mật khẩu"
+                                { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield },
                             ].map((item) => {
                                 const Icon = item.icon || ChevronRight;
                                 return (
@@ -183,9 +122,7 @@ export function UserProfile() {
                                                 ? "text-white border-[#2D5A27] shadow-md"
                                                 : "bg-[#F9FAFB] text-[#374151] border-gray-200 hover:border-gray-400 hover:bg-white"
                                         )}
-                                        style={{
-                                            backgroundColor: activeTab === item.id ? '#2D5A27' : ''
-                                        }}
+                                        style={{ backgroundColor: activeTab === item.id ? '#2D5A27' : '' }}
                                     >
                                         <Icon size={18} />
                                         <span>{item.label}</span>
@@ -203,22 +140,20 @@ export function UserProfile() {
                         </nav>
                     </aside>
 
-                    {/* main content */}
                     <main className="lg:col-span-3">
-                        {activeTab === 'profile' && (
-                            <ProfileTab
-                                userData={userData}
-                                isEditing={isEditing}
-                                onEditChange={setIsEditing}
-                            />
-                        )}
-
                         {activeTab === 'business' && (
-                            <BusinessTab
-                                businessData={businessData}
-                                isEditing={isEditing}
-                                onEditChange={setIsEditing}
-                            />
+                            loading ? (
+                                <div className="flex justify-center py-20">
+                                    <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+                                </div>
+                            ) : (
+                                <ProfileTab
+                                    customerData={customerData}
+                                    isEditing={isEditing}
+                                    onEditChange={setIsEditing}
+                                    onRefresh={fetchCustomer}
+                                />
+                            )
                         )}
 
                         {activeTab === 'orders' && (
@@ -231,10 +166,7 @@ export function UserProfile() {
 
                         {activeTab === 'quotations' && (
                             selectedRfqId ? (
-                                <RfqDetailView 
-                                    onBack={() => setSelectedRfqId(null)} 
-                                    rfqId={selectedRfqId}
-                                />
+                                <RfqDetailView onBack={() => setSelectedRfqId(null)} rfqId={selectedRfqId} />
                             ) : (
                                 <MyRfqsTab onViewDetail={setSelectedRfqId} />
                             )
@@ -242,27 +174,24 @@ export function UserProfile() {
 
                         {activeTab === 'my-quotations' && (
                             selectedQuotationId ? (
-                                <QuotationDetailView 
-                                    onBack={() => setSelectedQuotationId(null)} 
-                                    quotationId={selectedQuotationId}
-                                />
+                                <QuotationDetailView onBack={() => setSelectedQuotationId(null)} quotationId={selectedQuotationId} />
                             ) : (
                                 <MyQuotationsTab onViewDetail={setSelectedQuotationId} />
                             )
                         )}
 
                         {activeTab === 'addresses' && (
-                            <AddressesTab
-                                userName={userData.name}
-                                userPhone={userData.phone}
-                                address={userData.address}
+                            <AddressesTab 
+                                userName={customerData?.name || ''} 
+                                userPhone={customerData?.phone || ''} 
+                                address={{
+                                    street: customerData?.address || '',
+                                    ward: '', district: '', province: ''
+                                }} 
                             />
                         )}
 
-                        {activeTab === 'security' && (
-                            <SecurityTab />
-                        )}
-
+                        {activeTab === 'security' && <SecurityTab />}
                     </main>
                 </div>
             </div>
