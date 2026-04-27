@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { RfqDetail } from '../../models/rfq-detail-response';
 import { RFQServices } from '../../services/rfq-services';
 import { StaffService } from '@/features/user/staff/services/staff-service';
+import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
 import { cn } from '@/shared/utils/cn';
 
@@ -123,6 +124,37 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
     }
   };
 
+  const handlePrepareQuotation = async () => {
+    if (!rfq) return;
+    
+    setLoading(true);
+    try {
+      // Gọi API lấy giá nội bộ cho từng sản phẩm trong RFQ
+      const updatedItems = await Promise.all(rfq.items.map(async (item) => {
+        try {
+          const response = await InternalPriceService.getInternalPricesByProductId(item.productId);
+          if (response) {
+            return {
+              ...item,
+              internalPrice: response // Gắn trực tiếp dữ liệu đã unwrap
+            };
+          }
+        } catch (err) {
+          console.error(`>>> Không lấy được giá cho SP ${item.productId}:`, err);
+        }
+        return item;
+      }));
+
+      // Cập nhật rfq với items đã có giá nội bộ
+      setRfq({ ...rfq, items: updatedItems });
+      setIsCreatingQuotation(true);
+    } catch (error) {
+      toast.error("Lỗi khi tải bảng giá nội bộ");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
@@ -175,7 +207,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           )}
           {rfq.status === 'Accepted' && (
             <Button
-              onClick={() => setIsCreatingQuotation(true)}
+              onClick={handlePrepareQuotation}
               variant="outline"
               className="rounded admin-btn-primary border-transparent"
             >

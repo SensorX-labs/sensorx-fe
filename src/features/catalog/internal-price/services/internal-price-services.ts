@@ -1,6 +1,7 @@
 import api from "@/shared/configs/axios-config";
 import { Result } from "@/shared/models/base-response";
 import { CreateInternalPriceRequest, ExtendInternalPriceRequest, GetPageListInternalPriceQuery, InternalPrice, InternalPriceListResult, InternalPriceStatsResult, ProductInternalPriceHistoryResult } from "../models";
+import { InternalPriceDetail } from "../models/internal-price-detail";
 import { ProductInternalPriceSuggestionQuery, ProductInternalPriceSuggestionResult } from "../models/internal-price-suggestion";
 
 const InternalPriceService = {
@@ -9,6 +10,9 @@ const InternalPriceService = {
    */
   getStats: () =>
     api.data.get<any, InternalPriceStatsResult>("/catalog/internalPrices/stats"),
+
+  getInternalPricesByProductId: (productId: string) =>
+    api.data.get<any, InternalPriceDetail>(`/catalog/internalPrices/product/${productId}`),
 
   /**
    * Lấy danh sách bảng giá nội bộ phân trang
