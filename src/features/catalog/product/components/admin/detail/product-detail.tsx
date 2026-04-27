@@ -18,13 +18,12 @@ import {
   Zap
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { MOCK_INTERNAL_PRICES } from '../../../mocks/internal-price-mocks';
 import { ProductStatus } from '../../../enums/product-status';
 import { NotionEditor } from '@/shared/components/notion-editor';
 import { ProductService } from '../../../services/product-service';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 import { toast } from 'sonner';
-import { ProductDetail } from '../../../models';
+import { GetPageProductDetailResponse } from '../../../models';
 
 interface ProductDetailProps {
   productId: string;
@@ -43,7 +42,7 @@ const statusLabel: Record<string, string> = {
 };
 
 export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailProps) {
-  const [product, setProduct] = useState<ProductDetail>();
+  const [product, setProduct] = useState<GetPageProductDetailResponse>();
   const [loading, setLoading] = useState(true);
   const [selectedImg, setSelectedImg] = useState(0);
 
@@ -54,7 +53,7 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await ProductService.getDetail(productId);
+        const response = await ProductService.getPageDetail(productId);
         if (response.isSuccess && response.value) {
           setProduct(response.value);
         }
@@ -69,8 +68,8 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     fetchProduct();
   }, [productId]);
 
-  // Lấy dữ liệu giá mẫu cho sản phẩm này
-  const internalPrice = product ? MOCK_INTERNAL_PRICES.find(ip => ip.productId === (product.code || product.id)) : null;
+  // Lấy dữ liệu giá từ API response
+  const internalPrice = product?.internalPricesSuggestion;
 
   if (loading) {
     return (
@@ -257,36 +256,99 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
 
         <div className="lg:col-span-2 space-y-6">
           {/* Chính sách giá */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Chính sách giá áp dụng</h4>
-              <DollarSign className="w-4 h-4 text-slate-300" />
+          <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded bg-emerald-50 flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                </div>
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chính sách giá áp dụng</h4>
+              </div>
             </div>
-            <div className="p-0">
-              {internalPrice && internalPrice.priceTiers.length > 0 ? (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50">
-                      <th className="px-6 py-3 text-left">Số lượng tối thiểu</th>
-                      <th className="px-6 py-3 text-right">Đơn giá</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {internalPrice.priceTiers.map((tier: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50/30 transition-colors">
-                        <td className="px-6 py-4 text-slate-700 font-bold">Từ {tier.fromQuantity} {product?.unit}</td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-base font-black text-emerald-600">{tier.price.toLocaleString('vi-VN')}</span>
-                          <span className="ml-1 text-[10px] font-bold text-slate-400 uppercase">đ</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+            <div className="flex-1">
+              {internalPrice ? (
+                <div className="divide-y divide-slate-50">
+                  {/* Hero Price Section - COMPACT */}
+                  <div className="p-4 grid grid-cols-2 gap-3 bg-slate-50/10">
+                    {/* Suggested Price Card */}
+                    <div className="bg-white p-3 rounded border border-emerald-100 shadow-sm relative overflow-hidden group">
+                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                        <Zap className="w-3 h-3" />
+                        Giá đề xuất
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-black text-slate-800 tracking-tight tabular-nums">
+                          {internalPrice.suggestedPriceAmount.toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          {internalPrice.suggestedPriceCurrency === 'VND' ? 'đ' : internalPrice.suggestedPriceCurrency}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Floor Price Card */}
+                    <div className="bg-white p-3 rounded border border-rose-100 shadow-sm relative overflow-hidden group">
+                      <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                        <Ban className="w-3 h-3" />
+                        Giá sàn
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-black text-slate-800 tracking-tight tabular-nums">
+                          {internalPrice.floorPriceAmount.toLocaleString('vi-VN')}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          {internalPrice.floorPriceCurrency === 'VND' ? 'đ' : internalPrice.floorPriceCurrency}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tiers Section */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Layers className="w-3.5 h-3.5 text-slate-300" />
+                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bảng giá sỉ</h5>
+                    </div>
+
+                    {internalPrice.priceTiers.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                        {internalPrice.priceTiers.map((tier: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-2.5 rounded border border-slate-50 bg-slate-50/5 hover:bg-white hover:border-emerald-200 transition-all duration-200 group">
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                                {String(idx + 1).padStart(2, '0')}
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Mua từ</p>
+                                <p className="text-xs font-bold text-slate-700">{tier.quantity} {product?.unit}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Đơn giá</p>
+                              <div className="flex items-baseline gap-1 justify-end">
+                                <span className="text-sm font-black text-slate-800 group-hover:text-emerald-600 transition-colors">
+                                  {tier.amount.toLocaleString('vi-VN')}
+                                </span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase">đ</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-8 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded border border-dashed border-slate-200">
+                        <p className="text-[10px] font-black uppercase tracking-widest italic opacity-40">Chưa có cấu hình bậc giá</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-                  <DollarSign className="w-10 h-10 mb-2 opacity-20" />
-                  <p className="text-xs font-bold uppercase tracking-widest italic">Chưa thiết lập bảng giá</p>
+                <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+                    <DollarSign className="w-8 h-8 opacity-10" />
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-widest opacity-40">Chưa thiết lập bảng giá</p>
                 </div>
               )}
             </div>
@@ -304,8 +366,8 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
                   <tbody className="divide-y divide-slate-50">
                     {product.attributes.map((attr: any, idx: number) => (
                       <tr key={idx} className="hover:bg-slate-50/30">
-                        <td className="px-6 py-4 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
-                        <td className="px-6 py-4 font-bold text-slate-800">{attr.value}</td>
+                        <td className="px-6 py-2.5 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
+                        <td className="px-6 py-2.5 font-bold text-slate-800">{attr.value}</td>
                       </tr>
                     ))}
                   </tbody>
