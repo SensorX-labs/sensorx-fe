@@ -13,11 +13,11 @@ import { ProfileTab } from './profile-tab';
 import { BusinessTab } from './business-tab';
 import { OrdersTab } from './orders-tab';
 import { AddressesTab } from './addresses-tab';
-import { MyQuotationsTab } from './my-quotations-tab';
+import { MyQuotationsTab } from '../../../../sales/quotation/components/store/my-quotations-tab';
 import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
 import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
 import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
-import { MyRfqsTab } from './my-rfqs-tab';
+import { MyRfqsTab } from '../../../../sales/requestforquotation/components/store/my-rfqs-tab';
 import { SecurityTab } from './security-tab';
 
 interface UserData {
