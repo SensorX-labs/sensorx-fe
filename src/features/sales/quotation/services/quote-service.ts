@@ -14,7 +14,13 @@ export const QuoteService = {
 
     getListQuotes: (params : QuoteFilter) => api.master.get<any,Result<OffsetPagedResult<QuoteListItem>>>(`/quotes`, {params}),
 
-    getQuoteById: (id : string) => api.master.get<any,Result<QuoteDetail>>(`/quotes/${id}`)
+    getQuoteById: (id : string) => api.master.get<any,Result<QuoteDetail>>(`/quotes/${id}`) ,
+
+    submitForApproval: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/submit-for-approval`),
+
+    approve: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/approve`),
+
+    accept: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/accept`),
 };
 
 export default QuoteService;

@@ -11,11 +11,13 @@ import {
     Loader2,
     FileText,
     Calendar,
-    DollarSign
+    DollarSign,
+    CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 import { QuoteService } from '../../services/quote-service';
+import { CanAccess } from '@/shared/components/common/can-access';
 import CustomerService from '@/features/user/customer/services/customer-service';
 import { QuoteDetail } from '../../models/quote-detail-response';
 import { Customer } from '@/features/user/customer/models/customer';
@@ -77,6 +79,22 @@ export function QuotationDetailView({ onBack, quotationId }: {
         fetchDetail();
     }, [quotationId]);
 
+    const handleAccept = async () => {
+        if (!quotationId) return;
+        try {
+            setLoading(true);
+            const response = await QuoteService.accept(quotationId);
+            if (response.isSuccess) {
+                // Cập nhật local state
+                if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
+            }
+        } catch (error) {
+            console.error("Error accepting quotation:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
@@ -111,6 +129,19 @@ export function QuotationDetailView({ onBack, quotationId }: {
                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Quay lại danh sách
                 </button>
+
+                {/* Nút Chốt báo giá cho khách hàng */}
+                <CanAccess roles={['Customer']}>
+                    {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
+                        <button 
+                            onClick={handleAccept}
+                            className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2"
+                        >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Chốt báo giá
+                        </button>
+                    )}
+                </CanAccess>
             </div>
 
             <div className="w-full space-y-10">

@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Calendar as CalendarIcon
+  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Download, Calendar as CalendarIcon
 } from 'lucide-react';
+import { useUser } from '@/shared/hooks/use-user';
 import { QuoteAnalysisService } from '../../services/quote-analysis-service';
 import { QuoteService } from '../../services/quote-service';
+import { CanAccess } from '@/shared/components/common/can-access';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Textarea } from '@/shared/components/shadcn-ui/textarea';
@@ -137,6 +139,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
 
 export default function QuotationCreate({ id, rfqId, rfqData, onBack }: QuotationCreateProps) {
   const router = useRouter();
+  const { user } = useUser();
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action') as ActionType | null;
 
@@ -323,6 +326,45 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
       return sum + Math.round((q * p) * (1 + t / 100));
     }, 0);
 
+  const handleSubmitForApproval = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      const response = await QuoteService.submitForApproval(id);
+      if (response.isSuccess) {
+        toast.success("Đã gửi yêu cầu duyệt báo giá");
+        router.refresh();
+        // Cập nhật local state để UI thay đổi ngay lập tức
+        if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.PENDING });
+      } else {
+        toast.error(response.message || "Lỗi khi gửi duyệt");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!id) return;
+    setIsSubmitting(true);
+    try {
+      const response = await QuoteService.approve(id);
+      if (response.isSuccess) {
+        toast.success("Phê duyệt báo giá thành công");
+        router.refresh();
+        if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.APPROVED });
+      } else {
+        toast.error(response.message || "Lỗi khi phê duyệt");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
 
   return (
@@ -348,10 +390,50 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
               <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
             </Button>
           )}
-          {action === ActionType.DETAIL && (
-            <Button variant="outline" className="rounded admin-btn-primary h-10 px-6">
-              <FileText className="w-4 h-4 mr-2" /> Gửi duyệt
-            </Button>
+          
+          {action === ActionType.DETAIL && quoteDetail && (
+            <>
+              {/* Nút cho Sales khi ở trạng thái Draft */}
+              <CanAccess roles={['SaleStaff', 2]}>
+                {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
+                  <>
+                    <Button 
+                      onClick={() => setAction(ActionType.UPDATE)} 
+                      variant="outline"
+                      className="rounded border-blue-200 text-blue-600 hover:bg-blue-50 h-10 px-6 shadow-sm"
+                    >
+                      <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
+                    </Button>
+                    <Button 
+                      onClick={handleSubmitForApproval} 
+                      disabled={isSubmitting}
+                      className="rounded bg-blue-600 hover:bg-blue-700 h-10 px-6 text-white"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" /> 
+                      {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu duyệt"}
+                    </Button>
+                  </>
+                )}
+              </CanAccess>
+
+              {/* Nút cho Manager khi ở trạng thái Pending */}
+              <CanAccess roles={['Manager', 'Admin', 3, 4]}>
+                {quoteDetail.status?.toLowerCase() === QuoteStatus.PENDING.toLowerCase() && (
+                  <Button 
+                    onClick={handleApprove} 
+                    disabled={isSubmitting}
+                    className="rounded bg-green-600 hover:bg-green-700 h-10 px-6 text-white"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" /> 
+                    {isSubmitting ? "Đang xử lý..." : "Duyệt báo giá"}
+                  </Button>
+                )}
+              </CanAccess>
+
+              <Button variant="outline" className="rounded border-gray-200 h-10 px-6 shadow-sm">
+                <Download className="w-4 h-4 mr-2" /> Xuất PDF
+              </Button>
+            </>
           )}
         </div>
       </div>
