@@ -141,29 +141,35 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
 function InternalPricePopover({ 
   onSelect, 
   children,
-  disabled 
+  disabled,
+  priceData
 }: { 
   onSelect: (price: number) => void; 
-  children: React.ReactNode;
+  children: React.ReactNode; 
   disabled?: boolean;
+  priceData?: any;
 }) {
   const [open, setOpen] = useState(false);
   
-  const priceList = [
-    { qty: 1, price: 100000 },
-    { qty: 10, price: 95000 },
-    { qty: 50, price: 90000 },
-    { qty: 100, price: 85000 },
-  ];
+  // Lấy danh sách các bậc giá từ dữ liệu thật
+  const tiers = priceData?.priceTiers || [];
 
-  if (disabled) return <>{children}</>;
+  // Nếu không có dữ liệu giá hoặc bị disabled thì không hiện popover
+  if (disabled || tiers.length === 0 || !React.isValidElement(children)) return <>{children}</>;
+
+  // Clone children để inject onClick mở popover
+  const trigger = React.cloneElement(children as React.ReactElement<any>, {
+    onClick: (e: React.MouseEvent) => {
+      // Gọi onClick gốc nếu có
+      if ((children as any).props.onClick) (children as any).props.onClick(e);
+      setOpen(true);
+    },
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div onFocus={() => setOpen(true)}>
-          {children}
-        </div>
+        <div>{trigger}</div>
       </PopoverTrigger>
       <PopoverContent 
         side="bottom" 
@@ -172,20 +178,20 @@ function InternalPricePopover({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="flex flex-col">
-          {priceList.map((item, idx) => (
+          {tiers.map((tier: any, idx: number) => (
             <button
               key={idx}
               type="button"
               onMouseDown={(e) => {
                 e.preventDefault();
-                onSelect(item.price);
+                onSelect(tier.priceAmount);
                 setOpen(false);
               }}
               className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
             >
-              <span className="text-gray-500">SL {item.qty}:</span>
-              <span className="font-semibold text-gray-900">
-                {item.price.toLocaleString('vi-VN')}
+              <span className="text-gray-500 font-medium">SL ≥ {tier.quantity}:</span>
+              <span className="font-bold text-gray-900">
+                {tier.priceAmount.toLocaleString('vi-VN')}
               </span>
             </button>
           ))}
@@ -280,6 +286,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         unitPrice: 0,
         taxRate: 0,
         key: `rfq-${idx}`,
+        internalPrice: item.internalPrice,
       })));
     }
   }, [id, rfqRaw, actionParam]);
@@ -760,6 +767,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                         <td className="px-4 py-4">
                           <InternalPricePopover 
                             disabled={action === ActionType.DETAIL}
+                            priceData={item.internalPrice}
                             onSelect={(price) => handleUpdateItem(index, { unitPrice: price })}
                           >
                             <Input 
