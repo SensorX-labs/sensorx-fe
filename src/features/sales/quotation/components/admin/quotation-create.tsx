@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, User, ShoppingCart,
   DollarSign, MessageSquare, Save, Trash, Edit, X,
-  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Download, Calendar as CalendarIcon
+  ClipboardList, Search, Zap, CheckCircle, AlertCircle, XCircle, TrendingUp, MapPin, Download, Calendar as CalendarIcon,
+  Bot
 } from 'lucide-react';
 import { useUser } from '@/shared/hooks/use-user';
 import { QuoteAnalysisService } from '../../services/quote-analysis-service';
@@ -195,7 +196,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
             if (!actionParam) setAction(ActionType.DETAIL);
 
             if (detail.status === QuoteStatus.DRAFT || detail.status === QuoteStatus.PENDING) {
-              handleAnalyzeQuote(detail.code);
+              handleAnalyzeQuote(detail.id);
             }
           }
         } catch (error: any) {
@@ -226,12 +227,12 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     }
   }, [id, rfqRaw, actionParam]);
 
-  const handleAnalyzeQuote = async (quoteCode: string) => {
+  const handleAnalyzeQuote = async (quoteId: string) => {
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
       const quoteAnalysisService = new QuoteAnalysisService();
-      const response = await quoteAnalysisService.analyzeQuote(quoteCode);
+      const response = await quoteAnalysisService.analyzeQuote(quoteId);
       const data = response.value || response;
       setAnalysisResult(data);
     } catch (error: any) {
@@ -334,7 +335,6 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
       if (response.isSuccess) {
         toast.success("Đã gửi yêu cầu duyệt báo giá");
         router.refresh();
-        // Cập nhật local state để UI thay đổi ngay lập tức
         if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.PENDING });
       } else {
         toast.error(response.message || "Lỗi khi gửi duyệt");
@@ -393,7 +393,6 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
           
           {action === ActionType.DETAIL && quoteDetail && (
             <>
-              {/* Nút cho Sales khi ở trạng thái Draft */}
               <CanAccess roles={['SaleStaff', 2]}>
                 {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
                   <>
@@ -416,7 +415,6 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                 )}
               </CanAccess>
 
-              {/* Nút cho Manager khi ở trạng thái Pending */}
               <CanAccess roles={['Manager', 'Admin', 3, 4]}>
                 {quoteDetail.status?.toLowerCase() === QuoteStatus.PENDING.toLowerCase() && (
                   <Button 
@@ -439,15 +437,14 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* AI Analysis Section */}
-        {analysisResult && (
+        <CanAccess roles={['Admin', 4]}>
           <div className="md:col-span-3 bg-white border border-gray-100 rounded p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-gray-50 pb-3">
               <div className="flex items-center gap-2 text-blue-600">
-                <Zap size={16} className={cn(analysisResult.status === 'pending' && "animate-pulse")} />
+                <Bot size={16} className={cn((analysisResult?.status === 'pending' || analysisLoading) && "animate-pulse")} />
                 <span className="font-bold uppercase tracking-wider text-sm">Phân tích từ AI</span>
               </div>
-              {analysisResult.status !== 'pending' && (
+              {analysisResult && analysisResult.status !== 'pending' && (
                 <div className={cn(
                   "text-xl font-black uppercase tracking-tighter px-4 py-1.5 rounded-lg border-2",
                   (() => {
@@ -463,22 +460,14 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
               )}
             </div>
 
-            {analysisResult.status === 'pending' ? (
+            {analysisLoading || analysisResult?.status === 'pending' ? (
               <div className="flex flex-col items-center justify-center py-6 space-y-3">
                 <div className="flex items-center gap-3 text-blue-600 font-medium">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-                  <span>{analysisResult.message || "Hệ thống đang tiến hành phân tích báo giá..."}</span>
+                  <span>{analysisResult?.message || "Hệ thống đang tiến hành phân tích báo giá..."}</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.code)}
-                  className="text-xs text-gray-500 hover:text-blue-600"
-                >
-                  Cập nhật lại
-                </Button>
               </div>
-            ) : (
+            ) : analysisResult ? (
               <div className="space-y-4">
                 <p className="text-sm text-gray-700 leading-relaxed">
                   <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Phân tích</span>
@@ -488,10 +477,31 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                   <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Chiến lược</span>
                   {analysisResult.analysis?.strategy}
                 </p>
+                <div className="pt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.id)}
+                    className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                  >
+                    Phân tích lại
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="py-6 text-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.id)}
+                  className="text-xs font-bold uppercase tracking-widest border-blue-200 text-blue-600 hover:bg-blue-50"
+                >
+                  <Bot className="w-4 h-4 mr-2" /> Bắt đầu phân tích AI
+                </Button>
               </div>
             )}
           </div>
-        )}
+        </CanAccess>
 
         <div className="md:col-span-1 space-y-6">
           <div className="border border-gray-200 bg-white rounded">

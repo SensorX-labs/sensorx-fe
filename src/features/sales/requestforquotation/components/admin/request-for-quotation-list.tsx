@@ -111,20 +111,28 @@ export default function RequestForQuotationList() {
     try {
       // Lấy thông tin Staff từ Account ID để có Staff ID thực tế
       const staffResponse = await StaffService.getStaffByAccountId(user.id);
+      
+      console.log(">>> [RFQ-Assign] Staff Response:", staffResponse);
 
-      if (!staffResponse.isSuccess || !staffResponse.value) {
-        toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
+      // Vì interceptor bóc tách value ra ngoài, id có thể nằm trực tiếp ở staffResponse hoặc staffResponse.value
+      const staffId = (staffResponse as any).staffId || (staffResponse as any).value?.staffId;
+
+      if (!staffId) {
+        toast.error("Không tìm thấy thông tin nhân viên (Staff ID)");
         return;
       }
 
-      const response = await RFQServices.assignStaff(id, staffResponse.value.id);
+      const response = await RFQServices.assignStaff(id, staffId);
 
       if (response.isSuccess) {
         toast.success("Tiếp nhận yêu cầu thành công");
         fetchRfqs(); // Tải lại danh sách
+      } else {
+        toast.error(response.message || "Lỗi khi tiếp nhận yêu cầu");
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
+      toast.error("Đã xảy ra lỗi khi tiếp nhận yêu cầu");
     }
   };
 
