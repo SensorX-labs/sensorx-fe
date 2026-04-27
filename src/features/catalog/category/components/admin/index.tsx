@@ -13,7 +13,7 @@ import {
   AdminPageContainer,
   AdminContentCard,
 } from '@/shared/components/admin/layout';
-import { Category } from '../../models/category-model';
+import { Category } from '../../models';
 import CategoryService from '../../services/category-services';
 
 export default function CategoryManagement() {

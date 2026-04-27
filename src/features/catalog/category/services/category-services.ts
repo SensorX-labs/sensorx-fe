@@ -1,13 +1,15 @@
 import api from "@/shared/configs/axios-config";
 import { Result } from "@/shared/models/base-response";
-import { 
+import {
   CategoryAllListResult,
-  CategoryListResult, 
-  CategoryResult, 
-  CreateCategoryRequest, 
-  GetPageListCategoriesQuery, 
-  SetParentCategoryRequest 
-} from "../models/category-model";
+  CategoryListResult,
+  CategoryResult,
+  CreateCategoryRequest,
+  GetPageListCategoriesQuery,
+  LoadMoreCategoriesForModalQuery,
+  LoadMoreCategoriesForModalResult,
+  SetParentCategoryRequest
+} from "../models";
 
 const CategoryService = {
   /**
@@ -39,6 +41,12 @@ const CategoryService = {
    */
   delete: (id: string) =>
     api.data.delete<any, Result>(`/catalog/categories/${id}`),
+
+  /**
+   * Lấy danh sách danh mục theo kiểu load-more cho modal selection
+   */
+  loadMoreForModal: (query: LoadMoreCategoriesForModalQuery) =>
+    api.data.get<any, LoadMoreCategoriesForModalResult>(`/catalog/categories/load-more-for-modal`, { params: query }),
 };
 
 export default CategoryService;

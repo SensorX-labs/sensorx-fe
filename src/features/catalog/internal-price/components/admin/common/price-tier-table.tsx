@@ -22,7 +22,7 @@ export function PriceTierTable({ tiers, compact = false }: PriceTierTableProps) 
   });
 
   return (
-    <div className={`overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${compact ? 'mx-4 mb-4' : ''}`}>
+    <div className={`overflow-hidden rounded border border-slate-200 bg-white shadow-sm ${compact ? 'mx-4 mb-4' : ''}`}>
       <Table>
         <TableHeader className="bg-slate-50/50">
           <TableRow className="hover:bg-transparent border-b border-slate-200">

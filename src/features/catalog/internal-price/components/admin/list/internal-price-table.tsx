@@ -104,7 +104,7 @@ export function InternalPriceTable({
                 {price.suggestedPrice.toLocaleString() + " " + price.suggestedPriceCurrency}
               </td>
               <td className="px-6 py-4 text-center">
-                <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-md font-bold text-xs border border-rose-100">
+                <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded font-bold text-xs border border-rose-100">
                   {price.floorPrice.toLocaleString() + " " + price.floorPriceCurrency}
                 </span>
               </td>

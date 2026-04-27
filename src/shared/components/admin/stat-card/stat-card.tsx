@@ -31,7 +31,7 @@ export function StatCard({
     <div
       onClick={onClick}
       className={cn(
-        "p-5 rounded-xl border transition-all flex items-center gap-4 bg-white",
+        "p-5 rounded border transition-all flex items-center gap-4 bg-white",
         onClick && "cursor-pointer hover:shadow-md hover:-translate-y-1",
         isActive 
           ? (activeBorder || "border-primary ring-2 ring-primary/10") 
@@ -39,7 +39,7 @@ export function StatCard({
         className
       )}
     >
-      <div className={cn("p-3 rounded-lg shrink-0", color)}>
+      <div className={cn("p-3 rounded shrink-0", color)}>
         <Icon className="w-6 h-6" />
       </div>
       <div className="min-w-0">

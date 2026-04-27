@@ -31,7 +31,7 @@ export const ProductService = {
         api.data.delete<any, ProductPageListResult>(`/catalog/products/${id}`),
 
     create: (command: ProductCommand) =>
-        api.data.post<ProductCommand, any>(`/catalog/products`, command),
+        api.data.post<ProductCommand, any>(`/catalog/products/create`, command),
 
     update: (id: string, command: ProductCommand) =>
         api.data.put<ProductCommand, any>(`/catalog/products/${id}`, command),
