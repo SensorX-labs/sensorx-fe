@@ -17,10 +17,13 @@ const adminPaths = [
 ];
 
 // Route yêu cầu đăng nhập (bất kỳ role nào)
-const authRequiredPaths = ['/shop', '/profile', '/markdown',];
+const authRequiredPaths = ['/shop', '/profile', '/cart', '/checkout', '/orders'];
 
 // Route công khai - không cần đăng nhập
-const publicPaths = ['/', '/login', '/register', '/not-found',];
+const publicPaths = ['/', '/login', '/register', '/not-found'];
+
+// Route chỉ dành cho Customer (Cấm Admin/Staff)
+const customerOnlyPaths = ['/shop', '/profile', '/cart', '/checkout', '/orders'];
 
 export function middleware(request: NextRequest) {
     const {pathname} = request.nextUrl;
@@ -29,42 +32,56 @@ export function middleware(request: NextRequest) {
     const userCookie = request.cookies.get('user') ?. value;
     const isLoggedIn = !!(token && userCookie && userCookie !== 'undefined');
 
-    // 1. Kiểm tra route admin
+    let user: any = null;
+    let rolesArray: string[] = [];
+
+    if (isLoggedIn) {
+        try {
+            user = JSON.parse(userCookie!);
+            rolesArray = Array.isArray(user.roles) ? user.roles : [user.roles];
+        } catch (e) {
+            console.error("Middleware JSON parse error", e);
+        }
+    }
+
+    // 1. Kiểm tra route admin (Cấm Customer)
     const isAdminPath = adminPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
-    if (isAdminPath) { // Chưa đăng nhập -> về trang login
-        if (! isLoggedIn) {
+    if (isAdminPath) { 
+        if (!isLoggedIn) {
             return NextResponse.redirect(new URL('/login', request.url));
         }
 
-        try {
-            const user = JSON.parse(userCookie!);
-            const rolesArray = Array.isArray(user.roles) ? user.roles : [user.roles];
-            
-            // Backend trả về chuỗi tên: "WarehouseStaff", "SaleStaff", "Manager", "Admin"
-            // Chỉ có "Customer" là không được vào dashboard
-            const isAuthorized = rolesArray.some((role: string) => {
-                const r = String(role);
-                return r !== "Customer";
-            });
+        const isAuthorized = rolesArray.some((role: string) => String(role) !== "Customer" && String(role) !== "0");
 
-            if (! isAuthorized) {
-                return NextResponse.redirect(new URL('/not-found', request.url));
-            }
-        } catch {
-            return NextResponse.redirect(new URL('/login', request.url));
-        }}
+        if (!isAuthorized) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
+        }
+    }
 
-    // 2. Kiểm tra route yêu cầu đăng nhập (store)
+    // 2. Kiểm tra route chỉ dành cho Customer (Cấm Staff/Admin)
+    const isCustomerOnlyPath = customerOnlyPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
+
+    if (isCustomerOnlyPath && isLoggedIn) {
+        const isCustomer = rolesArray.includes('Customer') || rolesArray.includes('0');
+        
+        if (!isCustomer) {
+            // Nếu là Staff/Admin mà vào trang Customer -> Đẩy vào Dashboard
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+    }
+
+    // 3. Kiểm tra route yêu cầu đăng nhập chung
     const isAuthRequired = authRequiredPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
 
-    if (isAuthRequired && ! isLoggedIn) {
+    if (isAuthRequired && !isLoggedIn) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // 3. Nếu đã đăng nhập mà truy cập trang login -> về trang chủ
+    // 4. Nếu đã đăng nhập mà truy cập trang login -> về trang chủ hoặc dashboard
     if (pathname === '/login' && isLoggedIn) {
-        return NextResponse.redirect(new URL('/', request.url));
+        const isCustomer = rolesArray.includes('Customer') || rolesArray.includes('0');
+        return NextResponse.redirect(new URL(isCustomer ? '/' : '/dashboard', request.url));
     }
 
     return NextResponse.next();

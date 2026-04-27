@@ -44,7 +44,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
       if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
 
       toast.success('Đăng nhập thành công!');
-      router.push('/');
+      
+      const userRoles = response.user?.roles || [];
+      const isCustomer = userRoles.includes('Customer') || userRoles.includes('0');
+
+      if (!isCustomer && userRoles.length > 0) {
+        router.push('/dashboard');
+      } else {
+        router.push('/');
+      }
     } catch {
       // Lỗi đã được xử lý bởi axios interceptor (hiển thị toast.error)
     }
