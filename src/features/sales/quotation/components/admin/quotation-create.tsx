@@ -138,6 +138,63 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
   );
 }
 
+function InternalPricePopover({ 
+  onSelect, 
+  children,
+  disabled 
+}: { 
+  onSelect: (price: number) => void; 
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  
+  const priceList = [
+    { qty: 1, price: 100000 },
+    { qty: 10, price: 95000 },
+    { qty: 50, price: 90000 },
+    { qty: 100, price: 85000 },
+  ];
+
+  if (disabled) return <>{children}</>;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div onFocus={() => setOpen(true)}>
+          {children}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent 
+        side="bottom" 
+        align="end" 
+        className="w-48 p-1 shadow-md border border-gray-200"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex flex-col">
+          {priceList.map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item.price);
+                setOpen(false);
+              }}
+              className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
+            >
+              <span className="text-gray-500">SL {item.qty}:</span>
+              <span className="font-semibold text-gray-900">
+                {item.price.toLocaleString('vi-VN')}
+              </span>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function QuotationCreate({ id, rfqId, rfqData, onBack }: QuotationCreateProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -365,6 +422,43 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     }
   };
 
+  const handleUpdateQuote = async () => {
+    if (!id || items.length === 0) return;
+    setIsSubmitting(true);
+    try {
+      const request = {
+        id: id,
+        note: formData.note,
+        quoteDate: formData.quoteDate.toISOString(),
+        paymentMethod: formData.paymentMethod,
+        paymentTerm: formData.paymentTerm,
+        items: items.map(i => ({
+          productId: i.productId,
+          productCode: i.productCode,
+          manufacturer: i.manufacturer,
+          unit: i.unit,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          taxRate: i.taxRate,
+        }))
+      };
+      const response = await QuoteService.updateQuote(request);
+      if (response.isSuccess) {
+        toast.success("Cập nhật báo giá thành công");
+        setAction(ActionType.DETAIL);
+        // Refresh data
+        const res = await QuoteService.getQuoteById(id);
+        if (res.isSuccess) setQuoteDetail(res.value || null);
+      } else {
+        toast.error(response.message || "Lỗi khi cập nhật");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
 
   return (
@@ -385,15 +479,37 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* TRẠNG THÁI TẠO MỚI */}
           {action === ActionType.CREATE && (
             <Button onClick={handleSaveDraft} disabled={isSubmitting} className="rounded admin-btn-primary h-10 px-6">
               <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Lưu báo giá"}
             </Button>
           )}
+
+          {/* TRẠNG THÁI CHỈNH SỬA (UPDATE) */}
+          {action === ActionType.UPDATE && (
+            <>
+              <Button 
+                onClick={() => setAction(ActionType.DETAIL)} 
+                variant="outline"
+                className="rounded border-gray-300 h-10 px-6 shadow-sm"
+              >
+                <X className="w-4 h-4 mr-2" /> Hủy
+              </Button>
+              <Button 
+                onClick={handleUpdateQuote} 
+                disabled={isSubmitting} 
+                className="rounded admin-btn-primary h-10 px-6"
+              >
+                <Save className="w-4 h-4 mr-2" /> {isSubmitting ? "Đang lưu..." : "Cập nhật thay đổi"}
+              </Button>
+            </>
+          )}
           
+          {/* TRẠNG THÁI XEM CHI TIẾT (DETAIL) */}
           {action === ActionType.DETAIL && quoteDetail && (
             <>
-              <CanAccess roles={['SaleStaff', 2]}>
+              <CanAccess roles={['SaleStaff', 'Manager', 'Admin', 2, 3, 4]}>
                 {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
                   <>
                     <Button 
@@ -477,27 +593,21 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                   <span className="font-bold text-gray-900 uppercase text-[10px] bg-gray-100 px-1.5 py-0.5 rounded mr-2">Chiến lược</span>
                   {analysisResult.analysis?.strategy}
                 </p>
-                <div className="pt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.id)}
-                    className="text-[10px] font-bold uppercase tracking-widest text-blue-600 hover:bg-blue-50"
-                  >
-                    Phân tích lại
-                  </Button>
-                </div>
               </div>
             ) : (
-              <div className="py-6 text-center">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => quoteDetail && handleAnalyzeQuote(quoteDetail.id)}
-                  className="text-xs font-bold uppercase tracking-widest border-blue-200 text-blue-600 hover:bg-blue-50"
-                >
-                  <Bot className="w-4 h-4 mr-2" /> Bắt đầu phân tích AI
-                </Button>
+              <div className="py-10 flex flex-col items-center justify-center space-y-4 bg-blue-50/30 rounded-lg border border-dashed border-blue-100">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-20"></div>
+                  <div className="relative bg-white p-3 rounded-full shadow-sm border border-blue-100">
+                    <Bot className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 mb-1">Đang chờ phân tích</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest leading-relaxed">
+                    Hệ thống AI đang chuẩn bị dữ liệu <br /> và phân tích báo giá này
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -648,7 +758,20 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                           <Input disabled={action === ActionType.DETAIL} type="number" value={item.quantity} onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />
                         </td>
                         <td className="px-4 py-4">
-                          <Input disabled={action === ActionType.DETAIL} type="number" value={item.unitPrice} onChange={(e) => handleUpdateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-right border-gray-200 shadow-none disabled:opacity-100" placeholder="0" />
+                          <InternalPricePopover 
+                            disabled={action === ActionType.DETAIL}
+                            onSelect={(price) => handleUpdateItem(index, { unitPrice: price })}
+                          >
+                            <Input 
+                              disabled={action === ActionType.DETAIL} 
+                              type="number" 
+                              value={item.unitPrice} 
+                              onChange={(e) => handleUpdateItem(index, { unitPrice: parseFloat(e.target.value) || 0 })} 
+                              onFocus={(e) => setTimeout(() => e.target.select(), 0)} 
+                              className="h-10 text-sm text-right border-gray-200 shadow-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all disabled:opacity-100" 
+                              placeholder="0" 
+                            />
+                          </InternalPricePopover>
                         </td>
                         <td className="px-4 py-4">
                           <Input disabled={action === ActionType.DETAIL} type="number" value={item.taxRate} onChange={(e) => handleUpdateItem(index, { taxRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none disabled:opacity-100" />

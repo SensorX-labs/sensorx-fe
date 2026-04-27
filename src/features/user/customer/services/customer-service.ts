@@ -16,8 +16,8 @@ export const CustomerService = {
         return api.data.post<any, UniversalResult<Customer>>('/customer', customer);
     },
 
-    updateCustomer: async (id: string, customer: Customer): Promise<UniversalResult<Customer>> => {
-        return api.data.put<any, UniversalResult<Customer>>(`/customer/${id}`, customer);
+    updateCustomer: async (customer: Customer): Promise<UniversalResult<Customer>> => {
+        return api.data.put<any, UniversalResult<Customer>>(`/customer`, customer);
     },
 
     getCustomerById: async (id: string): Promise<UniversalResult<Customer>> => {

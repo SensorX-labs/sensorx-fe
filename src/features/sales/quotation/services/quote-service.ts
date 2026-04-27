@@ -19,6 +19,8 @@ export const QuoteService = {
     submitForApproval: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/submit-for-approval`),
 
     approve: (id : string) => api.master.post<any,Result<string>>(`/quotes/${id}/approve`),
+    
+    updateQuote: (data: any) => api.master.put<any, Result<string>>(`/quotes`, data),
 
     accept: (id: string, data: any = {}) => api.master.post<any, Result<string>>(`/quotes/${id}/accept`, data),
 };
