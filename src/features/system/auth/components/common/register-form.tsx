@@ -1,19 +1,52 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { AuthService } from '../../services/auth-service';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface RegisterFormProps {
-  onSubmit?: (formData: Record<string, string | boolean>) => void;
   onSwitchToLogin?: () => void;
 }
 
+const authService = new AuthService();
+
 export const RegisterForm: React.FC<RegisterFormProps> = ({
-  onSubmit,
   onSwitchToLogin,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const passwordConfirm = formData.get('passwordConfirm') as string;
+
+    if (password !== passwordConfirm) {
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.register({ email, password });
+      toast.success("Đăng ký tài khoản thành công!");
+      // Chờ một chút rồi chuyển sang trang login
+      setTimeout(() => {
+        onSwitchToLogin?.();
+      }, 1500);
+    } catch (error: any) {
+      console.error(">>> Register Error:", error);
+      // Lỗi đã được Toast trong interceptor nên ở đây ta chỉ xử lý logic nếu cần
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -26,58 +59,16 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </p>
       </div>
 
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const data: Record<string, string | boolean> = {
-            firstname: formData.get('firstname') as string,
-            lastname: formData.get('lastname') as string,
-            username: formData.get('username') as string,
-            password: formData.get('password') as string,
-            passwordConfirm: formData.get('passwordConfirm') as string,
-            acceptTerms: formData.get('acceptTerms') === 'on',
-          };
-          onSubmit?.(data);
-        }}
-        className="space-y-6"
-      >
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
-              Tên
-            </label>
-            <input
-              type="text"
-              name="firstname"
-              placeholder="Nguyễn"
-              required
-              className="w-full px-0 py-3 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
-              Họ
-            </label>
-            <input
-              type="text"
-              name="lastname"
-              placeholder="Văn A"
-              required
-              className="w-full px-0 py-3 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
-            />
-          </div>
-        </div>
-
-        {/* username */}
+      <form onSubmit={handleRegister} className="space-y-6">
+        {/* email */}
         <div>
           <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
-            Username
+            Email
           </label>
           <input
-            type="text"
-            name="username"
-            placeholder="johndoe"
+            type="email"
+            name="email"
+            placeholder="john@example.com"
             required
             className="w-full px-0 py-3 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
           />
@@ -129,33 +120,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           </div>
         </div>
 
-        {/* điều khoản */}
-        <div className="flex items-center gap-2 py-2">
-          <input
-            type="checkbox"
-            name="acceptTerms"
-            id="terms"
-            required
-            className="w-4 h-4 border-gray-300 rounded shrink-0"
-          />
-          <label htmlFor="terms" className="text-xs text-gray-600">
-            Tôi đồng ý với{' '}
-            <a href="#" className="text-blue-500 hover:underline">
-              Điều khoản dịch vụ
-            </a>{' '}
-            và{' '}
-            <a href="#" className="text-blue-500 hover:underline">
-              Chính sách bảo mật
-            </a>
-          </label>
-        </div>
-
         <div className="pt-6">
           <button
             type="submit"
-            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-6 tracking-wider uppercase transition-colors"
+            disabled={loading}
+            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-6 tracking-wider uppercase transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Đăng ký
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>
         </div>
       </form>
