@@ -19,12 +19,6 @@ const CategoryService = {
     api.data.get<any, CategoryAllListResult>("/catalog/categories/list-all"),
 
   /**
-   * Lấy danh sách danh mục có phân trang và tìm kiếm
-   */
-  getList: (params: GetPageListCategoriesQuery) =>
-    api.data.get<any, CategoryListResult>("/catalog/categories/list", { params }),
-
-  /**
    * Tạo danh mục mới
    */
   create: (request: CreateCategoryRequest) =>

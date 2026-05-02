@@ -25,7 +25,7 @@ export const ProductService = {
      * Lấy thông tin trang chi tiết sản phẩm
      */
     getPageDetail: (id: string) =>
-        api.data.get<any, GetPageProductDetailResult>(`/pages/product-detail/${id}`),
+        api.data.get<any, GetPageProductDetailResult>(`/catalog/products/detail/${id}`),
 
     /**
      * Lấy thông tin thống kê sản phẩm

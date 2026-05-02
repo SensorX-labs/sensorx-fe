@@ -9,46 +9,46 @@ const InternalPriceService = {
    * Lấy thống kế số lượng bảng giá nội bộ
    */
   getStats: () =>
-    api.data.get<any, InternalPriceStatsResult>("/catalog/internalPrices/stats"),
+    api.data.get<any, InternalPriceStatsResult>("/catalog/internal-prices/stats"),
 
   getInternalPricesByProductId: (productId: string) =>
-    api.data.get<any, InternalPriceDetail>(`/catalog/internalPrices/product/${productId}`),
+    api.data.get<any, InternalPriceDetail>(`/catalog/internal-prices/product/${productId}`),
 
   /**
    * Lấy danh sách bảng giá nội bộ phân trang
    */
   getList: (params: GetPageListInternalPriceQuery) =>
-    api.data.get<any, InternalPriceListResult>("/catalog/internalPrices/list", { params }),
+    api.data.get<any, InternalPriceListResult>("/catalog/internal-prices/list", { params }),
 
   /**
    * Tạo bảng giá nội bộ
    */
   create: (request: CreateInternalPriceRequest) =>
-    api.data.post<CreateInternalPriceRequest, Result<string>>("/catalog/internalPrices/create", request),
+    api.data.post<CreateInternalPriceRequest, Result<string>>("/catalog/internal-prices/create", request),
 
   /**
    * Vô hiệu hóa bảng giá nội bộ
    */
   deactivate: (id: string) =>
-    api.data.patch<any, Result<string>>(`/catalog/internalPrices/${id}/deactivate`),
+    api.data.patch<any, Result<string>>(`/catalog/internal-prices/${id}/deactivate`),
 
   /**
    * Gia hạn bảng giá nội bộ
    */
   extend: (id: string, request: ExtendInternalPriceRequest) =>
-    api.data.patch<ExtendInternalPriceRequest, Result<string>>(`/catalog/internalPrices/${id}/extend`, request),
+    api.data.patch<ExtendInternalPriceRequest, Result<string>>(`/catalog/internal-prices/${id}/extend`, request),
 
   /**
    * Lấy lịch sử bảng giá nội bộ
    */
   getHistory: (productId: string) =>
-    api.data.get<any, ProductInternalPriceHistoryResult>(`/catalog/internalPrices/product/${productId}/history`),
+    api.data.get<any, ProductInternalPriceHistoryResult>(`/catalog/internal-prices/product/${productId}/history`),
 
   /**
    * Lấy gợi ý giá
    */
   getSuggest: (query: ProductInternalPriceSuggestionQuery) =>
-    api.data.post<ProductInternalPriceSuggestionQuery, ProductInternalPriceSuggestionResult>(`/catalog/internalPrices/suggest`, query),
+    api.data.post<ProductInternalPriceSuggestionQuery, ProductInternalPriceSuggestionResult>(`/catalog/internal-prices/suggest`, query),
 };
 
 export default InternalPriceService;
