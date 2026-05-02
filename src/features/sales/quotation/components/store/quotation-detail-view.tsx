@@ -57,15 +57,15 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 setLoading(true);
                 // 1. Lấy chi tiết báo giá
                 const response = await QuoteService.getQuoteById(quotationId);
-                if (response.isSuccess && response.value) {
-                    const quoteData = response.value;
+                if (response) {
+                    const quoteData = response;
                     setQuote(quoteData);
 
                     // 2. Lấy thông tin khách hàng
                     if (quoteData.customerId) {
                         const customerRes = await CustomerService.getCustomerById(quoteData.customerId);
-                        if (customerRes.isSuccess && customerRes.value) {
-                            setCustomer(customerRes.value);
+                        if (customerRes) {
+                            setCustomer(customerRes);
                         }
                     }
                 }
@@ -90,7 +90,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 feedback: "Khách hàng đã chốt báo giá trực tuyến."
             };
             const response = await QuoteService.accept(quotationId, data);
-            if (response.isSuccess) {
+            if (response) {
                 // Cập nhật local state
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
             }

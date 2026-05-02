@@ -1,5 +1,5 @@
 import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
-import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { OffsetPagedResult } from "@/shared/models/base-response";
 import { ProductStatus } from "../enums/product-status";
 
 /**
@@ -22,4 +22,4 @@ export interface ProductPageList {
   createdAt: string;
 }
 
-export type ProductPageListResult = Result<OffsetPagedResult<ProductPageList>>
+export type ProductPageListResult = OffsetPagedResult<ProductPageList>

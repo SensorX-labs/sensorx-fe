@@ -31,15 +31,15 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
         setLoading(true);
         // 1. Lấy chi tiết RFQ
         const response = await RFQServices.getDetailRFQ(rfqId);
-        if (response.isSuccess && response.value) {
-          const rfqData = response.value;
+        if (response) {
+          const rfqData = response;
           setRfq(rfqData);
 
           // 2. Lấy thông tin khách hàng theo customerId từ RFQ
           if (rfqData.customerId) {
             const customerResponse = await CustomerService.getCustomerById(rfqData.customerId);
-            if (customerResponse.isSuccess && customerResponse.value) {
-                setCustomer(customerResponse.value);
+            if (customerResponse) {
+                setCustomer(customerResponse);
             }
           }
         }

@@ -1,5 +1,3 @@
-import { Result } from "@/shared/models/base-response";
-
 export interface InternalPriceStats {
   totalCount: number;
   activeCount: number;
@@ -7,4 +5,4 @@ export interface InternalPriceStats {
   expiredCount: number;
 }
 
-export type InternalPriceStatsResult = Result<InternalPriceStats>
+export type InternalPriceStatsResult = InternalPriceStats

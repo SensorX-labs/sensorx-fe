@@ -42,8 +42,8 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
 
   const fetchStats = useCallback(async () => {
     const statsRes = await ProductService.getStats();
-    if (statsRes.isSuccess && statsRes.value) {
-      setStats(statsRes.value);
+    if (statsRes) {
+      setStats(statsRes);
     }
   }, []);
 
@@ -57,9 +57,9 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
         status: activeTab !== 'all' ? (activeTab === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE) : undefined
       });
 
-      if (listRes.isSuccess && listRes.value) {
-        setProducts(listRes.value.items);
-        setTotalItems(listRes.value.totalCount);
+      if (listRes) {
+        setProducts(listRes.items);
+        setTotalItems(listRes.totalCount);
       }
     } catch (error) {
       console.error(">>> Error fetching products:", error);
@@ -87,8 +87,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
     setIsDeleting(true);
     try {
       const res = await ProductService.deleteProduct(deleteConfirm.product.id);
-      if (res.isSuccess) {
-        toast.success("Xóa sản phẩm thành công");
+      if (res) {
         setDeleteConfirm({ isOpen: false, product: null });
         fetchStats();
         fetchData();

@@ -70,11 +70,9 @@ export default function StaffList() {
                 searchTerm: searchTerm
             });
 
-            if (response.isSuccess && response.value) {
-                setStaffList(response.value.items);
-                setTotalCount(response.value.totalCount || 0);
-            } else {
-                toast.warning(response.message);
+            if (response) {
+                setStaffList(response.items);
+                setTotalCount(response.totalCount || 0);
             }
         } catch (error: any) {
             console.error('>>> Lỗi khi fetch nhân viên:', error);

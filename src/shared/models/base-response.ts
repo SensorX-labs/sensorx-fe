@@ -1,9 +1,3 @@
-export interface Result<T = void> {
-  isSuccess: boolean;
-  message?: string;
-  value?: T;
-}
-
 export interface OffsetPagedResult<T> {
   items: T[];
   pageNumber: number;

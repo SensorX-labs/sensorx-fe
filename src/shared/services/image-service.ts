@@ -1,5 +1,4 @@
 import api from "@/shared/configs/axios-config";
-import { Result } from "@/shared/models/base-response";
 
 const imageService = {
     /**
@@ -10,7 +9,7 @@ const imageService = {
         formData.append('file', file);
         formData.append('folder', folder);
 
-        return api.data.post<FormData, Result<string>>('/image/upload', formData, {
+        return api.data.post<FormData, string>('/image/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -20,13 +19,13 @@ const imageService = {
      * Xóa ảnh trên server
      */
     deleteImage: (imageUrl: string) => {
-        return api.data.delete<string, Result<boolean>>('/image/delete', { data: imageUrl });
+        return api.data.delete<string, boolean>('/image/delete', { data: imageUrl });
     },
     /**
      * Xóa nhiều ảnh trên server
      */
     deleteImages: (imageUrls: string[]) => {
-        return api.data.delete<string, Result<boolean>>('/image/delete-multiple', { data: imageUrls });
+        return api.data.delete<string, boolean>('/image/delete-multiple', { data: imageUrls });
     }
 };
 

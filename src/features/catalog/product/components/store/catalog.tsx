@@ -34,9 +34,9 @@ export const Catalog: React.FC = () => {
         try {
             const result = await ProductService.getProducts({ pageNumber: 1, pageSize: 100 });
 
-            if (result.isSuccess && result.value) {
+            if (result) {
                 // Gán thêm giá ảo vì API chưa có giá
-                const productsWithPrice = result.value.items.map(p => ({
+                const productsWithPrice = result.items.map(p => ({
                     ...p,
                     price: 1500000, // Giá mặc định cho demo
                     originalPrice: 1500000 + 500000,

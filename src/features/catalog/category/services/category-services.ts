@@ -1,9 +1,8 @@
 import api from "@/shared/configs/axios-config";
-import { Result } from "@/shared/models/base-response";
+
 import {
   CategoryAllListResult,
   CategoryListResult,
-  CategoryResult,
   CreateCategoryRequest,
   GetPageListCategoriesQuery,
   LoadMoreCategoriesForModalQuery,
@@ -22,19 +21,19 @@ const CategoryService = {
    * Tạo danh mục mới
    */
   create: (request: CreateCategoryRequest) =>
-    api.data.post<any, CategoryResult>("/catalog/categories/create", request),
+    api.data.post<any, string>("/catalog/categories/create", request),
 
   /**
    * Cập nhật danh mục cha
    */
   updateParent: (id: string, request: SetParentCategoryRequest) =>
-    api.data.put<any, Result>(`/catalog/categories/${id}/parent`, request),
+    api.data.put<any, string>(`/catalog/categories/${id}/parent`, request),
 
   /**
    * Xóa danh mục
    */
   delete: (id: string) =>
-    api.data.delete<any, Result>(`/catalog/categories/${id}`),
+    api.data.delete<any, string>(`/catalog/categories/${id}`),
 
   /**
    * Lấy danh sách danh mục theo kiểu load-more cho modal selection

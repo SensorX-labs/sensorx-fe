@@ -24,8 +24,8 @@ export function ProductPriceHistoryTab({ productId, currentPriceId, unit = 'cái
       try {
         setLoading(true);
         const historyRes = await InternalPriceService.getHistory(productId);
-        if (historyRes.isSuccess && historyRes.value) {
-          setPrices(historyRes.value.internalPrices);
+        if (historyRes) {
+          setPrices(historyRes.internalPrices);
         }
       } catch (error) {
         console.error(">>> Error fetching price history:", error);

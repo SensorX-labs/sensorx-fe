@@ -1,4 +1,3 @@
-import { Result } from "@/shared/models/base-response";
 import { ProductStatus } from "../enums/product-status";
 import { ProductAttribute } from "./common";
 
@@ -36,4 +35,4 @@ export interface PriceTierDto {
     currency: string;
 }
 
-export type GetPageProductDetailResult = Result<GetPageProductDetailResponse>
+export type GetPageProductDetailResult = GetPageProductDetailResponse

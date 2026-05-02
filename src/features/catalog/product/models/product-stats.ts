@@ -1,5 +1,3 @@
-import { Result } from "@/shared/models/base-response";
-
 /**
  * Interface cho API get stats
  */
@@ -9,4 +7,4 @@ export type ProductStats = {
   inactiveCount: number;
 };
 
-export type ProductStatsResult = Result<ProductStats>
+export type ProductStatsResult = ProductStats

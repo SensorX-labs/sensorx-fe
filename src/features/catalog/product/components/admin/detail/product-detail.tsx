@@ -40,12 +40,11 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     const fetchProduct = async () => {
       try {
         const response = await ProductService.getPageDetail(productId);
-        if (response.isSuccess && response.value) {
-          setProduct(response.value);
+        if (response) {
+          setProduct(response);
         }
       } catch (error) {
         console.error(">>> Error fetching product detail:", error);
-        toast.error("Không thể tải thông tin sản phẩm");
       } finally {
         setLoading(false);
       }
@@ -70,13 +69,12 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     setStatusConfirm({ ...statusConfirm, loading: true });
     try {
       const res = await ProductService.changeStatus(product.id, newStatus);
-      if (res.isSuccess) {
-        toast.success(product.status === ProductStatus.ACTIVE ? "Đã ngừng kinh doanh sản phẩm" : "Đã kích hoạt sản phẩm thành công");
+      if (res) {
         setStatusConfirm({ isOpen: false, loading: false });
         onBack();
       }
     } catch (error) {
-      toast.error("Lỗi khi thay đổi trạng thái");
+      console.error("Lỗi:", error);
       setStatusConfirm({ ...statusConfirm, loading: false });
     }
   };
@@ -86,12 +84,11 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     setDeleteConfirm({ ...deleteConfirm, loading: true });
     try {
       const res = await ProductService.deleteProduct(product.id);
-      if (res.isSuccess) {
-        toast.success("Xóa sản phẩm thành công");
+      if (res) {
         onBack();
       }
     } catch (error) {
-      toast.error("Lỗi khi xóa sản phẩm");
+      console.error("Lỗi:", error);
     } finally {
       setDeleteConfirm({ isOpen: false, loading: false });
     }

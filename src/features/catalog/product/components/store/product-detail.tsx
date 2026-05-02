@@ -26,8 +26,8 @@ export function ProductDetail() {
       setLoading(true);
       try {
         const response = await ProductService.getDetail(id as string);
-        if (response.isSuccess && response.value) {
-          setProduct(response.value);
+        if (response) {
+          setProduct(response);
         }
       } catch (error) {
         console.error(">>> Lỗi khi lấy chi tiết sản phẩm:", error);

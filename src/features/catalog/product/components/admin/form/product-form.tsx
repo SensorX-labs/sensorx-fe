@@ -50,8 +50,8 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       const fetchProduct = async () => {
         setLoading(true);
         const res = await ProductService.getDetail(initialProduct.id);
-        if (res.isSuccess && res.value) {
-          setFormData(res.value);
+        if (res) {
+          setFormData(res);
         }
         setLoading(false);
       };
@@ -80,12 +80,9 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
         ? await ProductService.create(command)
         : await ProductService.update(initialProduct?.id || '', command);
 
-      if (res.isSuccess) {
-        toast.success(mode === 'create' ? "Tạo hàng hóa thành công" : "Cập nhật hàng hóa thành công");
-        onBack();
-      }
+      onBack();
     } catch (error) {
-      toast.error("Đã có lỗi xảy ra khi lưu dữ liệu");
+      console.error("Lỗi:", error);
     } finally {
       setIsSaving(false);
     }
@@ -97,16 +94,14 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       setIsUploading(true);
       const res = await imageService.upload(file, 'products');
 
-      if (res.isSuccess && res.value) {
+      if (res) {
         setFormData({
           ...formData,
-          images: [...(formData.images || []), res.value]
+          images: [...(formData.images || []), res]
         });
-
-        toast.success("Tải ảnh lên thành công");
       }
     } catch (error) {
-      toast.error("Lỗi khi tải ảnh lên");
+      console.error("Lỗi:", error);
     } finally {
       setIsUploading(false);
     }

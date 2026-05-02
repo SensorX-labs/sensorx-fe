@@ -237,8 +237,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         setLoading(true);
         try {
           const response = await QuoteService.getQuoteById(id);
-          if (response.isSuccess && response.value) {
-            const detail = response.value;
+          if (response) {
+            const detail = response;
             setQuoteDetail(detail);
 
             setFormData({
@@ -297,7 +297,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     try {
       const quoteAnalysisService = new QuoteAnalysisService();
       const response = await quoteAnalysisService.analyzeQuote(quoteId);
-      const data = response.value || response;
+      const data = response;
       setAnalysisResult(data);
     } catch (error: any) {
       setAnalysisError(error.message || 'Lỗi phân tích báo giá');
@@ -371,10 +371,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         }))
       };
       const response = await QuoteService.createQuote(request);
-      if (response.isSuccess) {
+      if (response) {
         router.push('/sales/quotations');
-      } else {
-        alert("Lỗi: " + (response.message || "Không thể tạo báo giá"));
       }
     } catch (error: any) {
       alert("Lỗi: " + error.message);
@@ -396,12 +394,9 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     setIsSubmitting(true);
     try {
       const response = await QuoteService.submitForApproval(id);
-      if (response.isSuccess) {
-        toast.success("Đã gửi yêu cầu duyệt báo giá");
+      if (response) {
         router.refresh();
         if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.PENDING });
-      } else {
-        toast.error(response.message || "Lỗi khi gửi duyệt");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -415,12 +410,9 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     setIsSubmitting(true);
     try {
       const response = await QuoteService.approve(id);
-      if (response.isSuccess) {
-        toast.success("Phê duyệt báo giá thành công");
+      if (response) {
         router.refresh();
         if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.APPROVED });
-      } else {
-        toast.error(response.message || "Lỗi khi phê duyệt");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -450,14 +442,11 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         }))
       };
       const response = await QuoteService.updateQuote(request);
-      if (response.isSuccess) {
-        toast.success("Cập nhật báo giá thành công");
+      if (response) {
         setAction(ActionType.DETAIL);
         // Refresh data
         const res = await QuoteService.getQuoteById(id);
-        if (res.isSuccess) setQuoteDetail(res.value || null);
-      } else {
-        toast.error(response.message || "Lỗi khi cập nhật");
+        if (res) setQuoteDetail(res || null);
       }
     } catch (error: any) {
       toast.error(error.message);

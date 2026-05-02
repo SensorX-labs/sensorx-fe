@@ -48,8 +48,8 @@ export function UserProfile() {
         try {
             setLoading(true);
             const response = await CustomerService.getDetailCustomerByAccountId(user.id);
-            if (response.isSuccess) {
-                setCustomerData(response.value);
+            if (response) {
+                setCustomerData(response);
             }
         } catch (error) {
             console.error("Fetch customer error:", error);

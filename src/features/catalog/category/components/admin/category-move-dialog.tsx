@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
-import { toast } from 'sonner';
 import { Category } from '../../models';
 import CategoryService from '../../services/category-services';
 
@@ -31,11 +30,7 @@ export function CategoryMoveDialog({
       const parentId = targetCategory ? targetCategory.id : undefined;
       const response = await CategoryService.updateParent(activeCategory.id, { parentId });
 
-      if (response.isSuccess) {
-        toast.success(response.message || (targetCategory
-          ? `Đã chuyển "${activeCategory.name}" vào "${targetCategory.name}"`
-          : `Đã chuyển "${activeCategory.name}" thành danh mục gốc`
-        ));
+      if (response) {
         onSuccess();
       }
     } finally {

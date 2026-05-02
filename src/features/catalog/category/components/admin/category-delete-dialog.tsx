@@ -28,8 +28,7 @@ export function CategoryDeleteDialog({
     setLoading(true);
     try {
       const response = await CategoryService.delete(categoryId);
-      if (response.isSuccess) {
-        toast.success(response.message || "Xóa danh mục thành công");
+      if (response) {
         onSuccess();
       }
     } finally {
