@@ -15,15 +15,18 @@ import {
   XCircle,
   CheckCircle2,
   Ban,
-  Zap
+  Zap,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 import { ProductStatus } from '../../../enums/product-status';
 import { NotionEditor } from '@/shared/components/notion-editor';
 import { ProductService } from '../../../services/product-service';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 import { toast } from 'sonner';
 import { GetPageProductDetailResponse } from '../../../models';
+import { ProductInternalPriceHistoryTab } from './product-internal-price-history-tab';
 
 interface ProductDetailProps {
   productId: string;
@@ -164,7 +167,19 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Tabs defaultValue="detail" className="w-full">
+        <TabsList className="bg-slate-100/50 p-1 mb-6">
+          <TabsTrigger value="detail" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2 font-bold text-sm">
+            Chi tiết sản phẩm
+          </TabsTrigger>
+          <TabsTrigger value="price-history" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2 font-bold text-sm flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5" />
+            Lịch sử bảng giá
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="detail">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           {/* Thông tin chính */}
           <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
@@ -407,7 +422,21 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
             </div>
           </div>
         </div>
-      </div>
+        </div>
+        </TabsContent>
+
+        <TabsContent value="price-history">
+          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
+              <div className="w-7 h-7 rounded bg-emerald-50 flex items-center justify-center">
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+              </div>
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Lịch sử bảng giá nội bộ</h4>
+            </div>
+            <ProductInternalPriceHistoryTab productId={productId} />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <ConfirmDialog
         isOpen={statusConfirm.isOpen}

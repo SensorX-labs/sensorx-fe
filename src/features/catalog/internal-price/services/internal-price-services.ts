@@ -1,6 +1,6 @@
 import api from "@/shared/configs/axios-config";
 import { Result } from "@/shared/models/base-response";
-import { CreateInternalPriceRequest, ExtendInternalPriceRequest, GetPageListInternalPriceQuery, InternalPrice, InternalPriceListResult, InternalPriceStatsResult, ProductInternalPriceHistoryResult } from "../models";
+import { CreateInternalPriceRequest, ExtendInternalPriceRequest, GetPageListInternalPriceQuery, GetProductInternalPriceHistoryQuery, InternalPrice, InternalPriceListResult, InternalPriceStatsResult, ProductInternalPriceHistoryResult, ProductInternalPricePagedHistoryResult } from "../models";
 import { InternalPriceDetail } from "../models/internal-price-detail";
 import { ProductInternalPriceSuggestionQuery, ProductInternalPriceSuggestionResult } from "../models/internal-price-suggestion";
 
@@ -39,10 +39,21 @@ const InternalPriceService = {
     api.data.patch<ExtendInternalPriceRequest, Result<string>>(`/catalog/internalPrices/${id}/extend`, request),
 
   /**
-   * Lấy lịch sử bảng giá nội bộ
+   * Lấy lịch sử bảng giá nội bộ (legacy - không phân trang)
    */
   getHistory: (productId: string) =>
     api.data.get<any, ProductInternalPriceHistoryResult>(`/catalog/internalPrices/product/${productId}/history`),
+
+  /**
+   * Lấy lịch sử bảng giá nội bộ của sản phẩm có phân trang offset
+   * API: GET /api/catalog/products/{productId}/internalPrices/history
+   * Sort: IsActive → CreatedAt DESC → ExpiresAt ASC → Id DESC
+   */
+  getProductHistory: (productId: string, query: GetProductInternalPriceHistoryQuery) =>
+    api.data.get<any, ProductInternalPricePagedHistoryResult>(
+      `/catalog/products/${productId}/internalPrices/history`,
+      { params: query }
+    ),
 
   /**
    * Lấy gợi ý giá
