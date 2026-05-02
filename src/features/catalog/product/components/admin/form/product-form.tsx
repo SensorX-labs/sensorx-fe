@@ -151,7 +151,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
         <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Đang khởi tạo form...</p>
       </div>
     );
@@ -167,8 +167,8 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
         onSave={handleSave}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Left Column: Configuration & Meta (Height Reference) */}
         <div className="lg:col-span-1 space-y-6">
           <ProductInfoSection
             formData={formData}
@@ -182,21 +182,24 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
             onUploadImage={handleUploadImage}
             isUploading={isUploading}
           />
-        </div>
 
-        {/* Right Column */}
-        <div className="lg:col-span-2 space-y-6">
           <ProductAttributeSection
             attributes={formData.attributes || []}
             onAddAttribute={handleAddAttribute}
             onRemoveAttribute={handleRemoveAttribute}
             onAttributeChange={handleAttributeChange}
           />
+        </div>
 
-          <ProductShowcaseSection
-            content={formData.showcase || ''}
-            onChange={handleShowcaseChange}
-          />
+        {/* Right Column: Detailed Description (Scrollable) */}
+        <div className="lg:col-span-2 relative min-h-[600px]">
+          <div className="lg:absolute lg:inset-0">
+            <ProductShowcaseSection
+              content={formData.showcase || ''}
+              onChange={handleShowcaseChange}
+              className="h-full"
+            />
+          </div>
         </div>
       </div>
 

@@ -24,10 +24,10 @@ export function ProductImageSection({ imageUrls, onRemoveImage, onUploadImage, i
   };
 
   return (
-    <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2">
+    <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
         <ImageIcon className="w-4 h-4 text-slate-400" />
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hình ảnh hàng hóa</h4>
+        <h4 className="text-xs font-bold uppercase tracking-widest text-slate-600">Hình ảnh hàng hóa</h4>
       </div>
       <div className="p-6">
         <div className="grid grid-cols-4 gap-3">
@@ -59,14 +59,14 @@ export function ProductImageSection({ imageUrls, onRemoveImage, onUploadImage, i
             type="button"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
-            className="aspect-square rounded border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600 group disabled:opacity-50 disabled:cursor-not-allowed"
+            className="aspect-square rounded border-2 border-dashed border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
-              <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
             ) : (
               <>
                 <Plus className="w-6 h-6 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="text-[9px] font-black uppercase tracking-widest">Thêm ảnh</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Thêm ảnh</span>
               </>
             )}
           </button>
