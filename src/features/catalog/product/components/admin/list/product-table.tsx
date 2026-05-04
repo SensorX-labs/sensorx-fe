@@ -29,7 +29,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
       <thead>
         <tr className="bg-slate-50/50">
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Thông tin hàng hóa</th>
-          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Nhà sản xuất</th>
+          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Hãng</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Phân loại</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Trạng thái</th>
           <th className="text-center px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Thao tác</th>
@@ -37,8 +37,12 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
       </thead>
       <tbody className="divide-y divide-slate-50">
         {products.length > 0 ? products.map((p) => (
-          <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
-            <td className="px-6 py-4">
+          <tr
+            key={p.id}
+            className="hover:bg-slate-100/80 transition-all group cursor-pointer"
+            onClick={() => onViewDetail(p)}
+          >
+            <td className="px-6 py-4 border-l-2 border-l-transparent group-hover:border-l-emerald-500 transition-all">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded border border-slate-100 overflow-hidden bg-white flex-shrink-0 shadow-sm group-hover:border-emerald-200 transition-colors">
                   {p.images && p.images.length > 0 ? (
@@ -83,18 +87,12 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-all"
-                  title="Xem chi tiết"
-                  onClick={() => onViewDetail(p)}
-                >
-                  <Eye className="w-4.5 h-4.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
                   className="h-9 w-9 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded transition-all"
                   title="Chỉnh sửa"
-                  onClick={() => onEdit(p)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(p);
+                  }}
                 >
                   <Edit className="w-4.5 h-4.5" />
                 </Button>
@@ -103,7 +101,10 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
                   size="icon"
                   className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-all"
                   title="Xóa"
-                  onClick={() => onDelete?.(p)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(p);
+                  }}
                 >
                   <Trash2 className="w-4.5 h-4.5" />
                 </Button>
