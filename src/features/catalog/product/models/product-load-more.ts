@@ -1,5 +1,5 @@
 import { BaseQueryLoadMore } from "@/shared/models/base-query-page-list";
-import { LoadMorePagedResult, Result } from "@/shared/models/base-response";
+import { LoadMorePagedResult } from "@/shared/models/base-response";
 
 /**
  * Interface cho API LoadMore
@@ -17,4 +17,4 @@ export interface ProductLoadMoreForModal {
   images: string[];
 }
 
-export type ProductLoadMoreForModalResult = Result<LoadMorePagedResult<ProductLoadMoreForModal>>
+export type ProductLoadMoreForModalResult = LoadMorePagedResult<ProductLoadMoreForModal>

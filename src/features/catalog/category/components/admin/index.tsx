@@ -41,8 +41,8 @@ export default function CategoryManagement() {
     setLoading(true);
     try {
       const response = await CategoryService.getAll();
-      if (response.isSuccess && response.value) {
-        setAllCategories(response.value);
+      if (response) {
+        setAllCategories(response);
       }
     } catch (error) {
       console.error('Failed to fetch categories:', error);

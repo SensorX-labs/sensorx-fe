@@ -1,4 +1,3 @@
-import { Result } from "@/shared/models/base-response";
 import { InternalPrice } from "./common";
 
 export interface ProductInternalPriceHistory {
@@ -8,4 +7,4 @@ export interface ProductInternalPriceHistory {
   internalPrices: InternalPrice[];
 }
 
-export type ProductInternalPriceHistoryResult = Result<ProductInternalPriceHistory>
+export type ProductInternalPriceHistoryResult = ProductInternalPriceHistory

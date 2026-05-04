@@ -59,8 +59,8 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
       else setLoading(true);
 
       const customerResponse = await CustomerService.getDetailCustomerByAccountId(user.id);
-      if (customerResponse.isSuccess && customerResponse.value) {
-        const customerId = customerResponse.value.id;
+      if (customerResponse) {
+        const customerId = customerResponse.id;
 
         const response = await QuoteService.getListQuotes({
           customerId: customerId,
@@ -69,8 +69,8 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
           pageSize: 10
         });
 
-        if (response.isSuccess && response.value) {
-          const newItems = response.value.items || [];
+        if (response) {
+          const newItems = response.items || [];
           
           if (isAppend) {
             setQuotes(prev => [...prev, ...newItems]);

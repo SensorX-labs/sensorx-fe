@@ -43,8 +43,8 @@ export default function QuotationList() {
     setLoading(true);
     try {
       const response = await QuoteService.getListQuotes({ pageNumber: 1, pageSize: 50 });
-      if (response.isSuccess && response.value) {
-        setQuotes(response.value.items);
+      if (response) {
+        setQuotes(response.items);
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi fetch báo giá:", error);

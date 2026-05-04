@@ -1,35 +1,33 @@
 import api from "@/shared/configs/axios-config";
 import { Customer } from "../models/customer";
-import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { OffsetPagedResult } from "@/shared/models/base-response";
 import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 
-// Kiểu dữ liệu "Universal" mà Interceptor của bạn trả về: 
-// Kết hợp giữa Wrapper Result và các thuộc tính của chính Object đó
-type UniversalResult<T> = Result<T> & T;
+
 
 export const CustomerService = {
-    getPagedCustomers: (params: BaseQueryOffsetPagedList): Promise<UniversalResult<OffsetPagedResult<Customer>>> => {
-        return api.data.get<any, UniversalResult<OffsetPagedResult<Customer>>>('/customer/list', { params });
+    getPagedCustomers: (params: BaseQueryOffsetPagedList): Promise<OffsetPagedResult<Customer>> => {
+        return api.data.get<any, OffsetPagedResult<Customer>>('/customer/list', { params });
     },
 
-    createCustomer: async (customer: Customer): Promise<UniversalResult<Customer>> => {
-        return api.data.post<any, UniversalResult<Customer>>('/customer', customer);
+    createCustomer: async (customer: Customer): Promise<Customer> => {
+        return api.data.post<any, Customer>('/customer', customer);
     },
 
-    updateCustomer: async (customer: Customer): Promise<UniversalResult<Customer>> => {
-        return api.data.put<any, UniversalResult<Customer>>(`/customer`, customer);
+    updateCustomer: async (customer: Customer): Promise<Customer> => {
+        return api.data.put<any, Customer>(`/customer`, customer);
     },
 
-    getCustomerById: async (id: string): Promise<UniversalResult<Customer>> => {
-        return api.data.get<any, UniversalResult<Customer>>(`/customer/${id}`);
+    getCustomerById: async (id: string): Promise<Customer> => {
+        return api.data.get<any, Customer>(`/customer/${id}`);
     },
 
-    deleteCustomer: async (id: string): Promise<Result<boolean>> => {
-        return api.data.delete<any, Result<boolean>>(`/customer/${id}`);
+    deleteCustomer: async (id: string): Promise<boolean> => {
+        return api.data.delete<any, boolean>(`/customer/${id}`);
     },
 
-    getDetailCustomerByAccountId: async (accountId: string): Promise<UniversalResult<Customer>> => {
-        return api.data.get<any, UniversalResult<Customer>>(`/customer/account/${accountId}`);
+    getDetailCustomerByAccountId: async (accountId: string): Promise<Customer> => {
+        return api.data.get<any, Customer>(`/customer/account/${accountId}`);
     }
 };
 

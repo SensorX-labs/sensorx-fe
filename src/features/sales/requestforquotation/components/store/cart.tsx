@@ -43,8 +43,8 @@ export function Cart() {
       if (user?.id) {
         try {
           const response = await CustomerService.getDetailCustomerByAccountId(user.id);
-          if (response.isSuccess && response.value) {
-            const customer = response.value;
+          if (response) {
+            const customer = response;
             setFormData({
               name: customer.receiverName || customer.name || '',
               email: customer.email || '',
@@ -78,7 +78,7 @@ export function Cart() {
       const customerRes = await CustomerService.getDetailCustomerByAccountId(user?.id || "");
       
       const request: RfqCreateRequest = {
-        customerId: customerRes.value?.id || "",
+        customerId: customerRes?.id || "",
         recipientName: formData.name,
         recipientPhone: formData.phone,
         companyName: formData.companyName,
@@ -96,13 +96,9 @@ export function Cart() {
       };
 
       const response = await RFQServices.createRFQ(request);
-      if (response.isSuccess) {
+      if (response) {
         setShowSuccessDialog(true);
         clearCart();
-      } else {
-        toast.warning("Gửi yêu cầu thất bại", {
-          description: response.message || "Đã xảy ra lỗi không xác định"
-        });
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi tạo RFQ:", error);

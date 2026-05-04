@@ -88,8 +88,7 @@ export function CategoryForm({
         const response = await CategoryService.updateParent(category.id, {
           parentId: formData.parentId === 'root' ? undefined : formData.parentId
         });
-        if (response.isSuccess) {
-          toast.success(response.message || "Cập nhật danh mục thành công");
+        if (response) {
           onSuccess();
           onOpenChange(false);
         }
@@ -100,8 +99,7 @@ export function CategoryForm({
           description: formData.description,
           parentId: formData.parentId === 'root' ? undefined : formData.parentId
         });
-        if (response.isSuccess) {
-          toast.success(response.message || "Tạo danh mục thành công");
+        if (response) {
           onSuccess();
           onOpenChange(false);
         }

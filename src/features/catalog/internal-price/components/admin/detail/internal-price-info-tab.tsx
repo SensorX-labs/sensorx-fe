@@ -1,9 +1,9 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
-import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/shadcn-ui/tooltip';
 import { Info, Box, Tag, AlertCircle, ShieldCheck, Calendar, BookOpen } from 'lucide-react';
+import { InternalPriceStatusBadge } from '../common/internal-price-status-badge';
 import { InternalPrice } from '../../../models';
 
 interface InfoTabContentProps {
@@ -33,9 +33,7 @@ export function InfoTabContent({ price }: InfoTabContentProps) {
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Trạng thái</label>
             <div>
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none px-2 py-0.5 text-[10px] font-medium">
-                Đang hoạt động
-              </Badge>
+              <InternalPriceStatusBadge status={price.status} />
             </div>
           </div>
 
@@ -72,7 +70,11 @@ export function InfoTabContent({ price }: InfoTabContentProps) {
             <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Ngày hết hạn</label>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-slate-400" />
-              <p className="text-sm font-bold text-slate-900">{new Date(price.expiresAt).toLocaleDateString('vi-VN')}</p>
+              <p className="text-sm font-bold text-slate-900">
+                {new Date(price.expiresAt).getFullYear() >= 9000
+                  ? 'Vô thời hạn'
+                  : new Date(price.expiresAt).toLocaleDateString('vi-VN')}
+              </p>
             </div>
           </div>
         </CardContent>

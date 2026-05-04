@@ -71,15 +71,15 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
       setLoading(true);
       try {
         const response = await RFQServices.getDetailRFQ(id);
-        if (response.isSuccess && response.value) {
-          const data = response.value;
+        if (response) {
+          const data = response;
           setRfq(data);
 
           if (data.staffId) {
             try {
               const staffResponse = await StaffService.getStaffById(data.staffId);
-              if (staffResponse.isSuccess && staffResponse.value) {
-                setAssignedStaff(staffResponse.value);
+              if (staffResponse) {
+                setAssignedStaff(staffResponse);
               }
             } catch (err) {
               console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
@@ -104,19 +104,18 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
 
     try {
       const staffResponse = await StaffService.getStaffByAccountId(user.id);
-      if (!staffResponse.isSuccess || !staffResponse.value) {
+      if (!staffResponse) {
         toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
         return;
       }
 
-      const response = await RFQServices.assignStaff(id, staffResponse.value.id);
-      if (response.isSuccess) {
-        toast.success("Tiếp nhận yêu cầu thành công");
+      const response = await RFQServices.assignStaff(id, staffResponse.id);
+      if (response) {
         // Reload dữ liệu
         const updatedResponse = await RFQServices.getDetailRFQ(id);
-        if (updatedResponse.isSuccess && updatedResponse.value) {
-          setRfq(updatedResponse.value);
-          setAssignedStaff(staffResponse.value);
+        if (updatedResponse) {
+          setRfq(updatedResponse);
+          setAssignedStaff(staffResponse);
         }
       }
     } catch (error: any) {

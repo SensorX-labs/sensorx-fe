@@ -3,19 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Trash2, Eye, Edit, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/shadcn-ui/alert-dialog";
 import { CustomerService } from '../../services/customer-service';
 import { Customer } from '../../models/customer';
-import { toast } from 'sonner';
 
 export default function CustomersList() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,8 +12,6 @@ export default function CustomersList() {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
   const pageSize = 10;
 
   const fetchCustomers = useCallback(async () => {
@@ -36,13 +23,9 @@ export default function CustomersList() {
         searchTerm: searchTerm
       });
 
-      if (response.isSuccess && response.value) {
-        setCustomers(response.value.items);
-        setTotalCount(response.value.totalCount || 0);
-      } else {
-        toast.warning(response.message || 'Không thể tải danh sách khách hàng');
-        setCustomers([]);
-        setTotalCount(0);
+      if (response) {
+        setCustomers(response.items);
+        setTotalCount(response.totalCount || 0);
       }
     } catch (error: any) {
       console.error('>>> Lỗi khi fetch khách hàng:', error);
@@ -68,12 +51,6 @@ export default function CustomersList() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
-  };
-
-
-  const confirmDelete = (id: string) => {
-    setCustomerToDelete(id);
-    setIsDeleteDialogOpen(true);
   };
 
   const stats = [

@@ -60,12 +60,9 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ customerData, isEditing,
                 wardId: formData.wardId || null
             };
             const response = await CustomerService.updateCustomer(dataToSend);
-            if (response.isSuccess) {
-                toast.success('Cập nhật thông tin doanh nghiệp thành công');
+            if (response) {
                 onEditChange(false);
                 onRefresh();
-            } else {
-                toast.error(response.message || 'Có lỗi xảy ra khi cập nhật');
             }
         } catch (error: any) {
             toast.error(error.message || 'Lỗi kết nối server');

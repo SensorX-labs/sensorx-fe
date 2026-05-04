@@ -1,4 +1,3 @@
-import { Result } from "@/shared/models/base-response";
 import { ProductStatus } from "../enums/product-status";
 import { ProductAttribute } from "./common";
 
@@ -21,4 +20,4 @@ export interface ProductDetail {
   images: string[];
 }
 
-export type ProductDetailResult = Result<ProductDetail>
+export type ProductDetailResult = ProductDetail

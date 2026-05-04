@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Package, Eye, Edit, Trash2, Barcode, Factory } from 'lucide-react';
+import { Package, Eye, Edit, Trash2, Barcode, Factory, Calendar, Scale } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { ProductPageList } from '../../../models';
 import { ProductStatus } from '../../../enums/product-status';
@@ -29,16 +29,22 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
       <thead>
         <tr className="bg-slate-50/50">
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Thông tin hàng hóa</th>
-          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Nhà sản xuất</th>
+          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Hãng</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Phân loại</th>
+          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Đơn vị</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Trạng thái</th>
+          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Ngày tạo</th>
           <th className="text-center px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Thao tác</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-50">
         {products.length > 0 ? products.map((p) => (
-          <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
-            <td className="px-6 py-4">
+          <tr
+            key={p.id}
+            className="hover:bg-slate-100/80 transition-all group cursor-pointer"
+            onClick={() => onViewDetail(p)}
+          >
+            <td className="px-6 py-4 border-l-2 border-l-transparent group-hover:border-l-emerald-500 transition-all">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded border border-slate-100 overflow-hidden bg-white flex-shrink-0 shadow-sm group-hover:border-emerald-200 transition-colors">
                   {p.images && p.images.length > 0 ? (
@@ -65,9 +71,21 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
               </div>
             </td>
             <td className="px-6 py-4">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider border border-blue-100">
+              <span className={`
+                inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border
+                ${p.categoryName
+                  ? 'bg-blue-50 text-blue-600 border-blue-100'
+                  : 'bg-slate-50 text-slate-400 border-slate-100'
+                }
+              `}>
                 {p.categoryName || 'Chưa phân loại'}
               </span>
+            </td>
+            <td className="px-6 py-4">
+              <div className="flex items-center gap-2 text-slate-600">
+                <Scale className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-sm font-medium">{p.unit || '--'}</span>
+              </div>
             </td>
             <td className="px-6 py-4">
               <span className={`
@@ -79,22 +97,22 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
               </span>
             </td>
             <td className="px-6 py-4">
+              <div className="flex items-center gap-2 text-slate-500">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-xs font-medium">{new Date(p.createdAt).toLocaleDateString('vi-VN')}</span>
+              </div>
+            </td>
+            <td className="px-6 py-4">
               <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-all"
-                  title="Xem chi tiết"
-                  onClick={() => onViewDetail(p)}
-                >
-                  <Eye className="w-4.5 h-4.5" />
-                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded transition-all"
                   title="Chỉnh sửa"
-                  onClick={() => onEdit(p)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(p);
+                  }}
                 >
                   <Edit className="w-4.5 h-4.5" />
                 </Button>
@@ -103,7 +121,10 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
                   size="icon"
                   className="h-9 w-9 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-all"
                   title="Xóa"
-                  onClick={() => onDelete?.(p)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(p);
+                  }}
                 >
                   <Trash2 className="w-4.5 h-4.5" />
                 </Button>
@@ -112,7 +133,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
           </tr>
         )) : (
           <tr>
-            <td colSpan={5} className="px-6 py-20 text-center">
+            <td colSpan={7} className="px-6 py-20 text-center">
               <div className="flex flex-col items-center">
                 <Package className="w-12 h-12 text-slate-200 mb-3" />
                 <p className="text-slate-400 font-medium italic">Không tìm thấy sản phẩm nào</p>

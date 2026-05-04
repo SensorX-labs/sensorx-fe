@@ -2,28 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Layers,
-  Image as ImageIcon,
   DollarSign,
-  ArrowLeft,
-  Edit,
-  Trash2,
   BookOpen,
-  Barcode,
-  Factory,
-  Box,
-  XCircle,
-  CheckCircle2,
-  Ban,
-  Zap
+  LayoutDashboard
 } from 'lucide-react';
-import { Button } from '@/shared/components/shadcn-ui/button';
 import { ProductStatus } from '../../../enums/product-status';
-import { NotionEditor } from '@/shared/components/notion-editor';
 import { ProductService } from '../../../services/product-service';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
 import { toast } from 'sonner';
 import { GetPageProductDetailResponse } from '../../../models';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
+
+// Sub-components
+import { ProductHeader } from './components/ProductHeader';
+import { ProductInfoCard } from './components/ProductInfoCard';
+import { ProductAttributesCard } from './components/ProductAttributesCard';
+import { ProductImagesCard } from './components/ProductImagesCard';
+import { ProductDescriptionCard } from './components/ProductDescriptionCard';
+import { ProductPriceHistoryTab } from './components/ProductPriceHistoryTab';
+import { ProductPriceSummaryCard } from './components/ProductPriceSummaryCard';
 
 interface ProductDetailProps {
   productId: string;
@@ -31,20 +28,9 @@ interface ProductDetailProps {
   onEdit: (product: any) => void;
 }
 
-const statusColor: Record<string, string> = {
-  [ProductStatus.ACTIVE]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  [ProductStatus.INACTIVE]: 'bg-slate-50 text-slate-700 border-slate-200'
-};
-
-const statusLabel: Record<string, string> = {
-  [ProductStatus.ACTIVE]: 'Đang hoạt động',
-  [ProductStatus.INACTIVE]: 'Tạm ngưng'
-};
-
 export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailProps) {
   const [product, setProduct] = useState<GetPageProductDetailResponse>();
   const [loading, setLoading] = useState(true);
-  const [selectedImg, setSelectedImg] = useState(0);
 
   // State for Confirm Dialogs
   const [statusConfirm, setStatusConfirm] = useState({ isOpen: false, loading: false });
@@ -54,12 +40,11 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     const fetchProduct = async () => {
       try {
         const response = await ProductService.getPageDetail(productId);
-        if (response.isSuccess && response.value) {
-          setProduct(response.value);
+        if (response) {
+          setProduct(response);
         }
       } catch (error) {
         console.error(">>> Error fetching product detail:", error);
-        toast.error("Không thể tải thông tin sản phẩm");
       } finally {
         setLoading(false);
       }
@@ -67,9 +52,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
 
     fetchProduct();
   }, [productId]);
-
-  // Lấy dữ liệu giá từ API response
-  const internalPrice = product?.internalPricesSuggestion;
 
   if (loading) {
     return (
@@ -87,14 +69,12 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     setStatusConfirm({ ...statusConfirm, loading: true });
     try {
       const res = await ProductService.changeStatus(product.id, newStatus);
-      if (res.isSuccess) {
-        toast.success(product.status === ProductStatus.ACTIVE ? "Đã ngừng kinh doanh sản phẩm" : "Đã kích hoạt sản phẩm thành công");
+      if (res) {
         setStatusConfirm({ isOpen: false, loading: false });
-        // Quay lại trang list để xem thay đổi
         onBack();
       }
     } catch (error) {
-      toast.error("Lỗi khi thay đổi trạng thái");
+      console.error("Lỗi:", error);
       setStatusConfirm({ ...statusConfirm, loading: false });
     }
   };
@@ -104,311 +84,96 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
     setDeleteConfirm({ ...deleteConfirm, loading: true });
     try {
       const res = await ProductService.deleteProduct(product.id);
-      if (res.isSuccess) {
-        toast.success("Xóa sản phẩm thành công");
+      if (res) {
         onBack();
       }
     } catch (error) {
-      toast.error("Lỗi khi xóa sản phẩm");
+      console.error("Lỗi:", error);
     } finally {
       setDeleteConfirm({ isOpen: false, loading: false });
     }
   };
 
-  const images = product?.images ?? [];
-
   return (
     <div className="space-y-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-      <div className="flex items-center justify-between bg-white p-4 rounded border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full hover:bg-slate-50">
-            <ArrowLeft className="w-5 h-5 text-slate-500" />
-          </Button>
-          <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Chi tiết hàng hóa</h2>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{product?.code}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {product?.status === ProductStatus.ACTIVE ? (
-            <Button
-              variant="outline"
-              className="rounded border-amber-100 text-amber-600 font-bold hover:bg-amber-50"
-              onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
-            >
-              <Ban className="w-4 h-4 mr-2" /> Ngừng kinh doanh
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="rounded border-emerald-100 text-emerald-600 font-bold hover:bg-emerald-50"
-              onClick={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
-            >
-              <Zap className="w-4 h-4 mr-2 text-emerald-500 fill-emerald-500" /> Kích hoạt lại
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            className="rounded border-slate-200 text-slate-700 font-bold hover:bg-slate-50"
-            onClick={() => onEdit(product)}
-          >
-            <Edit className="w-4 h-4 mr-2" /> Chỉnh sửa
-          </Button>
-          <Button
-            variant="outline"
-            className="rounded border-rose-100 text-rose-600 font-bold hover:bg-rose-50"
-            onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: true })}
-          >
-            <Trash2 className="w-4 h-4 mr-2" /> Xóa
-          </Button>
-        </div>
-      </div>
+      {/* Header Bar */}
+      <ProductHeader
+        product={product}
+        onBack={onBack}
+        onEdit={onEdit}
+        onToggleStatus={() => setStatusConfirm({ ...statusConfirm, isOpen: true })}
+        onDelete={() => setDeleteConfirm({ ...deleteConfirm, isOpen: true })}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Essential Info */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Thông tin chính */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông tin chính</h4>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên hàng hóa</p>
-                <p className="text-base font-bold text-slate-800">{product?.name}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mã hàng</p>
-                  <div className="flex items-center gap-1.5 text-slate-700 font-mono font-bold uppercase">
-                    <Barcode className="w-3.5 h-3.5 text-slate-400" />
-                    {product?.code}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Trạng thái</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider ${product?.status ? statusColor[product.status] : ''}`}>
-                    {product?.status ? statusLabel[product.status] : '--'}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nhà sản xuất</p>
-                <div className="flex items-center gap-1.5 text-slate-700 font-bold">
-                  <Factory className="w-3.5 h-3.5 text-slate-400" />
-                  {product?.manufacture || '--'}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Danh mục</p>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-wider">
-                    {product?.categoryName || '--'}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Đơn vị tính</p>
-                  <span className="text-slate-700 font-bold italic">{product?.unit || '--'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Thuộc tính & Thông số */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thông số kỹ thuật</h4>
-              <Layers className="w-4 h-4 text-slate-300" />
-            </div>
-            <div className="p-0">
-              {product?.attributes && product.attributes.length > 0 ? (
-                <table className="w-full text-sm">
-                  <tbody className="divide-y divide-slate-50">
-                    {product.attributes.map((attr: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50/30">
-                        <td className="px-6 py-2.5 w-1/3 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/20">{attr.name}</td>
-                        <td className="px-6 py-2.5 font-bold text-slate-800">{attr.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400">
-                  <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
-                    <Layers className="w-6 h-6 opacity-20" />
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-widest italic opacity-60">Không có thuộc tính mở rộng</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Hình ảnh */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hình ảnh sản phẩm</h4>
-              <ImageIcon className="w-4 h-4 text-slate-300" />
-            </div>
-            <div className="p-4 space-y-4">
-              <div className="aspect-square rounded bg-slate-50 border border-slate-100 overflow-hidden group">
-                {images.length > 0 ? (
-                  <img
-                    src={images[selectedImg]}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    alt={product?.name}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                    <Box className="w-12 h-12 mb-2" />
-                    <p className="text-xs font-bold uppercase tracking-widest">No Image</p>
-                  </div>
-                )}
-              </div>
-              {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-                  {images.map((img: string, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImg(idx)}
-                      className={`
-                        w-16 h-16 rounded border-2 flex-shrink-0 overflow-hidden transition-all
-                        ${selectedImg === idx ? 'border-emerald-500 scale-95' : 'border-slate-100 hover:border-slate-200'}
-                      `}
-                    >
-                      <img src={img} className="w-full h-full object-cover" alt="" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <ProductInfoCard product={product} />
+          <ProductAttributesCard attributes={product?.attributes} />
+          <ProductImagesCard images={product?.images} productName={product?.name} />
         </div>
 
-        <div className="lg:col-span-2 space-y-6">
-          {/* Chính sách giá */}
-          <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded bg-emerald-50 flex items-center justify-center">
-                  <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                </div>
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Chính sách giá áp dụng</h4>
+        {/* Right Column: Detailed Content with Tabs */}
+        <div className="lg:col-span-2 relative min-h-[600px]">
+          <div className="lg:absolute lg:inset-0 bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <Tabs defaultValue="details" className="w-full flex flex-col h-full">
+
+              {/* Vùng chứa TabsList với border-bottom mờ để làm nền cho đường line của Tab */}
+              <div className="px-8 bg-white border-b border-slate-100">
+                <TabsList className="h-14 w-full bg-transparent p-0 flex gap-8 items-center justify-start">
+                  <TabsTrigger
+                    value="details"
+                    className="
+                      relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 
+                      text-[13px] font-semibold uppercase tracking-wider text-slate-500 
+                      hover:text-slate-800 hover:bg-slate-50/50
+                      data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent 
+                      data-[state=active]:shadow-none data-[state=active]:text-emerald-600 
+                      transition-all duration-200 -mb-[1px]
+                    "
+                  >
+                    <BookOpen className="w-[18px] h-[18px]" />
+                    Thông tin chi tiết
+                  </TabsTrigger>
+
+                  <TabsTrigger
+                    value="price-history"
+                    className="
+                      relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 
+                      text-[13px] font-semibold uppercase tracking-wider text-slate-500 
+                      hover:text-slate-800 hover:bg-slate-50/50
+                      data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent 
+                      data-[state=active]:shadow-none data-[state=active]:text-emerald-600 
+                      transition-all duration-200 -mb-[1px]
+                    "
+                  >
+                    <DollarSign className="w-[18px] h-[18px]" />
+                    Lịch sử áp dụng giá
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            </div>
 
-            <div className="flex-1">
-              {internalPrice ? (
-                <div className="divide-y divide-slate-50">
-                  {/* Hero Price Section - COMPACT */}
-                  <div className="p-4 grid grid-cols-2 gap-3 bg-slate-50/10">
-                    {/* Suggested Price Card */}
-                    <div className="bg-white p-3 rounded border border-emerald-100 shadow-sm relative overflow-hidden group">
-                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                        <Zap className="w-3 h-3" />
-                        Giá đề xuất
-                      </p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-black text-slate-800 tracking-tight tabular-nums">
-                          {internalPrice.suggestedPriceAmount.toLocaleString('vi-VN')}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          {internalPrice.suggestedPriceCurrency === 'VND' ? 'đ' : internalPrice.suggestedPriceCurrency}
-                        </span>
-                      </div>
-                    </div>
+              {/* Phần Content */}
+              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                <TabsContent value="details" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-top-2 duration-500">
+                  <ProductPriceSummaryCard price={product?.internalPricesSuggestion} unit={product?.unit} />
+                  <ProductDescriptionCard showcase={product?.showcase} />
+                </TabsContent>
 
-                    {/* Floor Price Card */}
-                    <div className="bg-white p-3 rounded border border-rose-100 shadow-sm relative overflow-hidden group">
-                      <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                        <Ban className="w-3 h-3" />
-                        Giá sàn
-                      </p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-black text-slate-800 tracking-tight tabular-nums">
-                          {internalPrice.floorPriceAmount.toLocaleString('vi-VN')}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          {internalPrice.floorPriceCurrency === 'VND' ? 'đ' : internalPrice.floorPriceCurrency}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tiers Section */}
-                  <div className="px-4 py-3">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Layers className="w-3.5 h-3.5 text-slate-300" />
-                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bảng giá sỉ</h5>
-                    </div>
-
-                    {internalPrice.priceTiers.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                        {internalPrice.priceTiers.map((tier: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-2.5 rounded border border-slate-50 bg-slate-50/5 hover:bg-white hover:border-emerald-200 transition-all duration-200 group">
-                            <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
-                                {String(idx + 1).padStart(2, '0')}
-                              </div>
-                              <div>
-                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Mua từ</p>
-                                <p className="text-xs font-bold text-slate-700">{tier.quantity} {product?.unit}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Đơn giá</p>
-                              <div className="flex items-baseline gap-1 justify-end">
-                                <span className="text-sm font-black text-slate-800 group-hover:text-emerald-600 transition-colors">
-                                  {tier.amount.toLocaleString('vi-VN')}
-                                </span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase">đ</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-8 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded border border-dashed border-slate-200">
-                        <p className="text-[10px] font-black uppercase tracking-widest italic opacity-40">Chưa có cấu hình bậc giá</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
-                    <DollarSign className="w-8 h-8 opacity-10" />
-                  </div>
-                  <p className="text-xs font-black uppercase tracking-widest opacity-40">Chưa thiết lập bảng giá</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-
-          {/* Mô tả Notion */}
-          <div className="bg-white rounded border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mô tả chi tiết</h4>
-              <BookOpen className="w-4 h-4 text-slate-300" />
-            </div>
-            <div className={`p-6 min-h-[200px] ${!product?.showcase ? 'flex flex-col items-center justify-center' : ''}`}>
-              {product?.showcase ? (
-                <NotionEditor
-                  content={product.showcase}
-                  editable={false}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center text-slate-300">
-                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
-                    <BookOpen className="w-8 h-8 opacity-10" />
-                  </div>
-                  <p className="text-xs font-bold uppercase tracking-widest italic text-slate-400">Chưa có nội dung mô tả</p>
-                </div>
-              )}
-            </div>
+                <TabsContent value="price-history" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-top-2 duration-500">
+                  <ProductPriceHistoryTab
+                    productId={productId}
+                    currentPriceId={product?.internalPricesSuggestion?.id}
+                    unit={product?.unit}
+                  />
+                </TabsContent>
+              </div>
+            </Tabs>
           </div>
         </div>
       </div>
 
+      {/* Dialogs */}
       <ConfirmDialog
         isOpen={statusConfirm.isOpen}
         onOpenChange={(open) => setStatusConfirm({ ...statusConfirm, isOpen: open })}
