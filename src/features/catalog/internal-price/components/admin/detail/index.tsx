@@ -15,7 +15,7 @@ interface InternalPriceDetailProps {
   onRefresh?: () => void;
 }
 
-export function InternalPriceDetail({ price, onBack, onRefresh }: InternalPriceDetailProps) {
+export function InternalPriceDetailPanel({ price, onBack, onRefresh }: InternalPriceDetailProps) {
   const [isExtendOpen, setIsExtendOpen] = useState(false);
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
 
@@ -29,7 +29,6 @@ export function InternalPriceDetail({ price, onBack, onRefresh }: InternalPriceD
       />
 
       <Tabs defaultValue="info" className="w-full">
-        {/* ... existing tabs content ... */}
         <TabsList className="bg-slate-100/50 p-1 mb-6">
           <TabsTrigger value="info" className="data-[state=active]:bg-white data-[state=active]:shadow-sm px-6 py-2">
             Thông tin chung
