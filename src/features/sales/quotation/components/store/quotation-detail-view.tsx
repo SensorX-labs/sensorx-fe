@@ -139,7 +139,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 {/* Nút Chốt báo giá cho khách hàng */}
                 <CanAccess roles={['Customer']}>
                     {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
-                        <button 
+                        <button
                             onClick={handleAccept}
                             className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2"
                         >
@@ -275,7 +275,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                                     <div className="flex items-center gap-3">
                                         <Phone className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="qty-label tracking-widest">
-                                            {customer?.phoneNumber || quote.recipientPhone}
+                                            {customer?.phone || quote.recipientPhone}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
