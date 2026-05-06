@@ -4,7 +4,7 @@ import { OffsetPagedResult } from "@/shared/models/base-response";
 import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 import { UpdateCustomerInfo } from "../models/update-customer-info";
 import { UpdateShippingInfo } from "../models/update-shipping-info";
-import { CustomerDetail } from "../models/Customer-detail";
+import { CustomerDetail } from "../models/customer-detail";
 
 
 export const CustomerService = {

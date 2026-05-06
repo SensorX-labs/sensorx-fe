@@ -18,7 +18,7 @@ import { SecurityTab } from './security-tab';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { ProfileTab } from '@/features/user/customer/components/store/profile-tab';
 import { OrdersTab } from '@/features/sales/order/components/store/orders-tab';
-import { CustomerDetail } from '@/features/user/customer/models/Customer-detail';
+import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
 
 const authService = new AuthService();
 

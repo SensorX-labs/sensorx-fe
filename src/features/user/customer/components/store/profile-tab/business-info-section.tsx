@@ -3,8 +3,8 @@ import { Mail, Phone, MapPin, Building, Save, X, Loader2, Info } from 'lucide-re
 import { CustomerService } from '@/features/user/customer/services/customer-service';
 import { UpdateCustomerInfo } from '@/features/user/customer/models/update-customer-info';
 import { toast } from 'sonner';
-import { CustomerDetail } from '@/features/user/customer/models/Customer-detail';
 import { FormField } from './form-field';
+import { CustomerDetail } from '../../../models/customer-detail';
 
 interface BusinessInfoSectionProps {
     customerData: CustomerDetail | null | undefined;
