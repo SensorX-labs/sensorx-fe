@@ -1,8 +1,7 @@
-import {NextResponse} from 'next/server';
-import type {NextRequest}
-from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { jwtDecode } from 'jwt-decode';
 
-// Route chỉ dành cho Admin/Staff
 const adminPaths = [
     '/dashboard',
     '/catalog',
@@ -15,96 +14,72 @@ const adminPaths = [
     '/users',
     '/warehouse'
 ];
+const publicPaths = ['/', '/not-found', '/shop'];
+const authPaths = ['/login', '/register'];
 
-// Route yêu cầu đăng nhập (bất kỳ role nào)
-const authRequiredPaths = ['/shop', '/profile', '/cart', '/checkout', '/orders'];
-
-// Route công khai - không cần đăng nhập
-const publicPaths = ['/', '/login', '/register', '/not-found'];
-
-// Route chỉ dành cho Customer (Cấm Admin/Staff)
-const customerOnlyPaths = ['/shop', '/profile', '/cart', '/checkout', '/orders'];
+const isPathMatch = (pathname: string, paths: string[], exactMatch: boolean = false) => {
+    return paths.some(path => {
+        if (exactMatch || path === '/') return pathname === path;
+        return pathname === path || pathname.startsWith(`${path}/`);
+    });
+};
 
 export function middleware(request: NextRequest) {
-    const {pathname} = request.nextUrl;
+    const { pathname } = request.nextUrl;
 
-    const token = request.cookies.get('token') ?. value;
-    const userCookie = request.cookies.get('user') ?. value;
-    const isLoggedIn = !!(token && userCookie && userCookie !== 'undefined');
+    const isAdminArea = isPathMatch(pathname, adminPaths);
+    const isAuthPath = isPathMatch(pathname, authPaths, true);
+    const isPublicPath = isPathMatch(pathname, publicPaths, true);
 
-    let user: any = null;
-    let rolesArray: string[] = [];
+    const token = request.cookies.get('token')?.value;
 
-    if (isLoggedIn) {
-        try {
-            user = JSON.parse(userCookie!);
-            rolesArray = Array.isArray(user.roles) ? user.roles : [user.roles];
-        } catch (e) {
-            console.error("Middleware JSON parse error", e);
-        }
-    }
-
-    // 1. Kiểm tra route admin (Cấm Customer)
-    const isAdminPath = adminPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
-
-    if (isAdminPath) { 
-        if (!isLoggedIn) {
-            return NextResponse.redirect(new URL('/login', request.url));
-        }
-
-        const isAuthorized = rolesArray.some((role: string) => String(role) !== "Customer" && String(role) !== "0");
-
-        if (!isAuthorized) {
-            return NextResponse.redirect(new URL('/not-found', request.url));
-        }
-    }
-
-    // 2. Kiểm tra route chỉ dành cho Customer (Cấm Staff/Admin)
-    const isCustomerOnlyPath = customerOnlyPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
-
-    if (isCustomerOnlyPath && isLoggedIn) {
-        const isCustomer = rolesArray.includes('Customer') || rolesArray.includes('0');
-        
-        if (!isCustomer) {
-            // Nếu là Staff/Admin mà vào trang Customer -> Đẩy vào Dashboard
-            return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-    }
-
-    // 3. Kiểm tra route yêu cầu đăng nhập chung
-    const isAuthRequired = authRequiredPaths.some(path => pathname === path || pathname.startsWith(`${path}/`));
-
-    if (isAuthRequired && !isLoggedIn) {
+    if (!token) {
+        if (isPublicPath || isAuthPath) return NextResponse.next();
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // 4. Nếu đã đăng nhập mà truy cập trang login -> về trang chủ hoặc dashboard
-    if (pathname === '/login' && isLoggedIn) {
-        const isCustomer = rolesArray.includes('Customer') || rolesArray.includes('0');
-        return NextResponse.redirect(new URL(isCustomer ? '/' : '/dashboard', request.url));
+    let isStaff = false;
+
+    try {
+        const decodedToken = jwtDecode<any>(token);
+        const userRole = decodedToken.role;
+        const rolesArray = Array.isArray(userRole) ? userRole : [userRole];
+
+        isStaff = rolesArray.some(role => {
+            const strRole = String(role);
+            return strRole !== "Customer" && strRole !== "0" && strRole !== "undefined" && strRole !== "null";
+        });
+    } catch (error) {
+        const response = NextResponse.redirect(new URL('/login', request.url));
+        response.cookies.delete('token');
+        response.cookies.delete('refreshToken');
+        response.cookies.delete('user');
+        return response;
+    }
+
+    if (isAuthPath) {
+        return NextResponse.redirect(new URL(isStaff ? '/dashboard' : '/', request.url));
+    }
+
+    if (isAdminArea) {
+        if (!isStaff) return NextResponse.redirect(new URL('/not-found', request.url));
+    } else {
+        if (isStaff && pathname === '/') {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: [
-        // Admin routes
-        '/dashboard/:path*',
-        '/catalog/:path*',
-        '/customers/:path*',
-        '/inventory/:path*',
-        '/reports/:path*',
-        '/sales/:path*',
-        '/settings/:path*',
-        '/supplychain/:path*',
-        '/users/:path*',
-        '/warehouse/:path*',
-        // Store routes
-        '/shop/:path*',
-        '/profile/:path*',
-        '/markdown/:path*',
-        // Auth pages
-        '/login',
-    ]
+    /*
+    * Match all request paths except for the ones starting with:
+    * - api (API routes)
+    * - _next/static (static files)
+    * - _next/image (image optimization files)
+    * - favicon.ico (favicon file)
+    * - assets (public assets)
+    */
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|assets).*)']
 };
