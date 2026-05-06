@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ShoppingBag, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, Send, CheckCircle2 } from 'lucide-react';
+import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 import { CartItem } from './cart-item';
 import { QuotationForm, QuotationFormData } from './quote-request-form';
 import { useCart } from '../../hooks/use-cart';
@@ -45,13 +46,14 @@ export function Cart() {
           const response = await CustomerService.getDetailCustomerByAccountId(user.id);
           if (response) {
             const customer = response;
+            const shippingInfo = customer.shippingInfo;
             setFormData({
-              name: customer.receiverName || customer.name || '',
+              name: shippingInfo?.receiverName || customer.name || '',
               email: customer.email || '',
-              phone: customer.receiverPhone || customer.phone || '',
+              phone: shippingInfo?.receiverPhone || customer.phone || '',
               companyName: customer.name || '',
               taxId: customer.taxCode || '',
-              address: customer.address || '',
+              address: shippingInfo?.shippingAddress || '',
             });
           }
         } catch (error) {
@@ -76,7 +78,7 @@ export function Cart() {
     try {
       // Lấy customerId thực tế từ accountId
       const customerRes = await CustomerService.getDetailCustomerByAccountId(user?.id || "");
-      
+
       const request: RfqCreateRequest = {
         customerId: customerRes?.id || "",
         recipientName: formData.name,
@@ -112,19 +114,15 @@ export function Cart() {
 
   return (
     <div className="min-h-screen bg-page-background font-sans">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4 text-xs tracking-widest font-bold uppercase text-gray-400">
-            <Link href="/shop" className="hover:text-brand-green transition-all">Cửa hàng</Link>
-            <ChevronRight size={14} />
-            <span className="text-gray-900 border-b border-gray-900 pb-0.5">Giỏ hàng & Yêu cầu báo giá</span>
-          </div>
-          <Link href="/shop" className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-gray-900 flex items-center gap-2 transition-all">
-            <ArrowLeft size={16} />
-            Tiếp tục mua sắm
-          </Link>
-        </div>
-      </div>
+      <StoreBreadcrumb 
+        items={[
+          { label: 'Trang chủ', href: '/' },
+          { label: 'Cửa hàng', href: '/shop' },
+          { label: 'Giỏ hàng & Yêu cầu báo giá' }
+        ]}
+        backLink="/shop"
+        backLabel="Tiếp tục mua sắm"
+      />
 
       {isEmpty ? (
         <div className="max-w-7xl mx-auto px-4 py-32 text-center">

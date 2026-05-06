@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
+import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 import { MyQuotationsTab } from '../../../../sales/quotation/components/store/my-quotations-tab';
 import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
@@ -89,6 +90,16 @@ export function UserProfile() {
 
     return (
         <div className="min-h-screen bg-page-background">
+            <StoreBreadcrumb 
+                items={[
+                    { label: 'Trang chủ', href: '/' },
+                    { label: 'Cửa hàng', href: '/shop' },
+                    { label: 'Tài khoản' }
+                ]}
+                backLink="/"
+                backLabel="Quay lại trang chủ"
+            />
+            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
                     <h1 className="tracking-title-xl mb-2">Tài khoản của tôi</h1>
