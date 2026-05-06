@@ -9,9 +9,6 @@ import { toast } from 'sonner';
 import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
 
-import { ProfileTab } from './profile-tab';
-import { OrdersTab } from './orders-tab';
-import { AddressesTab } from './addresses-tab';
 import { MyQuotationsTab } from '../../../../sales/quotation/components/store/my-quotations-tab';
 import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
 import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
@@ -19,6 +16,9 @@ import { RfqDetailView } from '../../../../sales/requestforquotation/components/
 import { MyRfqsTab } from '../../../../sales/requestforquotation/components/store/my-rfqs-tab';
 import { SecurityTab } from './security-tab';
 import { AuthService } from '@/features/system/auth/services/auth-service';
+import { ProfileTab } from '@/features/user/customer/components/store/profile-tab';
+import { OrdersTab } from '@/features/sales/order/components/store/orders-tab';
+import { CustomerDetail } from '@/features/user/customer/models/Customer-detail';
 
 const authService = new AuthService();
 
@@ -32,9 +32,8 @@ interface Order {
 
 export function UserProfile() {
     const [activeTab, setActiveTab] = useState<'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'security'>('business');
-    const [customerData, setCustomerData] = useState<any>(null);
+    const [customerData, setCustomerData] = useState<CustomerDetail>();
     const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
     const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
@@ -103,7 +102,6 @@ export function UserProfile() {
                                 { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
                                 { id: 'my-quotations', label: 'Báo giá của tôi', icon: FileText },
                                 { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
-                                { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin },
                                 { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield },
                             ].map((item) => {
                                 const Icon = item.icon || ChevronRight;
@@ -129,7 +127,7 @@ export function UserProfile() {
                                     </button>
                                 );
                             })}
-                            <button 
+                            <button
                                 onClick={handleLogout}
                                 disabled={isLoggingOut}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none border border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -149,8 +147,6 @@ export function UserProfile() {
                             ) : (
                                 <ProfileTab
                                     customerData={customerData}
-                                    isEditing={isEditing}
-                                    onEditChange={setIsEditing}
                                     onRefresh={fetchCustomer}
                                 />
                             )
@@ -168,7 +164,7 @@ export function UserProfile() {
                             selectedRfqId ? (
                                 <RfqDetailView onBack={() => setSelectedRfqId(null)} rfqId={selectedRfqId} />
                             ) : (
-                                <MyRfqsTab onViewDetail={setSelectedRfqId} />
+                                <MyRfqsTab onViewDetail={setSelectedRfqId} customerId={customerData?.id} />
                             )
                         )}
 
@@ -176,19 +172,8 @@ export function UserProfile() {
                             selectedQuotationId ? (
                                 <QuotationDetailView onBack={() => setSelectedQuotationId(null)} quotationId={selectedQuotationId} />
                             ) : (
-                                <MyQuotationsTab onViewDetail={setSelectedQuotationId} />
+                                <MyQuotationsTab onViewDetail={setSelectedQuotationId} customerId={customerData?.id} />
                             )
-                        )}
-
-                        {activeTab === 'addresses' && (
-                            <AddressesTab 
-                                userName={customerData?.name || ''} 
-                                userPhone={customerData?.phone || ''} 
-                                address={{
-                                    street: customerData?.address || '',
-                                    ward: '', district: '', province: ''
-                                }} 
-                            />
                         )}
 
                         {activeTab === 'security' && <SecurityTab />}
