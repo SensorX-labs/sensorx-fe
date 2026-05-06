@@ -1,7 +1,7 @@
 import React from 'react';
 import { BusinessInfoSection } from './business-info-section';
 import { ShippingInfoSection } from './shipping-info-section';
-import { CustomerDetail } from '@/features/user/customer/models/Customer-detail';
+import { CustomerDetail } from '../../../models/customer-detail';
 
 export interface ProfileTabProps {
     customerData: CustomerDetail | null | undefined;

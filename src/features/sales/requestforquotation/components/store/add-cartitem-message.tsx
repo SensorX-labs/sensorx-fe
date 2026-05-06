@@ -4,10 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import Image from 'next/image';
-import { ProductListItem } from '@/features/catalog/product/models/product-list-response';
 
 interface AddItemToCartMessageProps {
-  product: ProductListItem;
+  product: any;
   quantity: number;
   isVisible: boolean;
   onClose: () => void;
@@ -34,8 +33,8 @@ export function AddCartItemMessage({
 
   if (!show) return null;
 
-  const primaryImg = (product.images?.[0] && product.images[0] !== 'string') 
-    ? product.images[0] 
+  const primaryImg = (product.images?.[0] && product.images[0] !== 'string')
+    ? product.images[0]
     : '/assets/images/products/default.png';
 
   return (

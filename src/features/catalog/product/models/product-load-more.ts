@@ -4,7 +4,10 @@ import { LoadMorePagedResult } from "@/shared/models/base-response";
 /**
  * Interface cho API LoadMore
  */
-export type ProductLoadMoreForModalQuery = BaseQueryLoadMore;
+export interface ProductLoadMoreForModalQuery extends BaseQueryLoadMore {
+  categoryId?: string;
+  sortByName?: boolean;
+}
 
 export interface ProductLoadMoreForModal {
   id: string;

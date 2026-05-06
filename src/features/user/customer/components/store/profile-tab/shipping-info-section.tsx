@@ -11,8 +11,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/components/shadcn-ui/select';
-import { ShippingInfo } from '@/features/user/customer/models/Customer-detail';
 import { FormField } from './form-field';
+import { ShippingInfo } from '../../../models/customer-detail';
 
 interface ShippingInfoSectionProps {
     customerId: string | undefined;

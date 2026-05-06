@@ -13,7 +13,7 @@ export const ProductService = {
      * Lấy danh sách sản phẩm theo kiểu load-more (Keyset Pagination)
      */
     getLoadMore: (query: ProductLoadMoreForModalQuery) =>
-        api.data.get<any, ProductLoadMoreForModalResult>("/catalog/products/load-more-products-for-modal", { params: query }),
+        api.data.get<any, ProductLoadMoreForModalResult>("/catalog/products/load-more", { params: query }),
 
     /**
      * Lấy chi tiết sản phẩm
