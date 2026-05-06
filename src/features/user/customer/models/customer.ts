@@ -5,7 +5,6 @@ export interface Customer {
     taxCode?: string;
     email: string;
     phone?: string;
-    phoneNumber?: string;
     address?: string;
     wardId?: string | null;
     shippingAddress?: string;

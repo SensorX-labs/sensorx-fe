@@ -113,7 +113,7 @@ export default function CustomersList() {
                   <td className="px-6 py-4 font-bold">#{c.code || c.id?.substring(0, 8)}</td>
                   <td className="px-6 py-4">{c.name}</td>
                   <td className="px-6 py-4">{c.email}</td>
-                  <td className="px-6 py-4">{c.phoneNumber || '---'}</td>
+                  <td className="px-6 py-4">{c.phone || '---'}</td>
                   <td className="px-6 py-4 max-w-[200px] truncate">{c.address || '---'}</td>
                 </tr>
               ))}
