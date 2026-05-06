@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Shield, ShieldAlert, Loader2, Users, Lock, LockOpen, UserPlus } from 'lucide-react';
+import { Shield, ShieldAlert, Loader2, Users, Lock, LockOpen, UserPlus, Mail, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { RolesService } from '@/features/system/auth/services/roles-service';
@@ -24,6 +24,7 @@ import {
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { Label } from '@/shared/components/shadcn-ui/label';
+import { useUser } from '@/shared/hooks/use-user';
 
 const authService = new AuthService();
 const rolesService = new RolesService();
@@ -56,7 +57,7 @@ export default function UserList() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', role: 1 });
 
   const fetchUsers = async () => {
     try {
@@ -101,7 +102,7 @@ export default function UserList() {
       await authService.createStaffAccount(form);
       toast.success('Tạo tài khoản thành công');
       setDialogOpen(false);
-      setForm({ email: '', password: '' });
+      setForm({ email: '', password: '', role: 1 });
       await fetchUsers();
     } catch {
       toast.error('Tạo tài khoản thất bại');
@@ -185,29 +186,39 @@ export default function UserList() {
                   <td className="px-6 py-4 font-medium text-[#2B3674]">{user.email}</td>
                   <td className="px-6 py-4 text-gray-600">{user.fullName}</td>
                   <td className="px-6 py-4">
-                    <Select
-                      value={getRoleNumber(user.role)}
-                      onValueChange={(val) => handleRoleChange(user.id, val)}
-                    >
-                      <SelectTrigger className="h-8 w-40 text-xs border-gray-200">
-                        <SelectValue placeholder="Chọn vai trò" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.length > 0 ? (
-                          roles.map((r) => (
-                            <SelectItem key={r.id} value={String(r.id)}>
-                              {roleLabels[r.name] ?? r.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          Object.entries(roleLabels).map(([key, label]) => (
-                            <SelectItem key={key} value={key}>
-                              {label}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
+                    {user.role === 'Admin' || user.role === 'Customer' ? (
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${roleColor[user.role]}`}>
+                        {roleLabels[user.role] ?? user.role}
+                      </span>
+                    ) : (
+                      <Select
+                        value={getRoleNumber(user.role)}
+                        onValueChange={(val) => handleRoleChange(user.id, val)}
+                      >
+                        <SelectTrigger className="h-8 w-40 text-xs border-gray-200">
+                          <SelectValue placeholder="Chọn vai trò" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.length > 0 ? (
+                            roles
+                              .filter((r) => r.name !== 'Customer' && r.name !== 'Admin')
+                              .map((r) => (
+                                <SelectItem key={r.id} value={String(r.id)}>
+                                  {roleLabels[r.name] ?? r.name}
+                                </SelectItem>
+                              ))
+                          ) : (
+                            Object.entries(roleLabels)
+                              .filter(([key]) => key !== 'Customer' && key !== 'Admin')
+                              .map(([key, label]) => (
+                                <SelectItem key={key} value={key}>
+                                  {label}
+                                </SelectItem>
+                              ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {user.isLocked ? (
@@ -227,11 +238,10 @@ export default function UserList() {
                     <button
                       onClick={() => handleToggleLock(user.id)}
                       title={user.isLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                        user.isLocked
-                          ? 'bg-green-50 text-green-600 hover:bg-green-100'
-                          : 'bg-red-50 text-red-600 hover:bg-red-100'
-                      }`}
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${user.isLocked
+                        ? 'bg-green-50 text-green-600 hover:bg-green-100'
+                        : 'bg-red-50 text-red-600 hover:bg-red-100'
+                        }`}
                     >
                       {user.isLocked ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                     </button>
@@ -256,38 +266,99 @@ export default function UserList() {
           <DialogHeader>
             <DialogTitle className="text-[#2B3674]">Tạo tài khoản nhân viên</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
+          <form onSubmit={handleCreate} className="space-y-5 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="flex items-center gap-2 text-sm font-semibold text-[#2B3674]">
+                <div className="p-1 bg-blue-50 rounded text-blue-600">
+                  <Mail className="w-3.5 h-3.5" />
+                </div>
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="nhanvien@company.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="border-gray-200 focus:border-[#4318FF] focus:ring-[#4318FF] transition-all"
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold text-[#2B3674]">
+                <div className="p-1 bg-amber-50 rounded text-amber-600">
+                  <Key className="w-3.5 h-3.5" />
+                </div>
+                Mật khẩu
+              </Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="border-gray-200 focus:border-[#4318FF] focus:ring-[#4318FF] transition-all"
                 required
               />
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                Hủy
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="col-span-1 flex items-center gap-2 text-sm font-semibold text-[#2B3674] whitespace-nowrap">
+                <div className="p-1 bg-purple-50 rounded text-purple-600 shrink-0">
+                  <Shield className="w-3.5 h-3.5" />
+                </div>
+                Phân quyền
+              </Label>
+              <div className="col-span-3 ml-4">
+                <Select
+                  value={String(form.role)}
+                  onValueChange={(value) => setForm({ ...form, role: Number(value) })}
+                >
+                  <SelectTrigger className="border-gray-200 focus:ring-[#4318FF] transition-all h-9">
+                    <SelectValue placeholder="Chọn vai trò" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.length > 0 ? (
+                      roles
+                        .filter((r) => r.name !== 'Customer' && r.name !== 'Admin')
+                        .map((r) => (
+                          <SelectItem key={r.id} value={String(r.id)}>
+                            {roleLabels[r.name] ?? r.name}
+                          </SelectItem>
+                        ))
+                    ) : (
+                      Object.entries(roleLabels)
+                        .filter(([key]) => key !== 'Customer' && key !== 'Admin')
+                        .map(([key, label]) => (
+                          <SelectItem key={key} value={key}>
+                            {label}
+                          </SelectItem>
+                        ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="pt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setDialogOpen(false)}
+                className="font-medium text-gray-500 hover:text-gray-700"
+              >
+                Hủy bỏ
               </Button>
-              <Button type="submit" disabled={creating} className="bg-[#4318FF] hover:bg-[#4318FF]/90 text-white">
-                {creating && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
-                Tạo tài khoản
+              <Button
+                type="submit"
+                disabled={creating}
+                className="bg-[#4318FF] hover:bg-[#3311CC] text-white px-8 font-bold shadow-lg shadow-[#4318FF]/20 transition-all"
+              >
+                {creating && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Xác nhận tạo
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
