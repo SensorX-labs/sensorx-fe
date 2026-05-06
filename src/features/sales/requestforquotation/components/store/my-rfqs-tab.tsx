@@ -26,12 +26,12 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     }
 };
 
-export function MyRfqsTab({ 
+export function MyRfqsTab({
     onViewDetail,
-    customerId 
-}: { 
+    customerId
+}: {
     onViewDetail?: (id: string) => void,
-    customerId?: string 
+    customerId?: string
 }) {
     const [myRfqs, setMyRfqs] = useState<Rfq[]>([]);
     const [loading, setLoading] = useState(false);
@@ -47,8 +47,8 @@ export function MyRfqsTab({
                     customerId: customerId,
                 });
 
-                if (response.value.items) {
-                    setMyRfqs(response.value.items);
+                if (response.items) {
+                    setMyRfqs(response.items);
                 }
             } catch (error) {
                 console.error("Error fetching RFQs:", error);
