@@ -55,13 +55,19 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 const message = result.message || result.Message;
 
                 if (isSuccess) {
-                    // Trả về trực tiếp Value để dùng luôn ở code chính
-                    console.log("Response:", value);
-                    return value;
+                    // Tự động hiển thị toast thành công nếu có message và không phải là lệnh GET
+                    const method = response.config.method?.toUpperCase();
+                    if (message && method !== 'GET') {
+                        toast.success(message);
+                    }
+
+                    return value ?? true;
                 } else {
-                    // Nếu isSuccess = false, coi như một lỗi nghiệp vụ
+                    // Nếu isSuccess = false, coi như một lỗi nghiệp vụ (Dùng Warning cho dễ nhìn)
                     const errorMessage = message || "Đã xảy ra lỗi nghiệp vụ";
-                    toast.error(errorMessage);
+                    toast.warning(errorMessage, {
+                        style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }
+                    });
                     return Promise.reject({
                         isSuccess: false,
                         message: errorMessage,
@@ -177,7 +183,9 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 toast.error(errorMessage);
             } else {
                 errorMessage = error.message;
-                toast.error(errorMessage);
+                toast.error(errorMessage, {
+                    style: { background: '#FEF2F2', color: '#991B1B', border: '1px solid #FCA5A5' }
+                });
             }
 
             // Enrich error object để tương thích với cả component kiểu cũ và kiểu mới

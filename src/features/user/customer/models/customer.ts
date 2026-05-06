@@ -7,6 +7,7 @@ export interface Customer {
     phone?: string;
     address?: string;
     wardId?: string | null;
+    provinceId?: string | null;
     shippingAddress?: string;
     receiverName?: string;
     receiverPhone?: string;

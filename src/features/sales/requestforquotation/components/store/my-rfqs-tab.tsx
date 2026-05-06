@@ -5,8 +5,6 @@ import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
 import RFQServices from '../../services/rfq-services';
-import CustomerService from '@/features/user/customer/services/customer-service';
-import { useUser } from '@/shared/hooks/use-user';
 import { Rfq } from '../../models/rqf';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -28,22 +26,25 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     }
 };
 
-export function MyRfqsTab({ onViewDetail }: { onViewDetail?: (id: string) => void }) {
-    const { user } = useUser();
+export function MyRfqsTab({ 
+    onViewDetail,
+    customerId 
+}: { 
+    onViewDetail?: (id: string) => void,
+    customerId?: string 
+}) {
     const [myRfqs, setMyRfqs] = useState<Rfq[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!user?.id) return;
+        if (!customerId) return;
 
         const fetchRfqs = async () => {
             try {
                 setLoading(true);
-                const customer = await CustomerService.getDetailCustomerByAccountId(user.id);
-                if (!customer?.id) return;
 
                 const response: any = await RFQServices.getListRFQ({
-                    customerId: customer.id,
+                    customerId: customerId,
                 });
 
                 if (response.value.items) {
@@ -56,7 +57,7 @@ export function MyRfqsTab({ onViewDetail }: { onViewDetail?: (id: string) => voi
             }
         };
         fetchRfqs();
-    }, [user]);
+    }, [customerId]);
 
     return (
         <div>
