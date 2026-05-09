@@ -4,9 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { FileText, Clock, CheckCircle2, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-import { useUser } from '@/shared/hooks/use-user';
 import { QuoteService } from '../../services/quote-service';
-import CustomerService from '@/features/user/customer/services/customer-service';
 import { QuoteListItem } from '../../models/quote-list-response';
 
 const statusConfig: Record<string, { label: string; icon: any; className: string }> = {
@@ -42,8 +40,13 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
   }
 };
 
-export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) => void }) {
-  const { user } = useUser();
+export function MyQuotationsTab({
+  onViewDetail,
+  customerId
+}: {
+  onViewDetail?: (id: string) => void,
+  customerId?: string
+}) {
   const [quotes, setQuotes] = useState<QuoteListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -52,34 +55,29 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
   const [hasMore, setHasMore] = useState(true);
 
   const fetchQuotes = useCallback(async (page: number, search: string, isAppend: boolean = false) => {
-    if (!user?.id) return;
+    if (!customerId) return;
 
     try {
       if (isAppend) setLoadingMore(true);
       else setLoading(true);
 
-      const customerResponse = await CustomerService.getDetailCustomerByAccountId(user.id);
-      if (customerResponse.isSuccess && customerResponse.value) {
-        const customerId = customerResponse.value.id;
+      const response = await QuoteService.getListQuotes({
+        customerId: customerId,
+        searchTerm: search,
+        pageNumber: page,
+        pageSize: 10
+      });
 
-        const response = await QuoteService.getListQuotes({
-          customerId: customerId,
-          searchTerm: search,
-          pageNumber: page,
-          pageSize: 10
-        });
+      if (response) {
+        const newItems = response.items || [];
 
-        if (response.isSuccess && response.value) {
-          const newItems = response.value.items || [];
-          
-          if (isAppend) {
-            setQuotes(prev => [...prev, ...newItems]);
-          } else {
-            setQuotes(newItems);
-          }
-
-          setHasMore(newItems.length === 10);
+        if (isAppend) {
+          setQuotes(prev => [...prev, ...newItems]);
+        } else {
+          setQuotes(newItems);
         }
+
+        setHasMore(newItems.length === 10);
       }
     } catch (error) {
       console.error("Error fetching quotes:", error);
@@ -87,13 +85,13 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user]);
+  }, [customerId]);
 
-  // Gọi API mỗi khi user hoặc searchTerm thay đổi
+  // Gọi API mỗi khi customerId hoặc searchTerm thay đổi
   useEffect(() => {
     setPageNumber(1);
     fetchQuotes(1, searchTerm, false);
-  }, [user, searchTerm, fetchQuotes]);
+  }, [customerId, searchTerm, fetchQuotes]);
 
   const handleLoadMore = () => {
     const nextPage = pageNumber + 1;
@@ -175,10 +173,10 @@ export function MyQuotationsTab({ onViewDetail }: { onViewDetail?: (id: string) 
                 </div>
               );
             })}
-            
+
             {hasMore && (
               <div className="mt-12 flex justify-center">
-                <button 
+                <button
                   onClick={handleLoadMore}
                   disabled={loadingMore}
                   className="px-10 py-3 border border-gray-900 text-[10px] font-bold uppercase btn-tracking hover:bg-gray-900 hover:text-white transition-all duration-300 flex items-center gap-2"

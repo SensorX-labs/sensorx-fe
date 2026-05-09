@@ -49,8 +49,8 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
 
   const fetchStats = async () => {
     const result = await InternalPriceService.getStats();
-    if (result.isSuccess && result.value) {
-      setStats(result.value);
+    if (result) {
+      setStats(result);
     }
   };
 
@@ -70,9 +70,9 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
         pageNumber: currentPage,
         pageSize: 10
       });
-      if (result.isSuccess && result.value) {
-        setPrices(result.value.items);
-        setTotalPages(result.value.totalPages);
+      if (result) {
+        setPrices(result.items);
+        setTotalPages(result.totalPages);
       }
     } finally {
       setLoading(false);

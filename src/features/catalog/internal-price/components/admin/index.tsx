@@ -1,29 +1,26 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { InternalPrice } from '../../models';
-import { InternalPriceDetail } from './detail/internal-price-detail';
 import { InternalPriceList } from './list/internal-price-list';
 import { InternalPriceForm } from './form/internal-price-form';
 
 export function InternalPriceManagement() {
-  const [selectedPrice, setSelectedPrice] = useState<InternalPrice | null>(null);
-  const [view, setView] = useState<'list' | 'detail' | 'create'>('list');
+  const router = useRouter();
+  const [view, setView] = useState<'list' | 'create'>('list');
 
   const handleViewDetail = (price: InternalPrice) => {
-    setSelectedPrice(price);
-    setView('detail');
+    router.push(`/catalog/internal-prices/${price.id}`);
   };
 
   const handleCreate = () => {
-    setSelectedPrice(null);
     setView('create');
   };
 
   const handleBackToList = () => {
     setView('list');
-    setSelectedPrice(null);
   };
 
   return (
@@ -32,19 +29,6 @@ export function InternalPriceManagement() {
         <InternalPriceList
           onViewDetail={handleViewDetail}
           onCreate={handleCreate}
-        />
-      )}
-
-      {view === 'detail' && selectedPrice && (
-        <InternalPriceDetail
-          price={selectedPrice}
-          onBack={handleBackToList}
-          onRefresh={() => {
-            // In a real app, we might re-fetch the specific price detail
-            // For now, since we're using mocks/local state, we'll just go back to list
-            // or we could potentially update the selectedPrice if we had a getById service
-            handleBackToList();
-          }}
         />
       )}
 

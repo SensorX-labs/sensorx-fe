@@ -48,32 +48,31 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
         (response) => {
             const result = response.data;
 
-            // Nếu là structure Result { isSuccess, value, message }
+            // Nếu là structure Result { isSuccess, value, message } hoặc { success, data, message }
             if (result && typeof result === 'object' && ('isSuccess' in result || 'success' in result)) {
                 const isSuccess = result.isSuccess ?? result.success;
                 const value = result.value ?? result.data;
+                const message = result.message || result.Message;
 
-                // Nếu thành công và value là object, ta trả về "Universal Result":
-                // 1. Spread value để các component kiểu cũ truy cập trực tiếp (response.items)
-                // 2. Giữ nguyên .value để các component kiểu mới truy cập (result.value.items)
-                // 3. Đính kèm flag success
-                if (isSuccess && value && typeof value === 'object') {
-                    // Nếu value là array, giữ nguyên cấu trúc để caller truy cập .value
-                    if (Array.isArray(value)) {
-                        return {
-                            value: value,
-                            isSuccess: true,
-                            success: true,
-                            message: result.message
-                        };
+                if (isSuccess) {
+                    // Tự động hiển thị toast thành công nếu có message và không phải là lệnh GET
+                    const method = response.config.method?.toUpperCase();
+                    if (message && method !== 'GET') {
+                        toast.success(message);
                     }
-                    return {
-                        ...(value as object),
-                        value: value,
-                        isSuccess: true,
-                        success: true,
-                        message: result.message
-                    };
+
+                    return value ?? true;
+                } else {
+                    // Nếu isSuccess = false, coi như một lỗi nghiệp vụ (Dùng Warning cho dễ nhìn)
+                    const errorMessage = message || "Đã xảy ra lỗi nghiệp vụ";
+                    toast.warning(errorMessage, {
+                        style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }
+                    });
+                    return Promise.reject({
+                        isSuccess: false,
+                        message: errorMessage,
+                        ...result
+                    });
                 }
             }
 
@@ -143,7 +142,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                     Cookies.remove("token", { path: '/' });
                     Cookies.remove("refreshToken", { path: '/' });
                     Cookies.remove("user", { path: '/' });
-                    
+
                     const logoutMessage = refreshError.response?.data?.message || refreshError.message || "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
                     toast.error(logoutMessage);
                     return Promise.reject(refreshError);
@@ -154,12 +153,12 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
             // Xử lý các lỗi khác
             let errorMessage = "Đã xảy ra lỗi không xác định";
-            
+
             if (error.response) {
                 // Trích xuất message linh hoạt từ Result structure (message, Message, hoặc errors)
                 if (errorData && typeof errorData === 'object') {
                     errorMessage = errorData.message || errorData.Message || errorMessage;
-                    
+
                     // Nếu có chi tiết lỗi Validation
                     if (errorData.errors) {
                         if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
@@ -184,7 +183,9 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 toast.error(errorMessage);
             } else {
                 errorMessage = error.message;
-                toast.error(errorMessage);
+                toast.error(errorMessage, {
+                    style: { background: '#FEF2F2', color: '#991B1B', border: '1px solid #FCA5A5' }
+                });
             }
 
             // Enrich error object để tương thích với cả component kiểu cũ và kiểu mới

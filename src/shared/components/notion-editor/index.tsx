@@ -200,8 +200,8 @@ export function NotionEditor({ content, onChange, editable = true }: NotionEdito
       },
       attributes: {
         class: cn(
-          'prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[300px] transition-all',
-          editable ? 'cursor-text bg-white p-12' : 'bg-transparent p-0 border-none shadow-none'
+          'prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-full transition-all',
+          editable ? 'cursor-text bg-white p-6' : 'bg-transparent p-0 border-none shadow-none'
         ),
       },
     },
@@ -235,8 +235,8 @@ export function NotionEditor({ content, onChange, editable = true }: NotionEdito
   return (
     <div
       className={cn(
-        'relative group transition-all',
-        editable && 'border border-gray-100 rounded-lg shadow-sm overflow-hidden'
+        'relative group transition-all h-full flex flex-col',
+        editable && 'overflow-hidden'
       )}
     >
       {editable && (
@@ -360,7 +360,7 @@ export function NotionEditor({ content, onChange, editable = true }: NotionEdito
         </>
       )}
 
-      <EditorContent editor={editor} className="outline-none" />
+      <EditorContent editor={editor} className="outline-none flex-1 flex flex-col overflow-y-auto custom-scrollbar" />
 
       {showSlashMenu && editable && (
         <div
@@ -369,8 +369,8 @@ export function NotionEditor({ content, onChange, editable = true }: NotionEdito
             "fixed z-50 bg-white shadow-2xl border border-gray-100 rounded-xl overflow-hidden min-w-[300px] animate-in duration-200",
             menuPos.isAbove ? "slide-in-from-bottom-2" : "slide-in-from-top-2"
           )}
-          style={{ 
-            top: menuPos.top, 
+          style={{
+            top: menuPos.top,
             left: menuPos.left,
             transform: menuPos.isAbove ? 'translateY(-100%)' : 'none'
           }}

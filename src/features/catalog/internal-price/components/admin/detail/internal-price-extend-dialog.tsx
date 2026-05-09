@@ -51,8 +51,7 @@ export function ExtendPriceDialog({ price, open, onOpenChange, onSuccess }: Exte
         expiresAt: date.toISOString(),
       };
       const response = await InternalPriceService.extend(price.id, request);
-      if (response.isSuccess) {
-        toast.success("Gia hạn bảng giá thành công");
+      if (response) {
         onSuccess();
       }
     } catch (error) {

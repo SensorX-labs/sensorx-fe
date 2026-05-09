@@ -141,29 +141,35 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disable
 function InternalPricePopover({ 
   onSelect, 
   children,
-  disabled 
+  disabled,
+  priceData
 }: { 
   onSelect: (price: number) => void; 
-  children: React.ReactNode;
+  children: React.ReactNode; 
   disabled?: boolean;
+  priceData?: any;
 }) {
   const [open, setOpen] = useState(false);
   
-  const priceList = [
-    { qty: 1, price: 100000 },
-    { qty: 10, price: 95000 },
-    { qty: 50, price: 90000 },
-    { qty: 100, price: 85000 },
-  ];
+  // Lấy danh sách các bậc giá từ dữ liệu thật
+  const tiers = priceData?.priceTiers || [];
 
-  if (disabled) return <>{children}</>;
+  // Nếu không có dữ liệu giá hoặc bị disabled thì không hiện popover
+  if (disabled || tiers.length === 0 || !React.isValidElement(children)) return <>{children}</>;
+
+  // Clone children để inject onClick mở popover
+  const trigger = React.cloneElement(children as React.ReactElement<any>, {
+    onClick: (e: React.MouseEvent) => {
+      // Gọi onClick gốc nếu có
+      if ((children as any).props.onClick) (children as any).props.onClick(e);
+      setOpen(true);
+    },
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div onFocus={() => setOpen(true)}>
-          {children}
-        </div>
+        <div>{trigger}</div>
       </PopoverTrigger>
       <PopoverContent 
         side="bottom" 
@@ -172,20 +178,20 @@ function InternalPricePopover({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="flex flex-col">
-          {priceList.map((item, idx) => (
+          {tiers.map((tier: any, idx: number) => (
             <button
               key={idx}
               type="button"
               onMouseDown={(e) => {
                 e.preventDefault();
-                onSelect(item.price);
+                onSelect(tier.priceAmount);
                 setOpen(false);
               }}
               className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
             >
-              <span className="text-gray-500">SL {item.qty}:</span>
-              <span className="font-semibold text-gray-900">
-                {item.price.toLocaleString('vi-VN')}
+              <span className="text-gray-500 font-medium">SL ≥ {tier.quantity}:</span>
+              <span className="font-bold text-gray-900">
+                {tier.priceAmount.toLocaleString('vi-VN')}
               </span>
             </button>
           ))}
@@ -231,8 +237,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         setLoading(true);
         try {
           const response = await QuoteService.getQuoteById(id);
-          if (response.isSuccess && response.value) {
-            const detail = response.value;
+          if (response) {
+            const detail = response;
             setQuoteDetail(detail);
 
             setFormData({
@@ -280,6 +286,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         unitPrice: 0,
         taxRate: 0,
         key: `rfq-${idx}`,
+        internalPrice: item.internalPrice,
       })));
     }
   }, [id, rfqRaw, actionParam]);
@@ -290,7 +297,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     try {
       const quoteAnalysisService = new QuoteAnalysisService();
       const response = await quoteAnalysisService.analyzeQuote(quoteId);
-      const data = response.value || response;
+      const data = response;
       setAnalysisResult(data);
     } catch (error: any) {
       setAnalysisError(error.message || 'Lỗi phân tích báo giá');
@@ -364,10 +371,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         }))
       };
       const response = await QuoteService.createQuote(request);
-      if (response.isSuccess) {
+      if (response) {
         router.push('/sales/quotations');
-      } else {
-        alert("Lỗi: " + (response.message || "Không thể tạo báo giá"));
       }
     } catch (error: any) {
       alert("Lỗi: " + error.message);
@@ -389,12 +394,9 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     setIsSubmitting(true);
     try {
       const response = await QuoteService.submitForApproval(id);
-      if (response.isSuccess) {
-        toast.success("Đã gửi yêu cầu duyệt báo giá");
+      if (response) {
         router.refresh();
         if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.PENDING });
-      } else {
-        toast.error(response.message || "Lỗi khi gửi duyệt");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -408,12 +410,9 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     setIsSubmitting(true);
     try {
       const response = await QuoteService.approve(id);
-      if (response.isSuccess) {
-        toast.success("Phê duyệt báo giá thành công");
+      if (response) {
         router.refresh();
         if (quoteDetail) setQuoteDetail({ ...quoteDetail, status: QuoteStatus.APPROVED });
-      } else {
-        toast.error(response.message || "Lỗi khi phê duyệt");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -443,14 +442,11 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         }))
       };
       const response = await QuoteService.updateQuote(request);
-      if (response.isSuccess) {
-        toast.success("Cập nhật báo giá thành công");
+      if (response) {
         setAction(ActionType.DETAIL);
         // Refresh data
         const res = await QuoteService.getQuoteById(id);
-        if (res.isSuccess) setQuoteDetail(res.value || null);
-      } else {
-        toast.error(response.message || "Lỗi khi cập nhật");
+        if (res) setQuoteDetail(res || null);
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -760,6 +756,7 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                         <td className="px-4 py-4">
                           <InternalPricePopover 
                             disabled={action === ActionType.DETAIL}
+                            priceData={item.internalPrice}
                             onSelect={(price) => handleUpdateItem(index, { unitPrice: price })}
                           >
                             <Input 

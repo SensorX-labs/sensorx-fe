@@ -3,7 +3,6 @@
 import React from 'react';
 import Image from 'next/image';
 import { X, Minus, Plus } from 'lucide-react';
-import { ProductListItem } from '@/features/catalog/product/models/product-list-response';
 
 interface CartItemProps {
   product: ProductListItem;
@@ -18,8 +17,8 @@ export function CartItem({
   onQuantityChange,
   onRemove,
 }: CartItemProps) {
-  const primaryImg = (product.images?.[0] && product.images[0] !== 'string') 
-    ? product.images[0] 
+  const primaryImg = (product.images?.[0] && product.images[0] !== 'string')
+    ? product.images[0]
     : '/assets/images/products/default.png';
 
   return (

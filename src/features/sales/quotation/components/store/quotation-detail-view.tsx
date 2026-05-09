@@ -57,15 +57,15 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 setLoading(true);
                 // 1. Lấy chi tiết báo giá
                 const response = await QuoteService.getQuoteById(quotationId);
-                if (response.isSuccess && response.value) {
-                    const quoteData = response.value;
+                if (response) {
+                    const quoteData = response;
                     setQuote(quoteData);
 
                     // 2. Lấy thông tin khách hàng
                     if (quoteData.customerId) {
                         const customerRes = await CustomerService.getCustomerById(quoteData.customerId);
-                        if (customerRes.isSuccess && customerRes.value) {
-                            setCustomer(customerRes.value);
+                        if (customerRes) {
+                            setCustomer(customerRes);
                         }
                     }
                 }
@@ -90,7 +90,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 feedback: "Khách hàng đã chốt báo giá trực tuyến."
             };
             const response = await QuoteService.accept(quotationId, data);
-            if (response.isSuccess) {
+            if (response) {
                 // Cập nhật local state
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
             }
@@ -139,7 +139,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 {/* Nút Chốt báo giá cho khách hàng */}
                 <CanAccess roles={['Customer']}>
                     {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
-                        <button 
+                        <button
                             onClick={handleAccept}
                             className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2"
                         >
@@ -275,7 +275,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                                     <div className="flex items-center gap-3">
                                         <Phone className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="qty-label tracking-widest">
-                                            {customer?.phoneNumber || quote.recipientPhone}
+                                            {customer?.phone || quote.recipientPhone}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
