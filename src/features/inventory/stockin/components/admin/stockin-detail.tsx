@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Package, Warehouse, Calendar,
@@ -18,7 +18,11 @@ import {
 } from "@/shared/components/shadcn-ui/select";
 import Link from 'next/link';
 import { ActionType } from '@/shared/constants/action-type';
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { StockInService } from '../../services/stock-in-service';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 
 interface StockInDetailProps {
   id?: string;
@@ -26,7 +30,8 @@ interface StockInDetailProps {
 }
 
 interface StockInItem {
-  id: string;
+  id: string; // Frontend temp ID
+  productId?: string; // Backend Guid
   productCode: string;
   productName: string;
   quantity: number;
@@ -60,25 +65,40 @@ const statusLabel: Record<string, string> = {
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<ProductLoadMoreForModal[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
+          <div className="flex flex-col items-start overflow-hidden text-left">
              <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
@@ -95,15 +115,17 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
            />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {filteredProducts.length === 0 ? (
+           {loading ? (
+             <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+           ) : products.length === 0 ? (
              <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
            ) : (
-             filteredProducts.map(p => (
+             products.map(p => (
                <div 
                  key={p.id}
                  className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
                  onClick={() => {
-                    setSelectedCode(p.code || "");
+                    setSelectedProduct(p);
                     onSelect(p);
                     setOpen(false);
                  }}
@@ -111,7 +133,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
                  </div>
                </div>
              ))
@@ -130,34 +152,70 @@ export default function StockInDetail({ id }: StockInDetailProps) {
     actionParam || ActionType.DETAIL
   );
   const [isEditing, setIsEditing] = useState(action === ActionType.CREATE);
+  const [loading, setLoading] = useState(false);
 
   const [stockInData, setStockInData] = useState<StockInData>({
-    id: id || 'PN001',
-    code: action === ActionType.CREATE ? '' : 'PN001',
+    id: id || '',
+    code: '',
     date: new Date().toISOString().split('T')[0],
-    supplier: action === ActionType.CREATE ? '' : 'Cty CP Minh Toàn',
-    warehouse: (actionParam || ActionType.DETAIL) === ActionType.CREATE ? '' : 'kho-chinh',
+    supplier: '',
+    warehouse: '',
     status: 'draft',
-    items: action === ActionType.CREATE ? [] : [
-      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', quantity: 10, unitPrice: 5000000, taxRate: 10 },
-    ],
+    items: [],
     note: '',
   });
 
-  const [items, setItems] = useState<StockInItem[]>(stockInData.items);
-  const [supplier, setSupplier] = useState(stockInData.supplier);
-  const [warehouse, setWarehouse] = useState(stockInData.warehouse);
-  const [note, setNote] = useState(stockInData.note);
+  const [items, setItems] = useState<StockInItem[]>([]);
+  const [supplier, setSupplier] = useState('');
+  const [warehouse, setWarehouse] = useState('');
+  const [note, setNote] = useState('');
 
-  const handleSave = () => {
-    console.log('Lưu phiếu nhập:', { ...stockInData, items, supplier, warehouse, note });
-    setAction(ActionType.DETAIL);
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    if (id && action !== ActionType.CREATE) {
+      setLoading(true);
+      StockInService.getById(id)
+        .then(data => {
+          if (data) {
+            setStockInData(data);
+            setItems(data.items || []);
+            setSupplier(data.supplier || '');
+            setWarehouse(data.warehouseId || '');
+            setNote(data.description || '');
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching stock in detail:", err);
+          toast.error("Không thể tải thông tin phiếu nhập kho");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, action]);
 
-  const handleSubmit = () => {
-    console.log('Xác nhận phiếu nhập:', { ...stockInData, items, supplier, warehouse });
-    setAction(ActionType.DETAIL);
+  const handleSave = async () => {
+    try {
+      if (action === ActionType.CREATE) {
+        const payload = {
+          supplier,
+          warehouseId: warehouse,
+          description: note,
+          items: items
+            .filter(item => item.productId) // Only items with selected products
+            .map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              taxRate: item.taxRate
+            }))
+        };
+        const newId = await StockInService.createStockIn(payload);
+        toast.success("Tạo phiếu nhập kho thành công");
+        // Redirect or refresh
+      }
+      setIsEditing(false);
+      setAction(ActionType.DETAIL);
+    } catch (error) {
+      toast.error("Lỗi khi lưu phiếu nhập kho");
+    }
   };
 
   const handleCancel = () => {
@@ -354,6 +412,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                                 defaultValue={item.productCode}
                                 defaultLabel={item.productName}
                                 onSelect={(prod) => {
+                                  updateItem(item.id, 'productId', prod.id);
                                   updateItem(item.id, 'productCode', prod.code || '');
                                   updateItem(item.id, 'productName', prod.name);
                                 }}

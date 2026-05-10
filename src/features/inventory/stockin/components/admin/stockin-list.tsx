@@ -1,23 +1,18 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { PackagePlus, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
+import { Button } from '@/shared/components/shadcn-ui/button';
+import { StockInService, StockInListItem } from '../../services/stock-in-service';
+import { toast } from 'sonner';
 
 const stats = [
   { title: 'Phiếu nhập tháng này', value: '143', icon: PackagePlus, color: 'text-[#4318FF]' },
   { title: 'Nhà cung cấp', value: '28', icon: PackagePlus, color: 'text-blue-500' },
   { title: 'Tổng giá trị nhập', value: '2.8 tỷ', icon: PackagePlus, color: 'text-green-500' },
   { title: 'Mặt hàng đã nhập', value: '3,241', icon: PackagePlus, color: 'text-purple-500' },
-];
-
-const imports = [
-  { id: 'PN001', supplier: 'Cty CP Minh Toàn', date: '02/03/2026', items: 8, total: '45,200,000', warehouse: 'Kho chính', status: 'Hoàn thành' },
-  { id: 'PN002', supplier: 'NCC Thiên Bình', date: '01/03/2026', items: 3, total: '18,600,000', warehouse: 'Kho chính', status: 'Đang xử lý' },
-  { id: 'PN003', supplier: 'Cty TNHH Hải Long', date: '28/02/2026', items: 12, total: '92,400,000', warehouse: 'Kho phụ', status: 'Hoàn thành' },
-  { id: 'PN004', supplier: 'Cty CP Minh Toàn', date: '27/02/2026', items: 5, total: '34,800,000', warehouse: 'Kho chính', status: 'Hoàn thành' },
-  { id: 'PN005', supplier: 'NCC Đông Á', date: '25/02/2026', items: 6, total: '56,100,000', warehouse: 'Kho chính', status: 'Chờ xác nhận' },
 ];
 
 const statusColor: Record<string, string> = {
@@ -29,18 +24,63 @@ const statusColor: Record<string, string> = {
 export default function StockInList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [stockIns, setStockIns] = useState<StockInListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [cursor, setCursor] = useState<{
+    firstCreatedAt?: string;
+    firstId?: string;
+    lastCreatedAt?: string;
+    lastId?: string;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  }>({ hasNext: false, hasPrevious: false });
 
-  const filteredImports = useMemo(() => {
-    return imports.filter(item => {
-      const matchesSearch = 
-        (item.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-        (item.supplier?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
+  const fetchStockIns = useCallback(async (isPrevious: boolean = false) => {
+    setLoading(true);
+    try {
+      const result = await StockInService.getStockIns({
+        searchTerm,
+        status: statusFilter !== 'ALL' ? statusFilter : undefined,
+        pageSize: 10,
+        isPrevious,
+        firstCreatedAt: isPrevious ? cursor.firstCreatedAt : undefined,
+        firstId: isPrevious ? cursor.firstId : undefined,
+        lastCreatedAt: !isPrevious ? cursor.lastCreatedAt : undefined,
+        lastId: !isPrevious ? cursor.lastId : undefined,
+      });
       
-      const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
+      if (result) {
+        setStockIns(result.items);
+        setCursor({
+          firstCreatedAt: result.firstCreatedAt,
+          firstId: result.firstId,
+          lastCreatedAt: result.lastCreatedAt,
+          lastId: result.lastId,
+          hasNext: result.hasNext,
+          hasPrevious: result.hasPrevious,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stock ins:", error);
+      toast.error("Không thể tải danh sách phiếu nhập kho");
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, statusFilter, cursor.firstCreatedAt, cursor.firstId, cursor.lastCreatedAt, cursor.lastId]);
+
+  useEffect(() => {
+    fetchStockIns();
   }, [searchTerm, statusFilter]);
+
+  const handleNext = () => {
+    if (cursor.hasNext) fetchStockIns(false);
+  };
+
+  const handlePrevious = () => {
+    if (cursor.hasPrevious) fetchStockIns(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
@@ -108,40 +148,75 @@ export default function StockInList() {
             </tr>
           </thead>
           <tbody>
-            {filteredImports.map((r) => (
+            {stockIns.length > 0 ? (
+              stockIns.map((r) => (
                 <tr key={r.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{r.id}</td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">{r.supplier}</td>
-                  <td className="px-6 py-4 text-gray-700">{r.date}</td>
-                  <td className="px-6 py-4 text-center text-gray-700">{r.items}</td>
-                  <td className="px-6 py-4 font-semibold text-gray-900">{r.total} đ</td>
-                  <td className="px-6 py-4 text-gray-700">{r.warehouse}</td>
+                  <td className="px-6 py-4 font-bold text-gray-900">{r.code}</td>
+                  <td className="px-6 py-4 font-semibold text-gray-900">Admin</td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {new Date(r.createdAt).toLocaleDateString('vi-VN')}
+                  </td>
+                  <td className="px-6 py-4 text-center text-gray-700">--</td>
+                  <td className="px-6 py-4 font-semibold text-gray-900">-- đ</td>
+                  <td className="px-6 py-4 text-gray-700">Kho chính</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[r.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                      {r.status}
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-600">
+                      Hoàn thành
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <Link href={`/inventory/stockin/${r.id}`}>
-                        <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        asChild
+                      >
+                        <Link href={`/warehouse/stockin/${r.id}`}>
                           <Eye className="w-4 h-4" />
-                        </button>
-                      </Link>
-                      <Link href={`/inventory/stockin/${r.id}?action=edit`}>
-                        <button className="p-2 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                      </Link>
-                      <button className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        </Link>
+                      </Button>
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              ))
+            ) : (
+              !loading && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    Không tìm thấy phiếu nhập kho nào.
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
           </table>
+          
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              Hiển thị <span className="font-medium">{stockIns.length}</span> bản ghi
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevious}
+                disabled={!cursor.hasPrevious || loading}
+                className="rounded"
+              >
+                Trang trước
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNext}
+                disabled={!cursor.hasNext || loading}
+                className="rounded"
+              >
+                Trang sau
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
   );
