@@ -84,7 +84,7 @@ export default function StockInList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
-        <Link href="/inventory/stockin/new?action=create">
+        <Link href="/warehouse/stockin/new?action=create">
           <button className="flex items-center gap-2 admin-btn-primary">
             <PackagePlus className="w-4 h-4" /> Thêm phiếu nhập
           </button>

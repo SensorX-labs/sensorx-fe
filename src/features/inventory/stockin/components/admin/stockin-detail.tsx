@@ -35,6 +35,7 @@ interface StockInItem {
   productCode: string;
   productName: string;
   quantity: number;
+  unit: string;
   unitPrice: number;
   taxRate: number;
 }
@@ -168,6 +169,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   const [items, setItems] = useState<StockInItem[]>([]);
   const [supplier, setSupplier] = useState('');
   const [warehouse, setWarehouse] = useState('');
+  const [deliveredBy, setDeliveredBy] = useState('');
+  const [warehouseKeeper, setWarehouseKeeper] = useState('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -178,8 +181,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
           if (data) {
             setStockInData(data);
             setItems(data.items || []);
-            setSupplier(data.supplier || '');
-            setWarehouse(data.warehouseId || '');
+            setDeliveredBy(data.deliveredBy || '');
+            setWarehouseKeeper(data.warehouseKeeper || '');
             setNote(data.description || '');
           }
         })
@@ -194,22 +197,30 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   const handleSave = async () => {
     try {
       if (action === ActionType.CREATE) {
+        const filteredItems = items
+          .filter(item => item.productId)
+          .map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            productCode: item.productCode,
+            unit: item.unit || 'Cái',
+            quantity: item.quantity
+          }));
+
+        if (filteredItems.length === 0) {
+          toast.error("Vui lòng chọn ít nhất một sản phẩm hợp lệ");
+          return;
+        }
+
         const payload = {
-          supplier,
-          warehouseId: warehouse,
+          deliveredBy: deliveredBy || 'unknown',
+          warehouseKeeper: warehouseKeeper || 'unknown',
           description: note,
-          items: items
-            .filter(item => item.productId) // Only items with selected products
-            .map(item => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              taxRate: item.taxRate
-            }))
+          items: filteredItems
         };
         const newId = await StockInService.createStockIn(payload);
         toast.success("Tạo phiếu nhập kho thành công");
-        // Redirect or refresh
+        router.push("/warehouse/stockin");
       }
       setIsEditing(false);
       setAction(ActionType.DETAIL);
@@ -235,6 +246,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
       productCode: '',
       productName: '',
       quantity: 1,
+      unit: 'Cái',
       unitPrice: 0,
       taxRate: 10,
     };
@@ -265,8 +277,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
           {isEditing ? (
             <>
               <Button onClick={handleSave} className="rounded admin-btn-primary border-transparent">
-                <Save className="w-4 h-4 mr-2" />
-                Lưu
+                <Package className="w-4 h-4 mr-2" />
+                Xác nhận nhập
               </Button>
               
               {action === ActionType.CREATE ? (
@@ -285,10 +297,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
             </>
           ) : (
             <>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
-                <Package className="w-4 h-4 mr-2" />
-                Xác nhận nhập
-              </Button>
+              {/* Nút Xác nhận nhập đã được gộp vào luồng Tạo mới */}
               <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
                 <Edit className="w-4 h-4 mr-2" />
                 Chỉnh sửa
@@ -364,6 +373,26 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                     <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Người giao hàng</label>
+                <Input
+                  disabled={!isEditing}
+                  value={deliveredBy}
+                  onChange={(e) => setDeliveredBy(e.target.value)}
+                  className="text-sm h-9 border-gray-300 rounded"
+                  placeholder="Nhập tên người giao"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Thủ kho nhận</label>
+                <Input
+                  disabled={!isEditing}
+                  value={warehouseKeeper}
+                  onChange={(e) => setWarehouseKeeper(e.target.value)}
+                  className="text-sm h-9 border-gray-300 rounded"
+                  placeholder="Nhập tên thủ kho"
+                />
               </div>
             </div>
           </div>
