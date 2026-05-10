@@ -5,9 +5,9 @@ export interface Customer {
     taxCode?: string;
     email: string;
     phone?: string;
-    phoneNumber?: string;
     address?: string;
     wardId?: string | null;
+    provinceId?: string | null;
     shippingAddress?: string;
     receiverName?: string;
     receiverPhone?: string;

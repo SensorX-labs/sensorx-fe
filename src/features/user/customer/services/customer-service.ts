@@ -1,36 +1,30 @@
 import api from "@/shared/configs/axios-config";
 import { Customer } from "../models/customer";
-import { OffsetPagedResult, Result } from "@/shared/models/base-response";
+import { OffsetPagedResult } from "@/shared/models/base-response";
 import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { UpdateCustomerInfo } from "../models/update-customer-info";
+import { UpdateShippingInfo } from "../models/update-shipping-info";
+import { CustomerDetail } from "../models/customer-detail";
 
-// Kiểu dữ liệu "Universal" mà Interceptor của bạn trả về: 
-// Kết hợp giữa Wrapper Result và các thuộc tính của chính Object đó
-type UniversalResult<T> = Result<T> & T;
 
 export const CustomerService = {
-    getPagedCustomers: (params: BaseQueryOffsetPagedList): Promise<UniversalResult<OffsetPagedResult<Customer>>> => {
-        return api.data.get<any, UniversalResult<OffsetPagedResult<Customer>>>('/customer/list', { params });
-    },
+    getPagedCustomers: (params: BaseQueryOffsetPagedList) =>
+        api.data.get<any, OffsetPagedResult<Customer>>('/customer/list', { params }),
 
-    createCustomer: async (customer: Customer): Promise<UniversalResult<Customer>> => {
-        return api.data.post<any, UniversalResult<Customer>>('/customer', customer);
-    },
+    createCustomer: (customer: Customer) =>
+        api.data.post<any, Customer>('/customer', customer),
 
-    updateCustomer: async (customer: Customer): Promise<UniversalResult<Customer>> => {
-        return api.data.put<any, UniversalResult<Customer>>(`/customer`, customer);
-    },
+    updateCustomerInfo: (customer: UpdateCustomerInfo) =>
+        api.data.put<any, UpdateCustomerInfo>(`/customer/update-info`, customer),
 
-    getCustomerById: async (id: string): Promise<UniversalResult<Customer>> => {
-        return api.data.get<any, UniversalResult<Customer>>(`/customer/${id}`);
-    },
+    updateShippingInfo: (customer: UpdateShippingInfo) =>
+        api.data.put<any, UpdateShippingInfo>(`/customer/update-shipping-info`, customer),
 
-    deleteCustomer: async (id: string): Promise<Result<boolean>> => {
-        return api.data.delete<any, Result<boolean>>(`/customer/${id}`);
-    },
+    getCustomerById: (id: string) =>
+        api.data.get<any, Customer>(`/customer/${id}`),
 
-    getDetailCustomerByAccountId: async (accountId: string): Promise<UniversalResult<Customer>> => {
-        return api.data.get<any, UniversalResult<Customer>>(`/customer/account/${accountId}`);
-    }
+    getDetailCustomerByAccountId: (accountId: string) =>
+        api.data.get<any, CustomerDetail>(`/customer/account/${accountId}`)
 };
 
 export default CustomerService;

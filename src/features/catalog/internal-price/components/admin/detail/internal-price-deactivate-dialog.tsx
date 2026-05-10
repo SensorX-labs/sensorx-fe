@@ -20,8 +20,7 @@ export function DeactivatePriceDialog({ price, open, onOpenChange, onSuccess }: 
     setLoading(true);
     try {
       const response = await InternalPriceService.deactivate(price.id);
-      if (response.isSuccess) {
-        toast.success("Vô hiệu hóa bảng giá thành công");
+      if (response) {
         onSuccess();
       }
     } finally {

@@ -65,8 +65,8 @@ export default function RequestForQuotationList() {
     setLoading(true);
     try {
       const response = await RFQServices.getListRFQ({ pageNumber: 1, pageSize: 50 });
-      if (response.isSuccess && response.value) {
-        setLeads(response.value.items);
+      if (response) {
+        setLeads(response.items);
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi fetch RFQ:", error);
@@ -124,11 +124,8 @@ export default function RequestForQuotationList() {
 
       const response = await RFQServices.assignStaff(id, staffId);
 
-      if (response.isSuccess) {
-        toast.success("Tiếp nhận yêu cầu thành công");
+      if (response) {
         fetchRfqs(); // Tải lại danh sách
-      } else {
-        toast.error(response.message || "Lỗi khi tiếp nhận yêu cầu");
       }
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
@@ -142,8 +139,7 @@ export default function RequestForQuotationList() {
     try {
       const response = await RFQServices.rejectRFQ(selectedRfqId);
 
-      if (response.isSuccess) {
-        toast.success("Đã từ chối yêu cầu thành công");
+      if (response) {
         fetchRfqs(); // Tải lại danh sách
         setIsDeclineDialogOpen(false);
         setSelectedRfqId(null);

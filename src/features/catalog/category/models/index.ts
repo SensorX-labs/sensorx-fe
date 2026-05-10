@@ -1,5 +1,5 @@
 import { BaseQueryLoadMore } from "@/shared/models/base-query-page-list";
-import { OffsetPagedResult, Result, LoadMorePagedResult } from "@/shared/models/base-response";
+import { OffsetPagedResult, LoadMorePagedResult } from "@/shared/models/base-response";
 
 // Response Entity
 export interface Category {
@@ -12,9 +12,8 @@ export interface Category {
 }
 
 // Result Wrappers
-export type CategoryResult = Result<string>;
-export type CategoryListResult = Result<OffsetPagedResult<Category>>;
-export type CategoryAllListResult = Result<Category[]>;
+export type CategoryListResult = OffsetPagedResult<Category>;
+export type CategoryAllListResult = Category[];
 
 // Request Models (Query)
 export interface GetPageListCategoriesQuery {
@@ -51,4 +50,4 @@ export interface LoadMoreCategoriesForModalResponse {
   createAt: string
 }
 
-export type LoadMoreCategoriesForModalResult = Result<LoadMorePagedResult<LoadMoreCategoriesForModalResponse>>
+export type LoadMoreCategoriesForModalResult = LoadMorePagedResult<LoadMoreCategoriesForModalResponse>

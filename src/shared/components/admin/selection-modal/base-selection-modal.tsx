@@ -19,14 +19,10 @@ interface BaseSelectionModalProps<T> {
     lastValue?: string;
     lastId?: string;
   }) => Promise<{
-    isSuccess: boolean;
-    value?: {
-      items: T[];
-      hasNext: boolean;
-      lastValue?: string;
-      lastId?: string;
-    };
-    message?: string;
+    items: T[];
+    hasNext: boolean;
+    lastValue?: string;
+    lastId?: string;
   }>;
   renderItem: (item: T, onSelect: (item: T) => void) => React.ReactNode;
   itemKey: (item: T) => string;
@@ -79,8 +75,8 @@ export function BaseSelectionModal<T>({
         lastId: isLoadMore ? pagination.lastId : undefined,
       });
 
-      if (response.isSuccess && response.value) {
-        const { items: newItems, hasNext, lastValue, lastId } = response.value;
+      if (response) {
+        const { items: newItems, hasNext, lastValue, lastId } = response;
 
         if (isLoadMore) {
           setItems(prev => {
@@ -94,9 +90,8 @@ export function BaseSelectionModal<T>({
         }
 
         setPagination({ hasNext, lastValue, lastId });
-      } else {
-        toast.error(response.message || "Lỗi khi tải dữ liệu");
       }
+
     } catch (error) {
       toast.error("Không thể kết nối máy chủ");
     } finally {

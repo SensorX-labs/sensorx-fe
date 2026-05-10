@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ProductListItem } from '@/features/catalog/product/models/product-list-response';
 
 export interface CartItemData {
   product: ProductListItem;
@@ -46,7 +45,7 @@ export function useCart() {
     // Đọc trực tiếp từ localStorage để tránh state cũ
     const savedCart = localStorage.getItem('cart');
     const currentItems: CartItemData[] = savedCart ? JSON.parse(savedCart) : [];
-    
+
     const existingIndex = currentItems.findIndex(item => item.product.id === product.id);
     let newItems;
     if (existingIndex > -1) {
@@ -64,7 +63,7 @@ export function useCart() {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    const newItems = cartItems.map(item => 
+    const newItems = cartItems.map(item =>
       item.product.id === productId ? { ...item, quantity: Math.max(1, quantity) } : item
     );
     saveCart(newItems);

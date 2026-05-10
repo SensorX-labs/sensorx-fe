@@ -31,15 +31,15 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
         setLoading(true);
         // 1. Lấy chi tiết RFQ
         const response = await RFQServices.getDetailRFQ(rfqId);
-        if (response.isSuccess && response.value) {
-          const rfqData = response.value;
+        if (response) {
+          const rfqData = response;
           setRfq(rfqData);
 
           // 2. Lấy thông tin khách hàng theo customerId từ RFQ
           if (rfqData.customerId) {
             const customerResponse = await CustomerService.getCustomerById(rfqData.customerId);
-            if (customerResponse.isSuccess && customerResponse.value) {
-                setCustomer(customerResponse.value);
+            if (customerResponse) {
+              setCustomer(customerResponse);
             }
           }
         }
@@ -117,7 +117,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
                 Danh sách sản phẩm yêu cầu
               </h3>
             </div>
-            
+
             <table className="w-full text-left border-collapse table-fixed border-t border-b border-gray-100">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
@@ -140,9 +140,9 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
                   </tr>
                 ))}
                 {(!rfq.items || rfq.items.length === 0) && (
-                    <tr key="empty-row">
-                        <td colSpan={3} className="px-8 py-12 text-center meta-label uppercase italic text-gray-300">Chưa có thông tin sản phẩm trong yêu cầu này</td>
-                    </tr>
+                  <tr key="empty-row">
+                    <td colSpan={3} className="px-8 py-12 text-center meta-label uppercase italic text-gray-300">Chưa có thông tin sản phẩm trong yêu cầu này</td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -169,7 +169,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
                   <div className="flex items-center gap-3">
                     <Phone className="w-3.5 h-3.5 text-gray-300" />
                     <span className="qty-label tracking-widest">
-                      {customer?.phoneNumber || rfq.recipientPhone}
+                      {customer?.phone || rfq.recipientPhone}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
