@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# AI Tool
+.claude/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
 # dependencies
 /node_modules
 /.pnp

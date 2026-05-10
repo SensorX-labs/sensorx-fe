@@ -1,47 +1,43 @@
-# SensorX Project Memory (GEMINI.md)
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
 
-## 📌 Project Overview
-- **Goal**: Professional Catalog/Category Management system.
-- **Tech Stack**: Next.js, TypeScript, Tailwind CSS, Shadcn UI, Sonner (Toasts), Dnd-kit (Drag & Drop).
+This project is indexed by GitNexus as **sensorx-fe** (2557 symbols, 4806 relationships, 158 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-## 🛠️ Feature: API Standardization & Model Refactoring (2026-04-25)
-### Data Architecture
-- **Unified Result Pattern**: System-wide migration to `Result<T>` and `OffsetPagedResult<T>` from `base-response.ts`.
-- **Universal Axios Interceptor**:
-  - **Success**: Transparently wraps responses. Spreads data fields into the root for legacy compatibility while keeping the `.value` property for new logic.
-  - **Error**: Enriches `AxiosError` with `isSuccess: false` and a robustly extracted `message` (scans for `message`, `Message`, or the first entry in `errors` array/object).
-- **Service Pattern**: Phased out class-based services in favor of constant objects (e.g., `export const ProductService = { ... }`) for better performance and singleton consistency.
-- **Pagination**: Standardized on `BaseQueryOffsetPagedList` for requests. Keyset pagination is supported via `BaseQueryKeysetPagedList` where `lastCreatedAt` and `lastId` are used.
+> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
-### UI/UX Implementation
-- **Result Handling**: Components now consistently check `response.isSuccess` before accessing `response.value`.
-- **Toast Integration**: `axios-config.ts` handles global error toasting, reducing boilerplate in components.
-- **Admin Header Standards**:
-  - **Structure**: Uses a navigation button (Back) followed by a `w-px bg-slate-100` vertical divider.
-  - **Title Line**: Main action title (Uppercase, font-black) paired with a high-visibility SKU badge (`bg-emerald-50`, `font-black`, `Barcode` icon) during updates.
-  - **Subtitle Line**: Brief context with an emerald indicator dot.
-- **Generic Selection Framework**:
-  - **Base Component**: `BaseSelectionModal<T>` used for all pickers (Product, Category).
-  - **Features**: Infinite scroll, debounced search, and generic row rendering.
+## Always Do
 
-## 🛠️ Feature: Internal Price Management (2026-04-25)
-### UI Strategy
-- **2-Column Layout (Form)**: Basic Info on the left (2/5), Price Tiers on the right (3/5) for optimal workflow.
-- **Expansion**: Max-width constraints removed to utilize full screen width on large monitors.
-- **Standardized Typography**: Aligned with the Category module for a cohesive admin experience. Reverted aggressive weights (font-black) and sizes (text-3xl) to a balanced `font-bold` / `text-2xl` scale.
-- **Lock-Height Navigation**: Main list view uses `calc(100vh - HEADER - FOOTER - BUFFER)` to prevent global scroll and lock the dashboard feel.
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
 
-### Data Model
-- **Price Tiers**: Quantity-based pricing where price must decrease as quantity increases.
-- **Status lifecycle**: Active, Expiring Soon, Inactive, Expired.
+## Never Do
 
-### Navigation & State Strategy
-- **Internal State vs Router**: For Product management (Create/Update), use internal `view` state within the `Management` component instead of `router.push` query parameters. This keeps the URL clean and transitions faster.
-- **Detail View**: Only the "Detail" view uses persistent URL routing (`/catalog/products/[id]`).
+- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
+- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
 
-## ⚠️ Important Notes
-- **Legacy Compatibility**: `PaginationResponse` and `PaginationRequest` are deprecated. Use `OffsetPagedResult` and `BaseQueryOffsetPagedList` instead.
-- **Layout Consistency**: Always use `w-full` for admin dashboard features to maximize usable space.
-- **Import Constraints**: `lucide-react` is strictly for icons. UI components must be imported from `@/shared/components/shadcn-ui/...`.
-- **Admin Header Buffer**: Use `-mt-4` and carefully calculated `100vh` offsets to keep content flush with the breadcrumbs/header.
-- **Rounded Corners**: Standard rounding is `rounded` (approx 4px) for cards, buttons, and inputs. Avoid large rounding.
+## Resources
+
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/sensorx-fe/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/sensorx-fe/clusters` | All functional areas |
+| `gitnexus://repo/sensorx-fe/processes` | All execution flows |
+| `gitnexus://repo/sensorx-fe/process/{name}` | Step-by-step execution trace |
+
+## CLI
+
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+
+<!-- gitnexus:end -->
