@@ -1,8 +1,9 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
-import { Mail, ShieldCheck, Lock, CheckCircle, KeyRound, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, ShieldCheck, Lock, CheckCircle, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/utils';
+import { ChangePasswordForm } from '@/features/system/auth/components/common/change-password-form';
 
 export const SecurityTab: React.FC = () => {
     const [mode, setMode] = useState<'change' | 'forgot'>('change');
@@ -11,11 +12,26 @@ export const SecurityTab: React.FC = () => {
     const [isSuccess, setIsSuccess] = useState(false);
 
     // Form states
+    const [email, setEmail] = useState('nguyenvanа@email.com');
+    const [otp, setOtp] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [email, setEmail] = useState('nguyenvanа@email.com');
-    const [otp, setOtp] = useState('');
+
+    useEffect(() => {
+        if (isSuccess) {
+            const timer = setTimeout(() => {
+                setIsSuccess(false);
+                setMode('change');
+                setStep('request');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setOtp('');
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [isSuccess]);
 
     const handleSendCode = () => {
         setIsLoading(true);
@@ -43,47 +59,6 @@ export const SecurityTab: React.FC = () => {
         setOtp('');
     };
 
-    // Common components to reduce repetition
-    const InputField = ({ icon: Icon, type = 'password', ...props }: any) => (
-        <div className="relative">
-            {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />}
-            <input
-                type={type}
-                className={cn(
-                    "w-full py-3 border border-gray-200 bg-white focus:border-brand-green outline-none text-sm tracking-widest transition-all",
-                    Icon ? "pl-11 pr-4" : "px-4"
-                )}
-                {...props}
-            />
-        </div>
-    );
-
-    const Label = ({ children }: { children: React.ReactNode }) => (
-        <label className="block tracking-label uppercase font-bold text-gray-900 mb-2">
-            {children}
-        </label>
-    );
-
-    if (isSuccess) {
-        return (
-            <div className="bg-white border border-gray-200 p-12 text-center">
-                <div className="w-16 h-16 bg-green-50 border border-green-100 flex items-center justify-center mx-auto mb-6 rounded-full">
-                    <CheckCircle className="text-brand-green w-8 h-8" />
-                </div>
-                <h2 className="tracking-title-lg mb-2">Cập nhật thành công</h2>
-                <p className="meta-label text-gray-500 mb-8 lowercase first-letter:uppercase">
-                    {mode === 'change' ? 'Mật khẩu của bạn đã được thay đổi thành công.' : 'Mật khẩu mới của bạn đã có hiệu lực. Hãy sử dụng nó cho các lần đăng nhập sau.'}
-                </p>
-                <button
-                    onClick={resetStates}
-                    className="btn-tracking inline-flex items-center gap-2 px-8 py-3 bg-brand-green text-white text-[10px] font-bold uppercase tracking-widest transition-all duration-300 hover:bg-brand-green-hover hover:shadow-lg"
-                >
-                    Quay lại
-                </button>
-            </div>
-        );
-    }
-
     return (
         <div className="bg-white border border-gray-200 p-8 max-w-2xl mx-auto min-h-[500px]">
             <div className="flex gap-8 border-b border-gray-100 mb-10">
@@ -110,60 +85,13 @@ export const SecurityTab: React.FC = () => {
             </div>
 
             {mode === 'change' ? (
-                <form onSubmit={handleUpdatePassword} className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <div className="mb-6">
                         <h2 className="tracking-title-lg mb-2">Thay đổi mật khẩu</h2>
                         <p className="subtitle-sm !mt-0 lowercase first-letter:uppercase">Hãy cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn.</p>
                     </div>
-
-                    <div className="space-y-6">
-                        <div>
-                            <Label>Mật khẩu hiện tại</Label>
-                            <InputField
-                                icon={Lock}
-                                required
-                                value={currentPassword}
-                                onChange={(e: any) => setCurrentPassword(e.target.value)}
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        <div>
-                            <Label>Mật khẩu mới</Label>
-                            <InputField
-                                icon={KeyRound}
-                                required
-                                value={newPassword}
-                                onChange={(e: any) => setNewPassword(e.target.value)}
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        <div>
-                            <Label>Xác nhận mật khẩu mới</Label>
-                            <InputField
-                                icon={ShieldCheck}
-                                required
-                                value={confirmPassword}
-                                onChange={(e: any) => setConfirmPassword(e.target.value)}
-                                placeholder="••••••••"
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading || !currentPassword || !newPassword || newPassword !== confirmPassword}
-                        className="btn-tracking w-full py-4 bg-brand-green text-white text-[10px] font-bold uppercase transition-all hover:bg-brand-green-hover disabled:bg-gray-200 disabled:text-gray-400"
-                    >
-                        {isLoading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
-                    </button>
-                    {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                        <p className="meta-label text-red-500 flex items-center gap-2">
-                            <AlertCircle size={14} /> Mật khẩu xác nhận không khớp
-                        </p>
-                    )}
-                </form>
+                    <ChangePasswordForm />
+                </div>
             ) : (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <div className="mb-10">
@@ -179,7 +107,7 @@ export const SecurityTab: React.FC = () => {
                                     <InputField
                                         type="email"
                                         value={email}
-                                        onChange={(e: any) => setEmail(e.target.value)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                                         disabled={step === 'verify'}
                                         placeholder="Email của bạn"
                                     />
@@ -221,21 +149,23 @@ export const SecurityTab: React.FC = () => {
                                             icon={ShieldCheck}
                                             type="text"
                                             value={otp}
-                                            onChange={(e: any) => setOtp(e.target.value)}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
                                             placeholder="Nhập mã OTP 6 số"
                                         />
                                     </div>
                                     <InputField
                                         icon={Lock}
                                         value={newPassword}
-                                        onChange={(e: any) => setNewPassword(e.target.value)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
                                         placeholder="Mật khẩu mới"
+                                        showToggle
                                     />
                                     <InputField
                                         icon={Lock}
                                         value={confirmPassword}
-                                        onChange={(e: any) => setConfirmPassword(e.target.value)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                                         placeholder="Xác nhận mật khẩu"
+                                        showToggle
                                     />
                                 </div>
                             </div>
@@ -254,3 +184,43 @@ export const SecurityTab: React.FC = () => {
         </div>
     );
 };
+
+const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ElementType; showToggle?: boolean }> = ({ 
+    icon: Icon, 
+    type = 'password', 
+    showToggle = false, 
+    ...props 
+}) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const isPasswordType = type === 'password';
+
+    return (
+        <div className="relative">
+            {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />}
+            <input
+                type={isPasswordType && showToggle ? (showPassword ? 'text' : 'password') : type}
+                className={cn(
+                    "w-full py-3 border border-gray-200 bg-white focus:border-brand-green outline-none text-sm tracking-widest transition-all",
+                    Icon ? "pl-11" : "px-4",
+                    (isPasswordType && showToggle) ? "pr-11" : "pr-4"
+                )}
+                {...props}
+            />
+            {isPasswordType && showToggle && (
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+            )}
+        </div>
+    );
+};
+
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <label className="block tracking-label uppercase font-bold text-gray-900 mb-2">
+        {children}
+    </label>
+);

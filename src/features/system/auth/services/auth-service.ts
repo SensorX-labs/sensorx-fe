@@ -1,10 +1,15 @@
 import api from "@/shared/configs/axios-config";
 import { LoginRequest } from "../models/login-request";
+import { ChangePasswordRequest } from "../models/change-password-request";
 import { LoginResponse } from "../models/login-response";
 import { UserResponse } from "../models/user-response";
 import { RegisterRequest } from "../models/register-request";
 
 export class AuthService {
+    async changePassword(data: ChangePasswordRequest): Promise<void> {
+        return api.auth.post("/change-password", data);
+    }
+
     async login(data: LoginRequest): Promise<LoginResponse> {
         return api.auth.post("/login", data);
     }
