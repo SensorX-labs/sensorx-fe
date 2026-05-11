@@ -10,15 +10,10 @@ import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
-import { MyQuotationsTab } from '../../../../sales/quotation/components/store/my-quotations-tab';
-import { OrderDetailView } from '../../../../sales/order/components/store/order-detail-view';
-import { QuotationDetailView } from '../../../../sales/quotation/components/store/quotation-detail-view';
-import { RfqDetailView } from '../../../../sales/requestforquotation/components/store/rfq-detail-view';
-import { MyRfqsTab } from '../../../../sales/requestforquotation/components/store/my-rfqs-tab';
+
 import { SecurityTab } from './security-tab';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { ProfileTab } from '@/features/user/customer/components/store/profile-tab';
-import { OrdersTab } from '@/features/sales/order/components/store/orders-tab';
 import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
 
 const authService = new AuthService();
@@ -32,12 +27,9 @@ interface Order {
 }
 
 export function UserProfile() {
-    const [activeTab, setActiveTab] = useState<'business' | 'orders' | 'quotations' | 'my-quotations' | 'addresses' | 'security'>('business');
+    const [activeTab, setActiveTab] = useState<'business' | 'security'>('business');
     const [customerData, setCustomerData] = useState<CustomerDetail>();
     const [loading, setLoading] = useState(true);
-    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-    const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
-    const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
 
     const { user } = useUser();
     const router = useRouter();
@@ -81,25 +73,19 @@ export function UserProfile() {
         }
     };
 
-    // Mock orders data
-    const orders: Order[] = [
-        { id: 'ORD-001', date: '2024-12-15', total: 5250000, status: 'completed', items: 3 },
-        { id: 'ORD-002', date: '2024-12-10', total: 2150000, status: 'completed', items: 2 },
-        { id: 'ORD-003', date: '2024-12-05', total: 8750000, status: 'pending', items: 5 },
-    ];
+
 
     return (
         <div className="min-h-screen bg-page-background">
-            <StoreBreadcrumb 
+            <StoreBreadcrumb
                 items={[
                     { label: 'Trang chủ', href: '/' },
-                    { label: 'Cửa hàng', href: '/shop' },
                     { label: 'Tài khoản' }
                 ]}
                 backLink="/"
                 backLabel="Quay lại trang chủ"
             />
-            
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
                     <h1 className="tracking-title-xl mb-2">Tài khoản của tôi</h1>
@@ -110,9 +96,6 @@ export function UserProfile() {
                         <nav className="space-y-2">
                             {[
                                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
-                                { id: 'quotations', label: 'Yêu cầu báo giá', icon: FileText },
-                                { id: 'my-quotations', label: 'Báo giá của tôi', icon: FileText },
-                                { id: 'orders', label: 'Đơn hàng của tôi', icon: ShoppingCart },
                                 { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield },
                             ].map((item) => {
                                 const Icon = item.icon || ChevronRight;
@@ -121,9 +104,6 @@ export function UserProfile() {
                                         key={item.id}
                                         onClick={() => {
                                             setActiveTab(item.id as any);
-                                            setSelectedOrderId(null);
-                                            setSelectedQuotationId(null);
-                                            setSelectedRfqId(null);
                                         }}
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none transition-all duration-300 border",
@@ -163,29 +143,7 @@ export function UserProfile() {
                             )
                         )}
 
-                        {activeTab === 'orders' && (
-                            selectedOrderId ? (
-                                <OrderDetailView onBack={() => setSelectedOrderId(null)} />
-                            ) : (
-                                <OrdersTab orders={orders} onViewDetail={setSelectedOrderId} />
-                            )
-                        )}
 
-                        {activeTab === 'quotations' && (
-                            selectedRfqId ? (
-                                <RfqDetailView onBack={() => setSelectedRfqId(null)} rfqId={selectedRfqId} />
-                            ) : (
-                                <MyRfqsTab onViewDetail={setSelectedRfqId} customerId={customerData?.id} />
-                            )
-                        )}
-
-                        {activeTab === 'my-quotations' && (
-                            selectedQuotationId ? (
-                                <QuotationDetailView onBack={() => setSelectedQuotationId(null)} quotationId={selectedQuotationId} />
-                            ) : (
-                                <MyQuotationsTab onViewDetail={setSelectedQuotationId} customerId={customerData?.id} />
-                            )
-                        )}
 
                         {activeTab === 'security' && <SecurityTab />}
                     </main>

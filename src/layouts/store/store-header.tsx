@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart, Bookmark, LayoutDashboard, ChevronRight } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart, Bookmark, LayoutDashboard, ChevronRight, FileText, Package } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
 import Cookies from 'js-cookie';
 
@@ -14,7 +14,7 @@ export const StoreHeader = () => {
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     // Kiểm tra quyền từ cookie
     const userCookie = Cookies.get('user');
     if (userCookie) {
@@ -36,7 +36,7 @@ export const StoreHeader = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY < 10) {
         setIsVisible(true);
       } else {
@@ -55,102 +55,64 @@ export const StoreHeader = () => {
 
   return (
     <>
-      <header 
-        className={`sticky top-0 z-50 bg-white border-b border-gray-200 transition-transform duration-300 ease-in-out ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}
+      <header
+        className={`sticky top-0 z-50 bg-white border-b border-gray-200 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
+          }`}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            
-            {/* liên hệ */}
-            <div className="flex-1 flex items-center justify-start">
-              <div className="hidden md:flex items-center">
-                {isMounted && (
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <button className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
-                        <span className="text-lg">+</span>
-                        <span>Liên hệ</span>
-                      </button>
-                    </SheetTrigger>
-                    <SheetContent className="w-[600px] sm:max-w-none px-12 md:px-20 py-20 flex flex-col gap-16">
-                      <SheetHeader className="p-0 flex-none">
-                        <SheetTitle className="text-3xl font-medium tracking-[0.1em] uppercase text-left">
-                          Liên hệ với chúng tôi
-                        </SheetTitle>
-                      </SheetHeader>
+          <div className="flex items-center justify-between h-16 lg:h-20 gap-8">
 
-                      <div className="flex flex-col gap-12">
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <Phone size={22} strokeWidth={1.5} />
-                            <a href="tel:+84382116944" className="text-xl font-medium border-b border-black pb-0.5">
-                              Gọi cho chúng tôi +84 382 116 944
-                            </a>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <Circle></Circle>
-                            <button className="text-xl font-medium border-b border-black pb-0.5">
-                              Trò chuyện trực tiếp
-                            </button>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <MessageCircle size={22} strokeWidth={1.5} />
-                            <button className="text-xl font-medium border-b border-black pb-0.5">
-                              Gửi tin nhắn cho chúng tôi
-                            </button>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                )}
-              </div>
-            </div>
-
-            {/*logo */}
-            <Link href="/" className="flex-none">
-              <span className="text-xl sm:text-2xl md:text-3xl font-light tracking-[0.3em] text-gray-900 uppercase">
-                SensorX
+            {/* Logo */}
+            <Link href="/" className="flex-none shrink-0">
+              <span className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter text-gray-900 uppercase italic">
+                Sensor<span className="text-brand-green italic">X</span>
               </span>
             </Link>
 
-            {/* menu */}
-            <div className="flex-1 flex items-center justify-end gap-4 sm:gap-6 lg:gap-3">
-              <Link href="/shop/bookmarks" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <Bookmark size={20} />
+            {/* Navigation Menu (Desktop) */}
+            <nav className="hidden lg:flex flex-1 items-center justify-center gap-10">
+              <Link href="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Sản phẩm
               </Link>
-              <Link href="/shop/cart" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <ShoppingBag size={20} />
+              <Link href="/catalog" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Giải pháp
               </Link>
-              <Link href="/profile" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <User size={20} />
+              <Link href="/brands" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Thương hiệu
               </Link>
+              <Link href="/contact" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Liên hệ
+              </Link>
+            </nav>
+
+            {/* Icons & Menu */}
+            <div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-2">
+              <div className="hidden sm:flex items-center gap-1">
+                <Link href="/transactions?tab=rfqs" className="text-gray-900 hover:text-gray-600 transition-colors p-2 relative group" title="Yêu cầu báo giá">
+                  <FileText size={20} strokeWidth={1.5} />
+                  <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Yêu cầu báo giá</span>
+                </Link>
+                <Link href="/transactions?tab=quotes" className="text-gray-900 hover:text-gray-600 transition-colors p-2 relative group" title="Báo giá">
+                  <ShoppingBag size={20} strokeWidth={1.5} />
+                  <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Báo giá của tôi</span>
+                </Link>
+                <Link href="/transactions?tab=orders" className="text-gray-900 hover:text-gray-600 transition-colors p-2 relative group" title="Đơn hàng">
+                  <Package size={20} strokeWidth={1.5} />
+                  <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Đơn hàng</span>
+                </Link>
+              </div>
+
+              <div className="w-px h-6 bg-gray-200 mx-2 hidden sm:block"></div>
+
+              <Link href="/profile" className="text-gray-900 hover:text-gray-600 transition-colors p-2 mr-2">
+                <User size={20} strokeWidth={1.5} />
+              </Link>
+
               {isMounted && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">
-                      <Menu size={20} />
-                      <span className="hidden sm:inline">Menu</span>
+                    <button className="flex items-center gap-2 p-2 text-xs font-bold text-gray-900 hover:text-gray-600 transition-colors tracking-widest uppercase lg:hidden">
+                      <Menu size={22} strokeWidth={1.5} />
                     </button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-[350px] sm:w-[450px] p-0 border-l border-gray-100 shadow-2xl">
@@ -205,7 +167,7 @@ export const StoreHeader = () => {
                             <span className="text-sm font-medium tracking-wider">+84 382 116 944</span>
                           </div>
                           <p className="text-[10px] text-gray-500 leading-relaxed uppercase tracking-widest">
-                            © 2024 SensorX Labs. <br/>
+                            © 2024 SensorX Labs. <br />
                             Giải pháp công nghiệp tiên tiến.
                           </p>
                         </div>

@@ -9,22 +9,22 @@ import { QuoteListItem } from '../../models/quote-list-response';
 
 const statusConfig: Record<string, { label: string; icon: any; className: string }> = {
   [QuoteStatus.SENT]: {
-    label: 'Đã gửi khách',
+    label: 'Chờ phản hồi',
     icon: CheckCircle2,
     className: 'bg-blue-50 text-blue-700 border-blue-200',
   },
   [QuoteStatus.PENDING]: {
-    label: 'Chờ xử lý',
+    label: 'Chờ phản hồi',
     icon: Clock,
     className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   },
   [QuoteStatus.APPROVED]: {
-    label: 'Đã duyệt',
+    label: 'Đã chốt',
     icon: CheckCircle2,
     className: 'bg-green-50 text-green-700 border-green-200',
   },
   [QuoteStatus.ORDERED]: {
-    label: 'Đã đặt hàng',
+    label: 'Đã chốt',
     icon: CheckCircle2,
     className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20',
   },
@@ -34,25 +34,42 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
     className: 'bg-red-50 text-red-700 border-red-200',
   },
   [QuoteStatus.RETURNED]: {
-    label: 'Bị từ chối',
+    label: 'Đã từ chối',
     icon: CheckCircle2,
     className: 'bg-red-50 text-red-700 border-red-200',
   }
 };
 
+import { useRouter } from 'next/navigation';
+
 export function MyQuotationsTab({
-  onViewDetail,
   customerId
 }: {
-  onViewDetail?: (id: string) => void,
   customerId?: string
 }) {
+  const router = useRouter();
   const [quotes, setQuotes] = useState<QuoteListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<string>('ALL');
+
+  const filters = [
+    { id: 'ALL', label: 'Tất cả' },
+    { id: 'WAITING', label: 'Chờ phản hồi' },
+    { id: 'ACCEPTED', label: 'Đã chốt' },
+    { id: QuoteStatus.RETURNED, label: 'Đã từ chối' },
+    { id: QuoteStatus.EXPIRED, label: 'Hết hạn' }
+  ];
+
+  const filteredQuotes = React.useMemo(() => {
+    if (activeFilter === 'ALL') return quotes;
+    if (activeFilter === 'WAITING') return quotes.filter(q => q.status === QuoteStatus.SENT || q.status === QuoteStatus.PENDING);
+    if (activeFilter === 'ACCEPTED') return quotes.filter(q => q.status === QuoteStatus.ORDERED || q.status === QuoteStatus.APPROVED);
+    return quotes.filter(q => q.status === activeFilter);
+  }, [quotes, activeFilter]);
 
   const fetchQuotes = useCallback(async (page: number, search: string, isAppend: boolean = false) => {
     if (!customerId) return;
@@ -101,18 +118,35 @@ export function MyQuotationsTab({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-4 mb-8">
-        <h2 className="tracking-title-lg">Báo giá của tôi</h2>
-        <div className="relative">
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Tìm theo mã báo giá hoặc công ty..."
-            className="pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all w-80 btn-tracking uppercase"
+            className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+      </div>
+
+      {/* Shopee-style filter tabs */}
+      <div className="flex items-center border-b border-gray-100 mb-6 bg-white sticky top-0 z-10">
+        {filters.map((filter) => (
+          <button
+            key={filter.id}
+            onClick={() => setActiveFilter(filter.id)}
+            className={cn(
+              "flex-1 py-4 text-xs font-bold tracking-widest uppercase transition-all border-b-2 text-center",
+              activeFilter === filter.id
+                ? "border-[var(--brand-green)] text-[var(--brand-green)]"
+                : "border-transparent text-gray-500 hover:text-gray-900"
+            )}
+          >
+            {filter.label}
+          </button>
+        ))}
       </div>
 
       <div className="space-y-4">
@@ -121,9 +155,9 @@ export function MyQuotationsTab({
             <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
             <p className="meta-label uppercase tracking-widest text-gray-400">Đang tải báo giá...</p>
           </div>
-        ) : quotes.length > 0 ? (
+        ) : filteredQuotes.length > 0 ? (
           <>
-            {quotes.map((quote) => {
+            {filteredQuotes.map((quote) => {
               const config = statusConfig[quote.status] || {
                 label: quote.status,
                 icon: Clock,
@@ -134,7 +168,7 @@ export function MyQuotationsTab({
                 <div
                   key={quote.id}
                   className="group border border-gray-100 bg-white hover:bg-gray-50/50 transition-all duration-200 cursor-pointer shadow-sm"
-                  onClick={() => onViewDetail?.(quote.id)}
+                  onClick={() => router.push(`/transactions/quotations/${quote.id}`)}
                 >
                   <div className="p-6 flex items-center justify-between">
                     <div className="flex items-center gap-6">

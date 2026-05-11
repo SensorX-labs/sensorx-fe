@@ -10,7 +10,8 @@ import {
   Mail,
   User,
   Package,
-  Loader2
+  Loader2,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
@@ -86,78 +87,73 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 tracking-breadcrumb group"
-        >
-          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Quay lại danh sách
-        </button>
+
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <p className="meta-label uppercase text-gray-400 mb-2">Chi tiết yêu cầu</p>
+          <h1 className="tracking-title-xl">{rfq.code}</h1>
+        </div>
+        <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold", config.className)}>
+          {config.label}
+        </div>
       </div>
 
-      <div className="w-full space-y-10">
-        <div className="bg-white border border-gray-100 shadow-sm">
-          <div className="p-8">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="meta-label uppercase text-gray-400 mb-2">Chi tiết yêu cầu</p>
-                <h2 className="tracking-title-xl">{rfq.code}</h2>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+        {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
+        <div className="xl:col-span-2 space-y-8">
+          <div className="bg-white border border-gray-100 shadow-sm">
+            <div className="pb-10">
+              <div className="px-8 py-6 bg-gray-50/30">
+                <h3 className="tracking-title uppercase text-lg flex items-center gap-2">
+                  <Package className="w-5 h-5 text-gray-400" />
+                  Danh sách sản phẩm yêu cầu
+                </h3>
               </div>
-              <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold", config.className)}>
-                {config.label}
-              </div>
-            </div>
-          </div>
 
-          <div className="border-t border-gray-100 pb-10">
-            <div className="px-8 py-6 bg-gray-50/30">
-              <h3 className="tracking-title uppercase text-lg flex items-center gap-2">
-                <Package className="w-5 h-5 text-gray-400" />
-                Danh sách sản phẩm yêu cầu
-              </h3>
+              <table className="w-full text-left border-collapse table-fixed border-t border-b border-gray-100">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
+                    <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[60%]">Thông tin sản phẩm</th>
+                    <th className="px-8 py-4 tracking-label border-r border-gray-100 text-center w-[20%]">ĐVT</th>
+                    <th className="px-8 py-4 tracking-label text-center w-[20%]">Số lượng</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(rfq.items || []).map((item, idx) => (
+                    <tr key={`${item.productCode}-${idx}`} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
+                      <td className="px-8 py-5">
+                        <p className="breadcrumb-text uppercase font-bold">{item.productName}</p>
+                        <div className="mt-1">
+                          <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">{item.productCode}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-center meta-label uppercase">{item.unit}</td>
+                      <td className="px-8 py-5 text-center qty-label font-bold text-lg">{item.quantity}</td>
+                    </tr>
+                  ))}
+                  {(!rfq.items || rfq.items.length === 0) && (
+                    <tr key="empty-row">
+                      <td colSpan={3} className="px-8 py-12 text-center meta-label uppercase italic text-gray-300">Chưa có thông tin sản phẩm trong yêu cầu này</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            <table className="w-full text-left border-collapse table-fixed border-t border-b border-gray-100">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
-                  <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[60%]">Thông tin sản phẩm</th>
-                  <th className="px-8 py-4 tracking-label border-r border-gray-100 text-center w-[20%]">ĐVT</th>
-                  <th className="px-8 py-4 tracking-label text-center w-[20%]">Số lượng</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(rfq.items || []).map((item, idx) => (
-                  <tr key={`${item.productCode}-${idx}`} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
-                    <td className="px-8 py-5">
-                      <p className="breadcrumb-text uppercase font-bold">{item.productName}</p>
-                      <div className="mt-1">
-                        <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">{item.productCode}</span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-center meta-label uppercase">{item.unit}</td>
-                    <td className="px-8 py-5 text-center qty-label font-bold text-lg">{item.quantity}</td>
-                  </tr>
-                ))}
-                {(!rfq.items || rfq.items.length === 0) && (
-                  <tr key="empty-row">
-                    <td colSpan={3} className="px-8 py-12 text-center meta-label uppercase italic text-gray-300">Chưa có thông tin sản phẩm trong yêu cầu này</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-8">
-          <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+        {/* CỘT PHẢI: THÔNG TIN CHUNG (Sticky) */}
+        <div className="space-y-6 sticky top-28">
+
+          {/* Thông tin Khách hàng */}
+          <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
             <div className="space-y-6">
               <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
                 <User className="w-4 h-4 text-gray-400" />
                 Thông tin khách hàng
               </div>
               <div className="space-y-4">
-                <p className="breadcrumb-text uppercase !text-xl font-bold">
+                <p className="breadcrumb-text uppercase !text-lg font-bold">
                   {customer?.name || rfq.recipientName}
                 </p>
                 {rfq.companyName && (
@@ -165,17 +161,23 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
                     {rfq.companyName}
                   </p>
                 )}
-                <div className="pt-2 space-y-3 border-t border-gray-50 mt-6">
+                <div className="pt-2 space-y-3 border-t border-gray-50 mt-4">
                   <div className="flex items-center gap-3">
-                    <Phone className="w-3.5 h-3.5 text-gray-300" />
-                    <span className="qty-label tracking-widest">
+                    <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                    <span className="qty-label tracking-widest text-sm">
                       {customer?.phone || rfq.recipientPhone}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Mail className="w-3.5 h-3.5 text-gray-300" />
-                    <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase">
+                    <Mail className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                    <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase text-xs line-clamp-1">
                       {customer?.email || rfq.email}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-3.5 h-3.5 text-gray-300 mt-1 shrink-0" />
+                    <span className="meta-label capitalize text-xs text-gray-600 line-clamp-2">
+                      {customer?.address || rfq.address || 'Chưa cập nhật địa chỉ'}
                     </span>
                   </div>
                 </div>
@@ -183,29 +185,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
             </div>
           </div>
 
-          <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                Địa chỉ và Mã số thuế
-              </div>
-              <div className="space-y-4">
-                <p className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase text-gray-600">
-                  {customer?.address || rfq.address}
-                </p>
-                {(customer?.taxCode || rfq.taxCode) && (
-                  <div className="pt-10 border-t border-gray-50">
-                    <div className="bg-gray-50 p-6 border border-gray-100">
-                      <p className="meta-label uppercase mb-2 text-gray-400">Mã số thuế doanh nghiệp:</p>
-                      <p className="qty-label tracking-[0.1em] !text-xl font-bold">
-                        {customer?.taxCode || rfq.taxCode}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

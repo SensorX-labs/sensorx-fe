@@ -24,21 +24,21 @@ import { Customer } from '@/features/user/customer/models/customer';
 
 const statusStyles: Record<string, string> = {
     [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
-    [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-600 border-blue-100',
+    [QuoteStatus.PENDING]: 'bg-yellow-50 text-yellow-600 border-yellow-100',
     [QuoteStatus.APPROVED]: 'bg-green-50 text-green-600 border-green-100',
     [QuoteStatus.RETURNED]: 'bg-red-50 text-red-600 border-red-100',
-    [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    [QuoteStatus.SENT]: 'bg-blue-50 text-blue-600 border-blue-100',
     [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
     [QuoteStatus.EXPIRED]: 'bg-gray-50 text-gray-400 border-gray-200',
 };
 
 const statusLabels: Record<string, string> = {
     [QuoteStatus.DRAFT]: 'Nháp',
-    [QuoteStatus.PENDING]: 'Chờ duyệt',
-    [QuoteStatus.APPROVED]: 'Đã phê duyệt',
-    [QuoteStatus.RETURNED]: 'Từ chối',
-    [QuoteStatus.SENT]: 'Đã gửi khách',
-    [QuoteStatus.ORDERED]: 'Đã sinh đơn',
+    [QuoteStatus.PENDING]: 'Chờ phản hồi',
+    [QuoteStatus.APPROVED]: 'Đã chốt',
+    [QuoteStatus.RETURNED]: 'Đã từ chối',
+    [QuoteStatus.SENT]: 'Chờ phản hồi',
+    [QuoteStatus.ORDERED]: 'Đã chốt',
     [QuoteStatus.EXPIRED]: 'Hết hạn',
 };
 
@@ -55,13 +55,11 @@ export function QuotationDetailView({ onBack, quotationId }: {
             if (!quotationId) return;
             try {
                 setLoading(true);
-                // 1. Lấy chi tiết báo giá
                 const response = await QuoteService.getQuoteById(quotationId);
                 if (response) {
                     const quoteData = response;
                     setQuote(quoteData);
 
-                    // 2. Lấy thông tin khách hàng
                     if (quoteData.customerId) {
                         const customerRes = await CustomerService.getCustomerById(quoteData.customerId);
                         if (customerRes) {
@@ -84,14 +82,13 @@ export function QuotationDetailView({ onBack, quotationId }: {
         try {
             setLoading(true);
             const data = {
-                responseType: 0, // Chấp nhận
-                paymentTerm: 1, // Thanh toán toàn bộ
+                responseType: 0,
+                paymentTerm: 1,
                 shippingAddress: quote.address,
                 feedback: "Khách hàng đã chốt báo giá trực tuyến."
             };
             const response = await QuoteService.accept(quotationId, data);
             if (response) {
-                // Cập nhật local state
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
             }
         } catch (error) {
@@ -127,161 +124,171 @@ export function QuotationDetailView({ onBack, quotationId }: {
 
     return (
         <div className="space-y-8 pb-20">
-            <div className="flex items-center justify-between">
-                <button
-                    onClick={onBack}
-                    className="flex items-center gap-2 tracking-breadcrumb group"
-                >
-                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Quay lại danh sách
-                </button>
+            <div className="flex items-center justify-end">
 
-                {/* Nút Chốt báo giá cho khách hàng */}
+
                 <CanAccess roles={['Customer']}>
                     {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
                         <button
                             onClick={handleAccept}
-                            className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2"
+                            className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2 shadow-xl"
                         >
                             <CheckCircle2 className="w-4 h-4" />
-                            Chốt báo giá
+                            Chốt báo giá ngay
                         </button>
                     )}
                 </CanAccess>
             </div>
 
-            <div className="w-full space-y-10">
-                {/* Header Info */}
-                <div className="bg-white border border-gray-100 shadow-sm">
-                    <div className="p-8">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="meta-label uppercase text-gray-400 mb-2">Số báo giá</p>
-                                <h2 className="tracking-title-xl">{quote.code}</h2>
-                            </div>
-                            <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold", statusStyle)}>
-                                {statusLabel}
+            <div className="flex items-start justify-between mb-8">
+                <div>
+                    <p className="meta-label uppercase text-gray-400 mb-2">Số báo giá</p>
+                    <h1 className="tracking-title-xl">{quote.code}</h1>
+                </div>
+                <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold", statusStyle)}>
+                    {statusLabel}
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+                {/* CỘT TRÁI: NỘI DUNG BÁO GIÁ */}
+                <div className="xl:col-span-2 space-y-8">
+                    <div className="bg-white border border-gray-100 shadow-sm">
+                        <div className="p-8 pb-0">
+
+                            <div className="grid grid-cols-3 gap-8 pt-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                                        <Calendar className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Ngày báo giá</p>
+                                        <p className="text-sm font-bold text-gray-900">{new Date(quote.quoteDate).toLocaleDateString('vi-VN')}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-blue-50 flex items-center justify-center">
+                                        <DollarSign className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Tổng giá trị</p>
+                                        <p className="text-sm font-bold">{quote.grandTotal.toLocaleString('vi-VN')} VNĐ</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                                        <Package className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Hạng mục</p>
+                                        <p className="text-sm font-bold text-gray-900">{quote.items.length} hạng mục</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-8 mt-10 pt-8 border-t border-gray-50">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
-                                    <Calendar className="w-5 h-5 text-gray-400" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Ngày báo giá</p>
-                                    <p className="text-sm font-bold text-gray-900">{new Date(quote.quoteDate).toLocaleDateString('vi-VN')}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded bg-blue-50 flex items-center justify-center">
-                                    <DollarSign className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Tổng giá trị</p>
-                                    <p className="text-sm font-bold">{quote.grandTotal.toLocaleString('vi-VN')} VNĐ</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                        {/* Items Table */}
+                        <div className="border-t border-gray-100 pb-10">
+                            <div className="px-8 py-6 bg-gray-50/30">
+                                <h3 className="tracking-title uppercase text-lg flex items-center gap-2 text-gray-900">
                                     <Package className="w-5 h-5 text-gray-400" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số lượng dòng</p>
-                                    <p className="text-sm font-bold text-gray-900">{quote.items.length} hạng mục</p>
-                                </div>
+                                    Chi tiết hạng mục
+                                </h3>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Items Table */}
-                    <div className="border-t border-gray-100 pb-10">
-                        <div className="px-8 py-6 bg-gray-50/30">
-                            <h3 className="tracking-title uppercase text-lg flex items-center gap-2">
-                                <Package className="w-5 h-5 text-gray-400" />
-                                Nội dung báo giá chi tiết
-                            </h3>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse border-t border-b border-gray-100">
-                                <thead>
-                                    <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
-                                        <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[40%]">Sản phẩm</th>
-                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">ĐVT</th>
-                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">SL</th>
-                                        <th className="px-6 py-4 tracking-label border-r border-gray-100 text-right w-[15%]">Đơn giá</th>
-                                        <th className="px-8 py-4 tracking-label text-right w-[25%]">Thành tiền</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {quote.items.map((item, idx) => (
-                                        <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
-                                            <td className="px-8 py-5">
-                                                <p className="breadcrumb-text uppercase font-bold text-gray-900">Sản phẩm #{idx + 1}</p>
-                                                <div className="mt-1">
-                                                    <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">{item.productCode}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5 text-center meta-label uppercase">{item.unit}</td>
-                                            <td className="px-6 py-5 text-center qty-label font-bold">{item.quantity}</td>
-                                            <td className="px-6 py-5 text-right font-medium text-gray-600">{item.unitPrice.toLocaleString('vi-VN')}</td>
-                                            <td className="px-8 py-5 text-right font-bold text-gray-900">{item.totalLineAmount.toLocaleString('vi-VN')}</td>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse border-t border-b border-gray-100">
+                                    <thead>
+                                        <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
+                                            <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[40%]">Sản phẩm</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">ĐVT</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">SL</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-right w-[15%]">Đơn giá</th>
+                                            <th className="px-8 py-4 tracking-label text-right w-[25%]">Thành tiền</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {quote.items.map((item, idx) => (
+                                            <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
+                                                <td className="px-8 py-5">
+                                                    <p className="breadcrumb-text uppercase font-bold text-gray-900">{item.productCode}</p>
+                                                    <div className="mt-1">
+                                                        <span className="meta-label uppercase !text-[9px] font-medium text-gray-400">Thiết bị tự động hóa</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-center meta-label uppercase">{item.unit}</td>
+                                                <td className="px-6 py-5 text-center qty-label font-bold">{item.quantity}</td>
+                                                <td className="px-6 py-5 text-right font-medium text-gray-600">{item.unitPrice.toLocaleString('vi-VN')}</td>
+                                                <td className="px-8 py-5 text-right font-bold text-gray-900">{item.totalLineAmount.toLocaleString('vi-VN')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                        {/* Totals */}
-                        <div className="mt-8 px-8 flex justify-end">
-                            <div className="w-80 space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Tạm tính</span>
-                                    <span className="font-bold text-gray-900">{quote.subtotal.toLocaleString('vi-VN')} đ</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Thuế VAT</span>
-                                    <span className="font-bold text-gray-900">{quote.totalTax.toLocaleString('vi-VN')} đ</span>
-                                </div>
-                                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                                    <span className="text-blue-600 uppercase tracking-widest font-black text-xs">Tổng cộng</span>
-                                    <span className="text-xl font-black text-blue-600">{quote.grandTotal.toLocaleString('vi-VN')} đ</span>
+                            <div className="mt-8 px-8 flex justify-end">
+                                <div className="w-80 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Tạm tính</span>
+                                        <span className="font-bold text-gray-900">{quote.subtotal.toLocaleString('vi-VN')} đ</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Thuế VAT (10%)</span>
+                                        <span className="font-bold text-gray-900">{quote.totalTax.toLocaleString('vi-VN')} đ</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                                        <span className="text-blue-600 uppercase tracking-widest font-black text-xs">Tổng giá trị</span>
+                                        <span className="text-xl font-black text-blue-600">{quote.grandTotal.toLocaleString('vi-VN')} đ</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Customer Info Section */}
-                <div className="grid grid-cols-2 gap-8">
-                    <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                {/* CỘT PHẢI: THÔNG TIN CHUNG */}
+                <div className="space-y-6 sticky top-28">
+                    {/* Tiến trình xử lý (Mock) */}
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            Lịch sử báo giá
+                        </div>
+                        <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2 before:h-full before:w-0.5 before:bg-gray-100">
+                            <div className="relative pl-8">
+                                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full border-4 border-white bg-green-500 shadow-sm"></div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Hôm nay, 08:45</div>
+                                <div className="text-xs font-bold text-gray-900 uppercase">Gửi báo giá hoàn tất</div>
+                            </div>
+                            <div className="relative pl-8">
+                                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full border-4 border-white bg-blue-500 shadow-sm"></div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Hôm qua, 15:30</div>
+                                <div className="text-xs font-bold text-gray-900 uppercase">Duyệt giá nội bộ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
                         <div className="space-y-6">
-                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 text-gray-900">
                                 <User className="w-4 h-4 text-gray-400" />
                                 Thông tin khách hàng
                             </div>
                             <div className="space-y-4">
-                                <p className="breadcrumb-text uppercase !text-xl font-bold">
+                                <p className="breadcrumb-text uppercase !text-lg font-bold text-gray-900">
                                     {customer?.name || quote.recipientName}
                                 </p>
-                                {(quote.companyName) && (
-                                    <p className="meta-label uppercase text-[#B48F4E] font-bold">
-                                        {quote.companyName}
-                                    </p>
-                                )}
-                                <div className="pt-2 space-y-3 border-t border-gray-50 mt-6">
+                                <div className="space-y-3 pt-2 border-t border-gray-50">
                                     <div className="flex items-center gap-3">
                                         <Phone className="w-3.5 h-3.5 text-gray-300" />
-                                        <span className="qty-label tracking-widest">
+                                        <span className="qty-label tracking-widest text-sm text-gray-600">
                                             {customer?.phone || quote.recipientPhone}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <Mail className="w-3.5 h-3.5 text-gray-300" />
-                                        <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase">
-                                            {customer?.email || quote.email}
+                                        <MapPin className="w-3.5 h-3.5 text-gray-300" />
+                                        <span className="meta-label lowercase text-xs text-gray-600 line-clamp-2">
+                                            {customer?.address || quote.address}
                                         </span>
                                     </div>
                                 </div>
@@ -289,26 +296,24 @@ export function QuotationDetailView({ onBack, quotationId }: {
                         </div>
                     </div>
 
-                    <div className="p-10 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
                         <div className="space-y-6">
-                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                Địa chỉ và Mã số thuế
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 text-gray-900">
+                                <User className="w-4 h-4 text-brand-green" />
+                                Chuyên viên phụ trách
                             </div>
-                            <div className="space-y-4">
-                                <p className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase text-gray-600">
-                                    {customer?.address || quote.address}
-                                </p>
-                                {quote.taxCode && (
-                                    <div className="pt-10 border-t border-gray-50">
-                                        <div className="bg-gray-50 p-6 border border-gray-100">
-                                            <p className="meta-label uppercase mb-2 text-gray-400">Mã số thuế:</p>
-                                            <p className="qty-label tracking-[0.1em] !text-xl font-bold">
-                                                {quote.taxCode}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
+                                    <User className="w-6 h-6 text-gray-200" />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold uppercase text-gray-900">Trần Văn Support</p>
+                                    <p className="text-[10px] uppercase font-bold text-gray-400">Technical Sales</p>
+                                </div>
+                            </div>
+                            <div className="pt-4 border-t border-gray-50 flex gap-2">
+                                <button className="flex-1 py-2 text-[10px] uppercase font-bold tracking-widest border border-gray-900 hover:bg-gray-900 hover:text-white transition-all">Gọi điện</button>
+                                <button className="flex-1 py-2 text-[10px] uppercase font-bold tracking-widest border border-brand-green text-brand-green hover:bg-brand-green hover:text-white transition-all">Nhắn tin</button>
                             </div>
                         </div>
                     </div>

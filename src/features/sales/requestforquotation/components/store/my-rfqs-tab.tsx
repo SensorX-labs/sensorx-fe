@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
@@ -8,8 +8,12 @@ import RFQServices from '../../services/rfq-services';
 import { Rfq } from '../../models/rqf';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
+    [RfqStatus.DRAFT]: {
+        label: 'Bản thảo',
+        className: 'bg-gray-50 text-gray-700 border-gray-200'
+    },
     [RfqStatus.PENDING]: {
-        label: 'Chờ xử lý',
+        label: 'Chờ tiếp nhận',
         className: 'bg-yellow-50 text-yellow-700 border-yellow-200'
     },
     [RfqStatus.ACCEPTED]: {
@@ -21,20 +25,36 @@ const statusConfig: Record<string, { label: string; className: string }> = {
         className: 'bg-red-50 text-red-700 border-red-200'
     },
     [RfqStatus.CONVERTED]: {
-        label: 'Đã có báo giá',
+        label: 'Đã phản hồi',
         className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20'
     }
 };
 
+import { useRouter } from 'next/navigation';
+
 export function MyRfqsTab({
-    onViewDetail,
     customerId
 }: {
-    onViewDetail?: (id: string) => void,
     customerId?: string
 }) {
+    const router = useRouter();
     const [myRfqs, setMyRfqs] = useState<Rfq[]>([]);
     const [loading, setLoading] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<string>('ALL');
+
+    const filters = [
+        { id: 'ALL', label: 'Tất cả' },
+        { id: RfqStatus.DRAFT, label: 'Bản thảo' },
+        { id: RfqStatus.PENDING, label: 'Chờ tiếp nhận' },
+        { id: RfqStatus.ACCEPTED, label: 'Đang xử lý' },
+        { id: RfqStatus.CONVERTED, label: 'Đã phản hồi' },
+        { id: RfqStatus.REJECTED, label: 'Đã hủy' },
+    ];
+
+    const filteredRfqs = useMemo(() => {
+        if (activeFilter === 'ALL') return myRfqs;
+        return myRfqs.filter(r => r.status === activeFilter);
+    }, [myRfqs, activeFilter]);
 
     useEffect(() => {
         if (!customerId) return;
@@ -61,16 +81,33 @@ export function MyRfqsTab({
 
     return (
         <div>
-            <div className="flex items-center justify-between gap-4 mb-8">
-                <h2 className="tracking-title-lg">Yêu cầu báo giá của tôi</h2>
-                <div className="relative">
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                         type="text"
                         placeholder="Tìm theo mã yêu cầu..."
-                        className="pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all w-80 btn-tracking uppercase"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
                     />
                 </div>
+            </div>
+
+            {/* Shopee-style filter tabs */}
+            <div className="flex items-center border-b border-gray-100 mb-6 bg-white sticky top-0 z-10">
+                {filters.map((filter) => (
+                    <button
+                        key={filter.id}
+                        onClick={() => setActiveFilter(filter.id)}
+                        className={cn(
+                            "flex-1 py-4 text-xs font-bold tracking-widest uppercase transition-all border-b-2 text-center",
+                            activeFilter === filter.id
+                                ? "border-[var(--brand-green)] text-[var(--brand-green)]"
+                                : "border-transparent text-gray-500 hover:text-gray-900"
+                        )}
+                    >
+                        {filter.label}
+                    </button>
+                ))}
             </div>
 
             <div className="space-y-4">
@@ -79,15 +116,15 @@ export function MyRfqsTab({
                         <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
                         <p className="meta-label uppercase">Đang tải dữ liệu...</p>
                     </div>
-                ) : myRfqs.length > 0 ? (
-                    myRfqs.map((request) => {
+                ) : filteredRfqs.length > 0 ? (
+                    filteredRfqs.map((request) => {
                         const config = statusConfig[request.status] || statusConfig[RfqStatus.PENDING];
 
                         return (
                             <div
                                 key={request.id}
                                 className="group border border-gray-100 bg-white hover:bg-gray-50/50 transition-all duration-200 cursor-pointer shadow-sm"
-                                onClick={() => onViewDetail?.(request.id)}
+                                onClick={() => router.push(`/transactions/rfqs/${request.id}`)}
                             >
                                 <div className="p-6 flex items-center justify-between">
                                     <div className="flex items-center gap-6">

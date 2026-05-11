@@ -1,241 +1,280 @@
 'use client';
 
-import React from 'react';
-import { 
-  Package, 
-  MapPin, 
-  CreditCard, 
-  Truck, 
-  ChevronLeft, 
-  Download, 
-  Clock, 
-  CheckCircle2, 
-  FileText,
-  Phone,
-  Mail,
-  User,
-  ExternalLink,
-  XCircle
+import React, { useEffect, useState } from 'react';
+import {
+    FileText,
+    MapPin,
+    ChevronLeft,
+    Phone,
+    Mail,
+    User,
+    Package,
+    Loader2,
+    Clock,
+    Calendar,
+    DollarSign,
+    CreditCard,
+    Truck
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
-import { MOCK_INTERNAL_PRICES } from '@/features/catalog/product/mocks/internal-price-mocks';
+import { OrderStatus } from '../../enums/order-status';
+import { OrderService } from '../../services/order-service';
+import { Order } from '../../models/order';
 
-const p1 = MOCK_PRODUCTS.find(p => p.id === 'prod-001')!;
-const p2 = MOCK_PRODUCTS.find(p => p.id === 'prod-002')!;
-
-const getPrice = (productId: string) => {
-  return MOCK_INTERNAL_PRICES.find(p => p.productId === productId)?.suggestedPrice || 0;
+const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
+    [OrderStatus.PendingPayment]: { 
+        label: 'Chờ thanh toán', 
+        className: 'bg-orange-50 text-orange-700 border-orange-200',
+        icon: Clock
+    },
+    [OrderStatus.Processing]: { 
+        label: 'Đang xử lý', 
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        icon: Clock
+    },
+    [OrderStatus.Dispatched]: { 
+        label: 'Đã xuất kho', 
+        className: 'bg-green-50 text-green-700 border-green-200',
+        icon: Truck
+    },
+    [OrderStatus.Cancelled]: { 
+        label: 'Đã hủy', 
+        className: 'bg-red-50 text-red-700 border-red-200',
+        icon: Clock
+    },
 };
 
-const orderDetail = {
-  id: 'ORD-001',
-  date: '15/12/2024 - 14:30',
-  status: 'completed',
-  paymentMethod: 'Chuyển khoản ngân hàng',
-  shippingMethod: 'Giao hàng tiêu chuẩn (Giao Hàng Nhanh)',
-  get subtotal() {
-    return getPrice(p1.id!) * 2 + getPrice(p2.id!);
-  },
-  shippingFee: 150000,
-  get total() { return this.subtotal + this.shippingFee; },
-  billingInfo: {
-    name: 'Nguyễn Văn A',
-    phone: '0912 345 678',
-    email: 'nguyenvanа@email.com',
-    company: 'Công Ty TNHH SensorX',
-    address: '123 Đường ABC, Phường 1, Quận 1, TP. Hồ Chí Minh'
-  },
-  get items() {
-    return [
-      {
-        id: p1.id,
-        name: p1.name,
-        sku: p1.code,
-        price: getPrice(p1.id!),
-        qty: 2,
-        image: p1.productImages?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
-      },
-      {
-        id: p2.id,
-        name: p2.name,
-        sku: p2.code,
-        price: getPrice(p2.id!),
-        qty: 1,
-        image: p2.productImages?.[0]?.imageUrl || 'https://placehold.co/80x80/f3f4f6/374151?text=Product'
-      }
-    ];
-  }
-};
+export function OrderDetailView({ onBack, orderId }: { onBack: () => void, orderId?: string }) {
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
 
-const statusConfig: any = {
-  pending: {
-    label: 'Đang xử lý',
-    icon: Clock,
-    className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  },
-  completed: {
-    label: 'Đã giao hàng',
-    icon: CheckCircle2,
-    className: 'bg-green-50 text-green-700 border-green-200',
-  },
-  cancelled: {
-    label: 'Đã hủy',
-    icon: XCircle,
-    className: 'bg-red-50 text-red-700 border-red-200',
-  }
-};
+    useEffect(() => {
+        const fetchDetail = async () => {
+            if (!orderId) return;
+            try {
+                setLoading(true);
+                const response = await OrderService.getOrderById(orderId);
+                if (response) {
+                    setOrder(response);
+                }
+            } catch (error) {
+                console.error("Failed to fetch order detail:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-export function OrderDetailView({ onBack }: { onBack: () => void }) {
-  const config = statusConfig[orderDetail.status];
+        fetchDetail();
+    }, [orderId]);
 
-  return (
-    <div className="space-y-10">
-      <div className="flex items-center justify-between border-b border-gray-100">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 tracking-breadcrumb group"
-        >
-          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Quay lại danh sách đơn hàng
-        </button>
-        <div className="flex items-center gap-4">
-           <button className="flex items-center gap-2 px-8 py-2.5 border border-gray-900 tracking-label uppercase btn-tracking transition-all hover:bg-gray-900 hover:text-white !text-[10px]">
-             <Download className="w-4 h-4" />
-             Tải hóa đơn (PDF)
-           </button>
-        </div>
-      </div>
-
-      <div className="bg-white p-10 border border-gray-100">
-         <div className="flex justify-between items-start">
-            <div className="space-y-4">
-               <h1 className="tracking-title-xl">{orderDetail.id}</h1>
-               <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-                  <span className="tracking-label uppercase whitespace-nowrap">Ngày đặt hàng: <span className="text-gray-900">{orderDetail.date}</span></span>
-                  <span className="tracking-label uppercase whitespace-nowrap">Thanh toán: <span className="text-gray-900">{orderDetail.paymentMethod}</span></span>
-                  <span className="tracking-label uppercase">Vận chuyển: <span className="text-gray-900">{orderDetail.shippingMethod}</span></span>
-               </div>
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 space-y-4">
+                <Loader2 className="w-10 h-10 text-gray-300 animate-spin" />
+                <p className="meta-label uppercase tracking-widest text-gray-400">Đang tải chi tiết đơn hàng...</p>
             </div>
-            <div className={cn("px-6 py-2 border-2 tracking-label uppercase font-bold text-[11px] whitespace-nowrap", config.className)}>
-               {config.label}
-            </div>
-         </div>
-      </div>
+        );
+    }
 
-      <div className="bg-white border border-gray-100">
-        <div className="px-10 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Package className="w-5 h-5 text-gray-400" />
-              <h3 className="tracking-title uppercase text-lg">Danh sách sản phẩm trong đơn hàng</h3>
+    if (!order) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 space-y-6">
+                <FileText className="w-16 h-16 text-gray-100" />
+                <p className="meta-label uppercase tracking-widest text-gray-400">Không tìm thấy đơn hàng này</p>
+                <button onClick={onBack} className="btn-tracking border border-gray-900 px-8 py-3 uppercase text-[10px] font-bold">
+                    Quay lại danh sách
+                </button>
             </div>
-        </div>
-        
-        <table className="w-full text-left border-collapse table-fixed">
-          <thead>
-            <tr className="bg-gray-100 border-b border-gray-100 uppercase">
-              <th className="px-10 py-5 tracking-label border-r border-gray-50 w-[50%]">Sản phẩm</th>
-              <th className="px-4 py-5 tracking-label border-r border-gray-50 text-center w-[10%]">SL</th>
-              <th className="px-8 py-5 tracking-label border-r border-gray-50 text-right w-[20%]">Đơn giá</th>
-              <th className="px-10 py-5 tracking-label text-right w-[20%] bg-gray-50/30">Thành tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderDetail.items.map((item, idx) => (
-              <tr key={item.id} className={cn("border-b border-gray-50 last:border-0", idx % 2 === 1 && "bg-gray-50/30")}>
-                <td className="px-10 py-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-gray-50 p-2 border border-gray-100 shrink-0">
-                       <img src={item.image} alt={item.name} className="w-full h-full object-contain grayscale" />
+        );
+    }
+
+    const config = statusConfig[order.status] || { label: 'Đơn hàng', className: 'bg-gray-50 text-gray-700 border-gray-200', icon: FileText };
+    const subtotal = order.orderItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+    const tax = subtotal * 0.1;
+    const total = subtotal + tax;
+
+    return (
+        <div className="space-y-8 pb-20">
+
+            <div className="flex items-start justify-between mb-8">
+                <div>
+                    <p className="meta-label uppercase text-gray-400 mb-2">Chi tiết đơn hàng</p>
+                    <h1 className="tracking-title-xl">{order.code}</h1>
+                </div>
+                <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
+                    <config.icon className="w-3.5 h-3.5" />
+                    {config.label}
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+                {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
+                <div className="xl:col-span-2 space-y-8">
+                    <div className="bg-white border border-gray-100 shadow-sm">
+                        <div className="p-8 pb-0">
+
+                            <div className="grid grid-cols-3 gap-8 pt-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-gray-50 flex items-center justify-center">
+                                        <Calendar className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Ngày đặt hàng</p>
+                                        <p className="text-sm font-bold text-gray-900">{new Date(order.orderDate).toLocaleDateString('vi-VN')}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-blue-50 flex items-center justify-center">
+                                        <CreditCard className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Thanh toán</p>
+                                        <p className="text-sm font-bold text-gray-900">Chuyển khoản</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded bg-green-50 flex items-center justify-center">
+                                        <DollarSign className="w-5 h-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Tổng giá trị</p>
+                                        <p className="text-sm font-bold text-gray-900">{total.toLocaleString('vi-VN')} đ</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-gray-100 pb-10">
+                            <div className="px-8 py-6 bg-gray-50/30">
+                                <h3 className="tracking-title uppercase text-lg flex items-center gap-2 text-gray-900">
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                    Sản phẩm trong đơn
+                                </h3>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse border-t border-b border-gray-100">
+                                    <thead>
+                                        <tr className="bg-gray-50/50 border-b border-gray-100 uppercase">
+                                            <th className="px-8 py-4 tracking-label border-r border-gray-100 w-[40%]">Sản phẩm</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">ĐVT</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-center w-[10%]">SL</th>
+                                            <th className="px-6 py-4 tracking-label border-r border-gray-100 text-right w-[15%]">Đơn giá</th>
+                                            <th className="px-8 py-4 tracking-label text-right w-[25%]">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {order.orderItems.map((item, idx) => (
+                                            <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
+                                                <td className="px-8 py-5">
+                                                    <p className="breadcrumb-text uppercase font-bold text-gray-900">{item.productCode}</p>
+                                                    <div className="mt-1">
+                                                        <span className="meta-label uppercase !text-[9px] font-medium text-gray-400">{item.manufacturer}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-center meta-label uppercase">{item.unit}</td>
+                                                <td className="px-6 py-5 text-center qty-label font-bold">{item.quantity}</td>
+                                                <td className="px-6 py-5 text-right font-medium text-gray-600">{item.unitPrice.toLocaleString('vi-VN')}</td>
+                                                <td className="px-8 py-5 text-right font-bold text-gray-900">{(item.quantity * item.unitPrice).toLocaleString('vi-VN')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="mt-8 px-8 flex justify-end">
+                                <div className="w-80 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Tạm tính</span>
+                                        <span className="font-bold text-gray-900">{subtotal.toLocaleString('vi-VN')} đ</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400 uppercase tracking-wider font-bold text-[10px]">Thuế VAT (10%)</span>
+                                        <span className="font-bold text-gray-900">{tax.toLocaleString('vi-VN')} đ</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                                        <span className="text-[var(--brand-green)] uppercase tracking-widest font-black text-xs">Tổng thanh toán</span>
+                                        <span className="text-xl font-black text-[var(--brand-green)]">{total.toLocaleString('vi-VN')} đ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="breadcrumb-text uppercase">{item.name}</p>
-                      <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase text-[9px] font-bold tracking-widest">{item.sku}</span>
+                </div>
+
+                {/* CỘT PHẢI: THÔNG TIN CHUNG */}
+                <div className="space-y-6 sticky top-28">
+                    {/* Trạng thái đơn hàng (Timeline) */}
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            Tiến trình đơn hàng
+                        </div>
+                        <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2 before:h-full before:w-0.5 before:bg-gray-100">
+                            {order.status === OrderStatus.Dispatched && (
+                                <div className="relative pl-8">
+                                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full border-4 border-white bg-green-500 shadow-sm"></div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">27/03/2024, 09:15</div>
+                                    <div className="text-xs font-bold text-gray-900 uppercase">Đã xuất kho</div>
+                                </div>
+                            )}
+                            <div className="relative pl-8">
+                                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full border-4 border-white bg-blue-500 shadow-sm"></div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">25/03/2024, 10:00</div>
+                                <div className="text-xs font-bold text-gray-900 uppercase">Đã xác nhận đơn hàng</div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-6 text-center qty-label">{item.qty}</td>
-                <td className="px-8 py-6 text-right meta-label font-bold">
-                  {(item.price).toLocaleString('vi-VN')}
-                </td>
-                <td className="px-10 py-6 text-right qty-label bg-gray-50/20 text-base">
-                  {(item.price * item.qty).toLocaleString('vi-VN')}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
 
-        <div className="flex justify-end p-10 border-t border-gray-100">
-           <div className="w-96 space-y-5">
-              <div className="flex justify-between meta-label uppercase">
-                <span className="text-gray-400 font-bold">Tạm tính:</span>
-                <span className="qty-label">
-                  {(orderDetail.subtotal).toLocaleString('vi-VN')}
-                </span>
-              </div>
-              <div className="flex justify-between meta-label uppercase">
-                <span className="text-gray-400 font-bold">Phí vận chuyển:</span>
-                <span className="qty-label">
-                  {(orderDetail.shippingFee).toLocaleString('vi-VN')}
-                </span>
-              </div>
-              <div className="flex justify-between pt-6 border-t-2 border-gray-900 items-baseline">
-                <span className="tracking-label uppercase text-sm">Tổng:</span>
-                <span className="tracking-title-xl text-3xl text-brand-green tracking-tighter">
-                  {(orderDetail.total).toLocaleString('vi-VN')}
-                </span>
-              </div>
-           </div>
+                    {/* Thông tin Giao hàng */}
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 text-gray-900">
+                                <Truck className="w-4 h-4 text-gray-400" />
+                                Địa chỉ giao hàng
+                            </div>
+                            <div className="space-y-4">
+                                <p className="breadcrumb-text uppercase !text-lg font-bold text-gray-900">
+                                    {order.recipientName}
+                                </p>
+                                <div className="space-y-3 pt-2 border-t border-gray-50">
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="w-3.5 h-3.5 text-gray-300" />
+                                        <span className="qty-label tracking-widest text-sm text-gray-600">
+                                            {order.recipientPhone}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-3.5 h-3.5 text-gray-300" />
+                                        <span className="meta-label lowercase text-xs text-gray-600 line-clamp-2">
+                                            {order.address}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Nhân viên hỗ trợ */}
+                    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 text-gray-900">
+                                <User className="w-4 h-4 text-brand-green" />
+                                Chuyên viên xử lý
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
+                                    <User className="w-6 h-6 text-gray-200" />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold uppercase text-gray-900">{order.senderName}</p>
+                                    <p className="text-[10px] uppercase font-bold text-gray-400">Order Fulfillment</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-8">
-          <div className="bg-white p-10 border border-gray-100 space-y-6">
-              <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <h4 className="tracking-label uppercase">Thông tin người nhận</h4>
-              </div>
-              <div className="space-y-4 pt-2">
-                  <div>
-                      <p className="breadcrumb-text uppercase text-xl mb-1">{orderDetail.billingInfo.name}</p>
-                      {orderDetail.billingInfo.company && (
-                          <p className="meta-label uppercase text-[#B48F4E]">
-                              {orderDetail.billingInfo.company}
-                          </p>
-                      )}
-                  </div>
-                  <div className="space-y-3 pt-6 border-t border-gray-50">
-                      <div className="flex items-center gap-3">
-                          <Phone className="w-4 h-4 text-gray-300" />
-                          <span className="qty-label tracking-widest text-sm">{orderDetail.billingInfo.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                          <Mail className="w-4 h-4 text-gray-300" />
-                          <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase">{orderDetail.billingInfo.email}</span>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-          <div className="bg-white p-10 border border-gray-100 space-y-6">
-              <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <h4 className="tracking-label uppercase">Địa chỉ giao hàng</h4>
-              </div>
-              <div className="space-y-6 pt-2">
-                  <p className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase">
-                      {orderDetail.billingInfo.address}
-                  </p>
-                  <div className="pt-10 flex flex-col gap-4">
-                     <button className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 flex items-center gap-2 transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        Xem vị trí trên bản đồ
-                     </button>
-                  </div>
-              </div>
-          </div>
-      </div>
-    </div>
-  );
+    );
 }

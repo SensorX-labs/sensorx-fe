@@ -1,8 +1,7 @@
 'use client';
 
-import Catalog from "@/features/catalog/product/components/store/Shop/catalog";
-
+import { HomePage } from "@/features/user/user/components/store/home-page";
 
 export default function StorePage() {
-  return <Catalog />;
+  return <HomePage />;
 }
