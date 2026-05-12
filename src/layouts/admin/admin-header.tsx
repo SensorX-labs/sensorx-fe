@@ -4,6 +4,7 @@ import React from 'react';
 import { Search, Bell, Settings } from 'lucide-react';
 import { SidebarTrigger } from '@/shared/components/shadcn-ui/sidebar';
 import { useActiveTab } from '@/shared/hooks/use-active-tab';
+import { WarehouseSelector } from '@/shared/components/warehouse-selector';
 
 const AdminHeader: React.FC = () => {
     const activeTab = useActiveTab();
@@ -30,6 +31,10 @@ const AdminHeader: React.FC = () => {
                             {activeTab.description}
                         </p>
                     )}
+                </div>
+                
+                <div className="hidden lg:block ml-4">
+                    <WarehouseSelector />
                 </div>
             </div>
 

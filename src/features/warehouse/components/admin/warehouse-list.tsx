@@ -2,22 +2,32 @@
 import React, { useState, useEffect } from 'react';
 import { Warehouse } from '@/features/warehouse/models/warehouse-model';
 import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
-import { Plus, Search, Edit, Trash2, Warehouse as WarehouseIcon } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import Cookies from 'js-cookie';
+import { cn } from '@/shared/utils';
 
 export function WarehouseList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
 
   useEffect(() => {
+    setSelectedWarehouseId(Cookies.get('warehouseId') || null);
     setWarehouses([]);
     getWarehouses()
       .then(setWarehouses)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleSelect = (id: string) => {
+    Cookies.set('warehouseId', id, { expires: 7 });
+    setSelectedWarehouseId(id);
+    window.location.reload(); // Reload to apply header globally
+  };
 
   const filteredWarehouses = warehouses.filter(wh => 
     wh.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -65,7 +75,7 @@ export function WarehouseList() {
           <tbody>
             {filteredWarehouses.length > 0 ? (
               filteredWarehouses.map((wh) => (
-                <tr key={wh.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                <tr key={wh.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors", selectedWarehouseId === wh.id && "bg-blue-50/50")}>
                   <td className="px-6 py-4 font-bold text-gray-900">{wh.id}</td>
                   <td className="px-6 py-4">{wh.name}</td>
                   <td className="px-6 py-4 text-center">
@@ -75,6 +85,15 @@ export function WarehouseList() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn("h-8 flex items-center gap-1", selectedWarehouseId === wh.id ? "text-green-600 font-bold" : "text-blue-600")}
+                        onClick={() => handleSelect(wh.id!)}
+                      >
+                        {selectedWarehouseId === wh.id ? <CheckCircle2 className="w-4 h-4" /> : null}
+                        {selectedWarehouseId === wh.id ? 'Đang chọn' : 'Chọn'}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

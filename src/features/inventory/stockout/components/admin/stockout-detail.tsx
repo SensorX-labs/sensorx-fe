@@ -18,7 +18,12 @@ import {
 } from "@/shared/components/shadcn-ui/select";
 import Link from 'next/link';
 import { ActionType } from '@/shared/constants/action-type';
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { StockOutService } from '../../services/stock-out-service';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 interface StockOutDetailProps {
   id?: string;
@@ -60,25 +65,40 @@ const statusLabel: Record<string, string> = {
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
+          <div className="flex flex-col items-start overflow-hidden text-left">
              <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
@@ -95,15 +115,17 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
            />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {filteredProducts.length === 0 ? (
+           {loading ? (
+             <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+           ) : products.length === 0 ? (
              <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
            ) : (
-             filteredProducts.map(p => (
+             products.map(p => (
                <div 
                  key={p.id}
                  className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
                  onClick={() => {
-                    setSelectedCode(p.code || "");
+                    setSelectedProduct(p);
                     onSelect(p);
                     setOpen(false);
                  }}
@@ -111,7 +133,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer || p.manufacture}</span>
                  </div>
                </div>
              ))
@@ -124,40 +146,85 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 
 export default function StockOutDetail({ id }: StockOutDetailProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const actionParam = searchParams.get('action') as ActionType | null;
 
   const [action, setAction] = useState<ActionType>(
     actionParam || ActionType.DETAIL
   );
   const [isEditing, setIsEditing] = useState(action === ActionType.CREATE);
+  const [loading, setLoading] = useState(false);
 
   const [stockOutData, setStockOutData] = useState<StockOutData>({
-    id: id || 'PX001',
-    code: action === ActionType.CREATE ? '' : 'PX001',
+    id: id || '',
+    code: '',
     date: new Date().toISOString().split('T')[0],
-    destination: action === ActionType.CREATE ? '' : 'Cửa hàng Hoàng Diệu',
-    warehouse: (actionParam || ActionType.DETAIL) === ActionType.CREATE ? '' : 'kho-chinh',
+    destination: '',
+    warehouse: '',
     status: 'draft',
-    items: action === ActionType.CREATE ? [] : [
-      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', quantity: 5, unitPrice: 5000000, taxRate: 10 },
-    ],
+    items: [],
     note: '',
   });
 
-  const [items, setItems] = useState<StockOutItem[]>(stockOutData.items);
-  const [destination, setDestination] = useState(stockOutData.destination);
-  const [warehouse, setWarehouse] = useState(stockOutData.warehouse);
-  const [note, setNote] = useState(stockOutData.note);
+  const [items, setItems] = useState<StockOutItem[]>([]);
+  const [destination, setDestination] = useState('');
+  const [note, setNote] = useState('');
 
-  const handleSave = () => {
-    console.log('Lưu phiếu xuất:', { ...stockOutData, items, destination, warehouse, note });
-    setAction(ActionType.DETAIL);
-    setIsEditing(false);
+  React.useEffect(() => {
+    if (id && action !== ActionType.CREATE) {
+      setLoading(true);
+      StockOutService.getById(id)
+        .then(data => {
+          if (data) {
+            setStockOutData(data);
+            setItems(data.items || []);
+            setDestination(data.destination || '');
+            setNote(data.description || '');
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching stock out detail:", err);
+          toast.error("Không thể tải thông tin phiếu xuất kho");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, action]);
+
+  const handleSave = async () => {
+    try {
+      if (action === ActionType.CREATE) {
+        const filteredItems = items
+          .filter(item => item.productCode)
+          .map(item => ({
+            productId: item.id, // In a real scenario, this should be Guid from SearchableProductSelect
+            productName: item.productName,
+            productCode: item.productCode,
+            quantity: item.quantity
+          }));
+
+        if (filteredItems.length === 0) {
+          toast.error("Vui lòng chọn ít nhất một sản phẩm hợp lệ");
+          return;
+        }
+
+        const payload = {
+          description: note,
+          items: filteredItems
+        };
+        
+        await StockOutService.createStockOut(payload);
+        toast.success("Tạo phiếu xuất kho thành công");
+        router.push("/warehouse/stockout");
+      }
+      setIsEditing(false);
+      setAction(ActionType.DETAIL);
+    } catch (error) {
+      toast.error("Lỗi khi lưu phiếu xuất kho");
+    }
   };
 
   const handleSubmit = () => {
-    console.log('Xác nhận phiếu xuất:', { ...stockOutData, items, destination, warehouse });
-    setAction(ActionType.DETAIL);
+    toast.info("Tính năng xác nhận xuất đang được phát triển");
   };
 
   const handleCancel = () => {
@@ -286,16 +353,10 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho xuất</label>
-                <Select value={warehouse} onValueChange={setWarehouse} disabled={!isEditing}>
-                  <SelectTrigger className="w-full h-9 text-sm border-gray-300 rounded">
-                    <SelectValue placeholder="Chọn kho" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kho-chinh">Kho chính</SelectItem>
-                    <SelectItem value="kho-phu">Kho phụ</SelectItem>
-                    <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
+                   <Warehouse className="w-3 h-3 text-brand-green" />
+                   {Cookies.get('warehouseId') ? 'Kho đang chọn' : 'Chưa chọn kho'}
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Nơi nhận</label>

@@ -23,6 +23,8 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 interface StockInDetailProps {
   id?: string;
@@ -147,6 +149,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 
 export default function StockInDetail({ id }: StockInDetailProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const actionParam = searchParams.get('action') as ActionType | null;
 
   const [action, setAction] = useState<ActionType>(
@@ -363,16 +366,10 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
-                <Select value={warehouse} onValueChange={setWarehouse} disabled={!isEditing}>
-                  <SelectTrigger className="w-full h-9 text-sm border-gray-300 rounded">
-                    <SelectValue placeholder="Chọn kho" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kho-chinh">Kho chính</SelectItem>
-                    <SelectItem value="kho-phu">Kho phụ</SelectItem>
-                    <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
+                   <Warehouse className="w-3 h-3 text-brand-green" />
+                   {Cookies.get('warehouseId') ? 'Kho đang chọn' : 'Chưa chọn kho'}
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Người giao hàng</label>

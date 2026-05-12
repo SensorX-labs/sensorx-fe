@@ -42,19 +42,19 @@ export interface StockAdjustmentCursorResult {
 
 export const StockAdjustmentService = {
     create: (data: any) => 
-        api.warehouse.post<any, string>("/stockAdjustment/create", data),
+        api.warehouse.post<any, string>("/stockOut/createStockOut", { ...data, isAdjustment: true }),
 
     approve: (id: string) => 
-        api.warehouse.post<any, string>("/stockAdjustment/approve", { id }),
+        api.warehouse.post<any, string>("/stockOut/approve", { id }), // Assuming there's an approve endpoint or similar logic
 
     reject: (id: string, reason: string) => 
-        api.warehouse.post<any, string>("/stockAdjustment/reject", { id, reason }),
+        api.warehouse.post<any, string>("/stockOut/reject", { id, reason }),
 
     getById: (id: string) => 
-        api.warehouse.get<any, StockAdjustmentDetail>(`/stockAdjustment/detail/${id}`),
+        api.warehouse.get<any, StockAdjustmentDetail>(`/stockOut/detail/${id}`),
 
     getList: (params: StockAdjustmentCursorQuery) => 
-        api.warehouse.get<any, StockAdjustmentCursorResult>("/stockAdjustment/list", { params }),
+        api.warehouse.get<any, StockAdjustmentCursorResult>("/stockOut/list", { params: { ...params, isAdjustmentOnly: true } }),
 };
 
 export default StockAdjustmentService;

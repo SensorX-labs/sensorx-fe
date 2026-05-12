@@ -1,56 +1,42 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: '/api',
-  headers: { 'X-User-FullName': 'TestUser' },
-});
+import api from '@/shared/configs/axios-config';
 
 export const getPickingNotes = async (params: Record<string, any>) => {
-  const { data } = await api.get('/pickingNote/getPickingNotes', { params });
-  return data.items || [];
+  return await api.warehouse.get('/pickingNote/getPickingNotes', { params });
 };
 
 export const getPickingNote = async (id: string) => {
-  const { data } = await api.get(`/pickingNote/getPickingNote/${id}`);
-  return data;
+  return await api.warehouse.get(`/pickingNote/getPickingNote/${id}`);
 };
 
 export const getStockIns = async (params: Record<string, any>) => {
-  const { data } = await api.get('/stockIn/list', { params });
-  return data.items || [];
+  return await api.warehouse.get('/stockIn/list', { params });
 };
 
 export const getStockInDetail = async (id: string) => {
-  const { data } = await api.get(`/stockIn/detail/${id}`);
-  return data;
+  return await api.warehouse.get(`/stockIn/${id}`);
 };
 
 export const getStockOuts = async (params: Record<string, any>) => {
-  const { data } = await api.get('/stockOut/list', { params });
-  return data.items || [];
+  return await api.warehouse.get('/stockOut/list', { params: { ...params, isAdjustmentOnly: false } });
 };
 
 export const getStockOutDetail = async (id: string) => {
-  const { data } = await api.get(`/stockOut/detail/${id}`);
-  return data;
+  return await api.warehouse.get(`/stockOut/detail/${id}`);
 };
 
 export const getStockAdjustments = async (params: Record<string, any>) => {
-  const { data } = await api.get('/stockAdjustment/list', { params });
-  return data.items || [];
+  return await api.warehouse.get('/stockOut/list', { params: { ...params, isAdjustmentOnly: true } });
 };
 
 export const getStockAdjustmentDetail = async (id: string) => {
-  const { data } = await api.get(`/stockAdjustment/detail/${id}`);
-  return data;
+  return await api.warehouse.get(`/stockOut/detail/${id}`);
 };
 
 export const getWarehouses = async () => {
-  const { data } = await api.get('/warehouse/list');
-  return data;
+  return await api.master.get('/warehouses');
 };
 
 export const getWarehouse = async (id: string) => {
-  const { data } = await api.get(`/warehouse/getWarehouse/${id}`);
-  return data;
+  return await api.master.get(`/warehouses/${id}`);
 };
+
