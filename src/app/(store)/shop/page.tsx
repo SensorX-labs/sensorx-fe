@@ -1,6 +1,6 @@
 'use client';
 
-import Catalog from "@/features/catalog/product/components/store/Shop/catalog";
+import Catalog from "@/features/store/shop/components/catalog";
 
 
 export default function ShopPage() {

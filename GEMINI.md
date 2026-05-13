@@ -20,10 +20,14 @@ SensorX is a B2B E-commerce platform. This memory tracks the major UI overhaul a
 - **TransactionsLayout**: Tabbed interface for RFQs, Quotations, and Orders. Uses search params (`?tab=...`) to persist state.
 
 ## Routing structure
-- `/transactions`: Main list view with tabs.
+- `/`: Home page (HomePage).
+- `/shop`: Catalog list (Catalog).
+- `/shop/[id]`: Product details (ProductDetail).
+- `/transactions`: Main list view with tabs (TransactionsLayout).
 - `/transactions/rfqs/[id]`: RFQ details.
 - `/transactions/quotations/[id]`: Quotation details.
 - `/transactions/orders/[id]`: Order details.
+- `/profile`: User profile and security (UserProfile).
 
 ## Transaction Status Mapping
 ### Quotations:
@@ -38,8 +42,10 @@ SensorX is a B2B E-commerce platform. This memory tracks the major UI overhaul a
 - `Dispatched`: Đã xuất kho
 - `Cancelled`: Đã hủy
 
-## Recent Updates (2026-05-11)
-- Redesigned `StoreHeader` and fixed JSX syntax errors.
-- Implemented `QuotationDetailView` and `OrderDetailView` in dual-column layout.
-- Standardized status filters in transaction tabs.
-- Added `OrderService` for mock data retrieval.
+## Recent Updates (2026-05-13)
+- Centralized Storefront architecture under `src/features/store/`.
+- Consolidated page components for Home, Shop, Product Detail, Transactions, and Profile.
+- Removed deprecated `bookmarks` and `cart` features.
+- Standardized imports using absolute aliases (`@/features/store/...`).
+- Updated all storefront routing to point to the new feature-based structure.
+- Fixed type errors in Auth and Transaction components during refactor.

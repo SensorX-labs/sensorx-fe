@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { QuotationDetailView } from '@/features/sales/quotation/components/store/quotation-detail-view';
+import { QuotationDetailView } from '@/features/store/transactions/quotations/components/quotation-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function QuotationDetailPage() {

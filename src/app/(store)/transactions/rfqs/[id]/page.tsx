@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { RfqDetailView } from '@/features/sales/requestforquotation/components/store/rfq-detail-view';
+import { RfqDetailView } from '@/features/store/transactions/rfqs/components/rfq-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function RfqDetailPage() {

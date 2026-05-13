@@ -11,6 +11,9 @@ export interface RfqFilter extends BaseQueryOffsetPagedList {
 }
 
 export const RFQServices = {
+    getMyRFQ: () =>
+        api.master.get<any, any>(`/rfq/my-rfq`),
+
     getListRFQ: (params: RfqFilter) =>
         api.master.get<any, OffsetPagedResult<RfqListItem>>(`/rfq`, { params }),
 
