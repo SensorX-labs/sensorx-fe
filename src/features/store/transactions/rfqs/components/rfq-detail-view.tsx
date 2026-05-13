@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
-import RFQServices from '@/features/sales/requestforquotation/services/rfq-services';
+import { StoreRFQService } from '../services/store-rfq.service';
 import { RfqDetail } from '@/features/sales/requestforquotation/models/rfq-detail-response';
 import CustomerService from '@/features/user/customer/services/customer-service';
 import { Customer } from '@/features/user/customer/models/customer';
@@ -31,7 +31,7 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
       try {
         setLoading(true);
         // 1. Lấy chi tiết RFQ
-        const response = await RFQServices.getDetailRFQ(rfqId);
+        const response = await StoreRFQService.getDetailRFQ(rfqId);
         if (response) {
           const rfqData = response;
           setRfq(rfqData);

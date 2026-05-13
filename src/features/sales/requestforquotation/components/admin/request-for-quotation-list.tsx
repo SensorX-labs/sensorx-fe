@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { TrendingUp, Eye, Check, X, FileText, ShoppingCart, UserCheck, AlertCircle, Bot, UserPlus, Info, Trash2, Search, Filter } from 'lucide-react';
+import { TrendingUp, Eye, Check, X, FileText, UserCheck, AlertCircle, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -9,17 +9,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/shared/components/shadcn-ui/dialog";
 import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
 import { toast } from 'sonner';
 import { useUser } from '@/shared/hooks/use-user';
-import { MOCK_RFQS } from '../../mocks/rfq-mocks';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
-import { RFQServices } from '../../services/rfq-services';
+import { AdminRFQService } from '../../services/admin-rfq.service';
 import { StaffService } from '@/features/user/staff/services/staff-service';
 import { RfqListItem } from '../../models/rfq-list-response';
 import { CanAccess } from '@/shared/components/common/can-access';
@@ -64,7 +62,7 @@ export default function RequestForQuotationList() {
   const fetchRfqs = async () => {
     setLoading(true);
     try {
-      const response = await RFQServices.getListRFQ({ pageNumber: 1, pageSize: 50 });
+      const response = await AdminRFQService.getListRFQ({ pageNumber: 1, pageSize: 50 });
       if (response) {
         setLeads(response.items);
       }
@@ -111,7 +109,7 @@ export default function RequestForQuotationList() {
     try {
       // Lấy thông tin Staff từ Account ID để có Staff ID thực tế
       const staffResponse = await StaffService.getStaffByAccountId(user.id);
-      
+
       console.log(">>> [RFQ-Assign] Staff Response:", staffResponse);
 
       // Vì interceptor bóc tách value ra ngoài, id có thể nằm trực tiếp ở staffResponse hoặc staffResponse.value
@@ -122,7 +120,7 @@ export default function RequestForQuotationList() {
         return;
       }
 
-      const response = await RFQServices.assignStaff(id, staffId);
+      const response = await AdminRFQService.assignStaff(id, staffId);
 
       if (response) {
         fetchRfqs(); // Tải lại danh sách
@@ -137,7 +135,7 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      const response = await RFQServices.rejectRFQ(selectedRfqId);
+      const response = await AdminRFQService.rejectRFQ(selectedRfqId);
 
       if (response) {
         fetchRfqs(); // Tải lại danh sách

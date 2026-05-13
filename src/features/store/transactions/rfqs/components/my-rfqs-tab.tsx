@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
-import RFQServices from '@/features/sales/requestforquotation/services/rfq-services';
+import { StoreRFQService } from '../services/store-rfq.service';
 import { Rfq } from '@/features/sales/requestforquotation/models/rqf';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -63,10 +63,10 @@ export function MyRfqsTab({
             try {
                 setLoading(true);
 
-                const test = await RFQServices.getMyRFQ();
+                const test = await StoreRFQService.getMyRFQ();
                 console.log("test my rfq", test);
 
-                const response: any = await RFQServices.getListRFQ({
+                const response: any = await StoreRFQService.getListRFQ({
                     customerId: customerId,
                 });
 

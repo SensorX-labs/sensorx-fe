@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
 import { RfqDetail } from '../../models/rfq-detail-response';
-import { RFQServices } from '../../services/rfq-services';
+import { AdminRFQService } from '../../services/admin-rfq.service';
 import { StaffService } from '@/features/user/staff/services/staff-service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
@@ -70,7 +70,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
     const loadPage = async () => {
       setLoading(true);
       try {
-        const response = await RFQServices.getDetailRFQ(id);
+        const response = await AdminRFQService.getDetailRFQ(id);
         if (response) {
           const data = response;
           setRfq(data);
@@ -109,10 +109,10 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         return;
       }
 
-      const response = await RFQServices.assignStaff(id, staffResponse.id);
+      const response = await AdminRFQService.assignStaff(id, staffResponse.id);
       if (response) {
         // Reload dữ liệu
-        const updatedResponse = await RFQServices.getDetailRFQ(id);
+        const updatedResponse = await AdminRFQService.getDetailRFQ(id);
         if (updatedResponse) {
           setRfq(updatedResponse);
           setAssignedStaff(staffResponse);

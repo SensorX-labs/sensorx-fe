@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Save, X, Loader2, MapPin } from 'lucide-react';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
-import AdministrativeService, { Province, Ward } from '@/shared/services/administrative-service';
+import AdministrativeService, { Province, Ward } from '@/shared/services/administrative.service';
 import { UpdateShippingInfo } from '@/features/user/customer/models/update-shipping-info';
 import { toast } from 'sonner';
 import {
