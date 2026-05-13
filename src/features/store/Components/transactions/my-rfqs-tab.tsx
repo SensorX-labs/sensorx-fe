@@ -3,8 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { StoreRFQService, StoreMyRFQItem } from '../services/store-rfq.service';
-import { RfqStatus } from '../constants/rfq-status';
+import { StoreRFQService, StoreMyRFQItem } from '../../services/store-rfq.service';
+import { RfqStatus } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
 
 const statusConfig: Record<string, { label: string; className: string }> = {

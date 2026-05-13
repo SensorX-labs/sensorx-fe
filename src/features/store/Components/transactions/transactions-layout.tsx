@@ -7,9 +7,9 @@ import { FileText, ShoppingBag, Package } from 'lucide-react';
 import { cn } from '@/shared/utils';
 
 // Các component con
-import { MyRfqsTab } from '../rfqs/components/my-rfqs-tab';
-import { MyQuotationsTab } from '../quotations/components/my-quotations-tab';
-import { OrdersTab } from '../orders/components/orders-tab';
+import { MyRfqsTab } from './my-rfqs-tab';
+import { MyQuotationsTab } from './my-quotations-tab';
+import { OrdersTab } from './orders-tab';
 
 import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
@@ -31,7 +31,7 @@ function TransactionsLayoutInner() {
 
   const { user } = useUser();
   const [customerData, setCustomerData] = useState<CustomerDetail>();
-  
+
   useEffect(() => {
     if (tabFromUrl && TABS.some(t => t.id === tabFromUrl) && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
@@ -58,7 +58,7 @@ function TransactionsLayoutInner() {
 
   return (
     <div className="min-h-screen bg-page-background">
-      <StoreBreadcrumb 
+      <StoreBreadcrumb
         items={[
           { label: 'Trang chủ', href: '/' },
           { label: 'Cửa hàng', href: '/shop' },
@@ -67,7 +67,7 @@ function TransactionsLayoutInner() {
         backLink="/shop"
         backLabel="Tiếp tục mua sắm"
       />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="tracking-title-xl mb-2">Giao dịch của tôi</h1>
@@ -84,8 +84,8 @@ function TransactionsLayoutInner() {
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
                   "flex items-center gap-2 pb-4 text-sm font-bold tracking-widest uppercase whitespace-nowrap transition-all border-b-2",
-                  isActive 
-                    ? "border-gray-900 text-gray-900" 
+                  isActive
+                    ? "border-gray-900 text-gray-900"
                     : "border-transparent text-gray-400 hover:text-gray-600"
                 )}
               >

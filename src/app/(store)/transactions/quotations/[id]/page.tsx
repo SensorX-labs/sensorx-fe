@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { QuotationDetailView } from '@/features/store/transactions/quotations/components/quotation-detail-view';
+import { QuotationDetailView } from '@/features/store/Components/transactions/quotations/components/quotation-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function QuotationDetailPage() {
@@ -11,7 +11,7 @@ export default function QuotationDetailPage() {
 
     return (
         <div className="min-h-screen bg-page-background">
-            <StoreBreadcrumb 
+            <StoreBreadcrumb
                 items={[
                     { label: 'Trang chủ', href: '/' },
                     { label: 'Cửa hàng', href: '/shop' },

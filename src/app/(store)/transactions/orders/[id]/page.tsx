@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { OrderDetailView } from '@/features/store/transactions/orders/components/order-detail-view';
+import { OrderDetailView } from '@/features/store/Components/transactions/order-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function OrderDetailPage() {
@@ -11,7 +11,7 @@ export default function OrderDetailPage() {
 
     return (
         <div className="min-h-screen bg-page-background">
-            <StoreBreadcrumb 
+            <StoreBreadcrumb
                 items={[
                     { label: 'Trang chủ', href: '/' },
                     { label: 'Cửa hàng', href: '/shop' },

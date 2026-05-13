@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { RfqDetailView } from '@/features/store/transactions/rfqs/components/rfq-detail-view';
+import { RfqDetailView } from '@/features/store/Components/transactions/rfq-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function RfqDetailPage() {
@@ -11,7 +11,7 @@ export default function RfqDetailPage() {
 
     return (
         <div className="min-h-screen bg-page-background">
-            <StoreBreadcrumb 
+            <StoreBreadcrumb
                 items={[
                     { label: 'Trang chủ', href: '/' },
                     { label: 'Cửa hàng', href: '/shop' },

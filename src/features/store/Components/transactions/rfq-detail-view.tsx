@@ -11,8 +11,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { StoreRFQService, RfqDetail, RfqDetailCustomer } from '../services/store-rfq.service';
-import { RfqStatus } from '../constants/rfq-status';
+import { StoreRFQService, RfqDetail, RfqDetailCustomer } from '../../services/store-rfq.service';
+import { RfqStatus } from '../../constants/rfq-status';
 
 export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: string }) {
   const [rfq, setRfq] = useState<RfqDetail | null>(null);
