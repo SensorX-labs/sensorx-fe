@@ -30,7 +30,7 @@ export function WarehouseSelector() {
       try {
         const data = await getWarehouses();
         setWarehouses(data);
-        
+
         if (isWarehouseStaff && userWarehouseId) {
           const found = data.find((w: Warehouse) => w.id === userWarehouseId);
           if (found) {
@@ -122,8 +122,8 @@ export function WarehouseSelector() {
               key={warehouse.id}
               className={cn(
                 "flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-xs transition-colors",
-                selectedWarehouse?.id === warehouse.id 
-                  ? "bg-emerald-50 text-emerald-700 font-bold" 
+                selectedWarehouse?.id === warehouse.id
+                  ? "bg-emerald-50 text-emerald-700 font-bold"
                   : "hover:bg-gray-100 text-gray-700"
               )}
               onClick={() => handleSelect(warehouse)}

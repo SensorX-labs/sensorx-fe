@@ -39,4 +39,4 @@ export const getWarehouses = async () => {
 export const getWarehouse = async (id: string) => {
   return await api.master.get(`/warehouses/${id}`);
 };
-
+
