@@ -1,9 +1,9 @@
 import api from "@/shared/configs/axios-config";
-import { OffsetPagedResult } from "@/shared/models/base-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { OffsetPagedResult } from "@/shared/models/offset-page.base";
+import { OffsetPagedQuery } from "@/shared/models/offset-page.base";
 import { StaffListItem } from "../models/staff-list-response";
 
-export type StaffFilter = BaseQueryOffsetPagedList;
+export type StaffFilter = OffsetPagedQuery;
 
 export const StaffService = {
   getPagedStaffs: (params: StaffFilter) =>

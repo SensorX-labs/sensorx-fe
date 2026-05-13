@@ -1,3 +1,9 @@
+export interface OffsetPagedQuery {
+  searchTerm?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 export interface OffsetPagedResult<T> {
   items: T[];
   pageNumber: number;
@@ -6,11 +12,4 @@ export interface OffsetPagedResult<T> {
   totalPages: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
-}
-
-export interface LoadMorePagedResult<T> {
-  items: T[];
-  lastValue?: string;
-  lastId?: string;
-  hasNext: boolean;
 }

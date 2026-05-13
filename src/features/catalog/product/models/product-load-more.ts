@@ -1,10 +1,9 @@
-import { BaseQueryLoadMore } from "@/shared/models/base-query-page-list";
-import { LoadMorePagedResult } from "@/shared/models/base-response";
+import { LoadMorePagedQuery, LoadMorePagedResult } from "@/shared/models/load-more.base";
 
 /**
  * Interface cho API LoadMore
  */
-export interface ProductLoadMoreForModalQuery extends BaseQueryLoadMore {
+export interface ProductLoadMoreForModalQuery extends LoadMorePagedQuery {
   categoryId?: string;
   sortByName?: boolean;
 }

@@ -1,18 +1,19 @@
 import api from "@/shared/configs/axios-config";
-import { OffsetPagedResult } from "@/shared/models/base-response";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
 import { RfqListItem } from "../models/rfq-list-response";
 import { RfqDetail } from "../models/rfq-detail-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
-import { RFQCoreService } from "@/shared/services/rfq-core.service";
 
-export interface RfqFilter extends BaseQueryOffsetPagedList {
+export interface RfqFilter extends OffsetPagedQuery {
     customerId?: string;
     staffId?: string;
 }
 
 export const AdminRFQService = {
-    // 1. Kế thừa Commands từ Core
-    ...RFQCoreService,
+    assignStaff: (rfqId: string, staffId: string) =>
+        api.master.post<any, boolean>(`/rfq/assign`, { rfqId, staffId }),
+
+    rejectRFQ: (rfqId: string) =>
+        api.master.post<any, boolean>(`/rfq/reject`, { RfqId: rfqId }),
 
     // 2. Queries đặc thù của Admin UI
     getListRFQ: (params: RfqFilter) =>

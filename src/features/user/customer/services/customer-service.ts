@@ -1,14 +1,14 @@
 import api from "@/shared/configs/axios-config";
 import { Customer } from "../models/customer";
-import { OffsetPagedResult } from "@/shared/models/base-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { OffsetPagedResult } from "@/shared/models/offset-page.base";
+import { OffsetPagedQuery } from "@/shared/models/offset-page.base";
 import { UpdateCustomerInfo } from "../models/update-customer-info";
 import { UpdateShippingInfo } from "../models/update-shipping-info";
 import { CustomerDetail } from "../models/customer-detail";
 
 
 export const CustomerService = {
-    getPagedCustomers: (params: BaseQueryOffsetPagedList) =>
+    getPagedCustomers: (params: OffsetPagedQuery) =>
         api.data.get<any, OffsetPagedResult<Customer>>('/customer/list', { params }),
 
     createCustomer: (customer: Customer) =>

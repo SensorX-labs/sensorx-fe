@@ -1,11 +1,10 @@
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
-import { OffsetPagedResult } from "@/shared/models/base-response";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
 import { ProductStatus } from "../enums/product-status";
 
 /**
  * Interface cho API get page list
  */
-export interface ProductPageListQuery extends BaseQueryOffsetPagedList {
+export interface ProductPageListQuery extends OffsetPagedQuery {
   categoryId?: string;
   status?: ProductStatus;
 }

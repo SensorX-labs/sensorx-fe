@@ -1,18 +1,34 @@
 import api from "@/shared/configs/axios-config";
-import { RFQCoreService } from "@/shared/services/rfq-core.service";
-import { RfqDetail } from "@/features/sales/requestforquotation/models/rfq-detail-response";
+import { LoadMorePagedResult } from "@/shared/models/load-more.base";
 
 export const StoreRFQService = {
-    // 1. Kế thừa Commands từ Core (Composition)
-    ...RFQCoreService,
+    createRFQ: (data: RfqCreateRequest) =>
+        api.master.post<any, string>(`/rfq`, data),
 
-    // 2. Queries đặc thù của Storefront UI
+    SendRFQ: (rfqId: string) =>
+        api.master.post(`/rfq/send`, { rfqId }),
+
     getMyRFQ: () =>
-        api.master.get<any, any>(`/rfq/my-rfq`),
-
-    getListRFQ: (params: any) =>
-        api.master.get<any, any>(`/rfq`, { params }),
-
-    getDetailRFQ: (id: string) =>
-        api.master.get<any, RfqDetail>(`/rfq/${id}`),
+        api.master.get<any, LoadMorePagedResult<StoreMyRFQItem>>(`/rfq/my-rfq`),
 };
+
+export interface RfqCreateItem {
+    productId: string;
+    quantity: number;
+}
+
+export interface RfqCreateRequest {
+    customerId: string;
+    items: RfqCreateItem[];
+}
+
+export interface GetRFQParams {
+
+}
+
+export interface StoreMyRFQItem {
+    id: string;
+    code: string;
+    status: string;
+    createdDate: string;
+}
