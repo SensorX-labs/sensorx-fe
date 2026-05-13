@@ -3,34 +3,33 @@
 import { useEffect, useState, useMemo } from 'react';
 import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
-import { StoreRFQService } from '../services/store-rfq.service';
-import { Rfq } from '@/features/sales/requestforquotation/models/rqf';
+import { StoreRFQService, StoreMyRFQItem } from '../services/store-rfq.service';
+import { RfqStatus } from '../constants/rfq-status';
+import { useRouter } from 'next/navigation';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-    [RfqStatus.DRAFT]: {
+    [RfqStatus.Draft]: {
         label: 'Bản thảo',
         className: 'bg-gray-50 text-gray-700 border-gray-200'
     },
-    [RfqStatus.PENDING]: {
+    [RfqStatus.Pending]: {
         label: 'Chờ tiếp nhận',
         className: 'bg-yellow-50 text-yellow-700 border-yellow-200'
     },
-    [RfqStatus.ACCEPTED]: {
-        label: 'Đã tiếp nhận',
+    [RfqStatus.Accepted]: {
+        label: 'Đang xử lý',
         className: 'bg-blue-50 text-blue-700 border-blue-200'
     },
-    [RfqStatus.REJECTED]: {
-        label: 'Đã từ chối',
-        className: 'bg-red-50 text-red-700 border-red-200'
-    },
-    [RfqStatus.CONVERTED]: {
+    [RfqStatus.Responded]: {
         label: 'Đã phản hồi',
+        className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20'
+    },
+    [RfqStatus.Converted]: {
+        label: 'Đã chuyển đổi',
         className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20'
     }
 };
 
-import { useRouter } from 'next/navigation';
 
 export function MyRfqsTab({
     customerId
@@ -38,49 +37,61 @@ export function MyRfqsTab({
     customerId?: string
 }) {
     const router = useRouter();
-    const [myRfqs, setMyRfqs] = useState<Rfq[]>([]);
+    const [myRfqs, setMyRfqs] = useState<StoreMyRFQItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeFilter, setActiveFilter] = useState<string>('ALL');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [pagination, setPagination] = useState({
+        lastId: undefined as string | undefined,
+        lastValue: undefined as string | undefined,
+        hasNext: false
+    });
+
 
     const filters = [
         { id: 'ALL', label: 'Tất cả' },
-        { id: RfqStatus.DRAFT, label: 'Bản thảo' },
-        { id: RfqStatus.PENDING, label: 'Chờ tiếp nhận' },
-        { id: RfqStatus.ACCEPTED, label: 'Đang xử lý' },
-        { id: RfqStatus.CONVERTED, label: 'Đã phản hồi' },
-        { id: RfqStatus.REJECTED, label: 'Đã hủy' },
+        { id: RfqStatus.Draft, label: 'Bản thảo' },
+        { id: RfqStatus.Pending, label: 'Chờ tiếp nhận' },
+        { id: RfqStatus.Accepted, label: 'Đang xử lý' },
+        { id: RfqStatus.Responded, label: 'Đã phản hồi' },
+        { id: RfqStatus.Converted, label: 'Đã chuyển đổi' },
     ];
 
-    const filteredRfqs = useMemo(() => {
-        if (activeFilter === 'ALL') return myRfqs;
-        return myRfqs.filter(r => r.status === activeFilter);
-    }, [myRfqs, activeFilter]);
-
-    useEffect(() => {
+    const fetchRfqs = async (isLoadMore = false) => {
         if (!customerId) return;
+        try {
+            setLoading(true);
+            const response = await StoreRFQService.getMyRFQ({
+                pageSize: 10,
+                status: activeFilter === 'ALL' ? undefined : (activeFilter as RfqStatus),
+                searchTerm: searchTerm || undefined,
+                lastId: isLoadMore ? pagination.lastId : undefined,
+                lastValue: isLoadMore ? pagination.lastValue : undefined,
+                isDescending: true
+            });
 
-        const fetchRfqs = async () => {
-            try {
-                setLoading(true);
-
-                const test = await StoreRFQService.getMyRFQ();
-                console.log("test my rfq", test);
-
-                const response: any = await StoreRFQService.getListRFQ({
-                    customerId: customerId,
-                });
-
-                if (response.items) {
+            if (response.items) {
+                if (isLoadMore) {
+                    setMyRfqs(prev => [...prev, ...response.items]);
+                } else {
                     setMyRfqs(response.items);
                 }
-            } catch (error) {
-                console.error("Error fetching RFQs:", error);
-            } finally {
-                setLoading(false);
+                setPagination({
+                    lastId: response.lastId,
+                    lastValue: response.lastValue,
+                    hasNext: response.hasNext
+                });
             }
-        };
+        } catch (error) {
+            console.error("Error fetching RFQs:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchRfqs();
-    }, [customerId]);
+    }, [customerId, activeFilter]);
 
     return (
         <div>
@@ -90,6 +101,11 @@ export function MyRfqsTab({
                     <input
                         type="text"
                         placeholder="Tìm theo mã yêu cầu..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') fetchRfqs();
+                        }}
                         className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
                     />
                 </div>
@@ -119,9 +135,9 @@ export function MyRfqsTab({
                         <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
                         <p className="meta-label uppercase">Đang tải dữ liệu...</p>
                     </div>
-                ) : filteredRfqs.length > 0 ? (
-                    filteredRfqs.map((request) => {
-                        const config = statusConfig[request.status] || statusConfig[RfqStatus.PENDING];
+                ) : myRfqs.length > 0 ? (
+                    myRfqs.map((request) => {
+                        const config = statusConfig[request.status];
 
                         return (
                             <div
@@ -170,11 +186,17 @@ export function MyRfqsTab({
                 )}
             </div>
 
-            <div className="mt-12 flex justify-center">
-                <button className="px-10 py-3 border border-gray-900 text-[10px] font-bold uppercase btn-tracking hover:bg-gray-900 hover:text-white transition-all duration-300">
-                    Tải thêm lịch sử yêu cầu
-                </button>
-            </div>
+            {pagination.hasNext && (
+                <div className="mt-12 flex justify-center">
+                    <button
+                        onClick={() => fetchRfqs(true)}
+                        disabled={loading}
+                        className="px-10 py-3 border border-gray-900 text-[10px] font-bold uppercase btn-tracking hover:bg-gray-900 hover:text-white transition-all duration-300 disabled:opacity-50"
+                    >
+                        {loading ? 'Đang tải...' : 'Tải thêm lịch sử yêu cầu'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

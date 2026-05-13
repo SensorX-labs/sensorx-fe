@@ -4,25 +4,19 @@ import React, { useEffect, useState } from 'react';
 import {
   FileText,
   MapPin,
-  ChevronLeft,
-  Download,
   Phone,
   Mail,
   User,
   Package,
   Loader2,
-  Clock
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { RfqStatus } from '@/features/sales/requestforquotation/constants/rfq-status';
-import { StoreRFQService } from '../services/store-rfq.service';
-import { RfqDetail } from '@/features/sales/requestforquotation/models/rfq-detail-response';
-import CustomerService from '@/features/user/customer/services/customer-service';
-import { Customer } from '@/features/user/customer/models/customer';
+import { StoreRFQService, RfqDetail, RfqDetailCustomer } from '../services/store-rfq.service';
+import { RfqStatus } from '../constants/rfq-status';
 
 export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: string }) {
   const [rfq, setRfq] = useState<RfqDetail | null>(null);
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] = useState<RfqDetailCustomer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,18 +24,11 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
       if (!rfqId) return;
       try {
         setLoading(true);
-        // 1. Lấy chi tiết RFQ
-        const response = await StoreRFQService.getDetailRFQ(rfqId);
-        if (response) {
-          const rfqData = response;
+        const rfqData = await StoreRFQService.getMyRFQDetail(rfqId);
+        if (rfqData) {
           setRfq(rfqData);
-
-          // 2. Lấy thông tin khách hàng theo customerId từ RFQ
-          if (rfqData.customerId) {
-            const customerResponse = await CustomerService.getCustomerById(rfqData.customerId);
-            if (customerResponse) {
-              setCustomer(customerResponse);
-            }
+          if (rfqData.customer) {
+            setCustomer(rfqData.customer);
           }
         }
       } catch (error) {
@@ -55,11 +42,11 @@ export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: s
   }, [rfqId]);
 
   const statusConfig: any = {
-    [RfqStatus.PENDING]: { label: 'Đang chờ xử lý', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-    [RfqStatus.ACCEPTED]: { label: 'Đã tiếp nhận', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-    [RfqStatus.CONVERTED]: { label: 'Đã báo giá', className: 'bg-green-50 text-green-700 border-green-200' },
-    [RfqStatus.REJECTED]: { label: 'Từ chối', className: 'bg-red-50 text-red-700 border-red-200' },
-    [RfqStatus.DRAFT]: { label: 'Bản nháp', className: 'bg-gray-50 text-gray-700 border-gray-200' },
+    [RfqStatus.Draft]: { label: 'Bản nháp', className: 'bg-gray-50 text-gray-700 border-gray-200' },
+    [RfqStatus.Pending]: { label: 'Đang chờ xử lý', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+    [RfqStatus.Accepted]: { label: 'Đã tiếp nhận', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+    [RfqStatus.Responded]: { label: 'Đã phản hồi', className: 'bg-green-50 text-green-700 border-green-200' },
+    [RfqStatus.Converted]: { label: 'Đã chuyển đổi', className: 'bg-green-50 text-green-700 border-green-200' },
   };
 
   if (loading) {
