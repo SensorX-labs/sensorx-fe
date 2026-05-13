@@ -1,5 +1,5 @@
-import { TransactionsLayout } from '@/features/store/Components/transactions/transactions-layout';
+import Transactions from '@/features/store/Components/transactions';
 
 export default function TransactionsPage() {
-    return <TransactionsLayout />;
+    return <Transactions />;
 }

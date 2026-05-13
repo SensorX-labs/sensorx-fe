@@ -10,7 +10,7 @@ import { ProductLoadMoreForModal } from '@/features/catalog/product/models/produ
 
 type SortOption = 'newest' | 'name-asc' | 'name-desc';
 
-export const Catalog: React.FC = () => {
+export default function Shop() {
     const PAGE_SIZE = 9;
 
     const [filters, setFilters] = useState<FilterState>({
@@ -198,5 +198,3 @@ export const Catalog: React.FC = () => {
         </div>
     );
 };
-
-export default Catalog;

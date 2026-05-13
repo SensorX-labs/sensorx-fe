@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { OrderDetailView } from '@/features/store/Components/transactions/order-detail-view';
+import { OrderDetailView } from '@/features/store/Components/transactions/detail-order';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
 export default function OrderDetailPage() {
