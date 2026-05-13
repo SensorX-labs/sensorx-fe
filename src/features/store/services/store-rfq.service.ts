@@ -9,8 +9,8 @@ export const StoreRFQService = {
     addProductRFQ: (rfqId: string, data: RfqItem[]) =>
         api.master.put<{ items: RfqItem[] }, string>(`/rfq/add-product/${rfqId}`, { items: data }),
 
-    sendRFQ: (rfqId: string) =>
-        api.master.post(`/rfq/send`, { rfqId }),
+    sendRFQ: (id: string) =>
+        api.master.post(`/rfq/send`, { id }),
 
     getMyRFQ: (params: GetRFQParams) =>
         api.master.get<GetRFQParams, LoadMorePagedResult<StoreMyRFQItem>>(`/rfq/my-rfq`, { params }),
