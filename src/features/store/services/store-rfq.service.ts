@@ -3,27 +3,25 @@ import { LoadMorePagedQuery, LoadMorePagedResult } from "@/shared/models/load-mo
 import { RfqStatus } from "../constants/rfq-status";
 
 export const StoreRFQService = {
-    createRFQ: (data: RfqCreateRequest) =>
-        api.master.post(`/rfq`, data),
+    createRFQ: (data: RfqItem[]) =>
+        api.master.post<{ items: RfqItem[] }, string>(`/rfq`, { items: data }),
 
-    SendRFQ: (rfqId: string) =>
+    addProductRFQ: (rfqId: string, data: RfqItem[]) =>
+        api.master.put<{ items: RfqItem[] }, string>(`/rfq/add-product/${rfqId}`, { items: data }),
+
+    sendRFQ: (rfqId: string) =>
         api.master.post(`/rfq/send`, { rfqId }),
 
     getMyRFQ: (params: GetRFQParams) =>
         api.master.get<GetRFQParams, LoadMorePagedResult<StoreMyRFQItem>>(`/rfq/my-rfq`, { params }),
 
     getMyRFQDetail: (id: string) =>
-        api.master.get<any, RfqDetail>(`/rfq/my-rfq/${id}`),
+        api.master.get<any, MyRfqDetail>(`/rfq/my-rfq/${id}`),
 };
 
-export interface RfqCreateItem {
+export interface RfqItem {
     productId: string;
     quantity: number;
-}
-
-export interface RfqCreateRequest {
-    customerId: string;
-    items: RfqCreateItem[];
 }
 
 export interface GetRFQParams extends LoadMorePagedQuery {
@@ -37,7 +35,7 @@ export interface StoreMyRFQItem {
     createdAt: string;
 }
 
-export interface RfqDetail {
+export interface MyRfqDetail {
     id: string;
     code: string;
     status: string;
@@ -48,11 +46,11 @@ export interface RfqDetail {
     email?: string;
     address?: string;
     companyName?: string;
-    customer?: RfqDetailCustomer;
-    items: RfqDetailItem[];
+    customer?: MyRfqDetailCustomer;
+    items: MyRfqDetailItem[];
 }
 
-export interface RfqDetailCustomer {
+export interface MyRfqDetailCustomer {
     id: string;
     name: string;
     email: string;
@@ -60,7 +58,7 @@ export interface RfqDetailCustomer {
     address?: string;
 }
 
-export interface RfqDetailItem {
+export interface MyRfqDetailItem {
     productId: string;
     productName: string;
     productCode: string;

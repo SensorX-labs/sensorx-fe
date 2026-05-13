@@ -11,12 +11,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { StoreRFQService, RfqDetail, RfqDetailCustomer } from '../../services/store-rfq.service';
+import { StoreRFQService, MyRfqDetail, MyRfqDetailCustomer } from '../../services/store-rfq.service';
 import { RfqStatus } from '../../constants/rfq-status';
 
 export function RfqDetailView({ onBack, rfqId }: { onBack: () => void, rfqId?: string }) {
-  const [rfq, setRfq] = useState<RfqDetail | null>(null);
-  const [customer, setCustomer] = useState<RfqDetailCustomer | null>(null);
+  const [rfq, setRfq] = useState<MyRfqDetail | null>(null);
+  const [customer, setCustomer] = useState<MyRfqDetailCustomer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -3,21 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { Bookmark, Share2, Truck, Shield, RotateCcw, Phone, Mail, ShoppingBag } from 'lucide-react';
+import { Share2, Truck, Shield, RotateCcw, Phone, Mail, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductDetail as ProductDetailModel } from '@/features/catalog/product/models';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 import { NotionEditor } from '@/shared/components/notion-editor';
+import { StoreRFQService } from '@/features/store/services/store-rfq.service';
 
 export function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState<ProductDetailModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [isSubmittingRFQ, setIsSubmittingRFQ] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,11 +28,6 @@ export function ProductDetail() {
         const response = await ProductService.getDetail(id as string);
         if (response) {
           setProduct(response);
-          const saved = localStorage.getItem('bookmarkedProducts');
-          if (saved) {
-            const favorites = JSON.parse(saved);
-            setIsFavorite(favorites.includes(id as string));
-          }
         }
       } catch (error) {
         console.error(">>> Lỗi khi lấy chi tiết sản phẩm:", error);
@@ -43,21 +39,29 @@ export function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const handleAddToFavorite = () => {
-    if (!id) return;
-    const saved = localStorage.getItem('bookmarkedProducts');
-    let favorites = saved ? JSON.parse(saved) : [];
+  const handleCreateRFQ = async () => {
+    if (!product || !id) return;
+    try {
+      setIsSubmittingRFQ(true);
+      const activeRFQId = localStorage.getItem('activeRFQId');
 
-    if (isFavorite) {
-      favorites = favorites.filter((favId: string) => favId !== id);
-      toast.success("Đã gỡ khỏi danh sách yêu thích");
-    } else {
-      favorites.push(id);
-      toast.success("Đã thêm vào danh sách yêu thích");
+      if (activeRFQId) {
+        await StoreRFQService.addProductRFQ(activeRFQId, [
+          { productId: id as string, quantity: selectedQuantity }
+        ]);
+      } else {
+        const rfqId = await StoreRFQService.createRFQ([
+          { productId: id as string, quantity: selectedQuantity }
+        ]);
+        if (rfqId) {
+          localStorage.setItem('activeRFQId', rfqId);
+        }
+      }
+    } catch (error) {
+      console.error(">>> Lỗi khi xử lý RFQ:", error);
+    } finally {
+      setIsSubmittingRFQ(false);
     }
-
-    localStorage.setItem('bookmarkedProducts', JSON.stringify(favorites));
-    setIsFavorite(!isFavorite);
   };
 
 
@@ -94,7 +98,6 @@ export function ProductDetail() {
         items={[
           { label: 'Trang chủ', href: '/' },
           { label: 'Cửa hàng', href: '/shop' },
-          { label: product.categoryName || 'Sản phẩm', href: product.categoryId ? `/shop?category=${product.categoryId}` : '/shop' },
           { label: product.name }
         ]}
         backLink="/shop"
@@ -202,22 +205,14 @@ export function ProductDetail() {
             {/* Các nút hành động */}
             <div className="flex gap-3 md:gap-4 mb-8">
               <button
-                className="flex-1 h-12 bg-brand-green text-white hover:bg-gray-900 transition-all duration-300 rounded shadow-md font-bold uppercase tracking-[0.1em] text-xs md:text-sm flex items-center justify-center gap-2"
+                onClick={handleCreateRFQ}
+                disabled={isSubmittingRFQ}
+                className="flex-1 h-12 bg-brand-green text-white hover:bg-gray-900 transition-all duration-300 rounded shadow-md font-bold uppercase tracking-[0.1em] text-xs md:text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <ShoppingBag size={18} />
-                Yêu cầu báo giá
+                {isSubmittingRFQ ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
+                Thêm yêu cầu báo giá
               </button>
 
-              <button
-                onClick={handleAddToFavorite}
-                className={`w-12 h-12 flex items-center justify-center border transition-all duration-300 rounded shadow-sm ${isFavorite
-                  ? 'border-red-200 text-red-500 bg-red-50'
-                  : 'border-gray-200 text-gray-400 bg-white hover:border-brand-green hover:text-brand-green'
-                  }`}
-                title="Yêu thích"
-              >
-                <Bookmark size={20} className={isFavorite ? 'fill-current' : ''} />
-              </button>
               <button className="w-12 h-12 flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:border-gray-900 hover:text-gray-900 transition-all duration-300 rounded shadow-sm" title="Chia sẻ">
                 <Share2 size={18} />
               </button>
@@ -305,7 +300,7 @@ export function ProductDetail() {
                   />
                 ) : (
                   <div className="text-center py-20 flex flex-col items-center justify-center bg-gray-50/50 rounded-lg border border-gray-100">
-                    <Bookmark className="text-gray-300 mb-4" size={32} strokeWidth={1.5} />
+                    <FileText className="text-gray-300 mb-4" size={32} strokeWidth={1.5} />
                     <p className="text-gray-500 font-medium text-sm">Đang cập nhật mô tả chi tiết cho sản phẩm này...</p>
                   </div>
                 )}

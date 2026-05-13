@@ -1,19 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Bookmark, ShoppingBag, ArrowRight } from 'lucide-react';
-import { useUser } from '@/shared/hooks/use-user';
-import { toast } from 'sonner';
+import { ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
     id: string;
     name: string;
     image: string;
-    isFavorite?: boolean;
-    onAddToCart?: () => void;
-    onAddToFavorite?: () => void;
     product?: any;
 }
 
@@ -21,37 +16,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     id,
     name,
     image,
-    isFavorite = false,
-    onAddToCart,
-    onAddToFavorite,
     product,
 }) => {
     const router = useRouter();
-    const [isHovered, setIsHovered] = useState(false);
-    const [isFav, setIsFav] = useState(isFavorite);
-
-    useEffect(() => {
-        setIsFav(isFavorite);
-    }, [isFavorite]);
-
-    const handleAddToFavorite = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
-        setIsFav(!isFav);
-        onAddToFavorite?.();
-
-        toast.success(
-            !isFav ? "Đã thêm vào danh sách yêu thích" : "Đã gỡ khỏi danh sách yêu thích",
-            { 
-                duration: 2000,
-                style: {
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em'
-                }
-            }
-        );
-    };
 
     const handleCardClick = () => {
         router.push(`/shop/${id}`);
@@ -59,15 +26,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 
     return (
-        <div
-            className="group relative flex flex-col bg-white h-full transition-all duration-500 hover:-translate-y-1 border border-filter-border rounded overflow-hidden hover:shadow-xl hover:shadow-gray-200/40"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
+        <div className="group relative flex flex-col bg-white h-full transition-all duration-500 cursor-pointer hover:-translate-y-1 border border-filter-border rounded overflow-hidden hover:shadow-xl hover:shadow-gray-200/40">
             {/* Image Container */}
             <div
                 onClick={handleCardClick}
-                className="relative aspect-[4/5] overflow-hidden bg-product-card-bg cursor-pointer"
+                className="relative aspect-[4/5] overflow-hidden bg-product-card-bg"
             >
                 {/* Overlay subtle gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
@@ -80,20 +43,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
-                {/* Favorite Button */}
-                <button
-                    onClick={handleAddToFavorite}
-                    className={`absolute top-4 right-4 p-2.5 rounded bg-white shadow-sm transition-all duration-500 hover:scale-110 active:scale-95 z-20 border border-filter-border ${
-                        isHovered || isFav ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-                    }`}
-                    aria-label="Add to favorites"
-                >
-                    <Bookmark
-                        size={16}
-                        className={`transition-all duration-300 ${isFav ? 'fill-red-500 text-red-500' : 'text-gray-300 hover:text-gray-900'}`}
-                    />
-                </button>
-
             </div>
 
             {/* Content Section */}
@@ -104,7 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     </p>
                     <h3
                         onClick={handleCardClick}
-                        className="text-[13px] font-black text-gray-900 line-clamp-2 cursor-pointer hover:text-brand-green transition-colors uppercase tracking-tight leading-tight"
+                        className="text-[13px] font-black text-gray-900 line-clamp-2 hover:text-brand-green transition-colors uppercase tracking-tight leading-tight"
                     >
                         {name}
                     </h3>

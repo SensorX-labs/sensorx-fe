@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { StoreRFQService, StoreMyRFQItem } from '../../services/store-rfq.service';
@@ -57,7 +57,7 @@ export function MyRfqsTab({
         { id: RfqStatus.Converted, label: 'Đã chuyển đổi' },
     ];
 
-    const fetchRfqs = async (isLoadMore = false) => {
+    const fetchRfqs = useCallback(async (isLoadMore = false) => {
         if (!customerId) return;
         try {
             setLoading(true);
@@ -87,11 +87,15 @@ export function MyRfqsTab({
         } finally {
             setLoading(false);
         }
-    };
+    }, [customerId, activeFilter, searchTerm, pagination.lastId, pagination.lastValue]);
 
     useEffect(() => {
-        fetchRfqs();
-    }, [customerId, activeFilter]);
+        const timer = setTimeout(() => {
+            fetchRfqs();
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm, activeFilter, customerId]);
 
     return (
         <div>
@@ -103,9 +107,6 @@ export function MyRfqsTab({
                         placeholder="Tìm theo mã yêu cầu..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') fetchRfqs();
-                        }}
                         className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
                     />
                 </div>

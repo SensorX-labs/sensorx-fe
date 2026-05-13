@@ -24,7 +24,6 @@ export default function Shop() {
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
-    const [favorites, setFavorites] = useState<string[]>([]);
 
     // Pagination state
     const [lastId, setLastId] = useState<string | undefined>();
@@ -73,24 +72,6 @@ export default function Shop() {
         fetchProducts(false);
     }, [filters, sortBy]);
 
-    // Load favorites
-    useEffect(() => {
-        const saved = localStorage.getItem('bookmarkedProducts');
-        if (saved) setFavorites(JSON.parse(saved));
-    }, []);
-
-    // Save favorites
-    useEffect(() => {
-        localStorage.setItem('bookmarkedProducts', JSON.stringify(favorites));
-    }, [favorites]);
-
-    const handleAddToFavorite = (productId: string) => {
-        setFavorites((prev) =>
-            prev.includes(productId)
-                ? prev.filter((id) => id !== productId)
-                : [...prev, productId]
-        );
-    };
 
     return (
         <div className="min-h-screen bg-page-background">
@@ -159,8 +140,6 @@ export default function Shop() {
                                             id={product.id}
                                             name={product.name}
                                             image={product.images?.[0] || '/assets/images/products/default.png'}
-                                            isFavorite={favorites.includes(product.id)}
-                                            onAddToFavorite={() => handleAddToFavorite(product.id)}
                                             product={product as any}
                                         />
                                     ))}
