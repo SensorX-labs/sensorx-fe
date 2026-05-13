@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Shield, ShieldAlert, Loader2, Users, Lock, LockOpen, UserPlus, Mail, Key } from 'lucide-react';
+import { Shield, ShieldAlert, Loader2, Users, Lock, LockOpen, UserPlus, Mail, Key, Warehouse as WarehouseIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { RolesService } from '@/features/system/auth/services/roles-service';
 import { UserResponse } from '@/features/system/auth/models/user-response';
 import { RoleItem } from '@/features/system/auth/services/roles-service';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehouse-model';
 import {
   Dialog,
   DialogContent,
@@ -54,10 +56,15 @@ function extractArray<T>(raw: unknown): T[] {
 export default function UserList() {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [warehouses, setWarehouses] = useState<WarehouseModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', role: 1 });
+  const [form, setForm] = useState({ email: '', password: '', role: 1, warehouseId: '' });
+
+  // Dialog chọn kho khi gán quyền
+  const [assignRoleDialog, setAssignRoleDialog] = useState<{ isOpen: boolean; userId: string; targetRole: number } | null>(null);
+  const [selectedAssignWarehouseId, setSelectedAssignWarehouseId] = useState<string>('');
 
   const fetchUsers = async () => {
     try {
@@ -77,10 +84,19 @@ export default function UserList() {
     }
   };
 
+  const fetchWarehousesList = async () => {
+    try {
+      const res = await getWarehouses();
+      setWarehouses(res);
+    } catch {
+      // silently fail
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([fetchUsers(), fetchRoles()]);
+      await Promise.all([fetchUsers(), fetchRoles(), fetchWarehousesList()]);
       setLoading(false);
     };
     init();
@@ -97,12 +113,23 @@ export default function UserList() {
       toast.error('Vui lòng nhập đầy đủ thông tin');
       return;
     }
+    const isWarehouseRole = form.role === 1 || roles.find(r => r.id === form.role)?.name === 'WarehouseStaff';
+    if (isWarehouseRole && !form.warehouseId) {
+      toast.error('Vui lòng chọn kho bãi cho nhân viên kho');
+      return;
+    }
+
     setCreating(true);
     try {
-      await authService.createStaffAccount(form);
+      await authService.createStaffAccount({
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        warehouseId: isWarehouseRole ? form.warehouseId : undefined
+      });
       toast.success('Tạo tài khoản thành công');
       setDialogOpen(false);
-      setForm({ email: '', password: '', role: 1 });
+      setForm({ email: '', password: '', role: 1, warehouseId: '' });
       await fetchUsers();
     } catch {
       toast.error('Tạo tài khoản thất bại');
@@ -111,12 +138,23 @@ export default function UserList() {
     }
   };
 
-  const handleRoleChange = async (userId: string, roleValue: string) => {
+  const onRoleSelectChange = (userId: string, roleValue: string) => {
     const roleNum = parseInt(roleValue, 10);
+    const isWarehouseRole = roleNum === 1 || roles.find(r => r.id === roleNum)?.name === 'WarehouseStaff';
+    if (isWarehouseRole) {
+      setAssignRoleDialog({ isOpen: true, userId, targetRole: roleNum });
+      setSelectedAssignWarehouseId('');
+    } else {
+      handleRoleChange(userId, roleNum);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, roleNum: number, warehouseId?: string) => {
     try {
-      await rolesService.assignRole(userId, roleNum);
+      await rolesService.assignRole(userId, roleNum, warehouseId);
       toast.success('Cập nhật vai trò thành công');
       await fetchUsers();
+      setAssignRoleDialog(null);
     } catch {
       toast.error('Cập nhật vai trò thất bại');
     }
@@ -193,7 +231,7 @@ export default function UserList() {
                     ) : (
                       <Select
                         value={getRoleNumber(user.role)}
-                        onValueChange={(val) => handleRoleChange(user.id, val)}
+                        onValueChange={(val) => onRoleSelectChange(user.id, val)}
                       >
                         <SelectTrigger className="h-8 w-40 text-xs border-gray-200">
                           <SelectValue placeholder="Chọn vai trò" />
@@ -341,6 +379,40 @@ export default function UserList() {
               </div>
             </div>
 
+            {/* Field chọn kho nếu vai trò là WarehouseStaff */}
+            {(form.role === 1 || roles.find(r => r.id === form.role)?.name === 'WarehouseStaff') && (
+              <div className="grid grid-cols-4 items-center gap-4 pt-2">
+                <Label htmlFor="warehouse" className="col-span-1 flex items-center gap-2 text-sm font-semibold text-[#2B3674] whitespace-nowrap">
+                  <div className="p-1 bg-emerald-50 rounded text-emerald-600 shrink-0">
+                    <WarehouseIcon className="w-3.5 h-3.5" />
+                  </div>
+                  Kho bãi
+                </Label>
+                <div className="col-span-3 ml-4">
+                  <Select
+                    value={form.warehouseId}
+                    onValueChange={(value) => setForm({ ...form, warehouseId: value })}
+                  >
+                    <SelectTrigger className="border-gray-200 focus:ring-[#4318FF] transition-all h-9">
+                      <SelectValue placeholder="Chọn kho được phân công" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {warehouses.map((w) => (
+                        <SelectItem key={w.id} value={w.id!}>
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                      {warehouses.length === 0 && (
+                        <SelectItem value="none" disabled>
+                          Không có dữ liệu kho
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
               <Button
                 type="button"
@@ -362,6 +434,74 @@ export default function UserList() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog chọn kho khi gán quyền nhân viên kho */}
+      <Dialog open={!!assignRoleDialog?.isOpen} onOpenChange={(open) => !open && setAssignRoleDialog(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#2B3674]">Chỉ định kho trực thuộc</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-3">
+            <p className="text-xs text-gray-500">
+              Vai trò <strong>Nhân viên kho</strong> yêu cầu bắt buộc phải chỉ định một kho cụ thể để quản lý.
+            </p>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-sm font-semibold text-[#2B3674]">
+                <div className="p-1 bg-emerald-50 rounded text-emerald-600 shrink-0">
+                  <WarehouseIcon className="w-3.5 h-3.5" />
+                </div>
+                Chọn kho bãi
+              </Label>
+              <Select
+                value={selectedAssignWarehouseId}
+                onValueChange={setSelectedAssignWarehouseId}
+              >
+                <SelectTrigger className="border-gray-200 focus:ring-[#4318FF] transition-all h-9">
+                  <SelectValue placeholder="Chọn kho được phân công" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouses.map((w) => (
+                    <SelectItem key={w.id} value={w.id!}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                  {warehouses.length === 0 && (
+                    <SelectItem value="none" disabled>
+                      Không có dữ liệu kho
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setAssignRoleDialog(null)}
+              className="font-medium text-gray-500 hover:text-gray-700"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!selectedAssignWarehouseId) {
+                  toast.error('Vui lòng chọn kho bãi');
+                  return;
+                }
+                if (assignRoleDialog) {
+                  handleRoleChange(assignRoleDialog.userId, assignRoleDialog.targetRole, selectedAssignWarehouseId);
+                }
+              }}
+              className="bg-[#4318FF] hover:bg-[#3311CC] text-white px-6 font-bold shadow-md shadow-[#4318FF]/20"
+            >
+              Xác nhận gán
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

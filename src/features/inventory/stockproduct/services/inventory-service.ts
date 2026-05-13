@@ -12,6 +12,7 @@ export interface InventoryItemListItem {
 }
 
 export interface InventoryCursorQuery {
+    warehouseId?: string;
     searchTerm?: string;
     pageSize?: number;
     isPrevious?: boolean;
@@ -32,8 +33,16 @@ export interface InventoryCursorResult {
 }
 
 export const InventoryService = {
-    getInventoryList: (params: InventoryCursorQuery) => 
-        api.warehouse.get<any, InventoryCursorResult>("/inventory/list", { params }),
+    getInventoryList: (params: InventoryCursorQuery) => {
+        const { warehouseId, ...restParams } = params;
+        const config: any = { params: restParams };
+        if (warehouseId && warehouseId !== 'all') {
+            config.headers = { "X-Warehouse-Id": warehouseId };
+        }
+        return api.warehouse.get<any, InventoryCursorResult>("/inventory/list", config);
+    },
+    getConsolidatedInventory: () => 
+        api.master.get<any, { items: InventoryItemListItem[]; totalCount: number }>("/warehouses/inventory/total"),
 };
 
 export default InventoryService;

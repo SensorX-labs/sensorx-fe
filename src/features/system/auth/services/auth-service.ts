@@ -34,7 +34,7 @@ export class AuthService {
         return api.auth.get("/users");
     }
 
-    async createStaffAccount(data: { email: string; password: string, role: number }): Promise<any> {
+    async createStaffAccount(data: { email: string; password: string, role: number, warehouseId?: string }): Promise<any> {
         return api.auth.post("/create", data);
     }
 

@@ -8,6 +8,9 @@ import { ProductService } from '@/features/catalog/product/services/product-serv
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useUser } from '@/shared/hooks/use-user';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehouse-model';
 
 interface StockItem extends InventoryItemListItem {
   productName?: string;
@@ -15,6 +18,9 @@ interface StockItem extends InventoryItemListItem {
 }
 
 export default function WarehouseStockPage() {
+  const { user } = useUser();
+  const [warehouses, setWarehouses] = useState<WarehouseModel[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
@@ -27,27 +33,71 @@ export default function WarehouseStockPage() {
     lastId: undefined as string | undefined,
   });
 
+  const isWarehouseStaff = user?.role === 'WarehouseStaff';
+
+  React.useEffect(() => {
+    const loadWarehouses = async () => {
+      try {
+        const res = await getWarehouses();
+        setWarehouses(res);
+      } catch {
+        // silently fail
+      }
+    };
+    loadWarehouses();
+  }, []);
+
+  React.useEffect(() => {
+    if (isWarehouseStaff && user?.warehouseId) {
+      setActiveTab(user.warehouseId);
+    }
+  }, [isWarehouseStaff, user?.warehouseId]);
+
   const fetchStock = React.useCallback(async (isPrevious: boolean = false) => {
     setLoading(true);
     try {
-      const result = await InventoryService.getInventoryList({
-        searchTerm,
-        pageSize: 10,
-        isPrevious,
-        firstCreatedAt: pagination.firstCreatedAt,
-        firstId: pagination.firstId,
-        lastCreatedAt: pagination.lastCreatedAt,
-        lastId: pagination.lastId,
-      });
+      let itemsRes: InventoryItemListItem[] = [];
+      let hasNextFlag = false;
+      let hasPrevFlag = false;
+      let firstCreatedAtStr: string | undefined;
+      let firstIdStr: string | undefined;
+      let lastCreatedAtStr: string | undefined;
+      let lastIdStr: string | undefined;
 
-      // Fetch product details for each item to get names/codes
-      const productIds = Array.from(new Set(result.items.map(i => i.productId)));
-      
-      // For simplicity in this demo, we'll fetch them individually or use a bulk API if available
-      // Here we assume ProductService.getProducts can filter by IDs or we just fetch them.
-      // But since we don't have a bulk getByIds API shown yet, we'll just map what we can.
-      
-      const enrichedItems: StockItem[] = await Promise.all(result.items.map(async (item) => {
+      if (activeTab === 'all') {
+        const res = await InventoryService.getConsolidatedInventory();
+        const rawItems = res?.items || res || [];
+        itemsRes = Array.isArray(rawItems) ? rawItems : [];
+      } else {
+        const result = await InventoryService.getInventoryList({
+          warehouseId: activeTab,
+          searchTerm,
+          pageSize: 10,
+          isPrevious,
+          firstCreatedAt: pagination.firstCreatedAt,
+          firstId: pagination.firstId,
+          lastCreatedAt: pagination.lastCreatedAt,
+          lastId: pagination.lastId,
+        });
+        itemsRes = result.items || [];
+        hasNextFlag = result.hasNext;
+        hasPrevFlag = result.hasPrevious;
+        firstCreatedAtStr = result.firstCreatedAt;
+        firstIdStr = result.firstId;
+        lastCreatedAtStr = result.lastCreatedAt;
+        lastIdStr = result.lastId;
+      }
+
+      let filteredItems = itemsRes;
+      if (activeTab === 'all' && searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filteredItems = itemsRes.filter(i => 
+          i.productId.toLowerCase().includes(term) || 
+          i.warehouseName?.toLowerCase().includes(term)
+        );
+      }
+
+      const enrichedItems: StockItem[] = await Promise.all(filteredItems.map(async (item) => {
         try {
           const product = await ProductService.getDetail(item.productId);
           return { ...item, productName: product.name, productCode: product.code };
@@ -56,25 +106,37 @@ export default function WarehouseStockPage() {
         }
       }));
 
-      setStockItems(enrichedItems);
+      if (activeTab === 'all' && searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const doubleFiltered = enrichedItems.filter(i => 
+          i.productCode?.toLowerCase().includes(term) ||
+          i.productName?.toLowerCase().includes(term) ||
+          i.productId.toLowerCase().includes(term) ||
+          i.warehouseName?.toLowerCase().includes(term)
+        );
+        setStockItems(doubleFiltered);
+      } else {
+        setStockItems(enrichedItems);
+      }
+
       setPagination({
-        hasNext: result.hasNext,
-        hasPrevious: result.hasPrevious,
-        firstCreatedAt: result.firstCreatedAt,
-        firstId: result.firstId,
-        lastCreatedAt: result.lastCreatedAt,
-        lastId: result.lastId,
+        hasNext: hasNextFlag,
+        hasPrevious: hasPrevFlag,
+        firstCreatedAt: firstCreatedAtStr,
+        firstId: firstIdStr,
+        lastCreatedAt: lastCreatedAtStr,
+        lastId: lastIdStr,
       });
     } catch (error) {
       toast.error("Không thể tải dữ liệu tồn kho");
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, pagination.firstCreatedAt, pagination.firstId, pagination.lastCreatedAt, pagination.lastId]);
+  }, [activeTab, searchTerm, pagination.firstCreatedAt, pagination.firstId, pagination.lastCreatedAt, pagination.lastId]);
 
   React.useEffect(() => {
     fetchStock();
-  }, [searchTerm]);
+  }, [activeTab, searchTerm]);
 
   const stats = [
     { title: 'Tổng mặt hàng', value: stockItems.length.toString(), icon: Warehouse, color: 'text-[#4318FF]' },
@@ -82,6 +144,11 @@ export default function WarehouseStockPage() {
     { title: 'Sắp hết hàng', value: stockItems.filter(i => i.physicalQuantity < 10).length.toString(), icon: Warehouse, color: 'text-yellow-500' },
     { title: 'Hết hàng', value: stockItems.filter(i => i.physicalQuantity === 0).length.toString(), icon: Warehouse, color: 'text-red-400' },
   ];
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setPagination({ hasNext: false, hasPrevious: false, firstCreatedAt: undefined, firstId: undefined, lastCreatedAt: undefined, lastId: undefined });
+  };
 
   return (
     <div className="space-y-6">
@@ -108,6 +175,43 @@ export default function WarehouseStockPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Tabs navigation cao cấp */}
+      <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px">
+        {!isWarehouseStaff && (
+          <button
+            onClick={() => handleTabChange('all')}
+            className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'all'
+                ? 'border-[#4318FF] text-[#4318FF]'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Tất cả (Tổng hợp)
+          </button>
+        )}
+
+        {warehouses.map((w) => {
+          if (isWarehouseStaff && user?.warehouseId !== w.id) {
+            return null;
+          }
+          return (
+            <button
+              key={w.id}
+              onClick={() => handleTabChange(w.id!)}
+              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === w.id
+                  ? 'border-[#4318FF] text-[#4318FF]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Warehouse className="w-3.5 h-3.5" />
+              {w.name}
+              {isWarehouseStaff && <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-50 text-blue-600 rounded">Kho của bạn</span>}
+            </button>
+          );
+        })}
       </div>
 
       <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
@@ -153,7 +257,7 @@ export default function WarehouseStockPage() {
               </tr>
             ) : (
               stockItems.map((item) => (
-                <tr key={item.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                <tr key={`${item.id}-${item.warehouseName}`} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
                   <td className="px-6 py-4 font-bold text-gray-900">{item.productCode}</td>
                   <td className="px-6 py-4 font-semibold text-gray-900">{item.productName}</td>
                   <td className="px-6 py-4 text-gray-700">{item.productId.substring(0, 8)}...</td>
@@ -165,16 +269,19 @@ export default function WarehouseStockPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-700">
-                    {item.warehouseName || 'Chưa xác định'} 
+                    <span className="font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                      {item.warehouseName || 'Chưa xác định'}
+                    </span>
                     {item.rackCode && <span className="ml-1 text-xs text-gray-400">({item.rackCode})</span>}
                   </td>
                 </tr>
               ))
             )}
-            </tbody>
-          </table>
+          </tbody>
+        </table>
 
-          {/* Pagination Controls */}
+        {/* Pagination Controls */}
+        {activeTab !== 'all' && (
           <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
             <p className="text-xs text-gray-500">
               Hiển thị <span className="font-bold">{stockItems.length}</span> mặt hàng
@@ -200,7 +307,8 @@ export default function WarehouseStockPage() {
               </Button>
             </div>
           </div>
-        </div>
+        )}
       </div>
+    </div>
   );
 }

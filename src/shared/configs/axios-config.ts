@@ -39,7 +39,9 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
         const token = Cookies.get("token");
         const warehouseId = Cookies.get("warehouseId");
         if (warehouseId && warehouseId !== 'undefined') {
-            config.headers["X-Warehouse-Id"] = warehouseId;
+            if (!config.headers["X-Warehouse-Id"]) {
+                config.headers["X-Warehouse-Id"] = warehouseId;
+            }
         }
         if (token && token !== 'undefined') {
             config.headers.Authorization = `Bearer ${token}`;
