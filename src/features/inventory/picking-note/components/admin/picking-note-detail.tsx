@@ -19,9 +19,19 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import Link from 'next/link';
+import { PickingNoteService } from '../../services/picking-note-service';
+import { toast } from 'sonner';
+import { Loader2, Search } from 'lucide-react';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/shared/components/shadcn-ui/popover";
+import { Input } from '@/shared/components/shadcn-ui/input';
 
 interface LineItem {
-  id: string;
+  id: string; // Temp frontend ID
+  productId?: string; // Backend Guid
   productCode: string;
   productName: string;
   quantity: number;
@@ -59,76 +69,213 @@ const statusLabel: Record<string, string> = {
   'cancelled': 'Đã hủy',
 };
 
+function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<ProductLoadMoreForModal[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
+
+  const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
+          <div className="flex flex-col items-start overflow-hidden text-left">
+             <span className="truncate w-full font-semibold">{displayLabel}</span>
+          </div>
+          <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
+        <div className="p-2 border-b bg-gray-50/50">
+           <Input 
+              placeholder="Gõ tên hoặc mã sản phẩm..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+              autoFocus
+           />
+        </div>
+        <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
+           {loading ? (
+             <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+           ) : products.length === 0 ? (
+             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+           ) : (
+             products.map(p => (
+               <div 
+                 key={p.id}
+                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                 onClick={() => {
+                    setSelectedProduct(p);
+                    onSelect(p);
+                    setOpen(false);
+                 }}
+               >
+                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
+                 <div className="flex justify-between items-center mt-1">
+                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                 </div>
+               </div>
+             ))
+           )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action');
   
   const isCreate = actionParam === ActionType.CREATE;
-  
-  const defaultData: PickingNoteData = {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
     code: '',
-    date: new Date().toISOString().split('T')[0],
-    createdBy: '-----',
+    date: new Date().toISOString(),
+    createdBy: '',
     warehouse: '',
-    status: 'draft',
+    status: 'Pending' as any,
     items: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+    createdAt: '',
+    updatedAt: '',
+  });
 
   const [action, setAction] = useState<ActionType>(
     (actionParam as ActionType) || ActionType.DETAIL
   );
 
-  const [formData, setFormData] = useState<PickingNoteData>(initialData || defaultData);
-
   useEffect(() => {
-    if (!isCreate) {
-      if (actionParam === ActionType.UPDATE) setAction(ActionType.UPDATE);
-      else setAction(ActionType.DETAIL);
+    if (id && !isCreate) {
+      setLoading(true);
+      PickingNoteService.getById(id)
+        .then(data => {
+          if (data) {
+            setFormData({
+              id: data.id,
+              code: data.code,
+              date: data.createdAt,
+              createdBy: 'Admin',
+              warehouse: 'Kho chính', // Mock for now if not in DTO
+              status: data.status as any,
+              items: data.items.map((i: any) => ({
+                id: i.productId,
+                productCode: i.productCode,
+                productName: i.productName,
+                quantity: i.quantity,
+                notes: i.note
+              })),
+              createdAt: data.createdAt,
+              updatedAt: data.createdAt,
+            });
+          }
+        })
+        .catch(err => {
+          toast.error("Không thể tải thông tin phiếu soạn kho");
+        })
+        .finally(() => setLoading(false));
     }
-  }, [actionParam, isCreate]);
+  }, [id, isCreate]);
+
+  const handleStartPicking = async () => {
+    try {
+      await PickingNoteService.startPicking(id);
+      toast.success("Đã bắt đầu soạn hàng");
+      window.location.reload();
+    } catch (error) {
+      toast.error("Lỗi khi bắt đầu soạn hàng");
+    }
+  };
+
+  const handleCompletePicking = async () => {
+    try {
+      await PickingNoteService.completePicking(id);
+      toast.success("Đã hoàn thành soạn hàng");
+      window.location.reload();
+    } catch (error) {
+      toast.error("Lỗi khi hoàn thành soạn hàng");
+    }
+  };
+
+  const handleCancelPicking = async () => {
+    try {
+      await PickingNoteService.cancelPicking(id, "Người dùng hủy");
+      toast.success("Đã hủy phiếu soạn hàng");
+      window.location.reload();
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (action === ActionType.CREATE) {
+        const payload = {
+          documentType: "Manual",
+          description: "Tạo thủ công",
+          deliveryInfo: {
+            receiverName: "N/A",
+            receiverPhone: "N/A",
+            deliveryAddress: "N/A",
+            companyName: "N/A",
+            taxCode: "N/A"
+          },
+          items: formData.items
+            .filter(item => item.productId)
+            .map(item => ({
+              productId: item.productId,
+              productCode: item.productCode,
+              productName: item.productName,
+              unit: "Cái",
+              quantity: item.quantity,
+              manufactureName: "N/A",
+              note: item.notes
+            }))
+        };
+        await PickingNoteService.createPickingNote(payload);
+        toast.success("Tạo phiếu soạn hàng thành công");
+        window.location.href = "/warehouse/picking-note";
+      }
+    } catch (error) {
+      toast.error("Lỗi khi lưu phiếu soạn hàng");
+    }
+  };
 
   const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
 
-  const handleSave = () => {
-    setAction(ActionType.DETAIL);
-  };
-
-  const handleCancel = () => {
-    if (action === ActionType.CREATE) {
-      window.history.back();
-    } else {
-      setFormData(initialData || defaultData);
-      setAction(ActionType.DETAIL);
-    }
-  };
-
-  const addItem = () => {
-    const newItem: LineItem = {
-      id: Date.now().toString(),
-      productCode: '',
-      productName: '',
-      quantity: 1,
-      notes: ''
-    };
-    setFormData({ ...formData, items: [...formData.items, newItem] });
-  };
-
-  const removeItem = (itemId: string) => {
-    setFormData({ ...formData, items: formData.items.filter(i => i.id !== itemId) });
-  };
-
-  const updateItem = (itemId: string, field: keyof LineItem, value: any) => {
-    setFormData({
-      ...formData,
-      items: formData.items.map(i => i.id === itemId ? { ...i, [field]: value } : i)
-    });
-  };
-
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        </div>
+      )}
       {/* Header section - Clean & Simple */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
@@ -138,34 +285,30 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          {isEditing ? (
+          {!isEditing && (
             <>
-              <Button variant="outline" className="rounded admin-btn-primary border-transparent" onClick={handleSave}>
-                <Save className="w-4 h-4 mr-2" />
-                Lưu
-              </Button>
-              {action !== ActionType.CREATE && (
-                <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50" onClick={handleCancel}>
-                  <X className="w-4 h-4 mr-2" />
-                  Hủy
+              {formData.status === 'Pending' && (
+                <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
+                  Bắt đầu soạn
+                </Button>
+              )}
+              {formData.status === 'Picking' && (
+                <Button onClick={handleCompletePicking} className="bg-green-600 hover:bg-green-700 text-white rounded">
+                  Hoàn thành soạn
+                </Button>
+              )}
+              {(formData.status === 'Pending' || formData.status === 'Picking') && (
+                <Button onClick={handleCancelPicking} variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 rounded">
+                  Hủy phiếu
                 </Button>
               )}
             </>
-          ) : (
-            <>
-              {formData.status === 'draft' && (
-                <>
-                  <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50" onClick={() => setAction(ActionType.UPDATE)}>
-                    <Edit className="w-4 h-4 mr-2" />
-                    Chỉnh sửa
-                  </Button>
-                  <Button variant="outline" className="rounded text-red-600 hover:bg-red-50 border-red-200">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Xóa
-                  </Button>
-                </>
-              )}
-            </>
+          )}
+          {isEditing && (
+            <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded">
+              <Save className="w-4 h-4 mr-2" />
+              Lưu phiếu
+            </Button>
           )}
           <Link href="/warehouse/picking-note">
             <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
@@ -273,26 +416,22 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     <tbody className="divide-y divide-gray-100">
                       {formData.items.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-3">
+                          <td className="px-6 py-3" colSpan={2}>
                             {isEditing ? (
-                              <input 
-                                className="w-full border-gray-200 border rounded p-1 text-sm focus:border-[var(--brand-green-500)] outline-none"
-                                value={item.productCode}
-                                onChange={(e) => updateItem(item.id, 'productCode', e.target.value)}
+                              <SearchableProductSelect
+                                defaultValue={item.productCode}
+                                defaultLabel={item.productName}
+                                onSelect={(prod) => {
+                                  updateItem(item.id, 'productId', prod.id);
+                                  updateItem(item.id, 'productCode', prod.code || '');
+                                  updateItem(item.id, 'productName', prod.name);
+                                }}
                               />
                             ) : (
-                               <span className="font-semibold admin-text-primary">{item.productCode}</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-3">
-                            {isEditing ? (
-                              <input 
-                                className="w-full border-gray-200 border rounded p-1 text-sm focus:border-[var(--brand-green-500)] outline-none"
-                                value={item.productName}
-                                onChange={(e) => updateItem(item.id, 'productName', e.target.value)}
-                              />
-                            ) : (
-                               <span className="text-gray-900">{item.productName}</span>
+                              <div className="flex flex-col">
+                                <span className="font-semibold admin-text-primary">{item.productCode}</span>
+                                <span className="text-gray-900">{item.productName}</span>
+                              </div>
                             )}
                           </td>
                           <td className="px-6 py-3 text-right">

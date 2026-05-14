@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
-import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL, GATEWAY_URL } from "../constants/environment";
+import { DATA_SERVICE_URL, AUTH_SERVICE_URL, MASTER_SERVICE_URL, WAREHOUSE_SERVICE_URL, GATEWAY_URL } from "../constants/environment";
 
 // Đọc cookie trực tiếp từ document.cookie (chỉ chạy ở client-side)
 const getClientCookie = (name: string): string | undefined => {
@@ -36,7 +36,13 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
     // Request interceptor: Thêm token vào header
     instance.interceptors.request.use((config) => {
-        const token = getClientCookie("token");
+        const token = Cookies.get("token");
+        const warehouseId = Cookies.get("warehouseId");
+        if (warehouseId && warehouseId !== 'undefined') {
+            if (!config.headers["X-Warehouse-Id"]) {
+                config.headers["X-Warehouse-Id"] = warehouseId;
+            }
+        }
         if (token && token !== 'undefined') {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -177,6 +183,13 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh ở trên
                 if (error.response.status !== 401) {
                     toast.error(errorMessage);
+                    
+                    // Nếu thiếu warehouse ID, chuyển hướng về trang chọn kho
+                    if (errorMessage.includes("Vui lòng chọn kho bãi") && typeof window !== 'undefined') {
+                        setTimeout(() => {
+                            window.location.href = '/warehouse/list';
+                        }, 1500);
+                    }
                 }
             } else if (error.request) {
                 errorMessage = "Không thể kết nối tới server";
@@ -208,6 +221,7 @@ const api = {
     data: createApiInstance(DATA_SERVICE_URL),
     auth: createApiInstance(AUTH_SERVICE_URL),
     master: createApiInstance(MASTER_SERVICE_URL),
+    warehouse: createApiInstance(WAREHOUSE_SERVICE_URL),
     gateway: createApiInstance(GATEWAY_URL),
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Plus, 
@@ -12,41 +12,44 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { MOCK_SUPPLY_REQUESTS } from '../mocks/supply-request-mocks';
-import { SupplyRequestStatus } from '../enums/supply-request-status';
-import { MOCK_WAREHOUSES } from '../../warehouse/mocks/warehouse-mocks';
+import { getSupplyRequests } from '../services/supply-request-service';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
 
 export function SupplyRequestList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  
-  const filteredRequests = MOCK_SUPPLY_REQUESTS.filter(req => {
-    const matchesSearch = req.id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const [requests, setRequests] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      getSupplyRequests({ page: 1, pageSize: 100 }),
+      getWarehouses()
+    ])
+      .then(([reqRes, whRes]) => {
+        setRequests(reqRes?.items || []);
+        setWarehouses(whRes || []);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filteredRequests = requests.filter(req => {
+    const matchesSearch = req.code?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           req.note?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || req.status === statusFilter;
+    const matchesStatus = statusFilter === 'ALL' || req.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
   const getWarehouseName = (warehouseId: string) => {
-    const warehouse = MOCK_WAREHOUSES.find(w => w.id === warehouseId);
+    const warehouse = warehouses.find(w => w.id === warehouseId);
     return warehouse ? warehouse.name : warehouseId;
   };
 
-  const handleEdit = (id: string) => {
-    console.log('Edit supply request:', id);
-  };
-
-  const handleDelete = (id: string) => {
-    console.log('Delete supply request:', id);
-  };
-
-  const handleViewDetails = (id: string) => {
-    console.log('View supply request details:', id);
-  };
-
-  const totalRequests = MOCK_SUPPLY_REQUESTS.length;
-  const pendingRequests = MOCK_SUPPLY_REQUESTS.filter(r => r.status === SupplyRequestStatus.PENDING).length;
-  const completedRequests = MOCK_SUPPLY_REQUESTS.filter(r => r.status === SupplyRequestStatus.COMPLETED).length;
+  const totalRequests = requests.length;
+  const pendingRequests = requests.filter(r => r.status?.toLowerCase() === 'pending').length;
+  const completedRequests = requests.filter(r => r.status?.toLowerCase() === 'completed').length;
 
   return (
     <div className="space-y-4">
@@ -103,7 +106,7 @@ export function SupplyRequestList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm yêu cầu cung ứng..."
+              placeholder="Tìm kiếm mã hoặc ghi chú..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -116,8 +119,8 @@ export function SupplyRequestList() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="ALL">Tất cả trạng thái</option>
-              <option value={SupplyRequestStatus.PENDING}>Chờ xử lý</option>
-              <option value={SupplyRequestStatus.COMPLETED}>Đã xử lý</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="completed">Đã xử lý</option>
             </select>
           </div>
         </div>
@@ -128,54 +131,52 @@ export function SupplyRequestList() {
               <th className="text-left px-6 py-4 tracking-label uppercase">Mã Yêu Cầu</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Kho Nhận</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Ghi chú</th>
-              <th className="text-center px-6 py-4 tracking-label uppercase">Số Loại Hàng</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Tổng SL Vật Tư</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRequests.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  Đang tải dữ liệu...
+                </td>
+              </tr>
+            ) : filteredRequests.length > 0 ? (
               filteredRequests.map((req) => (
                 <tr key={req.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{req.id}</td>
+                  <td className="px-6 py-4 font-bold text-gray-900">{req.code || req.id}</td>
                   <td className="px-6 py-4 font-bold text-gray-900">
                     {getWarehouseName(req.warehouseId)}
                   </td>
-                    <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate">
-                      {req.note || '---'}
-                    </td>
-                    <td className="px-6 py-4 text-center text-gray-700 font-medium">
-                      {req.items.length}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {req.status === SupplyRequestStatus.COMPLETED ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                           Đã xử lý
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                           Chờ xử lý
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Link href={`/supplychain/supplyrequest/${req.id}`}>
-                          <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </Link>
-                        <Link href={`/supplychain/supplyrequest/${req.id}?action=edit`}>
-                          <button className="p-2 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        </Link>
-                        <button className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded">
-                          <Trash2 className="w-4 h-4" />
+                  <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate">
+                    {req.note || '---'}
+                  </td>
+                  <td className="px-6 py-4 text-center text-gray-700 font-medium">
+                    {req.totalRequested || 0}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {req.status?.toLowerCase() === 'completed' ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                        Đã xử lý
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                        Chờ xử lý
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Link href={`/supplychain/supplyrequest/${req.id}`}>
+                        <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
+                          <Eye className="w-4 h-4" />
                         </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
               ))
             ) : (
               <tr>
