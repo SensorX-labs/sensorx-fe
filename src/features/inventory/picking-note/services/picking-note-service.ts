@@ -28,6 +28,7 @@ export interface PickingNoteDetail extends PickingNoteListItem {
 }
 
 export interface PickingNoteCursorQuery {
+    warehouseId?: string;
     searchTerm?: string;
     pageSize?: number;
     isPrevious?: boolean;
@@ -63,8 +64,14 @@ export const PickingNoteService = {
     getById: (id: string) => 
         api.warehouse.get<any, PickingNoteDetail>(`/pickingNote/getPickingNote/${id}`),
 
-    getList: (params: PickingNoteCursorQuery) => 
-        api.warehouse.get<any, PickingNoteCursorResult>("/pickingNote/getPickingNotes", { params }),
+    getList: (params: PickingNoteCursorQuery) => {
+        const { warehouseId, ...restParams } = params;
+        const config: any = { params: restParams };
+        if (warehouseId) {
+            config.headers = { "X-Warehouse-Id": warehouseId };
+        }
+        return api.warehouse.get<any, PickingNoteCursorResult>("/pickingNote/getPickingNotes", config);
+    },
 };
 
 export default PickingNoteService;

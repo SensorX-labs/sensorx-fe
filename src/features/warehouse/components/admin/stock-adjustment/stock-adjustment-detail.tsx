@@ -229,19 +229,6 @@ export default function StockAdjustmentDetail() {
     }
   };
 
-  const handleApprove = async () => {
-    setLoading(true);
-    try {
-      await StockAdjustmentService.approve(id);
-      toast.success("Đã duyệt phiếu điều chỉnh");
-      router.refresh();
-    } catch (error: any) {
-      toast.error(error.response?.data || "Lỗi khi duyệt phiếu");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const isEditing = action === ActionType.CREATE || action === ActionType.UPDATE;
 
   return (
@@ -265,23 +252,10 @@ export default function StockAdjustmentDetail() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isEditing ? (
+          {isEditing && (
             <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded">
               <Save className="w-4 h-4 mr-2" /> Lưu phiếu
             </Button>
-          ) : (
-            <>
-              {formData.status === 'Pending' && (
-                <>
-                  <Button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded">
-                    <CheckCircle className="w-4 h-4 mr-2" /> Duyệt phiếu
-                  </Button>
-                  <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 rounded">
-                    <XCircle className="w-4 h-4 mr-2" /> Từ chối
-                  </Button>
-                </>
-              )}
-            </>
           )}
         </div>
       </div>

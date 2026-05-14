@@ -21,6 +21,7 @@ export interface StockAdjustmentDetail extends StockAdjustmentListItem {
 }
 
 export interface StockAdjustmentCursorQuery {
+    warehouseId?: string;
     searchTerm?: string;
     pageSize?: number;
     isPrevious?: boolean;
@@ -53,8 +54,14 @@ export const StockAdjustmentService = {
     getById: (id: string) => 
         api.warehouse.get<any, StockAdjustmentDetail>(`/stockOut/detail/${id}`),
 
-    getList: (params: StockAdjustmentCursorQuery) => 
-        api.warehouse.get<any, StockAdjustmentCursorResult>("/stockOut/list", { params: { ...params, isAdjustmentOnly: true } }),
+    getList: (params: StockAdjustmentCursorQuery) => {
+        const { warehouseId, ...restParams } = params;
+        const config = warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : {};
+        return api.warehouse.get<any, StockAdjustmentCursorResult>("/stockOut/list", {
+            ...config,
+            params: { ...restParams, isAdjustmentOnly: true }
+        });
+    },
 };
 
 export default StockAdjustmentService;

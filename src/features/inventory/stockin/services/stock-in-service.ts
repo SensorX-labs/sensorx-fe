@@ -9,7 +9,9 @@ export interface StockInListItem {
 }
 
 export interface StockInCursorQuery {
+    warehouseId?: string;
     searchTerm?: string;
+    status?: string;
     pageSize?: number;
     isPrevious?: boolean;
     firstCreatedAt?: string;
@@ -29,8 +31,14 @@ export interface StockInCursorResult {
 }
 
 export const StockInService = {
-    getStockIns: (params: StockInCursorQuery) => 
-        api.warehouse.get<any, StockInCursorResult>("/stockIn/list", { params }),
+    getStockIns: (params: StockInCursorQuery) => {
+        const { warehouseId, ...restParams } = params;
+        const config: any = { params: restParams };
+        if (warehouseId) {
+            config.headers = { "X-Warehouse-Id": warehouseId };
+        }
+        return api.warehouse.get<any, StockInCursorResult>("/stockIn/list", config);
+    },
         
     getById: (id: string) =>
         api.warehouse.get<any, any>(`/stockIn/${id}`),

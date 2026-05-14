@@ -2,12 +2,21 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { PackageMinus, Eye, Search } from 'lucide-react';
+import { PackageMinus, Eye, Search, Warehouse as WarehouseIcon } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { StockOutService, StockOutListItem } from '../../services/stock-out-service';
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
+import { useUser } from '@/shared/hooks/use-user';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehouse-model';
 
 export default function StockOutList() {
+  const { user } = useUser();
+  const isWarehouseStaff = user?.role === 'WarehouseStaff';
+
+  const [warehouses, setWarehouses] = useState<WarehouseModel[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [stockOuts, setStockOuts] = useState<StockOutListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,10 +30,34 @@ export default function StockOutList() {
     hasPrevious: boolean;
   }>({ hasNext: false, hasPrevious: false });
 
+  useEffect(() => {
+    const loadWarehouses = async () => {
+      try {
+        const res = await getWarehouses();
+        setWarehouses(res || []);
+      } catch {
+        // silently fail
+      }
+    };
+    loadWarehouses();
+  }, []);
+
+  useEffect(() => {
+    if (isWarehouseStaff && user?.warehouseId) {
+      setActiveTab(user.warehouseId);
+    } else {
+      const savedId = Cookies.get("warehouseId");
+      if (savedId) {
+        setActiveTab(savedId);
+      }
+    }
+  }, [isWarehouseStaff, user?.warehouseId]);
+
   const fetchStockOuts = useCallback(async (isPrevious: boolean = false) => {
     setLoading(true);
     try {
       const result = await StockOutService.getList({
+        warehouseId: activeTab !== 'all' ? activeTab : undefined,
         searchTerm,
         pageSize: 10,
         isPrevious,
@@ -51,11 +84,11 @@ export default function StockOutList() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, cursor.firstCreatedAt, cursor.firstId, cursor.lastCreatedAt, cursor.lastId]);
+  }, [activeTab, searchTerm, cursor.firstCreatedAt, cursor.firstId, cursor.lastCreatedAt, cursor.lastId]);
 
   useEffect(() => {
     fetchStockOuts();
-  }, [searchTerm]);
+  }, [activeTab, searchTerm]);
 
   const handleNext = () => {
     if (cursor.hasNext) fetchStockOuts(false);
@@ -65,9 +98,18 @@ export default function StockOutList() {
     if (cursor.hasPrevious) fetchStockOuts(true);
   };
 
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (tabId !== 'all') {
+      Cookies.set("warehouseId", tabId, { expires: 7, path: '/' });
+    }
+    setCursor({ hasNext: false, hasPrevious: false, firstCreatedAt: undefined, firstId: undefined, lastCreatedAt: undefined, lastId: undefined });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold admin-title uppercase">Phiếu xuất kho</h2>
         <Link href="/warehouse/picking-note">
           <button className="flex items-center gap-2 admin-btn-primary">
             <PackageMinus className="w-4 h-4" /> Xuất kho từ phiếu soạn
@@ -75,10 +117,47 @@ export default function StockOutList() {
         </Link>
       </div>
 
-      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden relative min-h-[400px]">
+      {/* Tabs navigation cao cấp */}
+      <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px">
+        {!isWarehouseStaff && (
+          <button
+            onClick={() => handleTabChange('all')}
+            className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'all'
+                ? 'border-[#4318FF] text-[#4318FF]'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Tất cả (Tổng hợp)
+          </button>
+        )}
+
+        {warehouses.map((w) => {
+          if (isWarehouseStaff && user?.warehouseId !== w.id) {
+            return null;
+          }
+          return (
+            <button
+              key={w.id}
+              onClick={() => handleTabChange(w.id!)}
+              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === w.id
+                  ? 'border-[#4318FF] text-[#4318FF]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <WarehouseIcon className="w-3.5 h-3.5" />
+              {w.name}
+              {isWarehouseStaff && <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-50 text-blue-600 rounded">Kho của bạn</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden relative min-h-[300px]">
         {loading && (
           <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
-            <div className="w-8 h-8 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
           </div>
         )}
         
@@ -171,4 +250,3 @@ export default function StockOutList() {
     </div>
   );
 }
-

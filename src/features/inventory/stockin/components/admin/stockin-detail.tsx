@@ -128,6 +128,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  key={p.id}
                  className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
                  onClick={() => {
+                    console.log("=== Đã chọn sản phẩm ===", p);
                     setSelectedProduct(p);
                     onSelect(p);
                     setOpen(false);
@@ -175,6 +176,11 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   const [deliveredBy, setDeliveredBy] = useState('');
   const [warehouseKeeper, setWarehouseKeeper] = useState('');
   const [note, setNote] = useState('');
+  const [hasWarehouse, setHasWarehouse] = useState(false);
+
+  useEffect(() => {
+    setHasWarehouse(!!Cookies.get('warehouseId'));
+  }, []);
 
   useEffect(() => {
     if (id && action !== ActionType.CREATE) {
@@ -183,7 +189,13 @@ export default function StockInDetail({ id }: StockInDetailProps) {
         .then(data => {
           if (data) {
             setStockInData(data);
-            setItems(data.items || []);
+            const mappedItems = (data.items || []).map((item: any) => ({
+              ...item,
+              id: item.id || item.productId || Math.random().toString(),
+              unitPrice: item.unitPrice || 0,
+              taxRate: item.taxRate || 0,
+            }));
+            setItems(mappedItems);
             setDeliveredBy(data.deliveredBy || '');
             setWarehouseKeeper(data.warehouseKeeper || '');
             setNote(data.description || '');
@@ -261,7 +273,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   };
 
   const updateItem = (id: string, field: keyof StockInItem, value: any) => {
-    setItems(items.map(item => 
+    setItems(prevItems => prevItems.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
@@ -368,7 +380,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
                 <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
                    <Warehouse className="w-3 h-3 text-brand-green" />
-                   {Cookies.get('warehouseId') ? 'Kho đang chọn' : 'Chưa chọn kho'}
+                   {hasWarehouse ? 'Kho đang chọn' : 'Chưa chọn kho'}
                 </div>
               </div>
               <div>
@@ -473,7 +485,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span>{item.unitPrice.toLocaleString('vi-VN')}đ</span>
+                            <span>{(item.unitPrice || 0).toLocaleString('vi-VN')}đ</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -487,7 +499,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span>{item.taxRate}%</span>
+                            <span>{item.taxRate || 0}%</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-right">

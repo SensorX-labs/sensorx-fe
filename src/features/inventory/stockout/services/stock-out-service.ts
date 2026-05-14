@@ -9,6 +9,7 @@ export interface StockOutListItem {
 }
 
 export interface StockOutCursorQuery {
+    warehouseId?: string;
     searchTerm?: string;
     pageSize?: number;
     isPrevious?: boolean;
@@ -32,8 +33,14 @@ export const StockOutService = {
     create: (pickingNoteId: string) => 
         api.warehouse.post<any, string>("/stockOut/createStockOut", { pickingNoteId }),
 
-    getList: (params: StockOutCursorQuery) => 
-        api.warehouse.get<any, StockOutCursorResult>("/stockOut/list", { params }),
+    getList: (params: StockOutCursorQuery) => {
+        const { warehouseId, ...restParams } = params;
+        const config: any = { params: restParams };
+        if (warehouseId) {
+            config.headers = { "X-Warehouse-Id": warehouseId };
+        }
+        return api.warehouse.get<any, StockOutCursorResult>("/stockOut/list", config);
+    },
 };
 
 export default StockOutService;
