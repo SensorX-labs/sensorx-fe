@@ -3,7 +3,7 @@ import { Product } from "./product";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
-    id: "prod-001",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa1",
     code: "SX-001",
     name: "Cảm biến tiệm cận E2E-X10D1-N",
     manufacturer: "Omron",
@@ -30,7 +30,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-002",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa2",
     code: "SX-002",
     name: "PLC S7-1200 CPU 1214C DC/DC/DC",
     manufacturer: "Siemens",
@@ -57,7 +57,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-003",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa3",
     code: "SX-003",
     name: "Biến tần ATV310 1.5kW 3 pha",
     manufacturer: "Schneider",
@@ -77,7 +77,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-004",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa4",
     code: "SX-004",
     name: "Contactor LC1D12M7 220V",
     manufacturer: "Schneider",
@@ -96,7 +96,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-005",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa5",
     code: "SX-005",
     name: "Cảm biến quang điện BJ15M-TDT",
     manufacturer: "Autonics",
@@ -115,7 +115,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-006",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     code: "SX-006",
     name: "Bộ định thời Analog H3CR-A",
     manufacturer: "Omron",
@@ -134,7 +134,7 @@ export const MOCK_PRODUCTS: Product[] = [
     ]
   },
   {
-    id: "prod-007",
+    id: "3fa85f64-5717-4562-b3fc-2c963f66afa7",
     code: "SX-007",
     name: "Cảm biến an toàn SFS-600",
     manufacturer: "SensorX",

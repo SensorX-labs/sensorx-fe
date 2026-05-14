@@ -5,6 +5,7 @@ import { Search, Bell, Settings } from 'lucide-react';
 import { SidebarTrigger } from '@/shared/components/shadcn-ui/sidebar';
 import { useActiveTab } from '@/shared/hooks/use-active-tab';
 
+
 const AdminHeader: React.FC = () => {
     const activeTab = useActiveTab();
 
@@ -31,6 +32,7 @@ const AdminHeader: React.FC = () => {
                         </p>
                     )}
                 </div>
+
             </div>
 
             <div className="flex items-center gap-2 md:gap-4 shrink-0">

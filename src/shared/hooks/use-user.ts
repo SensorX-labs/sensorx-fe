@@ -8,6 +8,7 @@ export interface User {
     id: string;
     email: string;
     roles: string[];
+    warehouseId?: string;
 }
 
 export const useUser = () => {
@@ -22,10 +23,13 @@ export const useUser = () => {
                 if (token) {
                     const decoded: any = jwtDecode(token);
                     // Map lại các field từ JWT (thường là sub, email, roles)
+                    const roleVal = decoded.roles || decoded.role || [];
+                    const normalizedRoles = Array.isArray(roleVal) ? roleVal : [roleVal];
                     setUser({
                         id: decoded.id || decoded.sub,
                         email: decoded.email || decoded.unique_name,
-                        roles: decoded.roles || decoded.role || []
+                        roles: normalizedRoles,
+                        warehouseId: decoded.warehouse_id || undefined
                     });
                 }
             } catch (error) {

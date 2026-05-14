@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Package, Warehouse, Calendar,
@@ -18,7 +18,13 @@ import {
 } from "@/shared/components/shadcn-ui/select";
 import Link from 'next/link';
 import { ActionType } from '@/shared/constants/action-type';
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { StockInService } from '../../services/stock-in-service';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 interface StockInDetailProps {
   id?: string;
@@ -26,10 +32,12 @@ interface StockInDetailProps {
 }
 
 interface StockInItem {
-  id: string;
+  id: string; // Frontend temp ID
+  productId?: string; // Backend Guid
   productCode: string;
   productName: string;
   quantity: number;
+  unit: string;
   unitPrice: number;
   taxRate: number;
 }
@@ -60,25 +68,40 @@ const statusLabel: Record<string, string> = {
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<ProductLoadMoreForModal[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
+          <div className="flex flex-col items-start overflow-hidden text-left">
              <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
@@ -95,15 +118,18 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
            />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {filteredProducts.length === 0 ? (
+           {loading ? (
+             <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+           ) : products.length === 0 ? (
              <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
            ) : (
-             filteredProducts.map(p => (
+             products.map(p => (
                <div 
                  key={p.id}
                  className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
                  onClick={() => {
-                    setSelectedCode(p.code || "");
+                    console.log("=== Đã chọn sản phẩm ===", p);
+                    setSelectedProduct(p);
                     onSelect(p);
                     setOpen(false);
                  }}
@@ -111,7 +137,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
                  </div>
                </div>
              ))
@@ -124,40 +150,98 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 
 export default function StockInDetail({ id }: StockInDetailProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const actionParam = searchParams.get('action') as ActionType | null;
 
   const [action, setAction] = useState<ActionType>(
     actionParam || ActionType.DETAIL
   );
   const [isEditing, setIsEditing] = useState(action === ActionType.CREATE);
+  const [loading, setLoading] = useState(false);
 
   const [stockInData, setStockInData] = useState<StockInData>({
-    id: id || 'PN001',
-    code: action === ActionType.CREATE ? '' : 'PN001',
+    id: id || '',
+    code: '',
     date: new Date().toISOString().split('T')[0],
-    supplier: action === ActionType.CREATE ? '' : 'Cty CP Minh Toàn',
-    warehouse: (actionParam || ActionType.DETAIL) === ActionType.CREATE ? '' : 'kho-chinh',
+    supplier: '',
+    warehouse: '',
     status: 'draft',
-    items: action === ActionType.CREATE ? [] : [
-      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', quantity: 10, unitPrice: 5000000, taxRate: 10 },
-    ],
+    items: [],
     note: '',
   });
 
-  const [items, setItems] = useState<StockInItem[]>(stockInData.items);
-  const [supplier, setSupplier] = useState(stockInData.supplier);
-  const [warehouse, setWarehouse] = useState(stockInData.warehouse);
-  const [note, setNote] = useState(stockInData.note);
+  const [items, setItems] = useState<StockInItem[]>([]);
+  const [supplier, setSupplier] = useState('');
+  const [warehouse, setWarehouse] = useState('');
+  const [deliveredBy, setDeliveredBy] = useState('');
+  const [warehouseKeeper, setWarehouseKeeper] = useState('');
+  const [note, setNote] = useState('');
+  const [hasWarehouse, setHasWarehouse] = useState(false);
 
-  const handleSave = () => {
-    console.log('Lưu phiếu nhập:', { ...stockInData, items, supplier, warehouse, note });
-    setAction(ActionType.DETAIL);
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    setHasWarehouse(!!Cookies.get('warehouseId'));
+  }, []);
 
-  const handleSubmit = () => {
-    console.log('Xác nhận phiếu nhập:', { ...stockInData, items, supplier, warehouse });
-    setAction(ActionType.DETAIL);
+  useEffect(() => {
+    if (id && action !== ActionType.CREATE) {
+      setLoading(true);
+      StockInService.getById(id)
+        .then(data => {
+          if (data) {
+            setStockInData(data);
+            const mappedItems = (data.items || []).map((item: any) => ({
+              ...item,
+              id: item.id || item.productId || Math.random().toString(),
+              unitPrice: item.unitPrice || 0,
+              taxRate: item.taxRate || 0,
+            }));
+            setItems(mappedItems);
+            setDeliveredBy(data.deliveredBy || '');
+            setWarehouseKeeper(data.warehouseKeeper || '');
+            setNote(data.description || '');
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching stock in detail:", err);
+          toast.error("Không thể tải thông tin phiếu nhập kho");
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, action]);
+
+  const handleSave = async () => {
+    try {
+      if (action === ActionType.CREATE) {
+        const filteredItems = items
+          .filter(item => item.productId)
+          .map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            productCode: item.productCode,
+            unit: item.unit || 'Cái',
+            quantity: item.quantity
+          }));
+
+        if (filteredItems.length === 0) {
+          toast.error("Vui lòng chọn ít nhất một sản phẩm hợp lệ");
+          return;
+        }
+
+        const payload = {
+          deliveredBy: deliveredBy || 'unknown',
+          warehouseKeeper: warehouseKeeper || 'unknown',
+          description: note,
+          items: filteredItems
+        };
+        const newId = await StockInService.createStockIn(payload);
+        toast.success("Tạo phiếu nhập kho thành công");
+        router.push("/warehouse/stockin");
+      }
+      setIsEditing(false);
+      setAction(ActionType.DETAIL);
+    } catch (error) {
+      toast.error("Lỗi khi lưu phiếu nhập kho");
+    }
   };
 
   const handleCancel = () => {
@@ -177,6 +261,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
       productCode: '',
       productName: '',
       quantity: 1,
+      unit: 'Cái',
       unitPrice: 0,
       taxRate: 10,
     };
@@ -188,7 +273,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   };
 
   const updateItem = (id: string, field: keyof StockInItem, value: any) => {
-    setItems(items.map(item => 
+    setItems(prevItems => prevItems.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
@@ -207,8 +292,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
           {isEditing ? (
             <>
               <Button onClick={handleSave} className="rounded admin-btn-primary border-transparent">
-                <Save className="w-4 h-4 mr-2" />
-                Lưu
+                <Package className="w-4 h-4 mr-2" />
+                Xác nhận nhập
               </Button>
               
               {action === ActionType.CREATE ? (
@@ -227,10 +312,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
             </>
           ) : (
             <>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
-                <Package className="w-4 h-4 mr-2" />
-                Xác nhận nhập
-              </Button>
+              {/* Nút Xác nhận nhập đã được gộp vào luồng Tạo mới */}
               <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
                 <Edit className="w-4 h-4 mr-2" />
                 Chỉnh sửa
@@ -296,16 +378,30 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
-                <Select value={warehouse} onValueChange={setWarehouse} disabled={!isEditing}>
-                  <SelectTrigger className="w-full h-9 text-sm border-gray-300 rounded">
-                    <SelectValue placeholder="Chọn kho" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kho-chinh">Kho chính</SelectItem>
-                    <SelectItem value="kho-phu">Kho phụ</SelectItem>
-                    <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
+                   <Warehouse className="w-3 h-3 text-brand-green" />
+                   {hasWarehouse ? 'Kho đang chọn' : 'Chưa chọn kho'}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Người giao hàng</label>
+                <Input
+                  disabled={!isEditing}
+                  value={deliveredBy}
+                  onChange={(e) => setDeliveredBy(e.target.value)}
+                  className="text-sm h-9 border-gray-300 rounded"
+                  placeholder="Nhập tên người giao"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Thủ kho nhận</label>
+                <Input
+                  disabled={!isEditing}
+                  value={warehouseKeeper}
+                  onChange={(e) => setWarehouseKeeper(e.target.value)}
+                  className="text-sm h-9 border-gray-300 rounded"
+                  placeholder="Nhập tên thủ kho"
+                />
               </div>
             </div>
           </div>
@@ -354,6 +450,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                                 defaultValue={item.productCode}
                                 defaultLabel={item.productName}
                                 onSelect={(prod) => {
+                                  updateItem(item.id, 'productId', prod.id);
                                   updateItem(item.id, 'productCode', prod.code || '');
                                   updateItem(item.id, 'productName', prod.name);
                                 }}
@@ -388,7 +485,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span>{item.unitPrice.toLocaleString('vi-VN')}đ</span>
+                            <span>{(item.unitPrice || 0).toLocaleString('vi-VN')}đ</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -402,7 +499,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span>{item.taxRate}%</span>
+                            <span>{item.taxRate || 0}%</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-right">
