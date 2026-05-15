@@ -1,21 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
+import { getAllAdminPaths, isRouteBlocked, getFirstAllowedPath } from './shared/configs/admin-menu.config';
 
-const adminPaths = [
-    '/dashboard',
-    '/catalog',
-    '/customers',
-    '/inventory',
-    '/reports',
-    '/sales',
-    '/settings',
-    '/supplychain',
-    '/users',
-    '/warehouse'
-];
 const publicPaths = ['/', '/not-found', '/shop'];
 const authPaths = ['/login', '/register'];
+
+// Lấy danh sách các đường dẫn cần bảo vệ từ config
+const adminPaths = getAllAdminPaths();
 
 const isPathMatch = (pathname: string, paths: string[], exactMatch: boolean = false) => {
     return paths.some(path => {
@@ -39,16 +31,19 @@ export function middleware(request: NextRequest) {
     }
 
     let isStaff = false;
+    let userRole = "";
 
     try {
         const decodedToken = jwtDecode<any>(token);
-        const userRole = decodedToken.role;
+        userRole = decodedToken.role;
         const rolesArray = Array.isArray(userRole) ? userRole : [userRole];
 
         isStaff = rolesArray.some(role => {
             const strRole = String(role);
             return strRole !== "Customer" && strRole !== "0" && strRole !== "undefined" && strRole !== "null";
         });
+
+        userRole = rolesArray[0]; // Lấy role chính để kiểm tra chi tiết
     } catch (error) {
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.delete('token');
@@ -58,28 +53,30 @@ export function middleware(request: NextRequest) {
     }
 
     if (isAuthPath) {
-        return NextResponse.redirect(new URL(isStaff ? '/dashboard' : '/', request.url));
+        return NextResponse.redirect(new URL(isStaff ? getFirstAllowedPath(userRole) : '/', request.url));
     }
 
     if (isAdminArea) {
+        // 1. Kiểm tra xem có phải nhân viên không
         if (!isStaff) return NextResponse.redirect(new URL('/not-found', request.url));
-    } else {
-        if (isStaff && pathname === '/') {
-            return NextResponse.redirect(new URL('/dashboard', request.url));
+
+        // 2. Kiểm tra phân quyền chi tiết theo từng Route trong Config
+        if (isRouteBlocked(pathname, userRole)) {
+            console.log(`[Middleware] Access Denied: Role '${userRole}' cannot access '${pathname}'. Redirecting to home.`);
+            return NextResponse.redirect(new URL(getFirstAllowedPath(userRole), request.url));
         }
+    }
+
+    // Tự động điều hướng nhân viên từ trang chủ vào trang đầu tiên được phép
+    if (isStaff && pathname === '/') {
+        return NextResponse.redirect(new URL(getFirstAllowedPath(userRole), request.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    /*
-    * Match all request paths except for the ones starting with:
-    * - api (API routes)
-    * - _next/static (static files)
-    * - _next/image (image optimization files)
-    * - favicon.ico (favicon file)
-    * - assets (public assets)
-    */
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|assets).*)']
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico|assets).*)',
+    ],
 };
