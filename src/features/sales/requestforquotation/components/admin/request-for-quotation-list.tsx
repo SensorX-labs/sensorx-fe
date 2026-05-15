@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { TrendingUp, Eye, Check, X, FileText, UserCheck, AlertCircle, Search } from 'lucide-react';
+import { TrendingUp, Eye, Check, X, FileText, UserCheck, AlertCircle, Search, ClipboardList, Clock, CheckCircle2, XCircle, FilePlus2, UserPlus } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -11,23 +11,27 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/shared/components/shadcn-ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/shadcn-ui/select";
 import { Textarea } from "@/shared/components/shadcn-ui/textarea";
 import { cn } from '@/shared/utils/cn';
 import { toast } from 'sonner';
+import { useDebounce } from '../../../../../shared/hooks/use-debounce';
 import { useUser } from '@/shared/hooks/use-user';
 import { RfqStatus } from '../../constants/rfq-status';
 import RequestForQuotationDetail from './request-for-quotation-detail';
-import { AdminRFQService } from '../../services/admin-rfq.service';
+import { AdminRFQService, RfqListItem, RfqStats } from '../../services/admin-rfq.service';
 import { StaffService } from '@/features/user/staff/services/staff-service';
-import { RfqListItem } from '../../models/rfq-list-response';
+import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
 import { CanAccess } from '@/shared/components/common/can-access';
+import { StatCard } from '@/shared/components/admin/stat-card/stat-card';
 
 const statusStyles: Record<string, string> = {
-  'Draft': 'bg-gray-50 text-gray-500 border-gray-200',
-  'Pending': 'bg-gray-50 text-blue-600 border-blue-100',
-  'Accepted': 'bg-gray-50 text-indigo-600 border-indigo-100',
-  'Rejected': 'bg-gray-50 text-red-500 border-red-100',
-  'Converted': 'bg-gray-50 text-green-600 border-green-100',
   [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
   [RfqStatus.PENDING]: 'bg-gray-50 text-blue-600 border-blue-100',
   [RfqStatus.ACCEPTED]: 'bg-gray-50 text-indigo-600 border-indigo-100',
@@ -36,11 +40,6 @@ const statusStyles: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  'Draft': 'Nháp',
-  'Pending': 'Chờ tiếp nhận',
-  'Accepted': 'Đã tiếp nhận',
-  'Rejected': 'Đã từ chối',
-  'Converted': 'Đã sinh báo giá',
   [RfqStatus.DRAFT]: 'Nháp',
   [RfqStatus.PENDING]: 'Chờ tiếp nhận',
   [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
@@ -48,55 +47,92 @@ const statusLabels: Record<string, string> = {
   [RfqStatus.CONVERTED]: 'Đã sinh báo giá',
 };
 
+const getStatusStyle = (status: string) => {
+  const key = Object.values(RfqStatus).find(s => s.toLowerCase() === status?.toLowerCase());
+  return key ? statusStyles[key] : 'bg-gray-50 text-gray-400 border-gray-100';
+};
+
+const getStatusLabel = (status: string) => {
+  const key = Object.values(RfqStatus).find(s => s.toLowerCase() === status?.toLowerCase());
+  return key ? statusLabels[key] : status;
+};
+
 export default function RequestForQuotationList() {
   const [leads, setLeads] = useState<RfqListItem[]>([]);
+  const [statsData, setStatsData] = useState<RfqStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Dialog states
   const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
   const [viewDetailId, setViewDetailId] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
+
+  // Assign staff states
+  const [staffList, setStaffList] = useState<StaffListItem[]>([]);
+  const [staffMap, setStaffMap] = useState<Record<string, string>>({});
+  const [assignLoading, setAssignLoading] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { user } = useUser();
 
-  const fetchRfqs = async () => {
+  const debouncedSearch = useDebounce(searchQuery, 500);
+
+  useEffect(() => {
+    console.log(">>> Current User Roles:", user?.role);
+  }, [user]);
+
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await AdminRFQService.getListRFQ({ pageNumber: 1, pageSize: 50 });
-      if (response) {
-        setLeads(response.items);
+      const statsResponse = await AdminRFQService.getStats();
+      const listResponse = await AdminRFQService.getListRFQ({
+        pageNumber: 1,
+        pageSize: 50,
+        searchTerm: debouncedSearch || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter as RfqStatus
+      });
+
+      if (listResponse) {
+        setLeads(listResponse.items);
+      }
+      if (statsResponse) {
+        setStatsData(statsResponse);
       }
     } catch (error: any) {
-      console.error(">>> Lỗi khi fetch RFQ:", error);
+      console.error(">>> Lỗi khi fetch dữ liệu:", error);
       setLeads([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchStaffList = async () => {
+    try {
+      const response = await StaffService.getPagedStaffs({ pageNumber: 1, pageSize: 100 });
+      if (response) {
+        setStaffList(response.items);
+        const map: Record<string, string> = {};
+        response.items.forEach(staff => {
+          map[staff.id] = staff.name;
+        });
+        setStaffMap(map);
+      }
+    } catch (error) {
+      console.error(">>> Lỗi khi fetch danh sách nhân viên:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
+
   useEffect(() => {
     if (!viewDetailId) {
-      fetchRfqs();
+      fetchData();
     }
-  }, [viewDetailId]);
-
-  const stats = useMemo(() => [
-    { title: 'Chờ xử lý', value: leads.filter(r => r.status === 'Pending').length.toString(), icon: TrendingUp, color: 'text-yellow-500' },
-    { title: 'Đã tiếp nhận', value: leads.filter(r => r.status === 'Accepted').length.toString(), icon: TrendingUp, color: 'text-blue-500' },
-    { title: 'Đã sinh báo giá', value: leads.filter(r => r.status === 'Converted').length.toString(), icon: TrendingUp, color: 'text-green-500' },
-    { title: 'Tổng yêu cầu', value: leads.length.toString(), icon: TrendingUp, color: 'text-[#4318FF]' },
-  ], [leads]);
-
-  const filteredLeads = useMemo(() => {
-    return leads.filter(lead => {
-      const matchesSearch =
-        lead.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.recipientName?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [leads, searchQuery, statusFilter]);
+  }, [viewDetailId, debouncedSearch, statusFilter]);
 
   const handleAccept = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -107,12 +143,7 @@ export default function RequestForQuotationList() {
     }
 
     try {
-      // Lấy thông tin Staff từ Account ID để có Staff ID thực tế
       const staffResponse = await StaffService.getStaffByAccountId(user.id);
-
-      console.log(">>> [RFQ-Assign] Staff Response:", staffResponse);
-
-      // Vì interceptor bóc tách value ra ngoài, id có thể nằm trực tiếp ở staffResponse hoặc staffResponse.value
       const staffId = (staffResponse as any).staffId || (staffResponse as any).value?.staffId;
 
       if (!staffId) {
@@ -120,11 +151,9 @@ export default function RequestForQuotationList() {
         return;
       }
 
-      const response = await AdminRFQService.assignStaff(id, staffId);
-
-      if (response) {
-        fetchRfqs(); // Tải lại danh sách
-      }
+      await AdminRFQService.assignStaff(id, staffId);
+      toast.success("Đã tiếp nhận yêu cầu thành công");
+      fetchData();
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
       toast.error("Đã xảy ra lỗi khi tiếp nhận yêu cầu");
@@ -135,16 +164,33 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      const response = await AdminRFQService.rejectRFQ(selectedRfqId);
-
-      if (response) {
-        fetchRfqs(); // Tải lại danh sách
-        setIsDeclineDialogOpen(false);
-        setSelectedRfqId(null);
-        setDeclineReason('');
-      }
+      await AdminRFQService.rejectRFQ(selectedRfqId);
+      fetchData();
+      setIsDeclineDialogOpen(false);
+      setSelectedRfqId(null);
+      setDeclineReason('');
+      toast.success("Đã từ chối yêu cầu");
     } catch (error) {
       console.error(">>> Lỗi khi từ chối RFQ:", error);
+    }
+  };
+
+  const handleAssignStaff = async (rfqId: string, staffId: string) => {
+    if (!rfqId || !staffId) {
+      toast.error("Vui lòng chọn nhân viên");
+      return;
+    }
+
+    setAssignLoading(true);
+    try {
+      await AdminRFQService.assignStaff(rfqId, staffId);
+      toast.success("Đã chỉ định nhân viên thành công");
+      fetchData();
+    } catch (error: any) {
+      console.error(">>> Lỗi khi chỉ định nhân viên:", error);
+      toast.error("Đã xảy ra lỗi khi chỉ định nhân viên");
+    } finally {
+      setAssignLoading(false);
     }
   };
 
@@ -165,20 +211,53 @@ export default function RequestForQuotationList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-2.5 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0]">{s.title}</p>
-              </div>
-              <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-4 h-4 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Thống kê sử dụng StatCard */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard
+          label="Tổng yêu cầu"
+          value={statsData?.total || 0}
+          icon={ClipboardList}
+          color="bg-blue-50 text-blue-600"
+          borderColor="border-blue-100"
+          isActive={statusFilter === 'all'}
+          onClick={() => setStatusFilter('all')}
+        />
+        <StatCard
+          label="Chờ tiếp nhận"
+          value={statsData?.pending || 0}
+          icon={Clock}
+          color="bg-amber-50 text-amber-600"
+          borderColor="border-amber-100"
+          isActive={statusFilter === RfqStatus.PENDING}
+          onClick={() => setStatusFilter(statusFilter === RfqStatus.PENDING ? 'all' : RfqStatus.PENDING)}
+        />
+        <StatCard
+          label="Đã tiếp nhận"
+          value={statsData?.accepted || 0}
+          icon={CheckCircle2}
+          color="bg-indigo-50 text-indigo-600"
+          borderColor="border-indigo-100"
+          isActive={statusFilter === RfqStatus.ACCEPTED}
+          onClick={() => setStatusFilter(statusFilter === RfqStatus.ACCEPTED ? 'all' : RfqStatus.ACCEPTED)}
+        />
+        <StatCard
+          label="Đã sinh báo giá"
+          value={statsData?.converted || 0}
+          icon={FilePlus2}
+          color="bg-emerald-50 text-emerald-600"
+          borderColor="border-emerald-100"
+          isActive={statusFilter === RfqStatus.CONVERTED}
+          onClick={() => setStatusFilter(statusFilter === RfqStatus.CONVERTED ? 'all' : RfqStatus.CONVERTED)}
+        />
+        <StatCard
+          label="Đã từ chối"
+          value={statsData?.rejected || 0}
+          icon={XCircle}
+          color="bg-rose-50 text-rose-600"
+          borderColor="border-rose-100"
+          isActive={statusFilter === RfqStatus.REJECTED}
+          onClick={() => setStatusFilter(statusFilter === RfqStatus.REJECTED ? 'all' : RfqStatus.REJECTED)}
+        />
       </div>
 
       <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
@@ -199,8 +278,8 @@ export default function RequestForQuotationList() {
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
             >
               <option value="all">Tất cả trạng thái</option>
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+              {Object.entries(RfqStatus).map(([key, value]) => (
+                <option key={value} value={value}>{statusLabels[value]}</option>
               ))}
             </select>
           </div>
@@ -217,80 +296,109 @@ export default function RequestForQuotationList() {
             </tr>
           </thead>
           <tbody>
-            {filteredLeads.map((l) => (
-              <tr
-                key={l.id}
-                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors cursor-pointer group"
-                onClick={() => setViewDetailId(l.id)}
-              >
-                <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
-                <td className="px-6 py-4">
-                  <div className="font-semibold text-gray-800">{l.companyName}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.recipientName}</div>
-                </td>
-                <td className="px-6 py-4 text-gray-500 text-xs text-left">
-                  {l.status !== 'Pending' && l.staffId ? (
-                    <span className="flex items-center gap-1.5">
-                      <UserCheck className="w-3.5 h-3.5" />
-                      Nhân viên {l.staffId.slice(0, 4)}
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-slate-400 font-medium italic">Đang tải dữ liệu...</td>
+              </tr>
+            ) : leads.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-slate-400 font-medium italic">Không tìm thấy yêu cầu nào</td>
+              </tr>
+            ) : (
+              leads.map((l) => (
+                <tr
+                  key={l.id}
+                  className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors cursor-pointer group"
+                  onClick={() => setViewDetailId(l.id)}
+                >
+                  <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
+                  <td className="px-6 py-4">
+                    <div className="font-semibold text-gray-800">{l.companyName}</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.recipientName}</div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-500 text-xs text-left">
+                    {l.staffId ? (
+                      <span className="flex items-center gap-1.5">
+                        <UserCheck className="w-3.5 h-3.5" />
+                        {staffMap[l.staffId] || `Nhân viên ${l.staffId.slice(0, 4)}`}
+                      </span>
+                    ) : <span className="">—</span>}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={cn(
+                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                      getStatusStyle(l.status)
+                    )}>
+                      {getStatusLabel(l.status)}
                     </span>
-                  ) : <span className="">—</span>}
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <span className={cn(
-                    "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                    statusStyles[l.status]
-                  )}>
-                    {statusLabels[l.status]}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-1">
-                    {l.status === 'Pending' && (
-                      <CanAccess roles={['SaleStaff']}>
-                        <div className="flex items-center gap-1">
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-1">
+                      <>
+                        <CanAccess roles={['Manager']}>
+                          <div className="min-w-[200px]">
+                            <Select 
+                              value={l.staffId || ""} 
+                              onValueChange={(value) => handleAssignStaff(l.id, value)}
+                              disabled={assignLoading}
+                            >
+                              <SelectTrigger className="h-9 text-xs font-semibold border-indigo-200 bg-indigo-50/50 text-indigo-700 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all shadow-sm">
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                  <UserPlus className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                  <SelectValue placeholder="CHỈ ĐỊNH NHÂN VIÊN..." />
+                                </div>
+                              </SelectTrigger>
+                              <SelectContent className="min-w-[220px]">
+                                {staffList.map((staff) => (
+                                  <SelectItem key={staff.id} value={staff.id} className="text-xs py-2.5">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="font-bold text-gray-900">{staff.name}</span>
+                                      <span className="text-[10px] text-gray-500 uppercase tracking-tight">{staff.code} • {staff.department || 'Phòng kinh doanh'}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </CanAccess>
+                        <CanAccess roles={['SaleStaff']}>
                           <Button
-                            variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            variant="ghost" size="icon" title="Tiếp nhận" className="h-8 w-8 text-green-600 hover:bg-green-50"
                             onClick={(e) => handleAccept(l.id, e)}
                           >
                             <Check className="w-4 h-4" />
                           </Button>
+                        </CanAccess>
+                        <CanAccess roles={['SaleStaff']}>
                           <Button
-                            variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50"
+                            variant="ghost" size="icon" title="Từ chối" className="h-8 w-8 text-red-500 hover:bg-red-50"
                             onClick={(e) => openDeclineDialog(l.id, e)}
                           >
                             <X className="w-4 h-4" />
                           </Button>
-                        </div>
-                      </CanAccess>
-                    )}
+                        </CanAccess>
+                      </>
 
-                    {l.status === 'Accepted' && (
-                      <Button
-                        variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                        onClick={(e) => handleCreateQuotation(l.id, e)}
-                      >
-                        <FileText className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="ghost" size="icon" className="h-8 w-8 text-gray-400 group-hover:text-blue-600 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setViewDetailId(l.id);
-                      }}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {l.status?.toLowerCase() === RfqStatus.ACCEPTED.toLowerCase() && (
+                        <CanAccess roles={['SaleStaff']}>
+                          <Button
+                            variant="ghost" size="icon" title="Lập báo giá" className="h-8 w-8 text-blue-600 hover:bg-blue-50 border border-blue-100 shadow-sm"
+                            onClick={(e) => handleCreateQuotation(l.id, e)}
+                          >
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                        </CanAccess>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Dialog Từ chối */}
       <Dialog open={isDeclineDialogOpen} onOpenChange={setIsDeclineDialogOpen}>
         <DialogContent className="sm:max-w-[400px] border-none shadow-xl gap-0 p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-gray-50 border-b border-gray-100">

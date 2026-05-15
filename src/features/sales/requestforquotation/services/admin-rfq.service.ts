@@ -1,24 +1,84 @@
 import api from "@/shared/configs/axios-config";
 import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
-import { RfqListItem } from "../models/rfq-list-response";
-import { RfqDetail } from "../models/rfq-detail-response";
-
-export interface RfqFilter extends OffsetPagedQuery {
-    customerId?: string;
-    staffId?: string;
-}
+import { RfqStatus } from "../constants/rfq-status";
 
 export const AdminRFQService = {
-    assignStaff: (rfqId: string, staffId: string) =>
-        api.master.post<any, boolean>(`/rfq/assign`, { rfqId, staffId }),
+    assignStaff: (id: string, staffId: string) =>
+        api.master.post<any, void>(`/rfq/force-assign`, { Id: id, StaffId: staffId }),
 
-    rejectRFQ: (rfqId: string) =>
-        api.master.post<any, boolean>(`/rfq/reject`, { RfqId: rfqId }),
+    rejectRFQ: (id: string) =>
+        api.master.post<any, void>(`/rfq/reject`, { Id: id }),
 
-    // 2. Queries đặc thù của Admin UI
     getListRFQ: (params: RfqFilter) =>
         api.master.get<any, OffsetPagedResult<RfqListItem>>(`/rfq`, { params }),
 
     getDetailRFQ: (id: string) =>
         api.master.get<any, RfqDetail>(`/rfq/${id}`),
+
+    getStats: () =>
+        api.master.get<any, RfqStats>(`/rfq/stats`),
 };
+
+export interface RfqFilter extends OffsetPagedQuery {
+    status?: RfqStatus;
+}
+
+export interface RfqStats {
+    total: number;
+    pending: number;
+    accepted: number;
+    rejected: number;
+    responded: number;
+    converted: number;
+}
+
+export interface RfqListItem {
+    id: string;
+    code: string;
+    status: string;
+    recipientName: string;
+    recipientPhone: string;
+    companyName: string;
+    createdAt: string;
+    staffId: string;
+    customerId: string;
+    itemCount: number;
+}
+
+export interface RfqItem {
+    id?: string;
+    productId?: string;
+    productCode: string;
+    productName: string;
+    manufacturer?: string;
+    unit: string;
+    quantity: number;
+    category?: string;
+}
+
+
+export interface RfqDetailItem {
+    id: string;
+    productId: string;
+    productName: string;
+    productCode: string;
+    quantity: number;
+    manufacturer: string;
+    unit: string;
+}
+
+export interface RfqDetail {
+    id: string;
+    code: string;
+    staffId: string | null;
+    customerId: string;
+    status: string;
+    createdAt: string;
+    recipientName: string;
+    recipientPhone: string;
+    companyName: string;
+    email: string;
+    address: string;
+    taxCode: string;
+    items: RfqDetailItem[];
+}

@@ -1,7 +1,7 @@
 export enum RfqStatus {
-    DRAFT = 'DRAFT', // Nháp
-    PENDING = 'PENDING', // Chờ phân bổ
-    ACCEPTED = 'ACCEPTED', // Đã tiếp nhận
-    REJECTED = 'REJECTED', // Đã từ chối
-    CONVERTED = 'CONVERTED', // đã chuyển đổi thành báo giá
+    DRAFT = 'Draft', // Nháp
+    PENDING = 'Pending', // Chờ tiếp nhận
+    ACCEPTED = 'Accepted', // Đã tiếp nhận
+    REJECTED = 'Rejected', // Đã từ chối
+    CONVERTED = 'Converted', // Đã chuyển đổi thành báo giá
 }

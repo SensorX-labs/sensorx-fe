@@ -22,7 +22,8 @@ export const CanAccess: React.FC<CanAccessProps> = ({
   if (!user) return <>{fallback}</>;
 
   // Chuyển đổi roles của user về mảng chuỗi để so sánh dễ hơn
-  const userRoles = (Array.isArray(user.roles) ? user.roles : [user.roles]).map(r => String(r).toLowerCase());
+  const rolesValue = (user as any).roles || (user as any).role || [];
+  const userRoles = (Array.isArray(rolesValue) ? rolesValue : [rolesValue]).map(r => String(r).toLowerCase());
   
   // Danh sách các role cần kiểm tra (cũng chuyển về lowercase)
   const targetRoles = roles.map(r => String(r).toLowerCase());
