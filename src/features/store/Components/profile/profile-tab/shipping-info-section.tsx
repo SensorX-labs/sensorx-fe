@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Save, X, Loader2, MapPin } from 'lucide-react';
-import { CustomerService } from '@/features/user/customer/services/customer-service';
 import AdministrativeService, { Province, Ward } from '@/shared/services/administrative.service';
-import { UpdateShippingInfo } from '@/features/user/customer/models/update-shipping-info';
 import { toast } from 'sonner';
+import StoreCustomerService, { UpdateShippingInfo, ShippingInfo } from '@/features/store/services/store-customer.service';
 import {
     Select,
     SelectContent,
@@ -12,7 +11,6 @@ import {
     SelectValue,
 } from '@/shared/components/shadcn-ui/select';
 import { FormField } from './form-field';
-import { ShippingInfo } from '@/features/user/customer/models/customer-detail';
 
 interface ShippingInfoSectionProps {
     customerId: string | undefined;
@@ -77,6 +75,7 @@ export function ShippingInfoSection({
     // Load provinces once
     useEffect(() => {
         AdministrativeService.getListProvince().then(setProvinces).catch(console.error);
+        console.log(provinces);
     }, []);
 
     // Load wards whenever province changes
@@ -140,7 +139,7 @@ export function ShippingInfoSection({
                 receiverPhone,
             } as UpdateShippingInfo;
 
-            const response = await CustomerService.updateShippingInfo(payload);
+            const response = await StoreCustomerService.updateShippingInfo(payload);
             if (response) {
                 setIsEditing(false);
                 onRefresh();

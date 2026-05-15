@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Building, Save, X, Loader2, Info } from 'lucide-react';
-import { CustomerService } from '@/features/user/customer/services/customer-service';
-import { UpdateCustomerInfo } from '@/features/user/customer/models/update-customer-info';
 import { toast } from 'sonner';
+import StoreCustomerService, { CustomerDetail, UpdateCustomerInfo } from '@/features/store/services/store-customer.service';
 import { FormField } from './form-field';
-import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
 
 interface BusinessInfoSectionProps {
     customerData: CustomerDetail | null | undefined;
@@ -36,9 +34,8 @@ export function BusinessInfoSection({
         if (!formData.id) return;
         try {
             setIsSubmitting(true);
-            const response = await CustomerService.updateCustomerInfo(formData as UpdateCustomerInfo);
+            const response = await StoreCustomerService.updateCustomerInfo(formData as UpdateCustomerInfo);
             if (response) {
-                toast.success('Cập nhật hồ sơ doanh nghiệp thành công');
                 setIsEditing(false);
                 onRefresh();
             }

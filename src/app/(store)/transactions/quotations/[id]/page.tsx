@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { QuotationDetailView } from '@/features/store/Components/transactions/quotations/components/quotation-detail-view';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
+import { QuotationDetailView } from '@/features/store/Components/transactions/detail-quotation';
 
 export default function QuotationDetailPage() {
     const params = useParams();

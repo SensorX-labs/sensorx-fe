@@ -13,12 +13,11 @@ import { OrdersTab } from './tab-my-orders';
 import { TabInquiryCart } from './tab-inquiry-cart';
 
 import { useUser } from '@/shared/hooks/use-user';
-import { CustomerService } from '@/features/user/customer/services/customer-service';
-import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
+import { CustomerDetail, StoreCustomerService } from '../../services/store-customer.service';
 
 const TABS = [
-  { id: 'inquiry-cart', label: 'Yêu cầu (Bản thảo)', icon: ClipboardList },
-  { id: 'rfqs', label: 'Yêu cầu báo giá', icon: FileText },
+  { id: 'inquiry-cart', label: 'Danh sách yêu cầu', icon: ClipboardList },
+  { id: 'rfqs', label: 'Yêu cầu báo giá của tôi', icon: FileText },
   { id: 'quotes', label: 'Báo giá của tôi', icon: ShoppingBag },
   { id: 'orders', label: 'Đơn hàng của tôi', icon: Package }
 ] as const;
@@ -34,17 +33,6 @@ export default function Transactions() {
   const { user } = useUser();
   const [customerData, setCustomerData] = useState<CustomerDetail>();
 
-  // Xử lý ẩn/hiện InquiryCartPanel dựa trên tab hiện tại
-  useEffect(() => {
-    const isCartTab = activeTab === 'inquiry-cart';
-    window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: isCartTab } }));
-    
-    // Cleanup khi component bị unmount: hiện lại panel
-    return () => {
-      window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: false } }));
-    };
-  }, [activeTab]);
-
   useEffect(() => {
     if (tabFromUrl && TABS.some(t => t.id === tabFromUrl) && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
@@ -55,7 +43,7 @@ export default function Transactions() {
     const fetchCustomer = async () => {
       if (!user?.id) return;
       try {
-        const response = await CustomerService.getDetailCustomerByAccountId(user.id);
+        const response = await StoreCustomerService.getDetailCustomerByAccountId(user.id);
         if (response) setCustomerData(response);
       } catch (error) {
         console.error("Fetch customer error:", error);

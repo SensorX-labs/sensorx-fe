@@ -6,7 +6,7 @@ import { cn } from '@/shared/utils';
 import { StoreRFQService, StoreMyRFQItem } from '../../services/store-rfq.service';
 import { RfqStatus } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
-import { Spinner, ListSkeleton } from '@/shared/components/common/loading';
+import { ListSkeleton } from '@/shared/components/common/loading';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     [RfqStatus.Draft]: {

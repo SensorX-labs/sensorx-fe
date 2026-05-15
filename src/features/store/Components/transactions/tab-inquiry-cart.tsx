@@ -1,15 +1,17 @@
 'use client';
 
-import React from 'react';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 import { Trash2, ShoppingBag, Plus, Minus, Send, Save } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { useUser } from '@/shared/hooks/use-user';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function TabInquiryCart() {
   const { items, removeItem, updateQuantity, clearCart } = useInquiryCart();
   const { user } = useUser();
+  const router = useRouter();
 
   const handleUpdateQty = (productId: string, currentQty: number, delta: number) => {
     const newQty = currentQty + delta;
@@ -17,6 +19,14 @@ export function TabInquiryCart() {
       updateQuantity(productId, newQty);
     }
   };
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: true } }));
+
+    return () => {
+      window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: false } }));
+    };
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -31,7 +41,7 @@ export function TabInquiryCart() {
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-          Sản phẩm trong bản thảo ({items.length})
+          Danh sách sản phẩm ({items.length})
         </h3>
         <button
           onClick={clearCart}
@@ -44,13 +54,14 @@ export function TabInquiryCart() {
       <div className="border border-gray-100 bg-white">
         <div className="divide-y divide-gray-50">
           {items.map((item) => (
-            <div key={item.productId} className="p-6 flex items-center gap-6">
+            <div key={item.productId} className="p-6 flex items-center gap-6 hover:bg-gray-50/50 transition-colors cursor-pointer group">
               <div className="relative w-20 h-20 bg-gray-50 flex-shrink-0 border border-gray-100">
                 <Image
                   src={item.image || '/assets/images/products/default.png'}
                   alt={item.productName}
                   fill
                   className="object-contain p-2"
+                  onClick={() => router.push(`/shop/${item.productId}`)}
                 />
               </div>
 
@@ -94,11 +105,11 @@ export function TabInquiryCart() {
       <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
         {user ? (
           <>
-            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-gray-900 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-50 transition-all">
+            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-gray-900 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-50 transition-all cursor-pointer active:scale-95">
               <Save size={16} />
               Lưu bản thảo hệ thống
             </button>
-            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all">
+            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all cursor-pointer active:scale-95">
               <Send size={16} />
               Gửi yêu cầu báo giá ngay
             </button>
@@ -106,7 +117,7 @@ export function TabInquiryCart() {
         ) : (
           <button
             onClick={() => toast.error("Vui lòng đăng nhập để gửi yêu cầu")}
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all"
+            className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all cursor-pointer active:scale-95"
           >
             Đăng nhập để gửi yêu cầu
           </button>

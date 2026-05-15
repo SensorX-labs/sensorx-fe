@@ -1,15 +1,15 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mail, ShieldCheck, Lock, CheckCircle, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle, KeyRound, AlertCircle, Eye, EyeOff, Mail, ArrowRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { ChangePasswordForm } from '@/features/system/auth/components/common/change-password-form';
 
 export const SecurityTab: React.FC = () => {
     const [mode, setMode] = useState<'change' | 'forgot'>('change');
     const [step, setStep] = useState<'request' | 'verify'>('request');
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [showPass, setShowPass] = useState(false);
 
     // Form states
     const [email, setEmail] = useState('nguyenvanа@email.com');
@@ -50,177 +50,177 @@ export const SecurityTab: React.FC = () => {
         }, 1000);
     };
 
-    const resetStates = () => {
-        setIsSuccess(false);
-        setStep('request');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setOtp('');
-    };
+    if (isSuccess) {
+        return (
+            <div className="bg-white border border-gray-200 p-12 flex flex-col items-center justify-center text-center min-h-[500px] animate-in fade-in zoom-in duration-500">
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle className="text-green-600 w-10 h-10" />
+                </div>
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900 mb-2">Cập nhật thành công</h2>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest max-w-xs leading-loose">
+                    Mật khẩu của bạn đã được thay đổi. Hệ thống sẽ tự động quay lại trang bảo mật sau vài giây.
+                </p>
+            </div>
+        );
+    }
 
     return (
-        <div className="bg-white border border-gray-200 p-8 max-w-2xl mx-auto min-h-[500px]">
-            <div className="flex gap-8 border-b border-gray-100 mb-10">
+        <div className="bg-white border border-gray-200 overflow-hidden min-h-[600px]">
+            {/* Tab Header */}
+            <div className="flex border-b border-gray-100">
                 <button
-                    onClick={() => { setMode('change'); resetStates(); }}
+                    onClick={() => { setMode('change'); setStep('request'); }}
                     className={cn(
-                        "pb-4 text-[10px] font-bold uppercase tracking-widest transition-all relative",
-                        mode === 'change' ? "text-brand-green" : "text-gray-400 hover:text-gray-600"
+                        "flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative",
+                        mode === 'change' ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                     )}
                 >
                     Đổi mật khẩu
-                    {mode === 'change' && <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-brand-green" />}
+                    {mode === 'change' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 animate-in slide-in-from-left duration-300" />}
                 </button>
                 <button
-                    onClick={() => { setMode('forgot'); resetStates(); }}
+                    onClick={() => { setMode('forgot'); setStep('request'); }}
                     className={cn(
-                        "pb-4 text-[10px] font-bold uppercase tracking-widest transition-all relative",
-                        mode === 'forgot' ? "text-brand-green" : "text-gray-400 hover:text-gray-600"
+                        "flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative",
+                        mode === 'forgot' ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                     )}
                 >
-                    Tôi quên mật khẩu
-                    {mode === 'forgot' && <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-brand-green" />}
+                    Quên mật khẩu
+                    {mode === 'forgot' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 animate-in slide-in-from-right duration-300" />}
                 </button>
             </div>
 
-            {mode === 'change' ? (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <div className="mb-6">
-                        <h2 className="tracking-title-lg mb-2">Thay đổi mật khẩu</h2>
-                        <p className="subtitle-sm !mt-0 lowercase first-letter:uppercase">Hãy cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn.</p>
+            <div className="p-10 max-w-md mx-auto">
+                <div className="flex justify-center mb-8">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+                        {mode === 'change' ? <Lock className="text-gray-300 w-6 h-6" /> : <Mail className="text-gray-300 w-6 h-6" />}
                     </div>
-                    <ChangePasswordForm />
                 </div>
-            ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <div className="mb-10">
-                        <h2 className="tracking-title-lg mb-2">Quên mật khẩu</h2>
-                        <p className="subtitle-sm !mt-0 lowercase first-letter:uppercase">Lấy lại quyền truy cập tài khoản bằng cách xác thực qua Email.</p>
-                    </div>
 
-                    <div className="space-y-8">
-                        <div className={cn("space-y-4 transition-all duration-500", step === 'verify' && "pb-6 border-b border-gray-100")}>
-                            <Label>1. Nhập Email khôi phục</Label>
-                            <div className="flex gap-4">
-                                <div className="flex-1">
-                                    <InputField
+                <div className="text-center mb-10">
+                    <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-900 mb-2">
+                        {mode === 'change' ? 'Thay đổi mật khẩu' : step === 'request' ? 'Khôi phục mật khẩu' : 'Xác minh OTP'}
+                    </h3>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest leading-loose">
+                        {mode === 'change' 
+                            ? 'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới để cập nhật.' 
+                            : step === 'request' 
+                                ? 'Chúng tôi sẽ gửi mã xác minh đến email của bạn.' 
+                                : `Mã xác minh đã được gửi đến ${email.replace(/(.{3}).*(@.*)/, "$1...$2")}`}
+                    </p>
+                </div>
+
+                <form onSubmit={handleUpdatePassword} className="space-y-6">
+                    {mode === 'change' ? (
+                        <>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Mật khẩu hiện tại</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPass ? "text" : "password"}
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent focus:border-gray-900 focus:bg-white outline-none transition-all text-xs tracking-widest"
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowPass(!showPass)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-transparent focus:border-gray-900 focus:bg-white outline-none transition-all text-xs tracking-widest"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Xác nhận mật khẩu</label>
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-transparent focus:border-gray-900 focus:bg-white outline-none transition-all text-xs tracking-widest"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        step === 'request' ? (
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Địa chỉ Email</label>
+                                <div className="relative">
+                                    <input
                                         type="email"
                                         value={email}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                                        disabled={step === 'verify'}
-                                        placeholder="Email của bạn"
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent focus:border-gray-900 focus:bg-white outline-none transition-all text-xs tracking-widest"
+                                        placeholder="your@email.com"
+                                        required
                                     />
-                                </div>
-                                {step === 'request' && (
-                                    <button
-                                        type="button"
-                                        onClick={handleSendCode}
-                                        disabled={isLoading || !email}
-                                        className="btn-tracking px-6 bg-brand-green text-white text-[10px] items-center flex gap-2 uppercase transition-all hover:bg-brand-green-hover"
-                                    >
-                                        {isLoading ? 'Đang gửi...' : 'Gửi mã OTP'}
-                                    </button>
-                                )}
-                                {step === 'verify' && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep('request')}
-                                        className="tracking-label text-brand-green hover:underline uppercase font-bold"
-                                    >
-                                        Thay đổi
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <form 
-                            onSubmit={handleUpdatePassword}
-                            className={cn(
-                                "space-y-8 transition-all overflow-hidden",
-                                step === 'request' ? "max-h-0 pointer-events-none opacity-0" : "max-h-[600px] opacity-100"
-                            )}
-                        >
-                            <div className="space-y-4">
-                                <Label>2. Xác thực & Thiết lập mật khẩu mới</Label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="md:col-span-2">
-                                        <InputField
-                                            icon={ShieldCheck}
-                                            type="text"
-                                            value={otp}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOtp(e.target.value)}
-                                            placeholder="Nhập mã OTP 6 số"
-                                        />
-                                    </div>
-                                    <InputField
-                                        icon={Lock}
-                                        value={newPassword}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                                        placeholder="Mật khẩu mới"
-                                        showToggle
-                                    />
-                                    <InputField
-                                        icon={Lock}
-                                        value={confirmPassword}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                                        placeholder="Xác nhận mật khẩu"
-                                        showToggle
-                                    />
+                                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-200" size={16} />
                                 </div>
                             </div>
+                        ) : (
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Mã xác minh (OTP)</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        className="w-full px-10 py-4 bg-gray-50 border border-transparent focus:border-gray-900 focus:bg-white outline-none transition-all text-2xl font-light tracking-[0.5em] text-center"
+                                        placeholder="000000"
+                                        maxLength={6}
+                                        required
+                                    />
+                                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-200" size={18} />
+                                </div>
+                                <button type="button" className="text-[9px] font-bold uppercase tracking-widest text-brand-green mt-2 block mx-auto hover:underline">
+                                    Gửi lại mã xác minh
+                                </button>
+                            </div>
+                        )
+                    )}
 
-                            <button
-                                type="submit"
-                                disabled={isLoading || otp.length < 4 || !newPassword || newPassword !== confirmPassword}
-                                className="btn-tracking w-full py-4 bg-brand-green text-white text-[10px] font-bold uppercase transition-all hover:bg-brand-green-hover disabled:bg-gray-200 disabled:text-gray-400"
-                            >
-                                {isLoading ? 'Đang thực hiện...' : 'Khôi phục mật khẩu'}
-                            </button>
-                        </form>
+                    <button
+                        type={mode === 'change' || (mode === 'forgot' && step === 'verify') ? "submit" : "button"}
+                        onClick={mode === 'forgot' && step === 'request' ? handleSendCode : undefined}
+                        disabled={isLoading}
+                        className="w-full flex items-center justify-center gap-3 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all disabled:opacity-50"
+                    >
+                        {isLoading ? (
+                            <RefreshCw className="animate-spin" size={16} />
+                        ) : (
+                            <>
+                                <span>{mode === 'change' ? 'Cập nhật mật khẩu' : step === 'request' ? 'Gửi mã xác minh' : 'Xác minh & Tiếp tục'}</span>
+                                <ArrowRight size={14} />
+                            </>
+                        )}
+                    </button>
+                </form>
+
+                <div className="mt-12 flex items-start gap-4 p-4 bg-gray-50 border border-gray-100">
+                    <ShieldCheck className="text-brand-green flex-shrink-0" size={18} />
+                    <div className="space-y-1">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-900">Bảo mật tài khoản</p>
+                        <p className="text-[9px] leading-relaxed text-gray-400 uppercase tracking-widest">
+                            SensorX khuyến nghị sử dụng mật khẩu mạnh bao gồm chữ hoa, chữ thường và ký số.
+                        </p>
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
-
-const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ElementType; showToggle?: boolean }> = ({ 
-    icon: Icon, 
-    type = 'password', 
-    showToggle = false, 
-    ...props 
-}) => {
-    const [showPassword, setShowPassword] = useState(false);
-    const isPasswordType = type === 'password';
-
-    return (
-        <div className="relative">
-            {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />}
-            <input
-                type={isPasswordType && showToggle ? (showPassword ? 'text' : 'password') : type}
-                className={cn(
-                    "w-full py-3 border border-gray-200 bg-white focus:border-brand-green outline-none text-sm tracking-widest transition-all",
-                    Icon ? "pl-11" : "px-4",
-                    (isPasswordType && showToggle) ? "pr-11" : "pr-4"
-                )}
-                {...props}
-            />
-            {isPasswordType && showToggle && (
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-            )}
-        </div>
-    );
-};
-
-const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <label className="block tracking-label uppercase font-bold text-gray-900 mb-2">
-        {children}
-    </label>
-);

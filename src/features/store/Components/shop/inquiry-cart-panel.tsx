@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
-import { StoreRFQService } from '@/features/store/services/store-rfq.service';
 import { cn } from '@/shared/utils';
 
 export function InquiryCartPanel() {
@@ -14,8 +13,6 @@ export function InquiryCartPanel() {
     const { items, totalItems, removeItem, updateQuantity, clearCart } = useInquiryCart();
     const [isOpen, setIsOpen] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
-    const [isSending, setIsSending] = useState(false);
-    const [isSavingDraft, setIsSavingDraft] = useState(false);
 
     useEffect(() => {
         const handleToggle = (e: any) => {
@@ -32,47 +29,16 @@ export function InquiryCartPanel() {
 
     const isAuthenticated = () => !!Cookies.get('token');
 
-    const handleAction = async (type: 'DRAFT' | 'SEND') => {
+    const Login = async () => {
         if (!isAuthenticated()) {
-            localStorage.setItem('pendingRFQSubmit', 'true');
-            toast.info('Vui lòng đăng nhập để tiếp tục', {
+            toast.info('Vui lòng đăng nhập để xem chi tiết giỏ hàng', {
                 action: {
                     label: 'Đăng nhập',
-                    onClick: () => router.push('/login'),
+                    onClick: () => router.push(`/login?redirect=${encodeURIComponent('/transactions?tab=inquiry-cart')}`),
                 },
                 duration: 5000,
             });
             return;
-        }
-
-        try {
-            if (type === 'DRAFT') setIsSavingDraft(true);
-            else setIsSending(true);
-
-            const rfqItems = items.map(i => ({
-                productId: i.productId,
-                quantity: i.quantity,
-            }));
-
-            const rfqId = await StoreRFQService.createRFQ(rfqItems);
-            if (!rfqId) throw new Error('Không thể tạo yêu cầu báo giá');
-
-            if (type === 'SEND') {
-                await StoreRFQService.sendRFQ(rfqId);
-                toast.success('Yêu cầu báo giá đã được gửi thành công!');
-            } else {
-                toast.success('Đã lưu bản thảo yêu cầu báo giá');
-            }
-
-            clearCart();
-            setIsOpen(false);
-            router.push('/transactions');
-        } catch (error) {
-            console.error(`Failed to ${type} RFQ:`, error);
-            toast.error('Có lỗi xảy ra, vui lòng thử lại');
-        } finally {
-            setIsSavingDraft(false);
-            setIsSending(false);
         }
     };
 
@@ -146,29 +112,20 @@ export function InquiryCartPanel() {
                         {isAuthenticated() ? (
                             <div className="grid grid-cols-1 gap-2">
                                 <button
-                                    onClick={() => handleAction('DRAFT')}
-                                    disabled={isSavingDraft || isSending}
-                                    className="w-full h-10 flex items-center justify-center gap-2 border border-gray-900 text-gray-900 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-50"
+                                    onClick={() => router.push('/transactions?tab=inquiry-cart')}
+                                    className="w-full h-11 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black transition-all shadow-lg shadow-gray-200"
                                 >
-                                    {isSavingDraft ? <Loader2 size={12} className="animate-spin" /> : <ClipboardList size={12} />}
-                                    Lưu bản thảo
-                                </button>
-                                <button
-                                    onClick={() => handleAction('SEND')}
-                                    disabled={isSavingDraft || isSending}
-                                    className="w-full h-11 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-brand-green transition-all disabled:opacity-50 shadow-lg shadow-gray-200"
-                                >
-                                    {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    Gửi yêu cầu ngay
+                                    <Send size={14} />
+                                    Xem thông tin chi tiết
                                 </button>
                             </div>
                         ) : (
                             <button
-                                onClick={() => handleAction('SEND')}
-                                className="w-full h-11 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-brand-green transition-all"
+                                onClick={() => Login()}
+                                className="w-full h-11 flex items-center justify-center gap-2 bg-gray-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-black transition-all shadow-lg shadow-gray-200"
                             >
                                 <Send size={14} />
-                                Đăng nhập để gửi báo giá
+                                Đăng nhập để xem chi tiết
                             </button>
                         )}
 
@@ -181,31 +138,34 @@ export function InquiryCartPanel() {
                         </button>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* FAB Button - Chỉ hiện khi Panel đóng */}
-            {!isOpen && (
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className={cn(
-                        'relative flex items-center gap-3 px-5 h-14',
-                        'bg-gray-900 text-white rounded-2xl shadow-2xl',
-                        'transition-all duration-500 hover:-translate-y-1 hover:shadow-brand-green/30',
-                        'hover:bg-brand-green group animate-in fade-in zoom-in duration-300'
-                    )}
-                >
-                    <ClipboardList size={18} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:block">
-                        Yêu cầu báo giá
-                    </span>
-                    <ChevronUp size={14} className="text-gray-400 group-hover:text-white transition-colors" />
+            {
+                !isOpen && (
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className={cn(
+                            'relative flex items-center gap-3 px-5 h-14',
+                            'bg-gray-900 text-white rounded-2xl shadow-2xl',
+                            'transition-all duration-500 hover:-translate-y-1 hover:shadow-brand-green/30',
+                            'hover:bg-brand-green group animate-in fade-in zoom-in duration-300'
+                        )}
+                    >
+                        <ClipboardList size={18} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:block">
+                            Yêu cầu báo giá
+                        </span>
+                        <ChevronUp size={14} className="text-gray-400 group-hover:text-white transition-colors" />
 
-                    {/* Badge số lượng */}
-                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-brand-green text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md animate-bounce">
-                        {totalItems}
-                    </span>
-                </button>
-            )}
-        </div>
+                        {/* Badge số lượng */}
+                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-brand-green text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md animate-bounce">
+                            {totalItems}
+                        </span>
+                    </button>
+                )
+            }
+        </div >
     );
 }

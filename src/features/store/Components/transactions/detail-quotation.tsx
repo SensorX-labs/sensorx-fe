@@ -19,9 +19,8 @@ import { cn } from '@/shared/utils';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 import { QuoteService } from '@/features/sales/quotation/services/quote-service';
 import { CanAccess } from '@/shared/components/common/can-access';
-import CustomerService from '@/features/user/customer/services/customer-service';
 import { QuoteDetail } from '@/features/sales/quotation/models/quote-detail-response';
-import { Customer } from '@/features/user/customer/models/customer';
+import StoreCustomerService, { Customer } from '../../services/store-customer.service';
 
 const statusStyles: Record<string, string> = {
     [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
@@ -62,7 +61,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                     setQuote(quoteData);
 
                     if (quoteData.customerId) {
-                        const customerRes = await CustomerService.getCustomerById(quoteData.customerId);
+                        const customerRes = await StoreCustomerService.getCustomerById(quoteData.customerId);
                         if (customerRes) {
                             setCustomer(customerRes);
                         }
