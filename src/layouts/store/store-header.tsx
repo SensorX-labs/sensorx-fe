@@ -140,6 +140,11 @@ export const StoreHeader = () => {
                             <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
                           </Link>
 
+                          <Link href="/transactions?tab=inquiry-cart" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
+                            <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Bản thảo yêu cầu</span>
+                            <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
+                          </Link>
+
                           <Link href="/catalog" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
                             <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Danh mục giải pháp</span>
                             <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />

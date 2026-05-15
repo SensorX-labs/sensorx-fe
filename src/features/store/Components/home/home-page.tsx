@@ -52,16 +52,10 @@ export function HomePage() {
             <div className="flex flex-wrap gap-4 pt-4">
               <Link
                 href="/shop"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-green text-white font-bold text-sm uppercase tracking-widest hover:bg-brand-green/90 transition-all group"
-              >
-                Khám phá danh mục
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/transactions"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white font-bold text-sm uppercase tracking-widest hover:bg-white hover:text-gray-900 transition-all"
               >
-                Yêu cầu báo giá ngay
+                Mua sắm ngay
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>

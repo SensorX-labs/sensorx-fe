@@ -9,6 +9,7 @@ export interface InquiryCartItem {
     quantity: number;
     unit: string;
     manufacturer: string;
+    image?: string;
 }
 
 const STORAGE_KEY = 'inquiryCart';

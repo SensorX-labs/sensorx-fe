@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClipboardList, X, Send, Trash2, ChevronUp, ChevronDown, Minus, Plus, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -13,10 +13,22 @@ export function InquiryCartPanel() {
     const router = useRouter();
     const { items, totalItems, removeItem, updateQuantity, clearCart } = useInquiryCart();
     const [isOpen, setIsOpen] = useState(false);
+    const [isHidden, setIsHidden] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
 
-    if (totalItems === 0) return null;
+    useEffect(() => {
+        const handleToggle = (e: any) => {
+            if (e.detail?.hide !== undefined) {
+                setIsHidden(e.detail.hide);
+            }
+        };
+
+        window.addEventListener('hideInquiryCartPanel', handleToggle);
+        return () => window.removeEventListener('hideInquiryCartPanel', handleToggle);
+    }, []);
+
+    if (isHidden || totalItems === 0) return null;
 
     const isAuthenticated = () => !!Cookies.get('token');
 

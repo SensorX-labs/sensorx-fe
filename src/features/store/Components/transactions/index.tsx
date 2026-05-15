@@ -3,19 +3,21 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
-import { FileText, ShoppingBag, Package } from 'lucide-react';
+import { FileText, ShoppingBag, Package, ClipboardList } from 'lucide-react';
 import { cn } from '@/shared/utils';
 
 // Các component con
 import { MyRfqsTab } from './tab-my-rfqs';
 import { MyQuotationsTab } from './tab-my-quotations';
 import { OrdersTab } from './tab-my-orders';
+import { TabInquiryCart } from './tab-inquiry-cart';
 
 import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
 import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
 
 const TABS = [
+  { id: 'inquiry-cart', label: 'Yêu cầu (Bản thảo)', icon: ClipboardList },
   { id: 'rfqs', label: 'Yêu cầu báo giá', icon: FileText },
   { id: 'quotes', label: 'Báo giá của tôi', icon: ShoppingBag },
   { id: 'orders', label: 'Đơn hàng của tôi', icon: Package }
@@ -27,10 +29,21 @@ export default function Transactions() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as TabId;
-  const [activeTab, setActiveTab] = useState<TabId>(TABS.some(t => t.id === tabFromUrl) ? tabFromUrl : 'rfqs');
+  const [activeTab, setActiveTab] = useState<TabId>(TABS.some(t => t.id === tabFromUrl) ? tabFromUrl : 'inquiry-cart');
 
   const { user } = useUser();
   const [customerData, setCustomerData] = useState<CustomerDetail>();
+
+  // Xử lý ẩn/hiện InquiryCartPanel dựa trên tab hiện tại
+  useEffect(() => {
+    const isCartTab = activeTab === 'inquiry-cart';
+    window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: isCartTab } }));
+    
+    // Cleanup khi component bị unmount: hiện lại panel
+    return () => {
+      window.dispatchEvent(new CustomEvent('hideInquiryCartPanel', { detail: { hide: false } }));
+    };
+  }, [activeTab]);
 
   useEffect(() => {
     if (tabFromUrl && TABS.some(t => t.id === tabFromUrl) && tabFromUrl !== activeTab) {
@@ -99,6 +112,7 @@ export default function Transactions() {
 
           {/* Nội dung Tab */}
           <main>
+            {activeTab === 'inquiry-cart' && <TabInquiryCart />}
             {activeTab === 'rfqs' && <MyRfqsTab customerId={customerData?.id} />}
             {activeTab === 'quotes' && <MyQuotationsTab customerId={customerData?.id} />}
             {activeTab === 'orders' && <OrdersTab customerId={customerData?.id} />}
