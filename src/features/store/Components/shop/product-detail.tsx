@@ -3,22 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { Share2, Truck, Shield, RotateCcw, Phone, Mail, FileText, Loader2 } from 'lucide-react';
+import { Share2, Truck, Shield, RotateCcw, Phone, Mail, FileText, Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductDetail as ProductDetailModel } from '@/features/catalog/product/models';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 import { NotionEditor } from '@/shared/components/notion-editor';
-import { StoreRFQService } from '@/features/store/services/store-rfq.service';
+import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
 export function ProductDetail() {
   const { id } = useParams();
+  const { addItem, getItemQuantity } = useInquiryCart();
   const [product, setProduct] = useState<ProductDetailModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  const [isSubmittingRFQ, setIsSubmittingRFQ] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const qtyInCart = id ? getItemQuantity(id as string) : 0;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -39,29 +41,24 @@ export function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const handleCreateRFQ = async () => {
+  const handleCreateRFQ = () => {
     if (!product || !id) return;
-    try {
-      setIsSubmittingRFQ(true);
-      const activeRFQId = localStorage.getItem('activeRFQId');
 
-      if (activeRFQId) {
-        await StoreRFQService.addProductRFQ(activeRFQId, [
-          { productId: id as string, quantity: selectedQuantity }
-        ]);
-      } else {
-        const rfqId = await StoreRFQService.createRFQ([
-          { productId: id as string, quantity: selectedQuantity }
-        ]);
-        if (rfqId) {
-          localStorage.setItem('activeRFQId', rfqId);
-        }
-      }
-    } catch (error) {
-      console.error(">>> Lỗi khi xử lý RFQ:", error);
-    } finally {
-      setIsSubmittingRFQ(false);
-    }
+    setJustAdded(true);
+    addItem({
+      productId: id as string,
+      productName: product.name,
+      productCode: product.code || '',
+      unit: product.unit || 'Cái',
+      manufacturer: product.manufacture || 'SensorX',
+      quantity: selectedQuantity,
+    });
+
+    toast.success(`Đã thêm ${selectedQuantity} sản phẩm`, {
+      description: `Tổng số lượng trong danh sách: ${qtyInCart + selectedQuantity}`,
+      duration: 2500,
+    });
+    setTimeout(() => setJustAdded(false), 800);
   };
 
 
@@ -206,11 +203,16 @@ export function ProductDetail() {
             <div className="flex gap-3 md:gap-4 mb-8">
               <button
                 onClick={handleCreateRFQ}
-                disabled={isSubmittingRFQ}
-                className="flex-1 h-12 bg-brand-green text-white hover:bg-gray-900 transition-all duration-300 rounded shadow-md font-bold uppercase tracking-[0.1em] text-xs md:text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex-1 h-12 transition-all duration-300 rounded shadow-md font-bold uppercase tracking-[0.1em] text-xs md:text-sm flex items-center justify-center gap-2 bg-brand-green text-white hover:bg-gray-900 active:scale-95 relative overflow-hidden"
               >
-                {isSubmittingRFQ ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
+                {justAdded ? <Plus size={18} className="animate-spin" /> : <FileText size={18} />}
                 Thêm yêu cầu báo giá
+
+                {justAdded && (
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-white text-brand-green text-[10px] flex items-center justify-center font-black animate-bounce rounded-bl-lg shadow-sm">
+                    +
+                  </span>
+                )}
               </button>
 
               <button className="w-12 h-12 flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:border-gray-900 hover:text-gray-900 transition-all duration-300 rounded shadow-sm" title="Chia sẻ">

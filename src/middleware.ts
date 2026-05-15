@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
 
     const isAdminArea = isPathMatch(pathname, adminPaths);
     const isAuthPath = isPathMatch(pathname, authPaths, true);
-    const isPublicPath = isPathMatch(pathname, publicPaths, true);
+    const isPublicPath = isPathMatch(pathname, publicPaths);
 
     const token = request.cookies.get('token')?.value;
 

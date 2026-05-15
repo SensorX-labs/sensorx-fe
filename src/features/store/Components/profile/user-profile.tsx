@@ -5,7 +5,6 @@ import { User, LogOut, ChevronRight, Building, MapPin, Shield, FileText, Loader2
 import { cn } from '@/shared/utils';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { useUser } from '@/shared/hooks/use-user';
 import { CustomerService } from '@/features/user/customer/services/customer-service';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
@@ -67,7 +66,6 @@ export function UserProfile() {
             Cookies.remove('token', { path: '/' });
             Cookies.remove('refreshToken', { path: '/' });
             Cookies.remove('user', { path: '/' });
-            toast.success('Đã đăng xuất thành công');
             router.push('/');
             setIsLoggingOut(false);
         }

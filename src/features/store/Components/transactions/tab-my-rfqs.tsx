@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { FileText, ChevronRight, Search, Loader2 } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { FileText, ChevronRight, Search } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { StoreRFQService, StoreMyRFQItem } from '../../services/store-rfq.service';
 import { RfqStatus } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
+import { Spinner, ListSkeleton } from '@/shared/components/common/loading';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     [RfqStatus.Draft]: {
@@ -30,7 +31,6 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     }
 };
 
-
 export function MyRfqsTab({
     customerId
 }: {
@@ -38,15 +38,19 @@ export function MyRfqsTab({
 }) {
     const router = useRouter();
     const [myRfqs, setMyRfqs] = useState<StoreMyRFQItem[]>([]);
-    const [loading, setLoading] = useState(false);
+
+    // Đặt mặc định loading = true để kích hoạt Skeleton ngay mili-giây đầu tiên vào trang
+    const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState<string>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
-    const [pagination, setPagination] = useState({
-        lastId: undefined as string | undefined,
-        lastValue: undefined as string | undefined,
-        hasNext: false
-    });
+    const [debouncedSearch, setDebouncedSearch] = useState('');
 
+    // Dùng useRef lưu trữ con trỏ phân trang, cô lập hoàn toàn khỏi dependency tránh re-render lặp vô tận
+    const paginationRef = useRef({
+        lastId: undefined as string | undefined,
+        lastValue: undefined as string | undefined
+    });
+    const [hasNext, setHasNext] = useState(false);
 
     const filters = [
         { id: 'ALL', label: 'Tất cả' },
@@ -57,46 +61,56 @@ export function MyRfqsTab({
         { id: RfqStatus.Converted, label: 'Đã chuyển đổi' },
     ];
 
-    const fetchRfqs = useCallback(async (isLoadMore = false) => {
+    // 1. Hàm fetch: Để tránh fetchRfqs thay đổi liên tục làm trigger useEffect, 
+    // chúng ta sẽ đưa các giá trị động vào tham số của hàm thay vì dependency của useCallback
+    const fetchRfqs = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
         if (!customerId) return;
         try {
             setLoading(true);
             const response = await StoreRFQService.getMyRFQ({
                 pageSize: 10,
-                status: activeFilter === 'ALL' ? undefined : (activeFilter as RfqStatus),
-                searchTerm: searchTerm || undefined,
-                lastId: isLoadMore ? pagination.lastId : undefined,
-                lastValue: isLoadMore ? pagination.lastValue : undefined,
+                status: status === 'ALL' ? undefined : (status as RfqStatus),
+                searchTerm: search || undefined,
+                lastId: isLoadMore ? paginationRef.current.lastId : undefined,
+                lastValue: isLoadMore ? paginationRef.current.lastValue : undefined,
                 isDescending: true
             });
 
             if (response.items) {
-                if (isLoadMore) {
-                    setMyRfqs(prev => [...prev, ...response.items]);
-                } else {
-                    setMyRfqs(response.items);
-                }
-                setPagination({
-                    lastId: response.lastId,
-                    lastValue: response.lastValue,
-                    hasNext: response.hasNext
-                });
+                setMyRfqs(prev => isLoadMore ? [...prev, ...response.items] : response.items);
+                paginationRef.current = { lastId: response.lastId, lastValue: response.lastValue };
+                setHasNext(!!response.hasNext);
             }
         } catch (error) {
             console.error("Error fetching RFQs:", error);
         } finally {
             setLoading(false);
         }
-    }, [customerId, activeFilter, searchTerm, pagination.lastId, pagination.lastValue]);
+    }, [customerId]); // Chỉ phụ thuộc vào customerId
 
+
+    // 2. LUỒNG ĐỔI TAB: Chạy ngay lập tức
     useEffect(() => {
+        setMyRfqs([]);
+        paginationRef.current = { lastId: undefined, lastValue: undefined };
+
+        // Khi đổi tab, chúng ta lấy searchTerm hiện tại để gọi
+        fetchRfqs(false, activeFilter, searchTerm);
+    }, [activeFilter, customerId, fetchRfqs]);
+
+
+    // 3. LUỒNG TÌM KIẾM (DEBOUNCE)
+    useEffect(() => {
+        // Không chạy nếu search trống (để luồng Tab xử lý ở lần đầu)
+        if (!searchTerm) return;
+
         const timer = setTimeout(() => {
-            fetchRfqs();
-        }, 500);
+            paginationRef.current = { lastId: undefined, lastValue: undefined };
+            fetchRfqs(false, activeFilter, searchTerm);
+        }, 400);
 
         return () => clearTimeout(timer);
-    }, [searchTerm, activeFilter, customerId]);
-
+    }, [searchTerm, activeFilter, fetchRfqs]);
     return (
         <div>
             <div className="flex items-center justify-between gap-4 mb-6">
@@ -107,7 +121,7 @@ export function MyRfqsTab({
                         placeholder="Tìm theo mã yêu cầu..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all uppercase"
                     />
                 </div>
             </div>
@@ -117,7 +131,11 @@ export function MyRfqsTab({
                 {filters.map((filter) => (
                     <button
                         key={filter.id}
-                        onClick={() => setActiveFilter(filter.id)}
+                        onClick={() => {
+                            if (activeFilter !== filter.id) {
+                                setActiveFilter(filter.id);
+                            }
+                        }}
                         className={cn(
                             "flex-1 py-4 text-xs font-bold tracking-widest uppercase transition-all border-b-2 text-center",
                             activeFilter === filter.id
@@ -131,63 +149,62 @@ export function MyRfqsTab({
             </div>
 
             <div className="space-y-4">
+                {/* TRƯỜNG HỢP 1: Đang tải dữ liệu (Vào trang lần đầu / Đổi tab / Tải thêm) */}
                 {loading ? (
-                    <div className="py-24 text-center">
-                        <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-                        <p className="meta-label uppercase">Đang tải dữ liệu...</p>
+                    <div className="flex flex-col gap-8 py-4">
+                        {/* Chỉ hiện Spinner thông báo ở lần đầu load danh sách mới */}
+                        {/* Hiện skeleton tương ứng: Load mới hiện 4 dòng, load thêm hiện 2 dòng nối đuôi */}
+                        <ListSkeleton count={myRfqs.length > 0 ? 2 : 4} />
                     </div>
-                ) : myRfqs.length > 0 ? (
-                    myRfqs.map((request) => {
-                        const config = statusConfig[request.status];
+                ) : // TRƯỜNG HỢP 2: Đã tải xong và có dữ liệu hiển thị
+                    myRfqs.length > 0 ? (
+                        myRfqs.map((request) => {
+                            const config = statusConfig[request.status] || { label: request.status, className: '' };
 
-                        return (
-                            <div
-                                key={request.id}
-                                className="group border border-gray-100 bg-white hover:bg-gray-50/50 transition-all duration-200 cursor-pointer shadow-sm"
-                                onClick={() => router.push(`/transactions/rfqs/${request.id}`)}
-                            >
-                                <div className="p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-6">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-4">
-                                                <span className="tracking-title text-sm">{request.code}</span>
-                                                <span className={cn("px-2 py-0.5 text-[9px] uppercase font-bold tracking-widest border", config.className)}>
-                                                    {config.label}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-10">
-                                                <span className="flex items-center gap-1.5 meta-label uppercase">
-                                                    {/* Kiểm tra cả 2 nơi để lấy tên công ty */}
-                                                </span>
+                            return (
+                                <div
+                                    key={request.id}
+                                    className="group border border-gray-100 bg-white hover:bg-gray-50/50 transition-all duration-200 cursor-pointer shadow-sm"
+                                    onClick={() => router.push(`/transactions/rfqs/${request.id}`)}
+                                >
+                                    <div className="p-6 flex items-center justify-between">
+                                        <div className="flex items-center gap-6">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="tracking-title text-sm">{request.code}</span>
+                                                    <span className={cn("px-2 py-0.5 text-[9px] uppercase font-bold tracking-widest border", config.className)}>
+                                                        {config.label}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex items-center gap-12">
-                                        <div className="text-right">
-                                            <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Thời gian tạo</p>
-                                            <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                                                {request.createdAt ? new Date(request.createdAt).toLocaleDateString('vi-VN') : '---'}
-                                            </p>
+                                        <div className="flex items-center gap-12">
+                                            <div className="text-right">
+                                                <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Thời gian tạo</p>
+                                                <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
+                                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString('vi-VN') : '---'}
+                                                </p>
+                                            </div>
+                                            <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn btn-tracking">
+                                                <span>Chi tiết</span>
+                                                <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                                            </button>
                                         </div>
-                                        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn btn-tracking">
-                                            <span>Chi tiết</span>
-                                            <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div className="py-24 text-center bg-white border border-dashed border-gray-100">
-                        <FileText className="w-12 h-12 text-gray-100 mx-auto mb-4" />
-                        <p className="meta-label uppercase">Bạn chưa có yêu cầu báo giá nào.</p>
-                    </div>
-                )}
+                            );
+                        })
+                    ) : (
+                        /* TRƯỜNG HỢP 3: Đã tải xong hoàn toàn và thực sự không có data */
+                        <div className="py-24 text-center bg-white border border-dashed border-gray-100">
+                            <FileText className="w-12 h-12 text-gray-100 mx-auto mb-4" />
+                            <p className="meta-label uppercase">Bạn chưa có yêu cầu báo giá nào.</p>
+                        </div>
+                    )}
             </div>
 
-            {pagination.hasNext && (
+            {hasNext && (
                 <div className="mt-12 flex justify-center">
                     <button
                         onClick={() => fetchRfqs(true)}

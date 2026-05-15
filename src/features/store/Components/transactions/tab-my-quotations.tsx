@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { FileText, Clock, CheckCircle2, ChevronRight, Search, Loader2 } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { FileText, Clock, CheckCircle2, ChevronRight, Search } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-import { QuoteService } from '@/features/sales/quotation/services/quote-service';
-import { QuoteListItem } from '@/features/sales/quotation/models/quote-list-response';
+import { StoreQuoteService, StoreMyQuoteItem } from '../../services/store-quote.service';
+import { useRouter } from 'next/navigation';
+import { ListSkeleton } from '@/shared/components/common/loading';
 
 const statusConfig: Record<string, { label: string; icon: any; className: string }> = {
   [QuoteStatus.SENT]: {
@@ -40,21 +41,23 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
   }
 };
 
-import { useRouter } from 'next/navigation';
-
 export function MyQuotationsTab({
   customerId
 }: {
   customerId?: string
 }) {
   const router = useRouter();
-  const [quotes, setQuotes] = useState<QuoteListItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [quotes, setQuotes] = useState<StoreMyQuoteItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pageNumber, setPageNumber] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('ALL');
+  const [hasNext, setHasNext] = useState(false);
+
+  const paginationRef = useRef({
+    lastId: undefined as string | undefined,
+    lastValue: undefined as string | undefined,
+    pageSize: 10
+  });
 
   const filters = [
     { id: 'ALL', label: 'Tất cả' },
@@ -64,57 +67,51 @@ export function MyQuotationsTab({
     { id: QuoteStatus.EXPIRED, label: 'Hết hạn' }
   ];
 
-  const filteredQuotes = React.useMemo(() => {
-    if (activeFilter === 'ALL') return quotes;
-    if (activeFilter === 'WAITING') return quotes.filter(q => q.status === QuoteStatus.SENT || q.status === QuoteStatus.PENDING);
-    if (activeFilter === 'ACCEPTED') return quotes.filter(q => q.status === QuoteStatus.ORDERED || q.status === QuoteStatus.APPROVED);
-    return quotes.filter(q => q.status === activeFilter);
-  }, [quotes, activeFilter]);
-
-  const fetchQuotes = useCallback(async (page: number, search: string, isAppend: boolean = false) => {
+  const fetchQuotes = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
     if (!customerId) return;
-
     try {
-      if (isAppend) setLoadingMore(true);
-      else setLoading(true);
+      setLoading(true);
 
-      const response = await QuoteService.getListQuotes({
-        customerId: customerId,
-        searchTerm: search,
-        pageNumber: page,
-        pageSize: 10
+      const response = await StoreQuoteService.getMyQuotes({
+        pageSize: paginationRef.current.pageSize,
+        status: status === 'ALL' ? undefined : status,
+        searchTerm: search || undefined,
+        lastId: isLoadMore ? paginationRef.current.lastId : undefined,
+        lastValue: isLoadMore ? paginationRef.current.lastValue : undefined,
+        isDescending: true
       });
 
       if (response) {
-        const newItems = response.items || [];
-
-        if (isAppend) {
-          setQuotes(prev => [...prev, ...newItems]);
-        } else {
-          setQuotes(newItems);
-        }
-
-        setHasMore(newItems.length === 10);
+        setQuotes(prev => isLoadMore ? [...prev, ...response.items] : response.items);
+        paginationRef.current.lastId = response.lastId;
+        paginationRef.current.lastValue = response.lastValue;
+        setHasNext(response.hasNext);
       }
     } catch (error) {
       console.error("Error fetching quotes:", error);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   }, [customerId]);
 
-  // Gọi API mỗi khi customerId hoặc searchTerm thay đổi
+  // Luồng đổi Tab / Init
   useEffect(() => {
-    setPageNumber(1);
-    fetchQuotes(1, searchTerm, false);
-  }, [customerId, searchTerm, fetchQuotes]);
+    setQuotes([]);
+    paginationRef.current.lastId = undefined;
+    paginationRef.current.lastValue = undefined;
+    fetchQuotes(false, activeFilter, searchTerm);
+  }, [activeFilter, customerId, fetchQuotes]);
 
-  const handleLoadMore = () => {
-    const nextPage = pageNumber + 1;
-    setPageNumber(nextPage);
-    fetchQuotes(nextPage, searchTerm, true);
-  };
+  // Luồng tìm kiếm (Debounce)
+  useEffect(() => {
+    if (!searchTerm) return;
+    const timer = setTimeout(() => {
+      paginationRef.current.lastId = undefined;
+      paginationRef.current.lastValue = undefined;
+      fetchQuotes(false, activeFilter, searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, activeFilter, fetchQuotes]);
 
   return (
     <div>
@@ -123,15 +120,14 @@ export function MyQuotationsTab({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm theo mã báo giá hoặc công ty..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all btn-tracking uppercase"
+            placeholder="Tìm theo mã báo giá..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-white focus:border-gray-900 outline-none text-xs transition-all uppercase"
           />
         </div>
       </div>
 
-      {/* Shopee-style filter tabs */}
       <div className="flex items-center border-b border-gray-100 mb-6 bg-white sticky top-0 z-10">
         {filters.map((filter) => (
           <button
@@ -150,19 +146,13 @@ export function MyQuotationsTab({
       </div>
 
       <div className="space-y-4">
-        {loading ? (
-          <div className="py-24 text-center">
-            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="meta-label uppercase tracking-widest text-gray-400">Đang tải báo giá...</p>
-          </div>
-        ) : filteredQuotes.length > 0 ? (
+        {loading && quotes.length === 0 ? (
+          <ListSkeleton count={4} />
+        ) : quotes.length > 0 ? (
           <>
-            {filteredQuotes.map((quote) => {
-              const config = statusConfig[quote.status] || {
-                label: quote.status,
-                icon: Clock,
-                className: 'bg-gray-50 text-gray-700 border-gray-200'
-              };
+            {quotes.map((quote) => {
+              const config = statusConfig[quote.status] || { label: quote.status, icon: FileText, className: '' };
+              const Icon = config.icon;
 
               return (
                 <div
@@ -176,18 +166,13 @@ export function MyQuotationsTab({
                         <div className="flex items-center gap-4">
                           <span className="tracking-title text-sm">{quote.code}</span>
                           <span className={cn("px-2 py-0.5 text-[9px] uppercase font-bold tracking-widest border flex items-center gap-1", config.className)}>
-                            <config.icon className="w-2.5 h-2.5" />
+                            <Icon size={10} />
                             {config.label}
                           </span>
                         </div>
-                        <div className="flex items-center gap-6">
-                          <span className="meta-label uppercase text-gray-400">
-                            {quote.itemCount} Sản phẩm
-                          </span>
-                          <span className="meta-label uppercase font-bold text-gray-900">
-                            {quote.grandTotal.toLocaleString('vi-VN')} VNĐ
-                          </span>
-                        </div>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+                          Giá trị: <span className="text-gray-900 font-bold">{quote.totalAmount?.toLocaleString()} VNĐ</span>
+                        </p>
                       </div>
                     </div>
 
@@ -195,10 +180,10 @@ export function MyQuotationsTab({
                       <div className="text-right">
                         <p className="tracking-label uppercase text-gray-400 mb-0.5 !text-[10px]">Ngày báo giá</p>
                         <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                          {new Date(quote.quoteDate).toLocaleDateString('vi-VN')}
+                          {quote.createdAt ? new Date(quote.createdAt).toLocaleDateString('vi-VN') : '---'}
                         </p>
                       </div>
-                      <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn btn-tracking">
+                      <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-gray-900 group/btn">
                         <span>Chi tiết</span>
                         <ChevronRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                       </button>
@@ -208,21 +193,15 @@ export function MyQuotationsTab({
               );
             })}
 
-            {hasMore && (
-              <div className="mt-12 flex justify-center">
+            {loading && <ListSkeleton count={1} />}
+
+            {hasNext && !loading && (
+              <div className="mt-8 flex justify-center">
                 <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="px-10 py-3 border border-gray-900 text-[10px] font-bold uppercase btn-tracking hover:bg-gray-900 hover:text-white transition-all duration-300 flex items-center gap-2"
+                  onClick={() => fetchQuotes(true, activeFilter, searchTerm)}
+                  className="px-8 py-3 border border-gray-900 text-gray-900 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-900 hover:text-white transition-all"
                 >
-                  {loadingMore ? (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Đang tải...
-                    </>
-                  ) : (
-                    "Xem thêm lịch sử"
-                  )}
+                  Xem thêm báo giá
                 </button>
               </div>
             )}
@@ -230,7 +209,7 @@ export function MyQuotationsTab({
         ) : (
           <div className="py-24 text-center bg-white border border-dashed border-gray-100">
             <FileText className="w-12 h-12 text-gray-100 mx-auto mb-4" />
-            <p className="meta-label uppercase text-gray-400">Không tìm thấy báo giá nào phù hợp.</p>
+            <p className="meta-label uppercase">Không tìm thấy báo giá nào.</p>
           </div>
         )}
       </div>

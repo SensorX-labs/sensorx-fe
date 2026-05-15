@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
 interface ProductCardProps {
     id: string;
@@ -19,11 +21,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     product,
 }) => {
     const router = useRouter();
+    const { addItem, getItemQuantity } = useInquiryCart();
+    const [justAdded, setJustAdded] = useState(false);
+    const qty = getItemQuantity(id);
 
     const handleCardClick = () => {
         router.push(`/shop/${id}`);
     };
 
+    const handleAddToInquiry = (e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        setJustAdded(true);
+        addItem({
+            productId: id,
+            productName: name,
+            productCode: product?.code || '',
+            unit: product?.unit || 'Cái',
+            manufacturer: product?.manufacture || 'SensorX',
+            quantity: 1,
+        });
+        toast(`+1 ${name}`, {
+            description: `Số lượng hiện tại: ${qty + 1}`,
+            duration: 1500,
+            position: 'bottom-left',
+        });
+        setTimeout(() => setJustAdded(false), 400);
+    };
 
     return (
         <div className="group relative flex flex-col bg-white h-full transition-all duration-500 cursor-pointer hover:-translate-y-1 border border-filter-border rounded overflow-hidden hover:shadow-xl hover:shadow-gray-200/40">
@@ -43,6 +67,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
+                {/* Nút thêm báo giá - luôn có thể click */}
+                <button
+                    onClick={handleAddToInquiry}
+                    className={`
+                        absolute bottom-3 left-3 right-3 z-20
+                        flex items-center justify-center gap-2
+                        py-2.5
+                        text-[10px] font-bold uppercase tracking-[0.15em]
+                        transition-all duration-300
+                        translate-y-2 opacity-0
+                        group-hover:translate-y-0 group-hover:opacity-100
+                        bg-gray-900 text-white hover:bg-brand-green active:scale-95
+                    `}
+                    title="Thêm vào danh sách báo giá"
+                >
+                    <Plus size={13} className={justAdded ? 'rotate-90 transition-transform' : 'transition-transform'} />
+                    Thêm sản phẩm
+                </button>
             </div>
 
             {/* Content Section */}
@@ -76,6 +118,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
             </div>
 
+            {/* Badge số lượng */}
+            {qty > 0 && (
+                <div className={`absolute top-3 right-3 z-20 bg-brand-green text-white rounded-full min-w-6 h-6 px-1.5 flex items-center justify-center shadow-md text-[10px] font-black ${justAdded ? 'animate-bounce' : ''}`}>
+                    {qty}
+                </div>
+            )}
         </div>
     );
 };
