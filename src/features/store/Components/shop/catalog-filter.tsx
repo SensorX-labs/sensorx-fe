@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
 import CategoryService from '@/features/catalog/category/services/category-services';
-import { Category, CategoryAllListResult } from '@/features/catalog/category/models';
+import { CategoryAllListResult } from '@/features/catalog/category/models';
 import { CategoryTreeItem, buildCategoryTree } from './category-tree-item';
 
-interface FilterCatalogProps {
+interface CatalogFilterProps {
     onFiltersChange?: (filters: FilterState) => void;
-    onClose?: () => void;
 }
 
 export interface FilterState {
@@ -17,10 +16,9 @@ export interface FilterState {
     search: string;
 }
 
-export function FilterCatalog({
+export function CatalogFilter({
     onFiltersChange,
-    onClose,
-}: FilterCatalogProps) {
+}: CatalogFilterProps) {
     const [expandedSections, setExpandedSections] = useState({
         search: true,
         collection: false,
@@ -35,22 +33,21 @@ export function FilterCatalog({
 
     const [categories, setCategories] = useState<CategoryAllListResult>([]);
     const [loadingCategories, setLoadingCategories] = useState(false);
-
+    const fetchCategories = async () => {
+        setLoadingCategories(true);
+        try {
+            const result = await CategoryService.getAll();
+            if (result) {
+                setCategories(result);
+            }
+        } catch (error) {
+            console.error(">>> Lỗi khi fetch categories:", error);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
     // Fetch categories
     useEffect(() => {
-        const fetchCategories = async () => {
-            setLoadingCategories(true);
-            try {
-                const result = await CategoryService.getAll();
-                if (result) {
-                    setCategories(result);
-                }
-            } catch (error) {
-                console.error(">>> Lỗi khi fetch categories:", error);
-            } finally {
-                setLoadingCategories(false);
-            }
-        };
         fetchCategories();
     }, []);
 
@@ -185,4 +182,4 @@ export function FilterCatalog({
     );
 };
 
-export default FilterCatalog;
+export default CatalogFilter;

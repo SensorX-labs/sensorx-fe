@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, SlidersHorizontal, LayoutGrid, List, Loader2 } from 'lucide-react';
 import ProductCard from './product-card';
-import { FilterCatalog, FilterState } from './filter-catalog';
+import { CatalogFilter, FilterState } from './catalog-filter';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
@@ -87,7 +87,7 @@ export default function Shop() {
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Sidebar Filter */}
                     <aside className="w-full lg:w-64 flex-shrink-0">
-                        <FilterCatalog onFiltersChange={setFilters} />
+                        <CatalogFilter onFiltersChange={setFilters} />
                     </aside>
 
                     {/* Main Content */}
