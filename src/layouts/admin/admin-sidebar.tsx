@@ -68,7 +68,7 @@ export default function AdminSidebar() {
 
       <SidebarContent className="px-2 pb-2 group-data-[collapsible=icon]:px-0">
         {ADMIN_MENU_CONFIG.map((section) => {
-          const visibleItems = section.items.filter(item => canView(item.roles));
+          const visibleItems = section.items.filter(item => !item.hidden && canView(item.roles));
           if (visibleItems.length === 0) return null;
 
           return (

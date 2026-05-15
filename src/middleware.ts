@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
-import { getAllAdminPaths, isRouteBlocked, getFirstAllowedPath } from './shared/configs/admin-menu.config';
+import { getAllAdminPaths, getAllowedRoutes } from './shared/configs/admin-menu.config';
 
 const publicPaths = ['/', '/not-found', '/shop'];
 const authPaths = ['/login', '/register'];
 
-// Lấy danh sách các đường dẫn cần bảo vệ từ config
+// Lấy danh sách tất cả các path thuộc vùng Admin để định danh vùng bảo vệ
 const adminPaths = getAllAdminPaths();
 
 const isPathMatch = (pathname: string, paths: string[], exactMatch: boolean = false) => {
@@ -25,25 +25,26 @@ export function middleware(request: NextRequest) {
 
     const token = request.cookies.get('token')?.value;
 
+    // 1. Trường hợp chưa đăng nhập
     if (!token) {
         if (isPublicPath || isAuthPath) return NextResponse.next();
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    let isStaff = false;
+    let isAdminPage = false;
     let userRole = "";
 
     try {
         const decodedToken = jwtDecode<any>(token);
-        userRole = decodedToken.role;
-        const rolesArray = Array.isArray(userRole) ? userRole : [userRole];
+        const role = decodedToken.role;
+        const rolesArray = Array.isArray(role) ? role : [role];
 
-        isStaff = rolesArray.some(role => {
-            const strRole = String(role);
+        isAdminPage = rolesArray.some(r => {
+            const strRole = String(r);
             return strRole !== "Customer" && strRole !== "0" && strRole !== "undefined" && strRole !== "null";
         });
 
-        userRole = rolesArray[0]; // Lấy role chính để kiểm tra chi tiết
+        userRole = rolesArray[0];
     } catch (error) {
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.delete('token');
@@ -52,24 +53,29 @@ export function middleware(request: NextRequest) {
         return response;
     }
 
-    if (isAuthPath) {
-        return NextResponse.redirect(new URL(isStaff ? getFirstAllowedPath(userRole) : '/', request.url));
-    }
+    // Lấy Whitelist các Route được phép cho Role này
+    const allowedRoutes = isAdminPage ? getAllowedRoutes(userRole) : [];
 
-    if (isAdminArea) {
-        // 1. Kiểm tra xem có phải nhân viên không
-        if (!isStaff) return NextResponse.redirect(new URL('/not-found', request.url));
+    // 2. Xử lý logic chuyển hướng sau khi đã có Token và Role
+    if (isAdminPage) {
+        // NHÂN VIÊN: Chỉ được phép truy cập các route trong Whitelist
+        // Chặn cả các trang công khai (như /shop, /) nếu không có trong allowedRoutes
+        const isAllowed = isPathMatch(pathname, allowedRoutes);
 
-        // 2. Kiểm tra phân quyền chi tiết theo từng Route trong Config
-        if (isRouteBlocked(pathname, userRole)) {
-            console.log(`[Middleware] Access Denied: Role '${userRole}' cannot access '${pathname}'. Redirecting to home.`);
-            return NextResponse.redirect(new URL(getFirstAllowedPath(userRole), request.url));
+        if (isAuthPath) {
+            return NextResponse.redirect(new URL(allowedRoutes[0], request.url));
         }
-    }
 
-    // Tự động điều hướng nhân viên từ trang chủ vào trang đầu tiên được phép
-    if (isStaff && pathname === '/') {
-        return NextResponse.redirect(new URL(getFirstAllowedPath(userRole), request.url));
+        if (!isAllowed) {
+            return NextResponse.redirect(new URL(allowedRoutes[0], request.url));
+        }
+    } else {
+        // KHÁCH HÀNG: Tuyệt đối không được vào vùng Admin
+        if (isAuthPath) return NextResponse.redirect(new URL('/', request.url));
+
+        if (isAdminArea) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
+        }
     }
 
     return NextResponse.next();

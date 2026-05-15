@@ -1,17 +1,17 @@
-import { 
-  LayoutDashboard, Users, FileText, ShoppingCart, Receipt, 
-  Package, Layers, PackagePlus, PackageMinus, Warehouse, 
-  TrendingUp, BarChart3, Settings, UserCircle, Shield, 
-  FileEdit, FolderTree, ClipboardList, ArrowRightLeft, 
-  BadgeDollarSign, LineChart, PieChart, Boxes 
+import {
+  LayoutDashboard, Users, FileText, ShoppingCart, Receipt,
+  Package, Layers, PackagePlus, PackageMinus, Warehouse,
+  TrendingUp, BarChart3, Settings, UserCircle, Shield,
+  FileEdit, FolderTree, ClipboardList, ArrowRightLeft,
+  BadgeDollarSign, LineChart, PieChart, Boxes, User
 } from 'lucide-react';
 
 export const MENU_ICONS: Record<string, any> = {
-  LayoutDashboard, Users, FileText, ShoppingCart, Receipt, 
-  Package, Layers, PackagePlus, PackageMinus, Warehouse, 
-  TrendingUp, BarChart3, Settings, UserCircle, Shield, 
-  FileEdit, FolderTree, ClipboardList, ArrowRightLeft, 
-  BadgeDollarSign, LineChart, PieChart, Boxes
+  LayoutDashboard, Users, FileText, ShoppingCart, Receipt,
+  Package, Layers, PackagePlus, PackageMinus, Warehouse,
+  TrendingUp, BarChart3, Settings, UserCircle, Shield,
+  FileEdit, FolderTree, ClipboardList, ArrowRightLeft,
+  BadgeDollarSign, LineChart, PieChart, Boxes, User
 };
 
 export interface MenuItem {
@@ -19,6 +19,7 @@ export interface MenuItem {
   iconName: string;
   href?: string;
   roles?: string[];
+  hidden?: boolean;
   subItems?: {
     name: string;
     iconName: string;
@@ -190,7 +191,7 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
 ];
 
 /**
- * Lấy danh sách tất cả các path trong Admin Area
+ * Lấy danh sách tất cả các path trong Admin Area (không phân biệt quyền)
  */
 export const getAllAdminPaths = (): string[] => {
   const paths = new Set<string>();
@@ -204,55 +205,27 @@ export const getAllAdminPaths = (): string[] => {
 };
 
 /**
- * Kiểm tra xem một Path có bị chặn đối với Role hiện tại không dựa trên config
+ * Lấy danh sách các Route được phép truy cập cho một Role cụ thể (Whitelist)
  */
-export const isRouteBlocked = (pathname: string, userRole: string): boolean => {
-  for (const section of ADMIN_MENU_CONFIG) {
-    for (const item of section.items) {
-      const isParentMatch = item.href && (pathname === item.href || pathname.startsWith(`${item.href}/`));
-      
-      // Nếu khớp với menu cha
-      if (isParentMatch) {
-        if (item.roles && !item.roles.includes(userRole)) return true;
-      }
-      
-      // Kiểm tra menu con (ngay cả khi không khớp cha, vì con có href riêng)
-      if (item.subItems) {
-        for (const sub of item.subItems) {
-          if (pathname === sub.href || pathname.startsWith(`${sub.href}/`)) {
-            // Chặn nếu cha yêu cầu quyền mà user không có
-            if (item.roles && !item.roles.includes(userRole)) return true;
-            // Chặn nếu bản thân con yêu cầu quyền mà user không có
-            if (sub.roles && !sub.roles.includes(userRole)) return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
-};
+export const getAllowedRoutes = (userRole: string): string[] => {
+  const allowed: string[] = [];
 
-/**
- * Tìm đường dẫn hợp lệ đầu tiên mà Role này được phép truy cập
- */
-export const getFirstAllowedPath = (userRole: string): string => {
-  for (const section of ADMIN_MENU_CONFIG) {
-    for (const item of section.items) {
-      // Nếu cha yêu cầu quyền mà user không có -> Bỏ qua cả cụm này (bao gồm cả con)
-      if (item.roles && !item.roles.includes(userRole)) continue;
+  ADMIN_MENU_CONFIG.forEach(section => {
+    section.items.forEach(item => {
+      // Nếu cha yêu cầu quyền mà user không có -> Bỏ qua toàn bộ cụm
+      if (item.roles && !item.roles.includes(userRole)) return;
 
-      // Nếu menu chính có href
-      if (item.href) return item.href;
-      
+      // Thêm href của menu chính
+      if (item.href) allowed.push(item.href);
+
       // Kiểm tra menu con
-      if (item.subItems) {
-        for (const sub of item.subItems) {
-          if (!sub.roles || sub.roles.includes(userRole)) {
-            return sub.href;
-          }
+      item.subItems?.forEach(sub => {
+        if (!sub.roles || sub.roles.includes(userRole)) {
+          allowed.push(sub.href);
         }
-      }
-    }
-  }
-  return '/'; // Mặc định về trang chủ nếu không có quyền nào
+      });
+    });
+  });
+
+  return allowed;
 };
