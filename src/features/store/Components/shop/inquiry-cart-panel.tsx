@@ -74,7 +74,7 @@ export function InquiryCartPanel() {
                         <div className="flex items-center gap-2">
                             <ClipboardList size={16} />
                             <span className="text-[11px] font-bold uppercase tracking-widest">
-                                Danh sách báo giá
+                                Danh sách yêu cầu báo giá
                             </span>
                         </div>
                         <button
@@ -184,7 +184,7 @@ export function InquiryCartPanel() {
                 >
                     <ClipboardList size={18} />
                     <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:block">
-                        Báo giá
+                        Yêu cầu báo giá
                     </span>
                     <ChevronUp size={14} className="text-gray-400 group-hover:text-white transition-colors" />
 
