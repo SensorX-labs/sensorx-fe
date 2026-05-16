@@ -22,6 +22,7 @@ import { StaffListItem } from '@/features/user/staff/models/staff-list-response'
 import { CanAccess } from '@/shared/components/common/can-access';
 import { RfqStatsSection } from './rfq-stats';
 import { RfqDeclineDialog } from './rfq-decline-dialog';
+import { SaleStaffSelectionDialog } from '@/shared/components/admin/selection-modal';
 
 const getStatusStyle = (status: string) => {
   const key = Object.values(RfqStatus).find(s => s.toLowerCase() === status?.toLowerCase());
@@ -45,6 +46,8 @@ export default function RequestForQuotationList() {
   const [declineReason, setDeclineReason] = useState('');
 
   // Assign staff states
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [assigningRfqId, setAssigningRfqId] = useState<string | null>(null);
   const [staffList, setStaffList] = useState<StaffListItem[]>([]);
   const [staffMap, setStaffMap] = useState<Record<string, string>>({});
   const [assignLoading, setAssignLoading] = useState(false);
@@ -169,6 +172,12 @@ export default function RequestForQuotationList() {
     setIsDeclineDialogOpen(true);
   };
 
+  const openAssignDialog = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setAssigningRfqId(id);
+    setIsAssignDialogOpen(true);
+  };
+
   const handleCreateQuotation = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     router.push(`/sales/RFQ/${id}`);
@@ -255,61 +264,81 @@ export default function RequestForQuotationList() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-1">
-                      <>
-                        <CanAccess roles={['Manager']}>
-                          <div className="min-w-[200px]">
-                            <Select
-                              value={l.staffId || ""}
-                              onValueChange={(value) => handleAssignStaff(l.id, value)}
+                    <div className="flex items-center justify-center gap-2">
+
+                      {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
+                      {/* Lưu ý: Bạn thay RfqStatus.PENDING bằng trạng thái mặc định thực tế của bạn */}
+                      {(!l.status || l.status?.toLowerCase() === 'pending') && (
+                        <>
+                          {/* QUẢN LÝ: Nút phân công (Đã thu gọn UI) */}
+                          <CanAccess roles={['Manager']}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="cursor-pointer h-8 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50/50 border border-indigo-100 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-300 shadow-sm"
+                              onClick={(e) => openAssignDialog(l.id, e)}
                               disabled={assignLoading}
                             >
-                              <SelectTrigger className="h-9 text-xs font-semibold border-indigo-200 bg-indigo-50/50 text-indigo-700 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all shadow-sm">
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                  <UserPlus className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                                  <SelectValue placeholder="CHỈ ĐỊNH NHÂN VIÊN..." />
-                                </div>
-                              </SelectTrigger>
-                              <SelectContent className="min-w-[220px]">
-                                {staffList.map((staff) => (
-                                  <SelectItem key={staff.id} value={staff.id} className="text-xs py-2.5">
-                                    <div className="flex flex-col gap-0.5">
-                                      <span className="font-bold text-gray-900">{staff.name}</span>
-                                      <span className="text-[10px] text-gray-500 uppercase tracking-tight">{staff.code} • {staff.department || 'Phòng kinh doanh'}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CanAccess>
-                        <CanAccess roles={['SaleStaff']}>
-                          <Button
-                            variant="ghost" size="icon" title="Tiếp nhận" className="h-8 w-8 text-green-600 hover:bg-green-50"
-                            onClick={(e) => handleAccept(l.id, e)}
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                        </CanAccess>
-                        <CanAccess roles={['SaleStaff']}>
-                          <Button
-                            variant="ghost" size="icon" title="Từ chối" className="h-8 w-8 text-red-500 hover:bg-red-50"
-                            onClick={(e) => openDeclineDialog(l.id, e)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </CanAccess>
-                      </>
+                              <UserPlus className="w-3.5 h-3.5 mr-1.5 opacity-70" />
+                            </Button>
+                          </CanAccess>
 
+                          {/* NHÂN VIÊN SALE: Nút tiếp nhận & Từ chối */}
+                          <CanAccess roles={['SaleStaff']}>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Tiếp nhận"
+                                className="h-8 w-8 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 border border-emerald-100"
+                                onClick={(e) => handleAccept(l.id, e)}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Từ chối"
+                                className="h-8 w-8 text-rose-500 bg-rose-50 hover:bg-rose-100 hover:text-rose-600 border border-rose-100"
+                                onClick={(e) => openDeclineDialog(l.id, e)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CanAccess>
+                        </>
+                      )}
+                      {/* 2. NẾU RFQ ĐÃ TIẾP NHẬN (ACCEPTED) -> CHỈ HIỆN NÚT LẬP BÁO GIÁ */}
                       {l.status?.toLowerCase() === RfqStatus.ACCEPTED.toLowerCase() && (
-                        <CanAccess roles={['SaleStaff']}>
-                          <Button
-                            variant="ghost" size="icon" title="Lập báo giá" className="h-8 w-8 text-blue-600 hover:bg-blue-50 border border-blue-100 shadow-sm"
-                            onClick={(e) => handleCreateQuotation(l.id, e)}
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                        </CanAccess>
+                        <>
+                          <CanAccess roles={['SaleStaff']}>
+                            {/* Nút lập báo giá được làm nổi bật hơn thay vì chỉ hiện icon */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Lập báo giá"
+                              className="h-8 text-xs font-medium text-brand-green-600 bg-brand-green-50 border-brand-green-100 hover:bg-brand-green-100 shadow-sm"
+                              onClick={(e) => handleCreateQuotation(l.id, e)}
+                            >
+                              <FileText className="w-3.5 h-3.5 mr-1.5" />
+                              Lập báo giá
+                            </Button>
+                          </CanAccess>
+                          <CanAccess roles={['Manager']}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Xem chi tiết"
+                              className="h-8 w-8 text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-700 border border-slate-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/sales/RFQ/${l.id}`);
+                              }}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </CanAccess>
+                        </>
                       )}
                     </div>
                   </td>
@@ -326,6 +355,17 @@ export default function RequestForQuotationList() {
         declineReason={declineReason}
         setDeclineReason={setDeclineReason}
         onConfirm={handleDecline}
+      />
+
+      <SaleStaffSelectionDialog
+        isOpen={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
+        onSelect={(staff) => {
+          if (assigningRfqId) {
+            handleAssignStaff(assigningRfqId, staff.id);
+            setIsAssignDialogOpen(false);
+          }
+        }}
       />
     </div>
   );

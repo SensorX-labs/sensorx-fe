@@ -5,7 +5,7 @@ import { LoadMorePagedQuery, LoadMorePagedResult } from "@/shared/models/load-mo
  */
 export interface ProductLoadMoreForModalQuery extends LoadMorePagedQuery {
   categoryId?: string;
-  sortByName?: boolean;
+  sortByName: boolean;
 }
 
 export interface ProductLoadMoreForModal {

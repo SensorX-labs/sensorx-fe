@@ -162,7 +162,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             <Button
               onClick={handlePrepareQuotation}
               variant="outline"
-              className="rounded admin-btn-primary border-transparent"
+              className="h-9 px-4 text-sm font-medium text-brand-green-600 bg-brand-green-50 border-brand-green-100 hover:bg-brand-green-100 rounded shadow-sm transition-colors"
             >
               <FileText className="w-4 h-4 mr-2" />
               Lập báo giá
