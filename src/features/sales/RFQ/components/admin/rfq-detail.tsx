@@ -2,62 +2,24 @@
 
 import React, { useState } from 'react';
 import {
-  ArrowLeft, Check, X, FileText, User, Building2,
-  Mail, Phone, MapPin, Calendar, ShoppingCart,
-  AlertCircle, ClipboardList, MessageSquare
+  ArrowLeft, Check, X, FileText, User,
+  ShoppingCart, ClipboardList,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/shadcn-ui/popover';
-import { Search, ChevronsUpDown, Check as CheckIcon } from 'lucide-react';
-import { Input } from '@/shared/components/shadcn-ui/input';
-import { RfqStatus } from '../../constants/rfq-status';
 import { useUser } from '@/shared/hooks/use-user';
 import { toast } from 'sonner';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
-import { RfqDetail } from '../../models/rfq-detail-response';
-import { AdminRFQService } from '../../services/admin-rfq.service';
+import { AdminRFQService, RfqDetail } from '../../services/admin-rfq.service';
 import { StaffService } from '@/features/user/staff/services/staff-service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
-import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
-import { cn } from '@/shared/utils/cn';
+import { statusLabels, statusStyles } from '../../constants/rfq-status';
 
 interface RequestForQuotationDetailProps {
   id: string;
   onBack: () => void;
 }
-
-const statusColor: Record<string, string> = {
-  'Draft': 'bg-gray-50 text-gray-500 border-gray-200',
-  'Pending': 'bg-blue-50 text-blue-700 border-blue-200',
-  'Accepted': 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  'Rejected': 'bg-red-50 text-red-700 border-red-200',
-  'Converted': 'bg-green-50 text-green-700 border-green-200',
-  // Fallback
-  [RfqStatus.DRAFT]: 'bg-gray-50 text-gray-500 border-gray-200',
-  [RfqStatus.PENDING]: 'bg-blue-50 text-blue-700 border-blue-200',
-  [RfqStatus.ACCEPTED]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  [RfqStatus.REJECTED]: 'bg-red-50 text-red-700 border-red-200',
-  [RfqStatus.CONVERTED]: 'bg-green-50 text-green-700 border-green-200',
-};
-
-const statusLabel: Record<string, string> = {
-  'Draft': 'Nháp',
-  'Pending': 'Đang chờ',
-  'Accepted': 'Đã tiếp nhận',
-  'Rejected': 'Đã từ chối',
-  'Converted': 'Đã chốt đơn',
-  // Fallback
-  [RfqStatus.DRAFT]: 'Nháp',
-  [RfqStatus.PENDING]: 'Đang chờ',
-  [RfqStatus.ACCEPTED]: 'Đã tiếp nhận',
-  [RfqStatus.REJECTED]: 'Đã từ chối',
-  [RfqStatus.CONVERTED]: 'Đã chốt đơn',
-};
 
 export default function RequestForQuotationDetail({ id, onBack }: RequestForQuotationDetailProps) {
   const [rfq, setRfq] = React.useState<RfqDetail | null>(null);
@@ -109,15 +71,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         return;
       }
 
-      const response = await AdminRFQService.assignStaff(id, staffResponse.id);
-      if (response) {
-        // Reload dữ liệu
-        const updatedResponse = await AdminRFQService.getDetailRFQ(id);
-        if (updatedResponse) {
-          setRfq(updatedResponse);
-          setAssignedStaff(staffResponse);
-        }
-      }
+      await AdminRFQService.assignStaff(id, staffResponse.id);
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
     }
@@ -125,7 +79,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
 
   const handlePrepareQuotation = async () => {
     if (!rfq) return;
-    
+
     setLoading(true);
     try {
       // Gọi API lấy giá nội bộ cho từng sản phẩm trong RFQ
@@ -214,7 +168,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               Lập báo giá
             </Button>
           )}
-          <Link href="/sales/requestforquotation">
+          <Link href="/sales/RFQ">
             <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Quay lại
@@ -242,8 +196,8 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Trạng thái</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2.5 py-0.5 rounded border text-xs font-medium ${statusColor[rfq.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                      {statusLabel[rfq.status] || rfq.status}
+                    <span className={`px-2.5 py-0.5 rounded border text-xs font-medium ${statusStyles[rfq.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                      {statusLabels[rfq.status] || rfq.status}
                     </span>
                   </td>
                 </tr>

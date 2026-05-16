@@ -67,7 +67,7 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
       {
         name: 'Yêu cầu báo giá',
         iconName: 'TrendingUp',
-        href: '/sales/requestforquotation',
+        href: '/sales/RFQ',
         roles: ['Manager', 'SaleStaff']
       },
       {
