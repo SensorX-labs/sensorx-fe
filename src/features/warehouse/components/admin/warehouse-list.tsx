@@ -75,7 +75,7 @@ export function WarehouseList() {
           <tbody>
             {filteredWarehouses.length > 0 ? (
               filteredWarehouses.map((wh) => (
-                <tr key={wh.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors", selectedWarehouseId === wh.id && "bg-blue-50/50")}>
+                <tr key={wh.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
                   <td className="px-6 py-4 font-bold text-gray-900">{wh.id}</td>
                   <td className="px-6 py-4">{wh.name}</td>
                   <td className="px-6 py-4 text-center">
@@ -85,15 +85,6 @@ export function WarehouseList() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn("h-8 flex items-center gap-1", selectedWarehouseId === wh.id ? "text-green-600 font-bold" : "text-blue-600")}
-                        onClick={() => handleSelect(wh.id!)}
-                      >
-                        {selectedWarehouseId === wh.id ? <CheckCircle2 className="w-4 h-4" /> : null}
-                        {selectedWarehouseId === wh.id ? 'Đang chọn' : 'Chọn'}
-                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
