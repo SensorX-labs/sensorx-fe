@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ActionType } from '@/shared/constants/action-type';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Save, 
-  X, 
-  Plus, 
-  Warehouse, 
-  Calendar, 
-  User, 
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Save,
+  X,
+  Plus,
+  Warehouse,
+  Calendar,
+  User,
   Package,
   FileText,
   Info
@@ -106,45 +106,45 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
           <div className="flex flex-col items-start overflow-hidden text-left">
-             <span className="truncate w-full font-semibold">{displayLabel}</span>
+            <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
         <div className="p-2 border-b bg-gray-50/50">
-           <Input 
-              placeholder="Gõ tên hoặc mã sản phẩm..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
-              autoFocus
-           />
+          <Input
+            placeholder="Gõ tên hoặc mã sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+            autoFocus
+          />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {loading ? (
-             <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
-           ) : products.length === 0 ? (
-             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
-           ) : (
-             products.map(p => (
-               <div 
-                 key={p.id}
-                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
-                 onClick={() => {
-                    setSelectedProduct(p);
-                    onSelect(p);
-                    setOpen(false);
-                 }}
-               >
-                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
-                 <div className="flex justify-between items-center mt-1">
-                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
-                 </div>
-               </div>
-             ))
-           )}
+          {loading ? (
+            <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+          ) : products.length === 0 ? (
+            <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+          ) : (
+            products.map(p => (
+              <div
+                key={p.id}
+                className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                onClick={() => {
+                  setSelectedProduct(p);
+                  onSelect(p);
+                  setOpen(false);
+                }}
+              >
+                <span className="text-xs font-bold text-gray-900">{p.name}</span>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
+                  <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -154,7 +154,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get('action');
-  
+
   const isCreate = actionParam === ActionType.CREATE;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
@@ -324,8 +324,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
         <div className="md:col-span-1 space-y-6">
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-               <Info className="w-4 h-4 text-gray-400" />
-               <h4 className="text-sm font-medium text-gray-900">Thông tin cơ bản</h4>
+              <Info className="w-4 h-4 text-gray-400" />
+              <h4 className="text-sm font-medium text-gray-900">Thông tin cơ bản</h4>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
@@ -339,14 +339,14 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   <td className="px-6 py-3 admin-text-primary font-semibold">Kho hàng</td>
                   <td className="px-6 py-3">
                     {isEditing ? (
-                      <select 
+                      <select
                         className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)]"
                         value={formData.warehouse}
-                        onChange={(e) => setFormData({...formData, warehouse: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
                       >
-                         <option value="">-- Chọn kho --</option>
-                         <option value="Kho 1">Kho 1</option>
-                         <option value="Kho 2">Kho 2</option>
+                        <option value="">-- Chọn kho --</option>
+                        <option value="Kho 1">Kho 1</option>
+                        <option value="Kho 2">Kho 2</option>
                       </select>
                     ) : (
                       <span className="text-gray-900 font-medium">{formData.warehouse || '--'}</span>
@@ -356,16 +356,16 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Ngày soạn</td>
                   <td className="px-6 py-3">
-                     {isEditing ? (
-                       <input 
-                         type="date"
-                         className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)]"
-                         value={formData.date}
-                         onChange={(e) => setFormData({...formData, date: e.target.value})}
-                       />
-                     ) : (
-                        <span className="text-gray-900 font-medium">{new Date(formData.date).toLocaleDateString('vi-VN')}</span>
-                     )}
+                    {isEditing ? (
+                      <input
+                        type="date"
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-[var(--brand-green-500)]"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      />
+                    ) : (
+                      <span className="text-gray-900 font-medium">{new Date(formData.date).toLocaleDateString('vi-VN')}</span>
+                    )}
                   </td>
                 </tr>
                 <tr>
@@ -436,21 +436,21 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                           </td>
                           <td className="px-6 py-3 text-right">
                             {isEditing ? (
-                               <input 
-                                 type="number"
-                                 className="w-full border-gray-200 border rounded p-1 text-sm text-right focus:border-[var(--brand-green-500)] outline-none"
-                                 value={item.quantity}
-                                 onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value))}
-                               />
+                              <input
+                                type="number"
+                                className="w-full border-gray-200 border rounded p-1 text-sm text-right focus:border-[var(--brand-green-500)] outline-none"
+                                value={item.quantity}
+                                onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value))}
+                              />
                             ) : (
-                               <span className="font-bold text-gray-900">{item.quantity}</span>
+                              <span className="font-bold text-gray-900">{item.quantity}</span>
                             )}
                           </td>
                           {isEditing && (
                             <td className="px-6 py-3 text-center">
-                               <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-8 w-8 text-red-400 hover:text-red-600 rounded">
-                                  <Trash2 className="w-4 h-4" />
-                               </Button>
+                              <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="h-8 w-8 text-red-400 hover:text-red-600 rounded">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             </td>
                           )}
                         </tr>
@@ -458,17 +458,17 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     </tbody>
                   </table>
                   <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex justify-end gap-10">
-                     <p className="text-xs font-bold text-gray-500 uppercase">
-                        Sản phẩm: <span className="text-gray-900 ml-1">{formData.items.length}</span>
-                     </p>
-                     <p className="text-xs font-bold text-gray-500 uppercase">
-                        Tổng lượng: <span className="text-[var(--brand-green-600)] ml-1">{formData.items.reduce((sum, i) => sum + i.quantity, 0)}</span>
-                     </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">
+                      Sản phẩm: <span className="text-gray-900 ml-1">{formData.items.length}</span>
+                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">
+                      Tổng lượng: <span className="text-[var(--brand-green-600)] ml-1">{formData.items.reduce((sum, i) => sum + i.quantity, 0)}</span>
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="p-12 text-center text-gray-400 italic">
-                   Chưa có hàng hóa trong danh sách
+                  Chưa có hàng hóa trong danh sách
                 </div>
               )}
             </div>

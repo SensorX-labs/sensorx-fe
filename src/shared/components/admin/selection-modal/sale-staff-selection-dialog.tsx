@@ -5,7 +5,7 @@ import { UserSearch, Mail, Phone, CheckCircle2, UserCircle } from 'lucide-react'
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { BaseSelectionModal } from './base-selection-modal';
-import StaffService, { LoadMoreStaff } from '@/features/user/staff/services/staff-service';
+import StaffService, { LoadMoreStaff } from '@/features/user/staff/services/staff.service';
 
 interface SaleStaffSelectionDialogProps {
   isOpen: boolean;

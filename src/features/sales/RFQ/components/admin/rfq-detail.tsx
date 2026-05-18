@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import QuotationCreate from '../../../quotation/components/admin/quotation-create';
 import Link from 'next/link';
 import { AdminRFQService, RfqDetail } from '../../services/admin-rfq.service';
-import { StaffService } from '@/features/user/staff/services/staff-service';
+import { StaffService } from '@/features/user/staff/services/staff.service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { statusLabels, statusStyles } from '../../constants/rfq-status';
 
@@ -29,12 +29,12 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
   const [assignedStaff, setAssignedStaff] = useState<any | null>(null);
-  
+
   // Assign staff states
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [assigningRfqId, setAssigningRfqId] = useState<string | null>(null);
   const [assignLoading, setAssignLoading] = useState(false);
-  
+
   const { user } = useUser();
 
   const loadData = async () => {

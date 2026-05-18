@@ -12,39 +12,18 @@ import {
     Trash2,
     Search
 } from 'lucide-react';
-import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { StaffService } from '../../services/staff-service';
+import { StaffService, StaffListStats, StaffStatus } from '../../services/staff.service';
 import { StaffListItem } from '../../models/staff-list-response';
-import { toast } from 'sonner';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { StatGroup } from '@/shared/components/admin/stat-card/stat-group';
+import {
+    AdminPageContainer,
+    AdminContentCard,
+    AdminHeaderBar
+} from '@/shared/components/admin/layout';
 
-const stats = [
-    {
-        title: 'Tổng nhân viên',
-        value: '48',
-        icon: UserCircle,
-        color: 'text-[#4318FF]'
-    }, {
-        title: 'Đang làm việc',
-        value: '44',
-        icon: UserCheck,
-        color: 'text-green-500'
-    }, {
-        title: 'Nghỉ phép',
-        value: '4',
-        icon: UserMinus,
-        color: 'text-yellow-500'
-    }, {
-        title: 'Vai trò',
-        value: '6',
-        icon: Shield,
-        color: 'text-purple-500'
-    },
-];
-
-const departmentColor: Record<string,
-    string> = {
+const departmentColor: Record<string, string> = {
     'Giám đốc': 'bg-red-50 text-red-600 border border-red-100',
     'Kho vận': 'bg-blue-50 text-blue-600 border border-blue-100',
     'Kinh doanh': 'bg-green-50 text-green-600 border border-green-100',
@@ -52,14 +31,33 @@ const departmentColor: Record<string,
     'Mua hàng': 'bg-indigo-50 text-indigo-600 border border-indigo-100'
 };
 
+const statusConfig: Record<number, { label: string; className: string }> = {
+    [StaffStatus.Active]: { label: 'Đang hoạt động', className: 'bg-green-50 text-green-600 border border-green-100' },
+    [StaffStatus.OnLeave]: { label: 'Vắng mặt', className: 'bg-amber-50 text-amber-600 border border-amber-100' },
+    [StaffStatus.Resigned]: { label: 'Đã nghỉ việc', className: 'bg-red-50 text-red-600 border border-red-100' }
+};
+
 export default function StaffList() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<StaffStatus | undefined>(undefined);
     const [staffList, setStaffList] = useState<StaffListItem[]>([]);
+    const [statsData, setStatsData] = useState<StaffListStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
+
+    const fetchStats = async () => {
+        try {
+            const stats = await StaffService.getStaffListStats();
+            if (stats) {
+                setStatsData(stats);
+            }
+        } catch (error) {
+            console.error('>>> Lỗi khi fetch thống kê:', error);
+        }
+    };
 
     const fetchStaffs = React.useCallback(async () => {
         setLoading(true);
@@ -67,7 +65,8 @@ export default function StaffList() {
             const response = await StaffService.getPagedStaffs({
                 pageNumber: currentPage,
                 pageSize: pageSize,
-                searchTerm: searchTerm
+                searchTerm: searchTerm,
+                status: statusFilter
             });
 
             if (response) {
@@ -79,10 +78,11 @@ export default function StaffList() {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, searchTerm]);
+    }, [currentPage, searchTerm, statusFilter]);
 
     React.useEffect(() => {
         fetchStaffs();
+        fetchStats();
     }, [fetchStaffs]);
 
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -93,40 +93,73 @@ export default function StaffList() {
         }
     };
 
+    const statsItems = useMemo(() => [
+        {
+            label: 'Tổng nhân viên',
+            value: statsData?.totalCount ?? 0,
+            icon: UserCircle,
+            color: 'bg-blue-50 text-blue-600',
+            borderColor: 'border-blue-100',
+            activeBorder: 'border-blue-500 ring-2 ring-blue-500/10',
+            isActive: statusFilter === undefined,
+            onClick: () => {
+                setStatusFilter(undefined);
+                setCurrentPage(1);
+            }
+        }, {
+            label: 'Đang làm việc',
+            value: statsData?.activeCount ?? 0,
+            icon: UserCheck,
+            color: 'bg-green-50 text-green-600',
+            borderColor: 'border-green-100',
+            activeBorder: 'border-green-500 ring-2 ring-green-500/10',
+            isActive: statusFilter === StaffStatus.Active,
+            onClick: () => {
+                setStatusFilter(StaffStatus.Active);
+                setCurrentPage(1);
+            }
+        }, {
+            label: 'Vắng mặt',
+            value: statsData?.onLeaveCount ?? 0,
+            icon: UserMinus,
+            color: 'bg-amber-50 text-amber-600',
+            borderColor: 'border-amber-100',
+            activeBorder: 'border-amber-500 ring-2 ring-amber-500/10',
+            isActive: statusFilter === StaffStatus.OnLeave,
+            onClick: () => {
+                setStatusFilter(StaffStatus.OnLeave);
+                setCurrentPage(1);
+            }
+        }, {
+            label: 'Đã nghỉ việc',
+            value: statsData?.resignedCount ?? 0,
+            icon: Shield,
+            color: 'bg-red-50 text-red-600',
+            borderColor: 'border-red-100',
+            activeBorder: 'border-red-500 ring-2 ring-red-500/10',
+            isActive: statusFilter === StaffStatus.Resigned,
+            onClick: () => {
+                setStatusFilter(StaffStatus.Resigned);
+                setCurrentPage(1);
+            }
+        },
+    ], [statsData, statusFilter]);
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-end">
-                <button className="admin-btn-primary flex items-center gap-2">
-                    <UserCircle className="w-4 h-4" />
-                    Tạo nhân viên
-                </button>
+        <AdminPageContainer>
+            <div className="shrink-0">
+                <StatGroup items={statsItems} />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {stats.map((s) => (
-                    <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-                        <CardContent className="p-2.5 flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-bold text-[#2B3674]">{s.value}</p>
-                                <p className="text-xs font-semibold text-[#A3AED0]">{s.title}</p>
-                            </div>
-                            <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-                                <s.icon className={`w-4 h-4 ${s.color}`} />
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden">
-                {/* Filter Section */}
-                <div className="flex flex-col md:flex-row gap-4 items-center p-4">
-                    <div className="relative flex-1 w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <AdminContentCard>
+                <AdminHeaderBar>
+                    {/* Search Input (Left) */}
+                    <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Tìm mã NV, họ tên, email, điện thoại..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 shadow-sm rounded text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
@@ -134,11 +167,19 @@ export default function StaffList() {
                             }}
                         />
                     </div>
-                </div>
 
-                <div className="relative">
+                    {/* Action Buttons (Right) */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Button className="h-10 admin-btn-primary gap-2 shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-[10px]">
+                            <UserCircle className="w-4 h-4" />
+                            Tạo nhân viên
+                        </Button>
+                    </div>
+                </AdminHeaderBar>
+
+                <div className="relative overflow-x-auto flex-1 min-h-0 custom-scrollbar">
                     {loading && (
-                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center min-h-[200px]">
+                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
                             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
                         </div>
                     )}
@@ -150,44 +191,53 @@ export default function StaffList() {
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Email</th>
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Điện thoại</th>
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Phòng ban</th>
+                                <th className="text-left px-6 py-4 tracking-label uppercase">Trạng thái</th>
                                 <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {staffList.map((s) => (
-                                <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-gray-900">{s.id}</td>
-                                    <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
-                                    <td className="px-6 py-4 text-gray-700">{s.email}</td>
-                                    <td className="px-6 py-4 text-gray-700">{s.phone}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
-                                            {s.department || '---'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                onClick={() => router.push(`/users/staff/${s.id}`)}
-                                            >
-                                                <Eye className="w-4 h-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                                                <Edit className="w-4 h-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {staffList.map((s) => {
+                                const status = statusConfig[s.status] || { label: 'Không xác định', className: 'bg-gray-50 text-gray-400 border border-gray-100' };
+                                return (
+                                    <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                                        <td className="px-6 py-4 font-bold text-gray-900">{s.code}</td>
+                                        <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
+                                        <td className="px-6 py-4 text-gray-700">{s.email}</td>
+                                        <td className="px-6 py-4 text-gray-700">{s.phone || '---'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${departmentColor[s.department] ?? 'bg-gray-50 text-gray-400'}`}>
+                                                {s.department || '---'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-0.5 rounded text-[11px] font-semibold ${status.className}`}>
+                                                {status.label}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                                    onClick={() => router.push(`/users/staff/${s.id}`)}
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                                                    <Edit className="w-4 h-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             {!loading && staffList.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
+                                    <td colSpan={7} className="px-6 py-20 text-center text-gray-500">
                                         Không có nhân viên nào được tìm thấy.
                                     </td>
                                 </tr>
@@ -199,7 +249,7 @@ export default function StaffList() {
                 {/* Pagination Footer */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
-                        <span className="text-sm">
+                        <span className="text-sm text-slate-500 font-medium">
                             Hiển thị {(currentPage - 1) * pageSize + 1} đến {Math.min(currentPage * pageSize, totalCount)} trong tổng số {totalCount} nhân viên
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -239,7 +289,7 @@ export default function StaffList() {
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
+            </AdminContentCard>
+        </AdminPageContainer>
     );
 }

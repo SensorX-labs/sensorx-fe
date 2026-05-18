@@ -17,7 +17,7 @@ import { useUser } from '@/shared/hooks/use-user';
 import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
 import { AdminRFQService, RfqListItem } from '../../services/admin-rfq.service';
-import { StaffService } from '@/features/user/staff/services/staff-service';
+import { StaffService } from '@/features/user/staff/services/staff.service';
 import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { RfqStatsSection } from './rfq-stats';

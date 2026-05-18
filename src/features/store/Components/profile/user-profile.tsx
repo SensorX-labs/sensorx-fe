@@ -63,11 +63,6 @@ export function UserProfile() {
             if (updatedCustomer) {
                 setCustomerData(updatedCustomer);
 
-                // Update Gateway avatar
-                if (updatedCustomer.avatarUrl) {
-                    await authService.updateAvatar(updatedCustomer.avatarUrl);
-                }
-
                 // Update user cookie for Header sync
                 const userCookie = Cookies.get('user');
                 if (userCookie) {

@@ -195,7 +195,7 @@ const AdminHeader: React.FC = () => {
                                 <DropdownItem
                                     icon={User}
                                     label="Thông tin cá nhân"
-                                    href="/profile"
+                                    href="/settings/profile"
                                     onClick={() => setIsDropdownOpen(false)}
                                 />
                                 <div className="my-1 border-t border-gray-100" />

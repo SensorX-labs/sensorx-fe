@@ -186,6 +186,13 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         href: '/settings',
         roles: ['Admin']
       },
+      {
+        name: 'Thông tin cá nhân',
+        iconName: 'User',
+        href: '/settings/profile',
+        roles: ['Manager', 'SaleStaff', 'WarehouseStaff', 'Admin'],
+        hidden: true
+      },
     ],
   },
 ];
