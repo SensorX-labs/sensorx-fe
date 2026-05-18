@@ -1,52 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Receipt, Eye, Edit, Trash2, Search } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Eye, Receipt, Search } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
+import { cn } from '@/shared/utils/cn';
+import { InvoiceStatus } from '../../enums/invoice-status';
+import { InvoiceListItem } from '../../models/invoice';
+import { InvoiceService } from '../../services/invoice-service';
 
-const stats = [
-  { title: 'Tổng hóa đơn', value: '924', icon: Receipt, color: 'text-[#4318FF]' },
-  { title: 'Chưa thanh toán', value: '87', icon: Receipt, color: 'text-yellow-500' },
-  { title: 'Đã thanh toán', value: '812', icon: Receipt, color: 'text-green-500' },
-  { title: 'Quá hạn', value: '25', icon: Receipt, color: 'text-red-400' },
-];
-
-const invoices = [
-  { id: 'HD001', order: 'DH001', customer: 'Nguyễn Văn An', issued: '02/03/2026', due: '16/03/2026', total: '12,500,000', status: 'Đã thanh toán' },
-  { id: 'HD002', order: 'DH003', customer: 'Lê Minh Châu', issued: '01/03/2026', due: '15/03/2026', total: '28,900,000', status: 'Chưa thanh toán' },
-  { id: 'HD003', order: 'DH006', customer: 'Vũ Thị Fương', issued: '28/02/2026', due: '14/03/2026', total: '9,750,000', status: 'Đã thanh toán' },
-  { id: 'HD004', order: 'DH007', customer: 'Đặng Văn Giang', issued: '15/02/2026', due: '01/03/2026', total: '34,200,000', status: 'Quá hạn' },
-  { id: 'HD005', order: 'DH008', customer: 'Bùi Thị Hoa', issued: '20/02/2026', due: '06/03/2026', total: '7,100,000', status: 'Chưa thanh toán' },
-];
-
-const statusColor: Record<string, string> = {
-  'Đã thanh toán': 'bg-green-100 text-green-600',
-  'Chưa thanh toán': 'bg-yellow-100 text-yellow-600',
-  'Quá hạn': 'bg-red-100 text-red-400',
+const statusStyles: Record<string, string> = {
+  [InvoiceStatus.Unpaid]: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  [InvoiceStatus.PartiallyPaid]: 'bg-orange-50 text-orange-700 border-orange-200',
+  [InvoiceStatus.Paid]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  [InvoiceStatus.Issued]: 'bg-blue-50 text-blue-700 border-blue-200',
+  [InvoiceStatus.Cancelled]: 'bg-red-50 text-red-700 border-red-200',
 };
 
+const statusLabels: Record<string, string> = {
+  [InvoiceStatus.Unpaid]: 'Chờ thanh toán',
+  [InvoiceStatus.PartiallyPaid]: 'Thanh toán một phần',
+  [InvoiceStatus.Paid]: 'Đã thanh toán',
+  [InvoiceStatus.Issued]: 'Đã phát hành',
+  [InvoiceStatus.Cancelled]: 'Đã hủy',
+};
+
+const formatMoney = (value?: number) => `${(value ?? 0).toLocaleString('vi-VN')} d`;
+
 export default function InvoiceList() {
+  const router = useRouter();
+  const [invoices, setInvoices] = useState<InvoiceListItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const filteredInvoices = invoices.filter(inv => {
-    const matchesSearch = 
-      (inv.id?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (inv.customer?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-      (inv.order?.toLowerCase() ?? '').includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const fetchInvoices = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await InvoiceService.getListInvoices({ pageNumber: 1, pageSize: 50, searchTerm });
+      setInvoices(response?.items ?? []);
+    } catch (error) {
+      console.error('>>> Loi khi fetch hoa don:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm]);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
+
+  const stats = useMemo(() => [
+    { title: 'Tổng hóa đơn', value: invoices.length.toString(), icon: Receipt, color: 'text-[#4318FF]' },
+    { title: 'Chưa thanh toán', value: invoices.filter(x => x.status === InvoiceStatus.Unpaid).length.toString(), icon: Receipt, color: 'text-yellow-500' },
+    { title: 'Đã thanh toán', value: invoices.filter(x => x.status === InvoiceStatus.Paid).length.toString(), icon: Receipt, color: 'text-green-500' },
+    { title: 'Đã hủy', value: invoices.filter(x => x.status === InvoiceStatus.Cancelled).length.toString(), icon: Receipt, color: 'text-red-400' },
+  ], [invoices]);
+
+  const filteredInvoices = useMemo(() => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    return invoices.filter(inv => {
+      const matchesSearch =
+        inv.code.toLowerCase().includes(normalizedSearch) ||
+        inv.companyName.toLowerCase().includes(normalizedSearch) ||
+        inv.orderId.toLowerCase().includes(normalizedSearch);
+
+      const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [invoices, searchTerm, statusFilter]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <button className="flex items-center gap-2 admin-btn-primary">
-          <Receipt className="w-4 h-4" /> Tạo hóa đơn
-        </button>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold admin-title uppercase">Quản lý hóa đơn</h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -71,70 +99,90 @@ export default function InvoiceList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm số HD, khách hàng, đơn hàng..."
+              placeholder="Tìm mã hóa đơn, công ty, đơn hàng..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="w-full md:w-[200px]">
+          <div className="w-full md:w-[220px]">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
             >
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="Đã thanh toán">Đã thanh toán</option>
-              <option value="Chưa thanh toán">Chưa thanh toán</option>
-              <option value="Quá hạn">Quá hạn</option>
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
             </select>
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="text-left px-6 py-4 tracking-label uppercase">Số HD</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Đơn hàng</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Ngày phát hành</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Hạn thanh toán</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Tổng tiền</th>
-              <th className="text-left px-6 py-4 tracking-label uppercase">Trạng thái</th>
-              <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInvoices.map((inv) => (
-              <tr key={inv.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                <td className="px-6 py-4">{inv.id ?? '-'}</td>
-                <td className="px-6 py-4 text-gray-700">{inv.order ?? '-'}</td>
-                <td className="px-6 py-4">{inv.customer ?? '-'}</td>
-                <td className="px-6 py-4 text-gray-700">{inv.issued ?? '-'}</td>
-                <td className="px-6 py-4 text-gray-700">{inv.due ?? '-'}</td>
-                <td className="px-6 py-4">{inv.total ?? '-'} đ</td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColor[inv.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                    {inv.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="text-left px-6 py-4 tracking-label uppercase">Mã HD</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Đơn hàng</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">ông ty</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Ngày lập</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Sản phẩm</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase">Đã thu</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase">Tổng tiền</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredInvoices.map((inv) => (
+                <tr key={inv.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{inv.code}</td>
+                  <td className="px-6 py-4 text-gray-700">{inv.orderId}</td>
+                  <td className="px-6 py-4">
+                    <div className="font-bold text-gray-900">{inv.companyName}</div>
+                    <p className="text-[10px] text-gray-500 font-normal mt-0.5 uppercase tracking-wider">{inv.taxCode}</p>
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">{new Date(inv.issueAt).toLocaleDateString('vi-VN')}</td>
+                  <td className="px-6 py-4 text-center font-semibold text-gray-700">{inv.itemCount}</td>
+                  <td className="px-6 py-4 text-right">{formatMoney(inv.amountPaid)}</td>
+                  <td className="px-6 py-4 text-right font-bold text-gray-900">{formatMoney(inv.grandTotal)}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={cn(
+                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                      statusStyles[inv.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'
+                    )}>
+                      {statusLabels[inv.status] ?? inv.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5 pr-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                        onClick={() => router.push(`/sales/invoices/${inv.id}`)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {loading && (
+            <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
+              Đang tải hóa đơn...
+            </div>
+          )}
+          {!loading && filteredInvoices.length === 0 && (
+            <div className="py-20 text-center text-gray-400 uppercase tracking-widest text-xs">
+              Không tìm thấy hóa đơn nào
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

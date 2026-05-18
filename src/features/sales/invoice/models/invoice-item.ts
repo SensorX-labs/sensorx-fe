@@ -1,12 +1,12 @@
 export interface InvoiceItem {
-    id ?: string ;
-    productId : string ;
-    productName : string ;
-    unit : string ;
-    quantity : string ;
-    unitPrice : number ; 
-    taxtRate : number ;
-    lineAmount : number 
-    taxtAmount : number ; 
-    totalLineAmount : number ;
+  id?: string;
+  productId: string;
+  productName: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+  lineAmount: number;
+  taxAmount: number;
+  totalLineAmount: number;
 }
