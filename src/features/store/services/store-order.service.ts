@@ -19,5 +19,5 @@ export const StoreOrderService = {
      * Lấy danh sách đơn hàng của khách hàng (Storefront)
      */
     getMyOrders: (params: StoreOrderParams) =>
-        api.master.get<StoreOrderParams, LoadMorePagedResult<StoreMyOrderItem>>('/orders/my-orders', { params })
+        api.master.get<StoreOrderParams, LoadMorePagedResult<StoreMyOrderItem>>('/orders/my', { params })
 };
