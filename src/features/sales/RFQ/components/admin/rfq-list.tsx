@@ -109,21 +109,8 @@ export default function RequestForQuotationList() {
   const handleAccept = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
 
-    if (!user?.id) {
-      toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
-      return;
-    }
-
     try {
-      const staffResponse = await StaffService.getStaffByAccountId(user.id);
-      const staffId = (staffResponse as any).staffId || (staffResponse as any).value?.staffId;
-
-      if (!staffId) {
-        toast.error("Không tìm thấy thông tin nhân viên (Staff ID)");
-        return;
-      }
-
-      await AdminRFQService.assignStaff(id, staffId);
+      await AdminRFQService.acceptRFQ(id);
       toast.success("Đã tiếp nhận yêu cầu thành công");
       fetchData();
     } catch (error: any) {
@@ -176,11 +163,6 @@ export default function RequestForQuotationList() {
     e?.stopPropagation();
     setAssigningRfqId(id);
     setIsAssignDialogOpen(true);
-  };
-
-  const handleCreateQuotation = (id: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    router.push(`/sales/RFQ/${id}`);
   };
 
   return (
@@ -267,10 +249,8 @@ export default function RequestForQuotationList() {
                     <div className="flex items-center justify-center gap-2">
 
                       {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
-                      {/* Lưu ý: Bạn thay RfqStatus.PENDING bằng trạng thái mặc định thực tế của bạn */}
                       {(!l.status || l.status?.toLowerCase() === 'pending') && (
                         <>
-                          {/* QUẢN LÝ: Nút phân công (Đã thu gọn UI) */}
                           <CanAccess roles={['Manager']}>
                             <Button
                               variant="ghost"
@@ -311,20 +291,7 @@ export default function RequestForQuotationList() {
                       {/* 2. NẾU RFQ ĐÃ TIẾP NHẬN (ACCEPTED) -> CHỈ HIỆN NÚT LẬP BÁO GIÁ */}
                       {l.status?.toLowerCase() === RfqStatus.ACCEPTED.toLowerCase() && (
                         <>
-                          <CanAccess roles={['SaleStaff']}>
-                            {/* Nút lập báo giá được làm nổi bật hơn thay vì chỉ hiện icon */}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              title="Lập báo giá"
-                              className="h-8 text-xs font-medium text-brand-green-600 bg-brand-green-50 border-brand-green-100 hover:bg-brand-green-100 shadow-sm"
-                              onClick={(e) => handleCreateQuotation(l.id, e)}
-                            >
-                              <FileText className="w-3.5 h-3.5 mr-1.5" />
-                              Lập báo giá
-                            </Button>
-                          </CanAccess>
-                          <CanAccess roles={['Manager']}>
+                          <CanAccess roles={['Manager', 'SaleStaff']}>
                             <Button
                               variant="ghost"
                               size="icon"

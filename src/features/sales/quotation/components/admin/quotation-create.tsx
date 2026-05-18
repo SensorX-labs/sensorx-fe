@@ -36,6 +36,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { toast } from 'sonner';
 import { RfqDetail } from '@/features/sales/RFQ/services/admin-rfq.service';
+import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 
 interface QuotationCreateProps {
   id?: string;
@@ -276,18 +277,65 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
         shippingAddress: info?.address || '',
       }));
       setSelectedCustomerId((rfqRaw as any).customerId);
-      setItems(rfqRaw.items.map((item: any, idx: number) => ({
-        productId: item.productId || '',
-        productCode: item.productCode || '',
-        productName: item.productName || '',
-        quantity: item.quantity || 0,
-        unit: item.unit || '',
-        manufacturer: item.manufacturer || item.category || '',
-        unitPrice: 0,
-        taxRate: 0,
-        key: `rfq-${idx}`,
-        internalPrice: item.internalPrice,
-      })));
+
+      const loadSuggestPrices = async () => {
+        try {
+          const productIds = rfqRaw.items.map(item => item.productId).filter(Boolean);
+          const priceMap: Record<string, any> = {};
+
+          if (productIds.length > 0) {
+            const response = await InternalPriceService.getSuggest({ productIds });
+            if (response) {
+              response.forEach((price: any) => {
+                // Chuẩn hóa PriceTiers để tương thích với Popover bậc giá cũ (sử dụng priceAmount)
+                const priceTiers = (price.priceTiers || []).map((t: any) => ({
+                  quantity: t.quantity,
+                  priceAmount: t.amount ?? t.priceAmount ?? t.price,
+                  priceCurrency: t.currency ?? t.priceCurrency
+                }));
+                priceMap[price.productId] = {
+                  ...price,
+                  priceTiers
+                };
+              });
+            }
+          }
+
+          setItems(rfqRaw.items.map((item: any, idx: number) => {
+            const internalPrice = priceMap[item.productId];
+            // Tự động gán unitPrice gợi ý ban đầu nếu có giá trị
+            const unitPrice = internalPrice ? (internalPrice.suggestedPriceAmount ?? internalPrice.suggestedPrice ?? 0) : 0;
+            return {
+              productId: item.productId || '',
+              productCode: item.productCode || '',
+              productName: item.productName || '',
+              quantity: item.quantity || 0,
+              unit: item.unit || '',
+              manufacturer: item.manufacturer || item.category || '',
+              unitPrice: unitPrice,
+              taxRate: 0,
+              key: `rfq-${idx}`,
+              internalPrice: internalPrice,
+            };
+          }));
+        } catch (error) {
+          console.error(">>> Lỗi khi tải gợi ý giá:", error);
+          setItems(rfqRaw.items.map((item: any, idx: number) => ({
+            productId: item.productId || '',
+            productCode: item.productCode || '',
+            productName: item.productName || '',
+            quantity: item.quantity || 0,
+            unit: item.unit || '',
+            manufacturer: item.manufacturer || item.category || '',
+            unitPrice: 0,
+            taxRate: 0,
+            key: `rfq-${idx}`,
+            internalPrice: undefined,
+          })));
+        }
+      };
+
+      loadSuggestPrices();
     }
   }, [id, rfqRaw, actionParam]);
 

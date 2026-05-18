@@ -6,6 +6,9 @@ export const AdminRFQService = {
     assignStaff: (id: string, staffId: string) =>
         api.master.post<any, void>(`/rfq/force-assign`, { Id: id, StaffId: staffId }),
 
+    acceptRFQ: (id: string) =>
+        api.master.post<any, void>(`/rfq/accept`, { Id: id }),
+
     rejectRFQ: (id: string) =>
         api.master.post<any, void>(`/rfq/reject`, { Id: id }),
 

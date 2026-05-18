@@ -40,14 +40,17 @@ export interface MyRfqDetail {
     code: string;
     status: string;
     createdAt: string;
-    customerId: string;
-    recipientName?: string;
-    recipientPhone?: string;
-    email?: string;
-    address?: string;
-    companyName?: string;
+    saleStaff?: MyRfqSaleStaff;
     customer?: MyRfqDetailCustomer;
     items: MyRfqDetailItem[];
+}
+
+export interface MyRfqSaleStaff {
+    id: string;
+    name: string;
+    phone?: string;
+    email: string;
+    avatarUrl?: string;
 }
 
 export interface MyRfqDetailCustomer {

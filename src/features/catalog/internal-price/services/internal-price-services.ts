@@ -10,9 +10,6 @@ const InternalPriceService = {
   getStats: () =>
     api.data.get<any, InternalPriceStatsResult>("/catalog/internal-prices/stats"),
 
-  getInternalPricesByProductId: (productId: string) =>
-    api.data.get<any, InternalPriceDetail>(`/catalog/internal-prices/product/${productId}`),
-
   /**
    * Lấy chi tiết bảng giá nội bộ
    */

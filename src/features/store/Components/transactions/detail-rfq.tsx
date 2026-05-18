@@ -10,6 +10,7 @@ import {
   Package,
   Loader2,
   Send,
+  Headset,
 } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
@@ -254,6 +255,63 @@ export function RfqDetailView({
 
         {/* CỘT PHẢI */}
         <div className="space-y-6 sticky top-28">
+          {/* THÔNG TIN NHÂN VIÊN HỖ TRỢ */}
+          {rfq.saleStaff && (
+            <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md rounded-2xl">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
+                  <Headset className="w-4 h-4 text-[#B48F4E]" />
+                  Nhân viên hỗ trợ
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    {rfq.saleStaff.avatarUrl ? (
+                      <img
+                        src={rfq.saleStaff.avatarUrl}
+                        alt={rfq.saleStaff.name}
+                        className="w-16 h-16 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                        <User className="w-8 h-8 text-gray-200" />
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <p className="breadcrumb-text uppercase !text-lg font-bold">
+                        {rfq.saleStaff.name}
+                      </p>
+                      <p className="meta-label uppercase text-[9px] font-bold text-[#B48F4E] tracking-[0.2em]">
+                        Technical Sales
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 space-y-3 border-t border-gray-50 mt-4">
+                    {rfq.saleStaff.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+
+                        <span className="qty-label tracking-widest text-sm">
+                          {rfq.saleStaff.phone}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+
+                      <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase text-xs line-clamp-1">
+                        {rfq.saleStaff.email}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* THÔNG TIN KHÁCH HÀNG */}
           <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md rounded-2xl">
             <div className="space-y-6">
@@ -264,21 +322,15 @@ export function RfqDetailView({
 
               <div className="space-y-4">
                 <p className="breadcrumb-text uppercase !text-lg font-bold">
-                  {customer?.name || rfq.recipientName}
+                  {customer?.name}
                 </p>
-
-                {rfq.companyName && (
-                  <p className="meta-label uppercase text-[#B48F4E] font-bold">
-                    {rfq.companyName}
-                  </p>
-                )}
 
                 <div className="pt-2 space-y-3 border-t border-gray-50 mt-4">
                   <div className="flex items-center gap-3">
                     <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
 
                     <span className="qty-label tracking-widest text-sm">
-                      {customer?.phone || rfq.recipientPhone}
+                      {customer?.phone || 'Chưa cập nhật'}
                     </span>
                   </div>
 
@@ -286,7 +338,7 @@ export function RfqDetailView({
                     <Mail className="w-3.5 h-3.5 text-gray-300 shrink-0" />
 
                     <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase text-xs line-clamp-1">
-                      {customer?.email || rfq.email}
+                      {customer?.email}
                     </span>
                   </div>
 
@@ -294,9 +346,7 @@ export function RfqDetailView({
                     <MapPin className="w-3.5 h-3.5 text-gray-300 mt-1 shrink-0" />
 
                     <span className="meta-label capitalize text-xs text-gray-600 line-clamp-2">
-                      {customer?.address ||
-                        rfq.address ||
-                        'Chưa cập nhật địa chỉ'}
+                      {customer?.address || 'Chưa cập nhật địa chỉ'}
                     </span>
                   </div>
                 </div>

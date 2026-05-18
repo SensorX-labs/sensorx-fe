@@ -16,6 +16,9 @@ import { StaffService } from '@/features/user/staff/services/staff-service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { statusLabels, statusStyles } from '../../constants/rfq-status';
 
+import { SaleStaffSelectionDialog } from '@/shared/components/admin/selection-modal';
+import { CanAccess } from '@/shared/components/common/can-access';
+
 interface RequestForQuotationDetailProps {
   id: string;
   onBack: () => void;
@@ -26,88 +29,78 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
   const [assignedStaff, setAssignedStaff] = useState<any | null>(null);
+  
+  // Assign staff states
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [assigningRfqId, setAssigningRfqId] = useState<string | null>(null);
+  const [assignLoading, setAssignLoading] = useState(false);
+  
   const { user } = useUser();
 
-  React.useEffect(() => {
-    const loadPage = async () => {
-      setLoading(true);
-      try {
-        const response = await AdminRFQService.getDetailRFQ(id);
-        if (response) {
-          const data = response;
-          setRfq(data);
-
-          if (data.staffId) {
-            try {
-              const staffResponse = await StaffService.getStaffById(data.staffId);
-              if (staffResponse) {
-                setAssignedStaff(staffResponse);
-              }
-            } catch (err) {
-              console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(">>> Lỗi khi fetch detail RFQ:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPage();
-  }, [id]);
-
-  const handleAcceptDetail = async () => {
-    if (!user?.id) {
-      toast.error("Vui lòng đăng nhập để thực hiện thao tác này");
-      return;
-    }
-
-    try {
-      const staffResponse = await StaffService.getStaffByAccountId(user.id);
-      if (!staffResponse) {
-        toast.error("Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên");
-        return;
-      }
-
-      await AdminRFQService.assignStaff(id, staffResponse.id);
-    } catch (error: any) {
-      console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
-    }
-  };
-
-  const handlePrepareQuotation = async () => {
-    if (!rfq) return;
-
+  const loadData = async () => {
     setLoading(true);
     try {
-      // Gọi API lấy giá nội bộ cho từng sản phẩm trong RFQ
-      const updatedItems = await Promise.all(rfq.items.map(async (item) => {
-        try {
-          const response = await InternalPriceService.getInternalPricesByProductId(item.productId);
-          if (response) {
-            return {
-              ...item,
-              internalPrice: response // Gắn trực tiếp dữ liệu đã unwrap
-            };
-          }
-        } catch (err) {
-          console.error(`>>> Không lấy được giá cho SP ${item.productId}:`, err);
-        }
-        return item;
-      }));
+      const response = await AdminRFQService.getDetailRFQ(id);
+      if (response) {
+        setRfq(response);
 
-      // Cập nhật rfq với items đã có giá nội bộ
-      setRfq({ ...rfq, items: updatedItems });
-      setIsCreatingQuotation(true);
+        if (response.staffId) {
+          try {
+            const staffResponse = await StaffService.getStaffById(response.staffId);
+            if (staffResponse) {
+              setAssignedStaff(staffResponse);
+            }
+          } catch (err) {
+            console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
+          }
+        } else {
+          setAssignedStaff(null);
+        }
+      }
     } catch (error) {
-      toast.error("Lỗi khi tải bảng giá nội bộ");
+      console.error(">>> Lỗi khi fetch detail RFQ:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  React.useEffect(() => {
+    loadData();
+  }, [id]);
+
+  const handleAcceptDetail = async () => {
+    try {
+      await AdminRFQService.acceptRFQ(id);
+      toast.success("Đã tiếp nhận yêu cầu thành công");
+      loadData();
+    } catch (error: any) {
+      console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
+      toast.error("Đã xảy ra lỗi khi tiếp nhận yêu cầu");
+    }
+  };
+
+  const handleAssignStaff = async (rfqId: string, staffId: string) => {
+    if (!rfqId || !staffId) {
+      toast.error("Vui lòng chọn nhân viên");
+      return;
+    }
+
+    setAssignLoading(true);
+    try {
+      await AdminRFQService.assignStaff(rfqId, staffId);
+      toast.success("Đã chỉ định nhân viên thành công");
+      loadData();
+    } catch (error: any) {
+      console.error(">>> Lỗi khi chỉ định nhân viên:", error);
+      toast.error("Đã xảy ra lỗi khi chỉ định nhân viên");
+    } finally {
+      setAssignLoading(false);
+    }
+  };
+
+  const handlePrepareQuotation = () => {
+    setIsCreatingQuotation(true);
+  };
 
   if (loading) return <div className="p-6 text-blue-600 animate-pulse">Đang tải dữ liệu...</div>;
   if (!rfq) return <div className="p-6 text-gray-600">Không tìm thấy yêu cầu báo giá</div>;
@@ -213,7 +206,25 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                     {assignedStaff ? (
                       <span>{assignedStaff.staffName}</span>
                     ) : (
-                      <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
+                      <div className="flex flex-col gap-1.5">
+                        <CanAccess roles={['Manager']}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-none w-max"
+                            onClick={() => {
+                              setAssigningRfqId(id);
+                              setIsAssignDialogOpen(true);
+                            }}
+                            disabled={assignLoading}
+                          >
+                            Chỉ định nhân viên
+                          </Button>
+                        </CanAccess>
+                        <CanAccess roles={['SaleStaff']}>
+                          <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
+                        </CanAccess>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -315,6 +326,17 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           </div>
         </div>
       </div>
+
+      <SaleStaffSelectionDialog
+        isOpen={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
+        onSelect={(staff) => {
+          if (assigningRfqId) {
+            handleAssignStaff(assigningRfqId, staff.id);
+            setIsAssignDialogOpen(false);
+          }
+        }}
+      />
     </div>
   );
 }
