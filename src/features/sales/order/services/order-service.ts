@@ -11,6 +11,12 @@ export const OrderService = {
 
   getOrderById: (id: string) =>
     api.master.get<unknown, Order>(`/orders/${id}`),
+
+  getMyOrders: (params: OrderFilter) =>
+    api.master.get<unknown, OffsetPagedResult<OrderListItem>>(`/orders/my`, { params }),
+
+  getMyOrderById: (id: string) =>
+    api.master.get<unknown, Order>(`/orders/my/${id}`),
 };
 
 export default OrderService;
