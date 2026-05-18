@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import {
     FileText,
     MapPin,
-    ChevronLeft,
     Phone,
     Mail,
     User,
@@ -23,23 +22,23 @@ import { OrderService } from '@/features/sales/order/services/order-service';
 import { Order } from '@/features/sales/order/models/order';
 
 const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
-    [OrderStatus.PendingPayment]: { 
-        label: 'Chờ thanh toán', 
+    [OrderStatus.PendingPayment]: {
+        label: 'Chờ thanh toán',
         className: 'bg-orange-50 text-orange-700 border-orange-200',
         icon: Clock
     },
-    [OrderStatus.Processing]: { 
-        label: 'Đang xử lý', 
+    [OrderStatus.Processing]: {
+        label: 'Đang xử lý',
         className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
         icon: Clock
     },
-    [OrderStatus.Dispatched]: { 
-        label: 'Đã xuất kho', 
+    [OrderStatus.Dispatched]: {
+        label: 'Đã xuất kho',
         className: 'bg-green-50 text-green-700 border-green-200',
         icon: Truck
     },
-    [OrderStatus.Cancelled]: { 
-        label: 'Đã hủy', 
+    [OrderStatus.Cancelled]: {
+        label: 'Đã hủy',
         className: 'bg-red-50 text-red-700 border-red-200',
         icon: Clock
     },
@@ -90,7 +89,7 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
     }
 
     const config = statusConfig[order.status] || { label: 'Đơn hàng', className: 'bg-gray-50 text-gray-700 border-gray-200', icon: FileText };
-    const subtotal = order.orderItems.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+    const subtotal = order.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
     const tax = subtotal * 0.1;
     const total = subtotal + tax;
 
@@ -171,7 +170,7 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {order.orderItems.map((item, idx) => (
+                                        {order.items.map((item, idx) => (
                                             <tr key={item.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors", idx % 2 === 1 && "bg-gray-50/30")}>
                                                 <td className="px-8 py-5">
                                                     <p className="breadcrumb-text uppercase font-bold text-gray-900">{item.productCode}</p>
