@@ -19,15 +19,18 @@ import { AuthService } from '@/features/system/auth/services/auth-service';
 import { ProfileTab } from '@/features/user/customer/components/store/profile-tab';
 import { OrdersTab } from '@/features/sales/order/components/store/orders-tab';
 import { CustomerDetail } from '@/features/user/customer/models/customer-detail';
+import { MyInvoicesTab } from '@/features/sales/invoice/components/store/my-invoices-tab';
+import { InvoiceDetailView } from '@/features/sales/invoice/components/store/invoice-detail-view';
 
 const authService = new AuthService();
-type ActiveTab = 'business' | 'orders' | 'quotations' | 'my-quotations' | 'security';
+type ActiveTab = 'business' | 'orders' | 'invoices' | 'quotations' | 'my-quotations' | 'security';
 
 const profileTabs: Array<{ id: ActiveTab; label: string; icon: React.ElementType }> = [
   { id: 'business', label: 'Thong tin doanh nghiep', icon: Building },
   { id: 'quotations', label: 'Yeu cau bao gia', icon: FileText },
   { id: 'my-quotations', label: 'Bao gia cua toi', icon: FileText },
   { id: 'orders', label: 'Don hang cua toi', icon: ShoppingCart },
+  { id: 'invoices', label: 'Hoa don cua toi', icon: FileText },
   { id: 'security', label: 'Mat khau & Bao mat', icon: Shield },
 ];
 
@@ -36,6 +39,7 @@ export function UserProfile() {
   const [customerData, setCustomerData] = useState<CustomerDetail>();
   const [loading, setLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
   const [selectedRfqId, setSelectedRfqId] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -83,6 +87,7 @@ export function UserProfile() {
 
   const resetDetailSelection = () => {
     setSelectedOrderId(null);
+    setSelectedInvoiceId(null);
     setSelectedQuotationId(null);
     setSelectedRfqId(null);
   };
@@ -159,6 +164,14 @@ export function UserProfile() {
                 <OrderDetailView orderId={selectedOrderId} onBack={() => setSelectedOrderId(null)} />
               ) : (
                 <OrdersTab onViewDetail={setSelectedOrderId} />
+              )
+            )}
+
+            {activeTab === 'invoices' && (
+              selectedInvoiceId ? (
+                <InvoiceDetailView invoiceId={selectedInvoiceId} onBack={() => setSelectedInvoiceId(null)} />
+              ) : (
+                <MyInvoicesTab onViewDetail={setSelectedInvoiceId} />
               )
             )}
 
