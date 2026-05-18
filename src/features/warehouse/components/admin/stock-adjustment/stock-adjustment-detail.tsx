@@ -125,6 +125,15 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
   );
 }
 
+const generateAdjustmentCode = () => {
+  const now = new Date();
+  const yy = now.getFullYear().toString().slice(-2);
+  const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+  const dd = now.getDate().toString().padStart(2, '0');
+  const random9 = Math.floor(100000000 + Math.random() * 900000000).toString();
+  return `PKK-${yy}${mm}${dd}-${random9}`;
+};
+
 export default function StockAdjustmentDetail() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -136,7 +145,7 @@ export default function StockAdjustmentDetail() {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    code: `PKK-${new Date().getTime().toString().slice(-6)}`,
+    code: generateAdjustmentCode(),
     reason: 'Kiểm kê định kỳ',
     description: '',
     items: [] as AdjustmentItem[],

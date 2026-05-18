@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Warehouse, Search, Loader2, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
-import { InventoryService, InventoryItemListItem } from '../../services/inventory-service';
+import { InventoryService, InventoryItemListItem, ConsolidatedInventoryItem } from '../../services/inventory-service';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from 'sonner';
@@ -15,7 +15,27 @@ import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehou
 interface StockItem extends InventoryItemListItem {
   productName?: string;
   productCode?: string;
+  salableQuantity?: number;
+  warehouses?: ConsolidatedInventoryItem['warehouses'];
 }
+
+const formatWarehouseLocation = (warehouse: ConsolidatedInventoryItem['warehouses'][number]) => {
+  const parts = [warehouse.warehouseName, warehouse.brandZone, warehouse.rackCode].filter(Boolean);
+  return parts.join(' · ');
+};
+
+const normalizeConsolidatedItem = (item: ConsolidatedInventoryItem): StockItem => ({
+  id: item.productId,
+  productId: item.productId,
+  physicalQuantity: item.totalPhysicalQuantity,
+  allocatedQuantity: item.totalAllocatedQuantity,
+  salableQuantity: item.totalSalableQuantity,
+  warehouseName: item.warehouses.map((warehouse) => warehouse.warehouseName).join(', '),
+  rackCode: item.warehouses[0]?.rackCode,
+  brandZone: item.warehouses[0]?.brandZone,
+  createdAt: '',
+  warehouses: item.warehouses,
+});
 
 export default function WarehouseStockPage() {
   const { user } = useUser();
@@ -57,6 +77,7 @@ export default function WarehouseStockPage() {
     setLoading(true);
     try {
       let itemsRes: InventoryItemListItem[] = [];
+      let consolidatedItemsRes: ConsolidatedInventoryItem[] = [];
       let hasNextFlag = false;
       let hasPrevFlag = false;
       let firstCreatedAtStr: string | undefined;
@@ -67,7 +88,7 @@ export default function WarehouseStockPage() {
       if (activeTab === 'all') {
         const res = await InventoryService.getConsolidatedInventory();
         const rawItems = res?.items || res || [];
-        itemsRes = Array.isArray(rawItems) ? rawItems : [];
+        consolidatedItemsRes = Array.isArray(rawItems) ? rawItems : [];
       } else {
         const result = await InventoryService.getInventoryList({
           warehouseId: activeTab,
@@ -88,16 +109,30 @@ export default function WarehouseStockPage() {
         lastIdStr = result.lastId;
       }
 
-      let filteredItems = itemsRes;
+      let filteredItems: StockItem[] = activeTab === 'all'
+        ? consolidatedItemsRes.map(normalizeConsolidatedItem)
+        : itemsRes;
+
       if (activeTab === 'all' && searchTerm) {
         const term = searchTerm.toLowerCase();
-        filteredItems = itemsRes.filter(i => 
-          i.productId.toLowerCase().includes(term) || 
-          i.warehouseName?.toLowerCase().includes(term)
+        filteredItems = filteredItems.filter((item) => 
+          item.productId.toLowerCase().includes(term) ||
+          item.productCode?.toLowerCase().includes(term) ||
+          item.productName?.toLowerCase().includes(term) ||
+          item.warehouseName?.toLowerCase().includes(term) ||
+          item.warehouses?.some((warehouse) =>
+            [warehouse.warehouseName, warehouse.brandZone, warehouse.rackCode].some((value) =>
+              value?.toLowerCase().includes(term)
+            )
+          )
         );
       }
 
       const enrichedItems: StockItem[] = await Promise.all(filteredItems.map(async (item) => {
+        if (item.productCode && item.productName && activeTab === 'all') {
+          return item;
+        }
+
         try {
           const product = await ProductService.getDetail(item.productId);
           return { ...item, productName: product.name, productCode: product.code };
@@ -112,7 +147,12 @@ export default function WarehouseStockPage() {
           i.productCode?.toLowerCase().includes(term) ||
           i.productName?.toLowerCase().includes(term) ||
           i.productId.toLowerCase().includes(term) ||
-          i.warehouseName?.toLowerCase().includes(term)
+          i.warehouseName?.toLowerCase().includes(term) ||
+          i.warehouses?.some((warehouse) =>
+            [warehouse.warehouseName, warehouse.brandZone, warehouse.rackCode].some((value) =>
+              value?.toLowerCase().includes(term)
+            )
+          )
         );
         setStockItems(doubleFiltered);
       } else {
@@ -269,10 +309,25 @@ export default function WarehouseStockPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-700">
-                    <span className="font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded text-xs">
-                      {item.warehouseName || 'Chưa xác định'}
-                    </span>
-                    {item.rackCode && <span className="ml-1 text-xs text-gray-400">({item.rackCode})</span>}
+                    {activeTab === 'all' && item.warehouses?.length ? (
+                      <div className="flex flex-col gap-1">
+                        {item.warehouses.slice(0, 2).map((warehouse, index) => (
+                          <span key={`${warehouse.warehouseName}-${index}`} className="font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded text-xs inline-flex w-fit">
+                            {formatWarehouseLocation(warehouse)}
+                          </span>
+                        ))}
+                        {item.warehouses.length > 2 && (
+                          <span className="text-xs text-gray-400">+{item.warehouses.length - 2} kho khác</span>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <span className="font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                          {item.warehouseName || 'Chưa xác định'}
+                        </span>
+                        {item.rackCode && <span className="ml-1 text-xs text-gray-400">({item.rackCode})</span>}
+                      </>
+                    )}
                   </td>
                 </tr>
               ))
