@@ -59,6 +59,13 @@ export interface MyRfqDetailCustomer {
     email: string;
     phone?: string;
     address?: string;
+    shippingInfo?: ShippingInfo;
+}
+
+export interface ShippingInfo {
+    recipientName: string;
+    recipientPhone: string;
+    shippingAddress: string;
 }
 
 export interface MyRfqDetailItem {

@@ -3,13 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Check, X, FileText, UserCheck, Search, ClipboardList, UserPlus } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/shadcn-ui/select";
 import { cn } from '@/shared/utils/cn';
 import { toast } from 'sonner';
 import { useDebounce } from '../../../../../shared/hooks/use-debounce';
@@ -17,8 +10,7 @@ import { useUser } from '@/shared/hooks/use-user';
 import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
 import { AdminRFQService, RfqListItem } from '../../services/admin-rfq.service';
-import { StaffService } from '@/features/user/staff/services/staff.service';
-import { StaffListItem } from '@/features/user/staff/models/staff-list-response';
+import { StaffListItem, StaffService } from '@/features/user/staff/services/staff.service';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { RfqStatsSection } from './rfq-stats';
 import { RfqDeclineDialog } from './rfq-decline-dialog';
@@ -48,13 +40,10 @@ export default function RequestForQuotationList() {
   // Assign staff states
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [assigningRfqId, setAssigningRfqId] = useState<string | null>(null);
-  const [staffList, setStaffList] = useState<StaffListItem[]>([]);
-  const [staffMap, setStaffMap] = useState<Record<string, string>>({});
   const [assignLoading, setAssignLoading] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const { user } = useUser();
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -81,26 +70,6 @@ export default function RequestForQuotationList() {
       setLoading(false);
     }
   };
-
-  const fetchStaffList = async () => {
-    try {
-      const response = await StaffService.getPagedStaffs({ pageNumber: 1, pageSize: 100 });
-      if (response) {
-        setStaffList(response.items);
-        const map: Record<string, string> = {};
-        response.items.forEach(staff => {
-          map[staff.id] = staff.name;
-        });
-        setStaffMap(map);
-      }
-    } catch (error) {
-      console.error(">>> Lỗi khi fetch danh sách nhân viên:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchStaffList();
-  }, []);
 
   useEffect(() => {
     fetchData();
@@ -205,6 +174,7 @@ export default function RequestForQuotationList() {
               <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Người xử lý</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+              <th className="text-center px-6 py-4 tracking-label uppercase">Ngày yêu cầu</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
             </tr>
           </thead>
@@ -226,14 +196,29 @@ export default function RequestForQuotationList() {
                 >
                   <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{l.code}</td>
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-800">{l.companyName}</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{l.recipientName}</div>
+                    <div className="space-y-1">
+                      <div className="font-semibold text-gray-800 leading-tight">
+                        {l.companyName}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-gray-500">
+                        <span className="font-medium text-gray-400">Liên hệ:</span>
+
+                        <span className="text-gray-600">
+                          {l.recipientName}
+                        </span>
+
+                        <span className="text-gray-400">
+                          ({l.recipientPhone})
+                        </span>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-xs text-left">
                     {l.staffId ? (
                       <span className="flex items-center gap-1.5">
                         <UserCheck className="w-3.5 h-3.5" />
-                        {staffMap[l.staffId] || `Nhân viên ${l.staffId.slice(0, 4)}`}
+                        {l.staffName || `Nhân viên ${l.staffId.slice(0, 4)}`}
                       </span>
                     ) : <span className="">—</span>}
                   </td>
@@ -244,6 +229,9 @@ export default function RequestForQuotationList() {
                     )}>
                       {getStatusLabel(l.status)}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-center text-xs text-slate-500">
+                    {l.updatedAt ? new Date(l.updatedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">

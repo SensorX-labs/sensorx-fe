@@ -43,7 +43,6 @@ export function MyRfqsTab({
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState<string>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
 
     // Dùng useRef lưu trữ con trỏ phân trang, cô lập hoàn toàn khỏi dependency tránh re-render lặp vô tận
     const paginationRef = useRef({

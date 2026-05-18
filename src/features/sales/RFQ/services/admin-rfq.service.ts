@@ -43,8 +43,9 @@ export interface RfqListItem {
     recipientPhone: string;
     companyName: string;
     createdAt: string;
-    staffId: string;
-    customerId: string;
+    updatedAt?: string;
+    staffId?: string;
+    staffName?: string;
     itemCount: number;
 }
 
@@ -74,11 +75,16 @@ export interface RfqDetail {
     id: string;
     code: string;
     staffId: string | null;
+    staffName: string | null;
     customerId: string;
     status: string;
     createdAt: string;
+    updatedAt: string | null;
+    // Contact Info
     recipientName: string;
     recipientPhone: string;
+    shippingAddress: string;
+    // Company Info
     companyName: string;
     email: string;
     address: string;

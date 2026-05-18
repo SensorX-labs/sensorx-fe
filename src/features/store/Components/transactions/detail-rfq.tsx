@@ -351,6 +351,32 @@ export function RfqDetailView({
                   </div>
                 </div>
 
+                {customer?.shippingInfo && (
+                  <div className="pt-4 border-t border-gray-100 space-y-3">
+                    <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                      Thông tin giao hàng
+                    </div>
+
+                    <div className="space-y-2 pl-5">
+                      <div className="text-xs text-gray-600">
+                        <span className="font-semibold text-gray-800">Người nhận:</span>{' '}
+                        {customer.shippingInfo.recipientName}
+                      </div>
+
+                      <div className="text-xs text-gray-600">
+                        <span className="font-semibold text-gray-800">SĐT nhận:</span>{' '}
+                        {customer.shippingInfo.recipientPhone}
+                      </div>
+
+                      <div className="text-xs text-gray-600 leading-relaxed">
+                        <span className="font-semibold text-gray-800">Địa chỉ giao:</span>{' '}
+                        {customer.shippingInfo.shippingAddress}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* BUTTON */}
                 {rfq.status === RfqStatus.Draft && (
                   <button

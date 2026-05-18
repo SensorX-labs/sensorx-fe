@@ -28,14 +28,11 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [rfq, setRfq] = React.useState<RfqDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
-  const [assignedStaff, setAssignedStaff] = useState<any | null>(null);
 
   // Assign staff states
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [assigningRfqId, setAssigningRfqId] = useState<string | null>(null);
   const [assignLoading, setAssignLoading] = useState(false);
-
-  const { user } = useUser();
 
   const loadData = async () => {
     setLoading(true);
@@ -43,19 +40,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
       const response = await AdminRFQService.getDetailRFQ(id);
       if (response) {
         setRfq(response);
-
-        if (response.staffId) {
-          try {
-            const staffResponse = await StaffService.getStaffById(response.staffId);
-            if (staffResponse) {
-              setAssignedStaff(staffResponse);
-            }
-          } catch (err) {
-            console.error(">>> Lỗi khi fetch thông tin nhân viên:", err);
-          }
-        } else {
-          setAssignedStaff(null);
-        }
       }
     } catch (error) {
       console.error(">>> Lỗi khi fetch detail RFQ:", error);
@@ -203,8 +187,8 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên xử lý</td>
                   <td className="px-6 py-3 font-medium text-gray-900">
-                    {assignedStaff ? (
-                      <span>{assignedStaff.staffName}</span>
+                    {rfq.staffName ? (
+                      <span>{rfq.staffName}</span>
                     ) : (
                       <div className="flex flex-col gap-1.5">
                         <CanAccess roles={['Manager']}>
@@ -233,44 +217,54 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           </div>
 
           {/* Thông tin khách hàng */}
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-400" />
-              <h4 className="text-sm font-medium text-gray-900">Thông tin khách hàng</h4>
+          <div className="border border-gray-200 bg-white rounded-lg overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center gap-2">
+              <User className="w-4 h-4 text-gray-500" />
+              <h4 className="text-sm font-semibold text-gray-900">Thông tin khách hàng</h4>
+            </div>
+
+            {/* THÔNG TIN DOANH NGHIỆP */}
+            <div className="px-6 py-3 bg-gray-50/30 border-b border-gray-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Thông tin doanh nghiệp</span>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Công ty</td>
-                  <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.companyName}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientName}</td>
+                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Tên công ty</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.companyName || 'Chưa cập nhật'}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Mã số thuế</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.taxCode}</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.taxCode || 'Chưa cập nhật'}</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
-                  <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.recipientPhone}
-                  </td>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Email chính</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.email}</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>
-                  <td className="px-6 py-3 font-medium text-gray-900 flex items-center gap-2">
-                    {rfq.email}
-                  </td>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ ĐKKD</td>
+                  <td className="px-6 py-3 font-medium text-gray-900 text-xs leading-relaxed">{rfq.address || 'Chưa cập nhật'}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* THÔNG TIN GIAO HÀNG */}
+            <div className="px-6 py-3 bg-gray-50/30 border-t border-b border-gray-100 mt-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Thông tin liên hệ & giao hàng</span>
+            </div>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Người liên hệ</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientName || 'Chưa cập nhật'}</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900 flex items-start gap-2">
-                    {rfq.address}
-                  </td>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientPhone || 'Chưa cập nhật'}</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ giao hàng</td>
+                  <td className="px-6 py-3 font-medium text-gray-900 text-xs leading-relaxed">{rfq.shippingAddress || 'Chưa cập nhật'}</td>
                 </tr>
               </tbody>
             </table>

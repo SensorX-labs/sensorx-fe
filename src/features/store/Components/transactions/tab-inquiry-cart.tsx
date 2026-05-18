@@ -4,19 +4,50 @@ import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 import { Trash2, ShoppingBag, Plus, Minus, Send, Save } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { useUser } from '@/shared/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { StoreRFQService } from '../../services/store-rfq.service';
 
 export function TabInquiryCart() {
   const { items, removeItem, updateQuantity, clearCart } = useInquiryCart();
-  const { user } = useUser();
   const router = useRouter();
 
   const handleUpdateQty = (productId: string, currentQty: number, delta: number) => {
     const newQty = currentQty + delta;
     if (newQty > 0) {
       updateQuantity(productId, newQty);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      // Create RFQ items from cart items
+      const rfqItems = items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      }));
+
+      // Send RFQ
+      const rfqId = await StoreRFQService.createRFQ(rfqItems);
+      clearCart();
+      return rfqId;
+    } catch (error) {
+      console.error("Error sending RFQ:", error);
+    }
+  }
+
+  const handleSendRFQ = async () => {
+    try {
+      // Create RFQ items from cart items
+      const rfqId = await handleSaveDraft();
+      if (!rfqId) {
+        toast.error("Không thể gửi yêu cầu báo giá");
+        return;
+      }
+      await StoreRFQService.sendRFQ(rfqId);
+
+    } catch (error) {
+      console.error("Error sending RFQ:", error);
     }
   };
 
@@ -103,25 +134,20 @@ export function TabInquiryCart() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
-        {user ? (
-          <>
-            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-gray-900 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-50 transition-all cursor-pointer active:scale-95">
-              <Save size={16} />
-              Lưu bản thảo hệ thống
-            </button>
-            <button className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all cursor-pointer active:scale-95">
-              <Send size={16} />
-              Gửi yêu cầu báo giá ngay
-            </button>
-          </>
-        ) : (
+        <>
           <button
-            onClick={() => toast.error("Vui lòng đăng nhập để gửi yêu cầu")}
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all cursor-pointer active:scale-95"
-          >
-            Đăng nhập để gửi yêu cầu
+            onClick={handleSaveDraft}
+            className="flex items-center justify-center gap-3 px-8 py-4 bg-white border border-gray-900 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-50 transition-all cursor-pointer active:scale-95">
+            <Save size={16} />
+            Lưu bản thảo hệ thống
           </button>
-        )}
+          <button
+            onClick={handleSendRFQ}
+            className="flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all cursor-pointer active:scale-95">
+            <Send size={16} />
+            Gửi yêu cầu báo giá ngay
+          </button>
+        </>
       </div>
     </div>
   );

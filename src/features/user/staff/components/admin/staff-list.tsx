@@ -13,8 +13,7 @@ import {
     Search
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { StaffService, StaffListStats, StaffStatus } from '../../services/staff.service';
-import { StaffListItem } from '../../models/staff-list-response';
+import { StaffService, StaffListStats, StaffStatus, StaffListItem } from '../../services/staff.service';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { StatGroup } from '@/shared/components/admin/stat-card/stat-group';
 import {
@@ -31,7 +30,7 @@ const departmentColor: Record<string, string> = {
     'Mua hàng': 'bg-indigo-50 text-indigo-600 border border-indigo-100'
 };
 
-const statusConfig: Record<number, { label: string; className: string }> = {
+const statusConfig: Record<StaffStatus, { label: string; className: string }> = {
     [StaffStatus.Active]: { label: 'Đang hoạt động', className: 'bg-green-50 text-green-600 border border-green-100' },
     [StaffStatus.OnLeave]: { label: 'Vắng mặt', className: 'bg-amber-50 text-amber-600 border border-amber-100' },
     [StaffStatus.Resigned]: { label: 'Đã nghỉ việc', className: 'bg-red-50 text-red-600 border border-red-100' }
