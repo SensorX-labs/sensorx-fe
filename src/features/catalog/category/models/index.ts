@@ -1,5 +1,5 @@
-import { BaseQueryLoadMore } from "@/shared/models/base-query-page-list";
-import { OffsetPagedResult, LoadMorePagedResult } from "@/shared/models/base-response";
+import { LoadMorePagedQuery, LoadMorePagedResult } from "@/shared/models/load-more.base";
+import { OffsetPagedResult } from "@/shared/models/offset-page.base";
 
 // Response Entity
 export interface Category {
@@ -41,7 +41,7 @@ export interface SetParentCategoryRequest {
   parentId?: string;
 }
 
-export type LoadMoreCategoriesForModalQuery = BaseQueryLoadMore;
+export type LoadMoreCategoriesForModalQuery = LoadMorePagedQuery;
 
 export interface LoadMoreCategoriesForModalResponse {
   id: string,

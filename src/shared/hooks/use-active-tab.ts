@@ -31,7 +31,7 @@ const routeMap: Record<string, TabInfo> = {
     title: 'Khách hàng',
     description: 'Quản lý thông tin khách hàng và lịch sử giao dịch',
   },
-  '/sales/requestforquotation': {
+  '/sales/RFQ': {
     title: 'Yêu cầu báo giá',
     description: 'Tiếp nhận và quản lý các yêu cầu báo giá từ khách hàng',
   },

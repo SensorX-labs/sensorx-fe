@@ -1,5 +1,5 @@
-import { InternalPrice } from "../models/internal-price";
-import { PriceTier } from "../models/price-tier";
+import { InternalPrice } from "./internal-price";
+import { PriceTier } from "./price-tier";
 
 export const MOCK_INTERNAL_PRICES: InternalPrice[] = [
   {

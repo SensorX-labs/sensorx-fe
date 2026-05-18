@@ -205,15 +205,15 @@ export const StoreFooter = () => {
             </h4>
             <div className="flex gap-4">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-                 className="text-zinc-400 hover:text-white transition-colors">
+                className="text-zinc-400 hover:text-white transition-colors">
                 <Facebook size={18} />
               </a>
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                 className="text-zinc-400 hover:text-white transition-colors">
+                className="text-zinc-400 hover:text-white transition-colors">
                 <Instagram size={18} />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                 className="text-zinc-400 hover:text-white transition-colors">
+                className="text-zinc-400 hover:text-white transition-colors">
                 <Twitter size={18} />
               </a>
             </div>

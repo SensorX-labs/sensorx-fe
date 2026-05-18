@@ -2,10 +2,10 @@ import api from "@/shared/configs/axios-config";
 import { QuoteCreateRequest } from "../models/quote-create-request";
 import { QuoteListItem } from "../models/quote-list-response";
 import { QuoteDetail } from "../models/quote-detail-response";
-import { OffsetPagedResult } from "@/shared/models/base-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { OffsetPagedResult } from "@/shared/models/offset-page.base";
+import { OffsetPagedQuery } from "@/shared/models/offset-page.base";
 
-export interface QuoteFilter extends BaseQueryOffsetPagedList {
+export interface QuoteFilter extends OffsetPagedQuery {
     customerId?: string;
 }
 

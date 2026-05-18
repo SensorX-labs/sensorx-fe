@@ -10,10 +10,10 @@ interface CanAccessProps {
   fallback?: React.ReactNode;
 }
 
-export const CanAccess: React.FC<CanAccessProps> = ({ 
-  roles = [], 
-  children, 
-  fallback = null 
+export const CanAccess: React.FC<CanAccessProps> = ({
+  roles = [],
+  children,
+  fallback = null
 }) => {
   const { user, isLoading } = useUser();
 
@@ -21,18 +21,12 @@ export const CanAccess: React.FC<CanAccessProps> = ({
 
   if (!user) return <>{fallback}</>;
 
-  // Chuyển đổi roles của user về mảng chuỗi để so sánh dễ hơn
-  const userRoles = (Array.isArray(user.roles) ? user.roles : [user.roles]).map(r => String(r).toLowerCase());
-  
+  const userRole = user.role.toLowerCase();
+
   // Danh sách các role cần kiểm tra (cũng chuyển về lowercase)
   const targetRoles = roles.map(r => String(r).toLowerCase());
 
-  const hasRole = roles.length === 0 || targetRoles.some(target => 
-    userRoles.includes(target) || 
-    (target === 'salestaff' && userRoles.includes('2')) ||
-    (target === 'manager' && userRoles.includes('3')) ||
-    (target === 'admin' && userRoles.includes('4'))
-  );
+  const hasRole = roles.length === 0 || targetRoles.includes(userRole);
 
   if (hasRole) {
     return <>{children}</>;

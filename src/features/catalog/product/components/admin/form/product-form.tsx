@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { CategorySelectionDialog } from '@/shared/components/admin/selection-modal';
 import ProductService from '../../../services/product-service';
-import imageService from '@/shared/services/image-service';
 
 // Import sub-components
 import {
@@ -16,6 +15,7 @@ import {
 } from './sections';
 import { ProductDetail } from '../../../models';
 import { ProductStatus } from '../../../enums/product-status';
+import imageService from '@/shared/services/image.service';
 
 interface ProductFormProps {
   product?: ProductDetail;

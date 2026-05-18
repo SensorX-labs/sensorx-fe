@@ -1,9 +1,8 @@
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
-import { OffsetPagedResult } from "@/shared/models/base-response";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
 import { InternalPrice, InternalPriceStatus } from "./common";
 
 export type InternalPriceListResult = OffsetPagedResult<InternalPrice>
 
-export interface GetPageListInternalPriceQuery extends BaseQueryOffsetPagedList {
+export interface GetPageListInternalPriceQuery extends OffsetPagedQuery {
   status?: InternalPriceStatus;
 }

@@ -1,5 +1,5 @@
 'use client';
-import { ProductDetail } from '@/features/catalog/product/components/store/ProductDetail/product-detail';
+import { ProductDetail } from '@/features/store/Components/shop/product-detail';
 
 export default function ProductDetailPage() {
   return <ProductDetail />;

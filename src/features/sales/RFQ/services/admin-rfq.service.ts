@@ -1,0 +1,93 @@
+import api from "@/shared/configs/axios-config";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
+import { RfqStatus } from "../constants/rfq-status";
+
+export const AdminRFQService = {
+    assignStaff: (id: string, staffId: string) =>
+        api.master.post<any, void>(`/rfq/force-assign`, { Id: id, StaffId: staffId }),
+
+    acceptRFQ: (id: string) =>
+        api.master.post<any, void>(`/rfq/accept`, { Id: id }),
+
+    rejectRFQ: (id: string) =>
+        api.master.post<any, void>(`/rfq/reject`, { Id: id }),
+
+    getListRFQ: (params: RfqFilter) =>
+        api.master.get<any, OffsetPagedResult<RfqListItem>>(`/rfq`, { params }),
+
+    getDetailRFQ: (id: string) =>
+        api.master.get<any, RfqDetail>(`/rfq/${id}`),
+
+    getStats: () =>
+        api.master.get<any, RfqStats>(`/rfq/stats`),
+};
+
+export interface RfqFilter extends OffsetPagedQuery {
+    status?: RfqStatus;
+}
+
+export interface RfqStats {
+    total: number;
+    pending: number;
+    accepted: number;
+    rejected: number;
+    responded: number;
+    converted: number;
+}
+
+export interface RfqListItem {
+    id: string;
+    code: string;
+    status: string;
+    recipientName: string;
+    recipientPhone: string;
+    companyName: string;
+    createdAt: string;
+    updatedAt?: string;
+    staffId?: string;
+    staffName?: string;
+    itemCount: number;
+}
+
+export interface RfqItem {
+    id?: string;
+    productId?: string;
+    productCode: string;
+    productName: string;
+    manufacturer?: string;
+    unit: string;
+    quantity: number;
+    category?: string;
+}
+
+
+export interface RfqDetailItem {
+    id: string;
+    productId: string;
+    productName: string;
+    productCode: string;
+    quantity: number;
+    manufacturer: string;
+    unit: string;
+}
+
+export interface RfqDetail {
+    id: string;
+    code: string;
+    staffId: string | null;
+    staffName: string | null;
+    customerId: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string | null;
+    // Contact Info
+    recipientName: string;
+    recipientPhone: string;
+    shippingAddress: string;
+    // Company Info
+    companyName: string;
+    email: string;
+    address: string;
+    taxCode: string;
+    items: RfqDetailItem[];
+}

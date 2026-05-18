@@ -1,21 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
+import { getAllAdminPaths, getAllowedRoutes } from './shared/configs/admin-menu.config';
 
-const adminPaths = [
-    '/dashboard',
-    '/catalog',
-    '/customers',
-    '/inventory',
-    '/reports',
-    '/sales',
-    '/settings',
-    '/supplychain',
-    '/users',
-    '/warehouse'
-];
 const publicPaths = ['/', '/not-found', '/shop'];
 const authPaths = ['/login', '/register'];
+
+// Lấy danh sách tất cả các path thuộc vùng Admin để định danh vùng bảo vệ
+const adminPaths = getAllAdminPaths();
 
 const isPathMatch = (pathname: string, paths: string[], exactMatch: boolean = false) => {
     return paths.some(path => {
@@ -29,26 +21,30 @@ export function middleware(request: NextRequest) {
 
     const isAdminArea = isPathMatch(pathname, adminPaths);
     const isAuthPath = isPathMatch(pathname, authPaths, true);
-    const isPublicPath = isPathMatch(pathname, publicPaths, true);
+    const isPublicPath = isPathMatch(pathname, publicPaths);
 
     const token = request.cookies.get('token')?.value;
 
+    // 1. Trường hợp chưa đăng nhập
     if (!token) {
         if (isPublicPath || isAuthPath) return NextResponse.next();
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    let isStaff = false;
+    let isAdminPage = false;
+    let userRole = "";
 
     try {
         const decodedToken = jwtDecode<any>(token);
-        const userRole = decodedToken.role;
-        const rolesArray = Array.isArray(userRole) ? userRole : [userRole];
+        const role = decodedToken.role;
+        const rolesArray = Array.isArray(role) ? role : [role];
 
-        isStaff = rolesArray.some(role => {
-            const strRole = String(role);
+        isAdminPage = rolesArray.some(r => {
+            const strRole = String(r);
             return strRole !== "Customer" && strRole !== "0" && strRole !== "undefined" && strRole !== "null";
         });
+
+        userRole = rolesArray[0];
     } catch (error) {
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.delete('token');
@@ -57,15 +53,28 @@ export function middleware(request: NextRequest) {
         return response;
     }
 
-    if (isAuthPath) {
-        return NextResponse.redirect(new URL(isStaff ? '/dashboard' : '/', request.url));
-    }
+    // Lấy Whitelist các Route được phép cho Role này
+    const allowedRoutes = isAdminPage ? getAllowedRoutes(userRole) : [];
 
-    if (isAdminArea) {
-        if (!isStaff) return NextResponse.redirect(new URL('/not-found', request.url));
+    // 2. Xử lý logic chuyển hướng sau khi đã có Token và Role
+    if (isAdminPage) {
+        // NHÂN VIÊN: Chỉ được phép truy cập các route trong Whitelist
+        // Chặn cả các trang công khai (như /shop, /) nếu không có trong allowedRoutes
+        const isAllowed = isPathMatch(pathname, allowedRoutes);
+
+        if (isAuthPath) {
+            return NextResponse.redirect(new URL(allowedRoutes[0], request.url));
+        }
+
+        if (!isAllowed) {
+            return NextResponse.redirect(new URL(allowedRoutes[0], request.url));
+        }
     } else {
-        if (isStaff && pathname === '/') {
-            return NextResponse.redirect(new URL('/dashboard', request.url));
+        // KHÁCH HÀNG: Tuyệt đối không được vào vùng Admin
+        if (isAuthPath) return NextResponse.redirect(new URL('/', request.url));
+
+        if (isAdminArea) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
         }
     }
 
@@ -73,13 +82,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    /*
-    * Match all request paths except for the ones starting with:
-    * - api (API routes)
-    * - _next/static (static files)
-    * - _next/image (image optimization files)
-    * - favicon.ico (favicon file)
-    * - assets (public assets)
-    */
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|assets).*)']
+    matcher: [
+        '/((?!api|_next/static|_next/image|favicon.ico|assets).*)',
+    ],
 };

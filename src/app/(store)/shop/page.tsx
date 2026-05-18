@@ -1,8 +1,8 @@
 'use client';
 
-import Catalog from "@/features/catalog/product/components/store/Shop/catalog";
+import Shop from "@/features/store/Components/shop";
 
 
 export default function ShopPage() {
-  return <Catalog />;
+  return <Shop />;
 }
