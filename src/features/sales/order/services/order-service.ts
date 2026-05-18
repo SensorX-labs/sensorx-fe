@@ -1,21 +1,21 @@
-import { MOCK_ORDERS } from "../mocks/order-mocks";
-import { Order } from "../models/order";
+import api from "@/shared/configs/axios-config";
+import { Order, OrderListItem } from "../models/order";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
 
-export class OrderService {
-    static async getOrderById(id: string): Promise<Order | undefined> {
-        // Simulating API call
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(MOCK_ORDERS.find(o => o.id === id));
-            }, 500);
-        });
-    }
+export type OrderFilter = OffsetPagedQuery;
 
-    static async getOrdersByCustomerId(customerId: string): Promise<Order[]> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(MOCK_ORDERS.filter(o => o.customerId === customerId));
-            }, 500);
-        });
-    }
-}
+export const OrderService = {
+  getListOrders: (params: OrderFilter) =>
+    api.master.get<unknown, OffsetPagedResult<OrderListItem>>(`/orders`, { params }),
+
+  getOrderById: (id: string) =>
+    api.master.get<unknown, Order>(`/orders/${id}`),
+
+  getMyOrders: (params: OrderFilter) =>
+    api.master.get<unknown, OffsetPagedResult<OrderListItem>>(`/orders/my`, { params }),
+
+  getMyOrderById: (id: string) =>
+    api.master.get<unknown, Order>(`/orders/my/${id}`),
+};
+
+export default OrderService;

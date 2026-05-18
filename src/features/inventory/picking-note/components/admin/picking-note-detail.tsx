@@ -230,6 +230,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       await PickingNoteService.cancelPicking(id, "Người dùng hủy");
       toast.success("Đã hủy phiếu soạn hàng");
       window.location.reload();
+    } catch (error) {
+      toast.error("Lỗi khi hủy phiếu soạn hàng");
     }
   };
 

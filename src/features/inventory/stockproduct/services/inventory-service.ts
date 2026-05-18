@@ -11,6 +11,30 @@ export interface InventoryItemListItem {
     createdAt: string;
 }
 
+export interface ConsolidatedInventoryWarehouseItem {
+    warehouseName: string;
+    physicalQuantity: number;
+    allocatedQuantity: number;
+    salableQuantity: number;
+    brandZone?: string;
+    rackCode?: string;
+}
+
+export interface ConsolidatedInventoryItem {
+    productId: string;
+    productCode?: string | null;
+    productName?: string | null;
+    totalPhysicalQuantity: number;
+    totalAllocatedQuantity: number;
+    totalSalableQuantity: number;
+    warehouses: ConsolidatedInventoryWarehouseItem[];
+}
+
+export interface ConsolidatedInventoryResponse {
+    items: ConsolidatedInventoryItem[];
+    totalCount: number;
+}
+
 export interface InventoryCursorQuery {
     warehouseId?: string;
     searchTerm?: string;
@@ -42,7 +66,7 @@ export const InventoryService = {
         return api.warehouse.get<any, InventoryCursorResult>("/inventory/list", config);
     },
     getConsolidatedInventory: () => 
-        api.master.get<any, { items: InventoryItemListItem[]; totalCount: number }>("/warehouses/inventory/total"),
+        api.master.get<any, ConsolidatedInventoryResponse>("/warehouses/inventory/total"),
 };
 
 export default InventoryService;

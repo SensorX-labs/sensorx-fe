@@ -14,7 +14,8 @@ import {
     Calendar,
     DollarSign,
     CreditCard,
-    Truck
+    Truck,
+    Download
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { OrderStatus } from '@/features/sales/order/enums/order-status';
@@ -101,9 +102,15 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                     <p className="meta-label uppercase text-gray-400 mb-2">Chi tiết đơn hàng</p>
                     <h1 className="tracking-title-xl">{order.code}</h1>
                 </div>
-                <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
-                    <config.icon className="w-3.5 h-3.5" />
-                    {config.label}
+                <div className="flex items-center gap-4">
+                    <button className="flex items-center gap-2 px-8 py-2.5 border border-gray-900 tracking-label uppercase btn-tracking transition-all hover:bg-gray-900 hover:text-white !text-[10px] font-bold">
+                        <Download className="w-4 h-4" />
+                        Tải hóa đơn (PDF)
+                    </button>
+                    <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
+                        <config.icon className="w-3.5 h-3.5" />
+                        {config.label}
+                    </div>
                 </div>
             </div>
 
@@ -234,16 +241,29 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                                 Địa chỉ giao hàng
                             </div>
                             <div className="space-y-4">
-                                <p className="breadcrumb-text uppercase !text-lg font-bold text-gray-900">
-                                    {order.recipientName}
-                                </p>
-                                <div className="space-y-3 pt-2 border-t border-gray-50">
+                                <div>
+                                    <p className="breadcrumb-text uppercase !text-lg font-bold text-gray-900">
+                                        {order.recipientName}
+                                    </p>
+                                    {order.companyName && (
+                                        <p className="meta-label uppercase text-[#B48F4E] mt-0.5">{order.companyName}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-3 pt-4 border-t border-gray-50">
                                     <div className="flex items-center gap-3">
                                         <Phone className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="qty-label tracking-widest text-sm text-gray-600">
                                             {order.recipientPhone}
                                         </span>
                                     </div>
+                                    {(order.email || order.customerEmail) && (
+                                        <div className="flex items-center gap-3">
+                                            <Mail className="w-3.5 h-3.5 text-gray-300" />
+                                            <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase text-xs text-gray-600">
+                                                {order.email || order.customerEmail}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-3">
                                         <MapPin className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="meta-label lowercase text-xs text-gray-600 line-clamp-2">

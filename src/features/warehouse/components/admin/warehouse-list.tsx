@@ -68,6 +68,7 @@ export function WarehouseList() {
             <tr className="bg-gray-50/50 border-b border-gray-100">
               <th className="text-left px-6 py-4 tracking-label uppercase">Mã Kho</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Tên Kho</th>
+              <th className="text-left px-6 py-4 tracking-label uppercase">Ngày tạo</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Hành động</th>
             </tr>
@@ -75,9 +76,14 @@ export function WarehouseList() {
           <tbody>
             {filteredWarehouses.length > 0 ? (
               filteredWarehouses.map((wh) => (
-                <tr key={wh.id} className={cn("border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors", selectedWarehouseId === wh.id && "bg-blue-50/50")}>
+                <tr key={wh.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
                   <td className="px-6 py-4 font-bold text-gray-900">{wh.id}</td>
                   <td className="px-6 py-4">{wh.name}</td>
+                  <td className="px-6 py-4">
+                    {wh.createdAt
+                      ? new Date(wh.createdAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
+                      : '-'}
+                  </td>
                   <td className="px-6 py-4 text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                       Đang hoạt động
@@ -85,15 +91,6 @@ export function WarehouseList() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn("h-8 flex items-center gap-1", selectedWarehouseId === wh.id ? "text-green-600 font-bold" : "text-blue-600")}
-                        onClick={() => handleSelect(wh.id!)}
-                      >
-                        {selectedWarehouseId === wh.id ? <CheckCircle2 className="w-4 h-4" /> : null}
-                        {selectedWarehouseId === wh.id ? 'Đang chọn' : 'Chọn'}
-                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -116,7 +113,7 @@ export function WarehouseList() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                   Không tìm thấy kho bãi nào phù hợp.
                 </td>
               </tr>
