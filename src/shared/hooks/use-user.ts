@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 export interface User {
     id: string;
     email: string;
-    roles: string[];
+    role: string;
     warehouseId?: string;
 }
 
@@ -24,11 +24,11 @@ export const useUser = () => {
                     const decoded: any = jwtDecode(token);
                     // Map lại các field từ JWT (thường là sub, email, roles)
                     const roleVal = decoded.roles || decoded.role || [];
-                    const normalizedRoles = Array.isArray(roleVal) ? roleVal : [roleVal];
+                    const normalizedRoles = Array.isArray(roleVal) ? roleVal[0] : roleVal;
                     setUser({
                         id: decoded.id || decoded.sub,
                         email: decoded.email || decoded.unique_name,
-                        roles: normalizedRoles,
+                        role: normalizedRoles,
                         warehouseId: decoded.warehouse_id || undefined
                     });
                 }
@@ -46,7 +46,6 @@ export const useUser = () => {
     return {
         user,
         isLoading,
-        isAuthenticated: !!user,
-        isAdmin: Array.isArray(user?.roles) ? user.roles.some(r => r.toLowerCase() === 'admin') : user?.roles === 'Admin'
+        isAuthenticated: !!user
     };
 };

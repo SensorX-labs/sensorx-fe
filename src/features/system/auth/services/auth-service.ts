@@ -41,4 +41,8 @@ export class AuthService {
     async toggleUserLock(userId: string): Promise<any> {
         return api.auth.post(`/users/${userId}/toggle-lock`);
     }
+
+    async updateAvatar(avatarUrl: string): Promise<any> {
+        return api.auth.put("/update-avatar", avatarUrl);
+    }
 }

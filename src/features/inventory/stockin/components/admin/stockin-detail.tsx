@@ -25,6 +25,7 @@ import { ProductService } from '@/features/catalog/product/services/product-serv
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { createStockIn, getWarehouses } from '@/features/warehouse/services/warehouse-service';
 
 interface StockInDetailProps {
   id?: string;
@@ -176,10 +177,25 @@ export default function StockInDetail({ id }: StockInDetailProps) {
   const [deliveredBy, setDeliveredBy] = useState('');
   const [warehouseKeeper, setWarehouseKeeper] = useState('');
   const [note, setNote] = useState('');
-  const [hasWarehouse, setHasWarehouse] = useState(false);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
 
   useEffect(() => {
-    setHasWarehouse(!!Cookies.get('warehouseId'));
+    const fetchW = async () => {
+      try {
+        const list = await getWarehouses();
+        setWarehouses(list || []);
+        const savedId = Cookies.get('warehouseId');
+        if (savedId && list.some((w: any) => w.id === savedId)) {
+          setSelectedWarehouseId(savedId);
+        } else if (list.length > 0) {
+          setSelectedWarehouseId(list[0].id || '');
+        }
+      } catch (err) {
+        console.error("Failed to load warehouses:", err);
+      }
+    };
+    fetchW();
   }, []);
 
   useEffect(() => {
@@ -227,13 +243,18 @@ export default function StockInDetail({ id }: StockInDetailProps) {
           return;
         }
 
+        if (!selectedWarehouseId) {
+          toast.error("Vui lòng chọn kho nhận");
+          return;
+        }
+
         const payload = {
           deliveredBy: deliveredBy || 'unknown',
           warehouseKeeper: warehouseKeeper || 'unknown',
           description: note,
           items: filteredItems
         };
-        const newId = await StockInService.createStockIn(payload);
+        await createStockIn(payload, selectedWarehouseId);
         toast.success("Tạo phiếu nhập kho thành công");
         router.push("/warehouse/stockin");
       }
@@ -341,7 +362,9 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-6 py-3 text-[#2B3674] w-2/5 font-semibold">Mã phiếu</td>
-                  <td className="px-6 py-3">{stockInData.code}</td>
+                  <td className="px-6 py-3 font-semibold text-gray-500 italic">
+                    {action === ActionType.CREATE ? 'Hệ thống tự sinh' : stockInData.code}
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Trạng thái</td>
@@ -378,10 +401,31 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
-                <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
-                   <Warehouse className="w-3 h-3 text-brand-green" />
-                   {hasWarehouse ? 'Kho đang chọn' : 'Chưa chọn kho'}
-                </div>
+                {isEditing ? (
+                  <Select
+                    value={selectedWarehouseId}
+                    onValueChange={(val) => {
+                      setSelectedWarehouseId(val);
+                      Cookies.set('warehouseId', val, { expires: 7, path: '/' });
+                    }}
+                  >
+                    <SelectTrigger className="w-full text-xs h-9 border-gray-300 rounded shadow-none bg-white">
+                      <SelectValue placeholder="Chọn kho nhận..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-md">
+                      {warehouses.map((w) => (
+                        <SelectItem key={w.id} value={w.id} className="text-xs hover:bg-gray-50">
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
+                     <Warehouse className="w-3 h-3 text-brand-green" />
+                     {warehouses.find(w => w.id === selectedWarehouseId)?.name || stockInData.warehouse || 'Chưa chọn kho'}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Người giao hàng</label>
@@ -430,17 +474,12 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                 <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
                   <tr>
                     <th className="px-6 py-3 admin-table-th text-left">Sản phẩm</th>
-                    <th className="px-4 py-3 w-20 admin-table-th text-center">SL</th>
-                    <th className="px-4 py-3 w-28 admin-table-th text-right">Đơn giá</th>
-                    <th className="px-4 py-3 w-16 admin-table-th text-center">Thuế %</th>
-                    <th className="px-4 py-3 w-28 admin-table-th text-right">Thành tiền</th>
+                    <th className="px-4 py-3 w-24 admin-table-th text-center">Số lượng</th>
                     {isEditing && <th className="px-1 py-3 w-5" />}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {items.map((item, index) => {
-                    const sub = (item.quantity || 0) * (item.unitPrice || 0);
-                    const total = sub + sub * ((item.taxRate || 0) / 100);
                     return (
                       <tr key={item.id} className="hover:bg-gray-50">
                         <td className="px-6 py-3">
@@ -458,7 +497,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                             </div>
                           ) : (
                             <>
-                              <div>{item.productName}</div>
+                              <div className="font-semibold text-gray-900">{item.productName}</div>
                               {item.productCode && <div className="text-xs mt-0.5 text-gray-500">Mã: {item.productCode}</div>}
                             </>
                           )}
@@ -469,41 +508,11 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                               type="number"
                               value={item.quantity}
                               onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                              className="w-20 px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
-                            <span>{item.quantity}</span>
+                            <span className="font-medium">{item.quantity}</span>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={item.unitPrice}
-                              onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
-                              placeholder="0"
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
-                            />
-                          ) : (
-                            <span>{(item.unitPrice || 0).toLocaleString('vi-VN')}đ</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {isEditing ? (
-                            <input
-                              type="number"
-                              value={item.taxRate}
-                              onChange={(e) => updateItem(item.id, 'taxRate', parseFloat(e.target.value) || 0)}
-                              min="0"
-                              max="100"
-                              className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
-                            />
-                          ) : (
-                            <span>{item.taxRate || 0}%</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {total.toLocaleString('vi-VN')}
                         </td>
                         {isEditing && (
                           <td className="px-1 py-3 text-center">
@@ -520,21 +529,18 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                       </tr>
                     );
                   })}
+                  {items.length === 0 && (
+                    <tr>
+                      <td colSpan={isEditing ? 3 : 2} className="px-6 py-10 text-center text-gray-400 italic text-xs">
+                        Chưa có sản phẩm nào được chọn. Click "+ Thêm hàng hóa" để chọn sản phẩm.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-200 text-lg">
-                  <tr>
-                    <td colSpan={isEditing ? 5 : 4} className="px-6 py-4 text-right font-semibold">
-                      Tổng cộng:
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-[var(--brand-green-600)]">
-                      {calculateTotal().toLocaleString('vi-VN')}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
-
+ 
           {/* Ghi chú */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
@@ -551,43 +557,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               />
             </div>
           </div>
-
-          {/* Tổng cộng */}
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              <h4 className="text-sm font-medium">Tổng cộng</h4>
-            </div>
-            <div className="p-6">
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-gray-100">
-                  <tr>
-                    <td className="py-2 font-semibold text-gray-700">Tổng tiền hàng</td>
-                    <td className="py-2 text-right font-bold text-[#2B3674]">
-                      {items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-semibold text-gray-700">Thuế</td>
-                    <td className="py-2 text-right font-bold text-[#2B3674]">
-                      {items.reduce((sum, item) => {
-                        const sub = item.quantity * item.unitPrice;
-                        return sum + (sub * item.taxRate / 100);
-                      }, 0).toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <td className="py-3 font-bold text-[#2B3674]">Tổng cộng</td>
-                    <td className="py-3 text-right font-bold text-lg text-[#2B3674]">
-                      {calculateTotal().toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
-
       </div>
     </div>
   );

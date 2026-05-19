@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { loginSchema, LoginFormValues } from '../../schemas/login-schema';
 import { AuthService } from '../../services/auth-service';
@@ -20,6 +20,8 @@ interface LoginFormProps {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   const {
     register,
@@ -30,31 +32,32 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    try {
-      const response = await authService.login(data);
-      console.log("DEBUG - Login Response from API:", response);
+    const response = await authService.login(data);
+    console.log("DEBUG - Login Response from API:", response);
 
-      // Lấy token từ accessToken
-      const token = response.accessToken;
-      const refreshToken = response.refreshToken;
+    // Lưu tokens và thông tin user vào cookie
+    const token = response.accessToken;
+    const refreshToken = response.refreshToken;
 
-      // Lưu tokens và thông tin user vào cookie
-      if (token) Cookies.set('token', token, { expires: 7, path: '/' });
-      if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
-      if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
+    if (token) Cookies.set('token', token, { expires: 7, path: '/' });
+    if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
+    if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
 
-      toast.success('Đăng nhập thành công!');
+    // Bắn event để Header nhận diện thay đổi ngay lập tức
+    window.dispatchEvent(new Event('user-updated'));
 
-      const userRoles = response.user?.roles || [];
-      const isCustomer = userRoles.includes('Customer') || userRoles.includes('0');
+    toast.success('Đăng nhập thành công!');
+    // Chuyển hướng dựa trên Role
 
-      if (!isCustomer && userRoles.length > 0) {
-        router.push('/dashboard');
-      } else {
-        router.push('/shop');
-      }
-    } catch {
-      // Lỗi đã được xử lý bởi axios interceptor (hiển thị toast.error)
+    const userRoles = response.user?.roles || [];
+    const isCustomer = userRoles.includes('Customer') || userRoles.includes('0');
+
+    if (redirect) {
+      router.push(redirect);
+    } else if (!isCustomer && userRoles.length > 0) {
+      router.push('/dashboard');
+    } else {
+      router.push('/shop');
     }
   };
 

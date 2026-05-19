@@ -3,32 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  ShoppingCart,
-  Receipt,
-  Package,
-  Layers,
-  PackagePlus,
-  PackageMinus,
-  Warehouse,
-  TrendingUp,
-  BarChart3,
-  Settings,
-  ChevronRight,
-  UserCircle,
-  Shield,
-  FileEdit,
-  FolderTree,
-  ClipboardList,
-  ArrowRightLeft,
-  BadgeDollarSign,
-  LineChart,
-  PieChart,
-  Boxes
-} from 'lucide-react';
+import { ChevronRight, LogOut, LayoutDashboard } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
 import {
@@ -52,168 +27,24 @@ import {
   SidebarMenuSubButton,
   SidebarFooter,
 } from '@/shared/components/shadcn-ui/sidebar';
-import { LogOut } from 'lucide-react';
 import Cookies from 'js-cookie';
-
-export type SidebarItemType = {
-  name: string;
-  icon: React.ElementType;
-  href?: string;
-  subItems?: {
-    name: string;
-    icon: React.ElementType;
-    href: string;
-  }[];
-};
-
-const sidebarSections: {
-  title: string;
-  items: SidebarItemType[];
-}[] = [
-    {
-      title: 'TỔNG QUAN',
-      items: [
-        {
-          name: 'Bảng điều khiển',
-          icon: LayoutDashboard,
-          href: '/dashboard',
-        },
-        {
-          name: 'Báo cáo',
-          icon: BarChart3,
-          subItems: [
-            { name: 'Doanh thu', icon: LineChart, href: '/reports/revenue' },
-            { name: 'Bán hàng', icon: PieChart, href: '/reports/sales' },
-            { name: 'Kho hàng', icon: Boxes, href: '/reports/warehouse' },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'BÁN HÀNG',
-      items: [
-        {
-          name: 'Khách hàng',
-          icon: Users,
-          href: '/sales/customers',
-        },
-        {
-          name: 'Yêu cầu báo giá',
-          icon: TrendingUp,
-          href: '/sales/requestforquotation',
-        },
-        {
-          name: 'Báo giá',
-          icon: FileText,
-          href: '/sales/quotations',
-        },
-        {
-          name: 'Đơn hàng',
-          icon: ShoppingCart,
-          href: '/sales/orders',
-        },
-        {
-          name: 'Hóa đơn',
-          icon: Receipt,
-          href: '/sales/invoices',
-        },
-      ],
-    },
-    {
-      title: 'DANH MỤC',
-      items: [
-        {
-          name: 'Danh mục sản phẩm',
-          icon: FolderTree,
-          href: '/catalog/categories',
-        },
-        {
-          name: 'Bảng giá nội bộ',
-          icon: BadgeDollarSign,
-          href: '/catalog/internal-prices',
-        },
-        {
-          name: 'Hàng hóa',
-          icon: Package,
-          href: '/catalog/products',
-        },
-      ],
-    },
-    {
-      title: 'KHO HÀNG',
-      items: [
-        {
-          name: 'Phiếu nhập kho',
-          icon: PackagePlus,
-          href: '/warehouse/stockin',
-        },
-        {
-          name: 'Phiếu xuất kho',
-          icon: PackageMinus,
-          href: '/warehouse/stockout',
-        },
-        {
-          name: 'Tồn kho',
-          icon: Warehouse,
-          href: '/warehouse/stock',
-        },
-        {
-          name: 'Phiếu soạn kho',
-          icon: FileEdit,
-          href: '/warehouse/picking-note',
-        }
-      ],
-    },
-    {
-      title: 'CHUỖI CUNG ỨNG',
-      items: [
-        {
-          name: 'Danh sách kho',
-          icon: Layers,
-          href: '/warehouse/list',
-        },
-        {
-          name: 'Yêu cầu cung ứng',
-          icon: ClipboardList,
-          href: '/warehouse/supply-requests',
-        },
-        {
-          name: 'lệnh điều chuyển',
-          icon: ArrowRightLeft,
-          href: '/warehouse/transfer-orders',
-        }
-      ],
-    },
-    {
-      title: 'HỆ THỐNG',
-      items: [
-      {
-        name: 'Tài khoản',
-        icon: Shield,
-        href: '/users/accounts',
-      },
-        {
-          name: 'Nhân viên',
-          icon: UserCircle,
-          href: '/users/staff',
-        },
-        {
-          name: 'Cài đặt',
-          icon: Settings,
-          href: '/settings',
-        },
-      ],
-    },
-  ];
+import { useUser } from '@/shared/hooks/use-user';
+import { ADMIN_MENU_CONFIG, MENU_ICONS } from '@/shared/configs/admin-menu.config';
 
 export default function AdminSidebar() {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const { user } = useUser();
 
   const toggle = (name: string) => {
     setOpenItems((prev) => ({
       ...prev,
       [name]: !prev[name],
     }));
+  };
+
+  const canView = (itemRoles?: string[]) => {
+    if (!itemRoles || itemRoles.length === 0) return true;
+    return user?.role && itemRoles.includes(user.role);
   };
 
   return (
@@ -236,91 +67,97 @@ export default function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 pb-2 group-data-[collapsible=icon]:px-0">
-        {sidebarSections.map((section) => (
-          <SidebarGroup key={section.title} className="group-data-[collapsible=icon]:mb-0" >
-            <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold tracking-widest text-sidebar-foreground/70 uppercase group-data-[collapsible=icon]:hidden">
-              {section.title}
-            </SidebarGroupLabel>
+        {ADMIN_MENU_CONFIG.map((section) => {
+          const visibleItems = section.items.filter(item => !item.hidden && canView(item.roles));
+          if (visibleItems.length === 0) return null;
 
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const isOpen = !!openItems[item.name];
-                  const hasChildren = !!item.subItems?.length;
+          return (
+            <SidebarGroup key={section.title} className="group-data-[collapsible=icon]:mb-0" >
+              <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold tracking-widest text-sidebar-foreground/70 uppercase group-data-[collapsible=icon]:hidden">
+                {section.title}
+              </SidebarGroupLabel>
 
-                  if (hasChildren) {
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleItems.map((item) => {
+                    const Icon = MENU_ICONS[item.iconName] || LayoutDashboard;
+                    const isOpen = !!openItems[item.name];
+                    const visibleSubItems = item.subItems?.filter(sub => canView(sub.roles));
+                    const hasChildren = !!visibleSubItems?.length;
+
+                    if (hasChildren) {
+                      return (
+                        <SidebarMenuItem key={item.name}>
+                          <Collapsible
+                            open={isOpen}
+                            onOpenChange={() => toggle(item.name)}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuButton
+                                tooltip={item.name}
+                                className="h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
+                              >
+                                <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
+                                <span className="text-[13px] font-medium group-data-[collapsible=icon]:hidden">
+                                  {item.name}
+                                </span>
+                                <ChevronRight
+                                  className={cn(
+                                    'ml-auto w-4 h-4 shrink-0 transition-transform duration-200 group-data-[collapsible=icon]:hidden',
+                                    isOpen && 'rotate-90 text-sidebar-accent-foreground'
+                                  )}
+                                />
+                              </SidebarMenuButton>
+                            </CollapsibleTrigger>
+
+                            <CollapsibleContent className="group-data-[collapsible=icon]:hidden">
+                              <SidebarMenuSub className="ml-5 border-l border-sidebar-accent">
+                                {visibleSubItems?.map((sub) => {
+                                  const SubIcon = MENU_ICONS[sub.iconName] || LayoutDashboard;
+                                  return (
+                                    <SidebarMenuSubItem key={sub.name}>
+                                      <SidebarMenuSubButton asChild>
+                                        <Link
+                                          href={sub.href}
+                                          className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-accent-foreground group/sub-button"
+                                        >
+                                          <SubIcon className="w-4 h-4 shrink-0 text-sidebar-foreground/50 group-hover/sub-button:text-sidebar-accent-foreground transition-colors" />
+                                          <span className="text-[13px]">{sub.name}</span>
+                                        </Link>
+                                      </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                  );
+                                })}
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        </SidebarMenuItem>
+                      );
+                    }
+
                     return (
                       <SidebarMenuItem key={item.name}>
-                        <Collapsible
-                          open={isOpen}
-                          onOpenChange={() => toggle(item.name)}
-                        >
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuButton
-                              tooltip={item.name}
-                              className="h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
-                            >
-                              <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
-                              <span className="text-[13px] font-medium group-data-[collapsible=icon]:hidden">
-                                {item.name}
-                              </span>
-                              <ChevronRight
-                                className={cn(
-                                  'ml-auto w-4 h-4 shrink-0 transition-transform duration-200 group-data-[collapsible=icon]:hidden',
-                                  isOpen && 'rotate-90 text-sidebar-accent-foreground'
-                                )}
-                              />
-                            </SidebarMenuButton>
-                          </CollapsibleTrigger>
-
-                          <CollapsibleContent className="group-data-[collapsible=icon]:hidden">
-                            <SidebarMenuSub className="ml-5 border-l border-sidebar-accent">
-                              {item.subItems?.map((sub) => {
-                                const SubIcon = sub.icon;
-                                return (
-                                  <SidebarMenuSubItem key={sub.name}>
-                                    <SidebarMenuSubButton asChild>
-                                      <Link
-                                        href={sub.href}
-                                        className="flex items-center gap-2 text-sidebar-foreground hover:text-sidebar-accent-foreground group/sub-button"
-                                      >
-                                        <SubIcon className="w-4 h-4 shrink-0 text-sidebar-foreground/50 group-hover/sub-button:text-sidebar-accent-foreground transition-colors" />
-                                        <span className="text-[13px]">{sub.name}</span>
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                );
-                              })}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </Collapsible>
+                        <SidebarMenuButton tooltip={item.name} asChild>
+                          <Link
+                            href={item.href!}
+                            className="flex items-center gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
+                          >
+                            <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
+                            <span className="text-[13px] font-medium group-data-[collapsible=icon]:hidden">
+                              {item.name}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
-                  }
-
-                  return (
-                    <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton tooltip={item.name} asChild>
-                        <Link
-                          href={item.href!}
-                          className="flex items-center gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors group/menu-button"
-                        >
-                          <Icon className="w-5 h-5 shrink-0 text-sidebar-foreground/70 group-hover/menu-button:text-sidebar-accent-foreground transition-colors" />
-                          <span className="text-[13px] font-medium group-data-[collapsible=icon]:hidden">
-                            {item.name}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
-      
+
       <SidebarFooter className="px-2 pb-6 group-data-[collapsible=icon]:px-0">
         <SidebarMenu>
           <SidebarMenuItem>

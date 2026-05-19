@@ -1,9 +1,8 @@
 import api from "@/shared/configs/axios-config";
-import { OffsetPagedResult } from "@/shared/models/base-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
 import { Order, OrderListItem } from "../models/order";
+import { OffsetPagedQuery, OffsetPagedResult } from "@/shared/models/offset-page.base";
 
-export type OrderFilter = BaseQueryOffsetPagedList;
+export type OrderFilter = OffsetPagedQuery;
 
 export const OrderService = {
   getListOrders: (params: OrderFilter) =>

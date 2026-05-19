@@ -76,7 +76,7 @@ export function ProductSelectionDialog({ isOpen, onOpenChange, onSelect }: Produ
       icon={PackageSearch}
       onSelect={onSelect}
       itemKey={(p) => p.id}
-      fetchData={(params) => ProductService.getLoadMore({ ...params, pageSize: 6, isDescending: true })}
+      fetchData={(params) => ProductService.getLoadMore({ ...params, pageSize: 6, sortByName: false, isDescending: true })}
       renderItem={(p, handleSelect) => <ProductItemRow key={p.id} product={p} onSelect={handleSelect} />}
       emptyTitle="Không tìm thấy sản phẩm"
     />

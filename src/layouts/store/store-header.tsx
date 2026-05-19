@@ -1,42 +1,122 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, User, ShoppingBag, Menu, Phone, MessageCircle, Circle, Heart, Bookmark, LayoutDashboard, ChevronRight } from 'lucide-react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
+import { useRouter } from 'next/navigation';
+import { User, ShoppingBag, LayoutDashboard, ChevronRight, ChevronDown, LogOut, ClipboardList } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { AuthService } from '@/features/system/auth/services/auth-service';
+import { cn } from '@/shared/utils';
+import { LucideIcon } from 'lucide-react';
+import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
+
+interface DropdownItemProps {
+  icon: LucideIcon;
+  label: string;
+  href?: string;
+  onClick?: () => void;
+  isDanger?: boolean;
+  isSuccess?: boolean;
+}
+
+const DropdownItem = ({ icon: Icon, label, href, onClick, isDanger, isSuccess }: DropdownItemProps) => {
+  const content = (
+    <div className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-gray-100 transition-colors group">
+      <div className="flex items-center gap-3">
+        <div className={cn(
+          "w-9 h-9 rounded-full flex items-center justify-center transition-colors",
+          isDanger ? "bg-red-50 text-red-600" : isSuccess ? "bg-brand-green/10 text-brand-green" : "bg-gray-100 text-gray-900"
+        )}>
+          <Icon size={20} />
+        </div>
+        <span className={cn(
+          "text-[15px] font-medium",
+          isDanger ? "text-red-600" : isSuccess ? "text-brand-green" : "text-gray-900"
+        )}>{label}</span>
+      </div>
+      <ChevronRight size={20} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+    </div>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} onClick={onClick} className="block w-full">
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button onClick={onClick} className="w-full text-left">
+      {content}
+    </button>
+  );
+};
 
 export const StoreHeader = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { totalItems } = useInquiryCart();
+
+  const authService = new AuthService();
 
   useEffect(() => {
-    setIsMounted(true);
-    
-    // Kiểm tra quyền từ cookie
-    const userCookie = Cookies.get('user');
-    if (userCookie) {
-      try {
-        const user = JSON.parse(userCookie);
-        const roles = Array.isArray(user.roles) ? user.roles : [user.roles];
-        // Nếu bất kỳ role nào khác "Customer" hoặc "0"
-        const hasStaffAccess = roles.some((r: any) => {
-          const roleStr = String(r);
-          return roleStr !== "Customer" && roleStr !== "0" && roleStr !== "";
-        });
-        setIsAdmin(hasStaffAccess);
-      } catch (e) {
-        console.error("Error parsing user cookie", e);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
       }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    const refreshToken = Cookies.get('refreshToken');
+    try {
+      await authService.logout(refreshToken);
+    } catch (e) {
+      console.error("Logout error", e);
+    } finally {
+      Cookies.remove('token', { path: '/' });
+      Cookies.remove('refreshToken', { path: '/' });
+      Cookies.remove('user', { path: '/' });
+      setUser(null);
+      setIsDropdownOpen(false);
+      window.dispatchEvent(new Event('user-updated'));
+      router.push('/');
     }
+  };
+
+  useEffect(() => {
+    const syncUser = () => {
+      const userCookie = Cookies.get('user');
+      if (userCookie) {
+        try {
+          const parsedUser = JSON.parse(userCookie);
+          setUser(parsedUser);
+        } catch (e) {
+          console.error("Error parsing user cookie", e);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+
+    syncUser();
+
+    window.addEventListener('user-updated', syncUser);
+    return () => window.removeEventListener('user-updated', syncUser);
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY < 10) {
         setIsVisible(true);
       } else {
@@ -55,165 +135,157 @@ export const StoreHeader = () => {
 
   return (
     <>
-      <header 
-        className={`sticky top-0 z-50 bg-white border-b border-gray-200 transition-transform duration-300 ease-in-out ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}
+      <header
+        className={`sticky top-0 z-50 bg-white border-b border-gray-200 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
+          }`}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            
-            {/* liên hệ */}
-            <div className="flex-1 flex items-center justify-start">
-              <div className="hidden md:flex items-center">
-                {isMounted && (
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <button className="flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors">
-                        <span className="text-lg">+</span>
-                        <span>Liên hệ</span>
-                      </button>
-                    </SheetTrigger>
-                    <SheetContent className="w-[600px] sm:max-w-none px-12 md:px-20 py-20 flex flex-col gap-16">
-                      <SheetHeader className="p-0 flex-none">
-                        <SheetTitle className="text-3xl font-medium tracking-[0.1em] uppercase text-left">
-                          Liên hệ với chúng tôi
-                        </SheetTitle>
-                      </SheetHeader>
+          <div className="flex items-center justify-between h-16 lg:h-20 gap-8">
 
-                      <div className="flex flex-col gap-12">
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <Phone size={22} strokeWidth={1.5} />
-                            <a href="tel:+84382116944" className="text-xl font-medium border-b border-black pb-0.5">
-                              Gọi cho chúng tôi +84 382 116 944
-                            </a>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <Circle></Circle>
-                            <button className="text-xl font-medium border-b border-black pb-0.5">
-                              Trò chuyện trực tiếp
-                            </button>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <MessageCircle size={22} strokeWidth={1.5} />
-                            <button className="text-xl font-medium border-b border-black pb-0.5">
-                              Gửi tin nhắn cho chúng tôi
-                            </button>
-                          </div>
-                          <div className="text-gray-600 text-[15px] leading-relaxed ml-9">
-                            <p>Thứ Hai - Thứ Bảy: 10:00 - 22:00</p>
-                            <p>Chủ Nhật: 10:00 - 21:00</p>
-                          </div>
-                        </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                )}
-              </div>
-            </div>
-
-            {/*logo */}
-            <Link href="/" className="flex-none">
-              <span className="text-xl sm:text-2xl md:text-3xl font-light tracking-[0.3em] text-gray-900 uppercase">
-                SensorX
+            {/* Logo */}
+            <Link href="/" className="flex-none shrink-0">
+              <span className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter text-gray-900 uppercase italic">
+                Sensor<span className="text-brand-green italic">X</span>
               </span>
             </Link>
 
-            {/* menu */}
-            <div className="flex-1 flex items-center justify-end gap-4 sm:gap-6 lg:gap-3">
-              <Link href="/shop/bookmarks" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <Bookmark size={20} />
+            {/* Navigation Menu (Desktop) */}
+            <nav className="hidden lg:flex flex-1 items-center justify-center gap-10">
+              <Link href="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Sản phẩm
               </Link>
-              <Link href="/shop/cart" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <ShoppingBag size={20} />
+              <Link href="/catalog" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Giải pháp
               </Link>
-              <Link href="/profile" className="text-gray-900 hover:text-gray-600 transition-colors p-2">
-                <User size={20} />
+              <Link href="/brands" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Thương hiệu
               </Link>
-              {isMounted && (
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <button className="flex items-center gap-2 text-xs font-medium text-gray-900 hover:text-gray-600 transition-colors tracking-wider uppercase">
-                      <Menu size={20} />
-                      <span className="hidden sm:inline">Menu</span>
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[350px] sm:w-[450px] p-0 border-l border-gray-100 shadow-2xl">
-                    <SheetHeader className="sr-only">
-                      <SheetTitle>Menu điều hướng</SheetTitle>
-                    </SheetHeader>
-                    <div className="flex flex-col h-full bg-white">
-                      {/* Menu Header */}
-                      <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                        <span className="text-sm font-bold tracking-[0.3em] uppercase text-gray-400">Điều hướng</span>
-                      </div>
+              <Link href="/contact" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+                Liên hệ
+              </Link>
+            </nav>
 
-                      {/* Menu Items */}
-                      <div className="flex-1 overflow-y-auto py-6">
-                        <nav className="flex flex-col">
-                          {isAdmin && (
-                            <Link href="/dashboard" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
-                              <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Quản trị hệ thống</span>
-                              <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
-                            </Link>
+            <div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-2">
+              <Link
+                href="/transactions?tab=inquiry-cart"
+                className="relative group p-2 text-gray-700 hover:text-brand-green transition-colors"
+              >
+                <ShoppingBag size={22} strokeWidth={1.5} />
+                <span className="absolute -top-1 -right-1 bg-brand-green text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border-2 border-white">
+                  {totalItems}
+                </span>
+                {/* Tooltip */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                  Yêu cầu báo giá của tôi
+                </div>
+              </Link>
+
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-200 mx-1 sm:mx-2 hidden sm:block" />
+
+              {/* Icons & Menu */}
+              <div className="relative" ref={dropdownRef}>
+                {user ? (
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="relative focus:outline-none group transition-all active:scale-95 ml-2"
+                  >
+                    <div className="relative w-9 h-9 sm:w-10 h-10">
+                      <svg viewBox="0 0 40 40" className="w-full h-full overflow-visible">
+                        <defs>
+                          <mask id="avatarMask">
+                            <circle cx="20" cy="20" r="20" fill="white" />
+                            <circle cx="33" cy="33" r="9" fill="black" />
+                          </mask>
+                        </defs>
+                        <g mask="url(#avatarMask)">
+                          {user.avatarUrl ? (
+                            <image
+                              href={user.avatarUrl}
+                              x="0"
+                              y="0"
+                              height="40"
+                              width="40"
+                              preserveAspectRatio="xMidYMid slice"
+                            />
+                          ) : (
+                            <>
+                              <circle cx="20" cy="20" r="20" fill="#F9FAFB" />
+                              <text
+                                x="20"
+                                y="23"
+                                textAnchor="middle"
+                                fill="#9CA3AF"
+                                fontSize="10"
+                                fontWeight="bold"
+                                letterSpacing="0.1em"
+                                className="uppercase"
+                              >
+                                {(user.fullName || user.name || "U").split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                              </text>
+                            </>
                           )}
+                          <circle cx="20" cy="20" r="19.5" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1" />
+                        </g>
+                      </svg>
 
-                          <Link href="/shop" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
-                            <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Tất cả sản phẩm</span>
-                            <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
-                          </Link>
-
-                          <Link href="/catalog" className="group flex items-center justify-between px-8 py-6 hover:bg-gray-50 transition-all border-b border-gray-50">
-                            <span className="text-lg font-light tracking-[0.15em] uppercase group-hover:pl-2 transition-all">Danh mục giải pháp</span>
-                            <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-900 transition-colors" />
-                          </Link>
-
-                          <div className="px-8 py-10">
-                            <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 block mb-6">Thương hiệu đối tác</span>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="p-4 border border-gray-100 flex items-center justify-center grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
-                                <span className="font-bold tracking-tighter text-lg">OMRON</span>
-                              </div>
-                              <div className="p-4 border border-gray-100 flex items-center justify-center grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer">
-                                <span className="font-bold tracking-tighter text-lg">SIEMENS</span>
-                              </div>
-                            </div>
-                          </div>
-                        </nav>
-                      </div>
-
-                      {/* Menu Footer */}
-                      <div className="p-8 bg-gray-900 text-white">
-                        <div className="flex flex-col gap-6">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500">Hỗ trợ kỹ thuật</span>
-                            <span className="text-sm font-medium tracking-wider">+84 382 116 944</span>
-                          </div>
-                          <p className="text-[10px] text-gray-500 leading-relaxed uppercase tracking-widest">
-                            © 2024 SensorX Labs. <br/>
-                            Giải pháp công nghiệp tiên tiến.
-                          </p>
-                        </div>
+                      {/* Dropdown Indicator Badge */}
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-white rounded-full shadow-md border border-gray-100 flex items-center justify-center z-10">
+                        <ChevronDown
+                          size={10}
+                          strokeWidth={3}
+                          className={cn("text-gray-600 transition-transform duration-200", isDropdownOpen ? "rotate-180" : "")}
+                        />
                       </div>
                     </div>
-                  </SheetContent>
-                </Sheet>
-              )}
+                  </button>
+                ) : (
+                  <Link href="/login" className="text-gray-900 hover:text-gray-600 transition-colors p-1 mr-2 flex items-center justify-center">
+                    <User size={20} strokeWidth={1.5} />
+                  </Link>
+                )}
+
+                {/* Dropdown Menu */}
+                {isDropdownOpen && user && (
+                  <div className="absolute right-0 mt-3 w-80 bg-white shadow-[0_12px_28px_0_rgba(0,0,0,0.2),0_2px_4px_0_rgba(0,0,0,0.1)] rounded-xl py-3 z-[60] overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-gray-200/50">
+                    {/* User Card - Simple Info */}
+                    <div className="mx-4 mb-4 mt-1 p-2 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+                        {user.avatarUrl ? (
+                          <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                            {(user.fullName || user.name || "U").split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold text-[17px] text-gray-900">{user.fullName || user.name}</span>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="px-2 space-y-0.5">
+                      <DropdownItem
+                        icon={User}
+                        label="Tài khoản của tôi"
+                        href="/profile"
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+                      <DropdownItem
+                        icon={ClipboardList}
+                        label="Giao dịch của tôi"
+                        href="/transactions"
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+                      <DropdownItem
+                        icon={LogOut}
+                        label="Đăng xuất"
+                        onClick={handleLogout}
+                        isDanger
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

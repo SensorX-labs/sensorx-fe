@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Trash2, Eye, Edit, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { CustomerService } from '../../services/customer-service';
-import { Customer } from '../../models/customer';
+import { Customer, CustomerService } from '../../services/customer-service';
 
 export default function CustomersList() {
   const [searchTerm, setSearchTerm] = useState('');

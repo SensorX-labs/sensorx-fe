@@ -1,5 +1,5 @@
 import { ProductStatus } from "../enums/product-status";
-import { Product } from "../models";
+import { Product } from "./product";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
