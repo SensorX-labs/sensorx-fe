@@ -1,7 +1,8 @@
 'use client';
 
-import QuotationCreate from '@/features/sales/quotation/components/admin/quotation-create';
+import QuotationForm from '@/features/sales/quotation/components/admin/quotation-form';
 
 export default function NewQuotation() {
-  return <QuotationCreate id="new" />;
+  return <QuotationForm id="new" />;
 }
+

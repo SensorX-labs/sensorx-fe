@@ -1,5 +1,4 @@
 import api from "@/shared/configs/axios-config";
-import { QuoteCreateRequest } from "../models/quote-create-request";
 import { QuoteListItem } from "../models/quote-list-response";
 import { QuoteDetail } from "../models/quote-detail-response";
 import { OffsetPagedResult } from "@/shared/models/offset-page.base";
@@ -10,7 +9,7 @@ export interface QuoteFilter extends OffsetPagedQuery {
 }
 
 export const QuoteService = {
-    createQuote: (data: QuoteCreateRequest) => api.master.post<any, string>(`/quotes`, data),
+    createQuote: (data: CreateDraftQuoteCommand) => api.master.post<any, string>(`/quotes`, data),
 
     getListQuotes: (params: QuoteFilter) => api.master.get<any, OffsetPagedResult<QuoteListItem>>(`/quotes`, { params }),
 
@@ -26,3 +25,16 @@ export const QuoteService = {
 };
 
 export default QuoteService;
+
+export interface CreateDraftQuoteCommand {
+    RFQId: string,
+    QuoteDate: string,
+    Note: string,
+    Items: CreateDraftQuoteItem[]
+};
+
+export interface CreateDraftQuoteItem {
+    ProductId: string,
+    UnitPrice: number,
+    TaxRate: number
+}

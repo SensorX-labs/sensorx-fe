@@ -1,16 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Eye, Check, X, FileText, UserCheck, Search, ClipboardList, UserPlus } from 'lucide-react';
+import { Eye, Check, X, UserCheck, Search, UserPlus } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { cn } from '@/shared/utils/cn';
 import { toast } from 'sonner';
 import { useDebounce } from '../../../../../shared/hooks/use-debounce';
-import { useUser } from '@/shared/hooks/use-user';
 import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-status';
 import { useRouter } from 'next/navigation';
 import { AdminRFQService, RfqListItem } from '../../services/admin-rfq.service';
-import { StaffListItem, StaffService } from '@/features/user/staff/services/staff.service';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { RfqStatsSection } from './rfq-stats';
 import { RfqDeclineDialog } from './rfq-decline-dialog';
@@ -201,17 +199,12 @@ export default function RequestForQuotationList() {
                         {l.companyName}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-1 text-xs text-gray-500">
-                        <span className="font-medium text-gray-400">Liên hệ:</span>
-
-                        <span className="text-gray-600">
-                          {l.recipientName}
-                        </span>
-
-                        <span className="text-gray-400">
-                          ({l.recipientPhone})
-                        </span>
-                      </div>
+                      {l.recipientPhone && (
+                        <div className="flex flex-wrap items-center gap-1 text-xs text-gray-500">
+                          <span className="font-medium text-gray-400">SĐT:</span>
+                          <span className="text-gray-600">{l.recipientPhone}</span>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-xs text-left">

@@ -5,7 +5,7 @@ import { getStockOuts } from '@/features/warehouse/services/warehouse-service';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
-export function StockOutList() {
+export default function StockOutList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stockOuts, setStockOuts] = useState<StockOut[]>([]);
   const [loading, setLoading] = useState(true);

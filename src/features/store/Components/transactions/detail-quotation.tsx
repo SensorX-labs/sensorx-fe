@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-import { QuoteService } from '@/features/sales/quotation/services/quote-service';
+import { QuoteService } from '@/features/sales/quotation/services/quote.service';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { QuoteDetail } from '@/features/sales/quotation/models/quote-detail-response';
 import StoreCustomerService, { Customer } from '../../services/store-customer.service';

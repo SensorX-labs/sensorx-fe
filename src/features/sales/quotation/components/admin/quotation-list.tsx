@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { QuoteStatus } from '../../constants/quote-status';
 import { ActionType } from '@/shared/constants/action-type';
-import { QuoteService } from '../../services/quote-service';
+import { QuoteService } from '../../services/quote.service';
 import { QuoteListItem } from '../../models/quote-list-response';
 import { cn } from '@/shared/utils/cn';
 import { toast } from 'sonner';
@@ -68,8 +68,7 @@ export default function QuotationList() {
     return quotes.filter(q => {
       const matchesSearch =
         q.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.recipientName.toLowerCase().includes(searchTerm.toLowerCase());
+        q.companyName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
 
@@ -116,7 +115,7 @@ export default function QuotationList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm số BG, công ty, người liên hệ..."
+              placeholder="Tìm số BG, công ty..."
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,7 +157,6 @@ export default function QuotationList() {
                   <td className="px-6 py-4 font-bold text-gray-900 tracking-tight">{q.code}</td>
                   <td className="px-6 py-4">
                     <div className="font-bold text-gray-900">{q.companyName}</div>
-                    <p className="text-[10px] text-gray-500 font-normal mt-0.5 uppercase tracking-wider">{q.recipientName}</p>
                   </td>
                   <td className="px-6 py-4 text-gray-700">{new Date(q.quoteDate).toLocaleDateString('vi-VN')}</td>
                   <td className="px-6 py-4 text-center">

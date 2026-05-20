@@ -9,7 +9,7 @@ import {
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { useUser } from '@/shared/hooks/use-user';
 import { toast } from 'sonner';
-import QuotationCreate from '../../../quotation/components/admin/quotation-create';
+import QuotationForm from '../../../quotation/components/admin/quotation-form';
 import Link from 'next/link';
 import { AdminRFQService, RfqDetail } from '../../services/admin-rfq.service';
 import { StaffService } from '@/features/user/staff/services/staff.service';
@@ -91,7 +91,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
 
   if (isCreatingQuotation && rfq) {
     return (
-      <QuotationCreate
+      <QuotationForm
         rfqId={id}
         rfqData={rfq}
         onBack={() => setIsCreatingQuotation(false)}
@@ -241,7 +241,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientPhone || 'Chưa cập nhật'}</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.phone || 'Chưa cập nhật'}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Email chính</td>
