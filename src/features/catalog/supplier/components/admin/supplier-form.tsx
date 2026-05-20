@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -72,6 +73,11 @@ function SupplierFormContent({
           <DialogTitle className="text-xl tracking-tight">
             {supplier ? 'Chỉnh sửa nhà cung cấp' : 'Tạo nhà cung cấp mới'}
           </DialogTitle>
+          <DialogDescription>
+            {supplier
+              ? 'Cập nhật thông tin cơ bản của nhà cung cấp.'
+              : 'Nhập thông tin cơ bản để tạo nhà cung cấp mới.'}
+          </DialogDescription>
         </DialogHeader>
         <div key={formKey} className="space-y-4 py-4">
           <div className="space-y-2">

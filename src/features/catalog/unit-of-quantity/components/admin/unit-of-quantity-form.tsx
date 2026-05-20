@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -72,6 +73,11 @@ function UnitOfQuantityFormContent({
           <DialogTitle className="text-xl tracking-tight">
             {unit ? 'Chỉnh sửa đơn vị tính' : 'Tạo đơn vị tính mới'}
           </DialogTitle>
+          <DialogDescription>
+            {unit
+              ? 'Cập nhật thông tin cơ bản của đơn vị tính.'
+              : 'Nhập thông tin cơ bản để tạo đơn vị tính mới.'}
+          </DialogDescription>
         </DialogHeader>
         <div key={formKey} className="space-y-4 py-4">
           <div className="space-y-2">
