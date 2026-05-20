@@ -5,8 +5,9 @@ import {
   FileEdit, FolderTree, ClipboardList, ArrowRightLeft,
   BadgeDollarSign, LineChart, PieChart, Boxes, User
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-export const MENU_ICONS: Record<string, any> = {
+export const MENU_ICONS: Record<string, LucideIcon> = {
   LayoutDashboard, Users, FileText, ShoppingCart, Receipt,
   Package, Layers, PackagePlus, PackageMinus, Warehouse,
   TrendingUp, BarChart3, Settings, UserCircle, Shield,
@@ -97,6 +98,18 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Danh mục sản phẩm',
         iconName: 'FolderTree',
         href: '/catalog/categories',
+        roles: ['Manager', 'SaleStaff']
+      },
+      {
+        name: 'Nhà cung cấp',
+        iconName: 'Layers',
+        href: '/catalog/suppliers',
+        roles: ['Manager', 'SaleStaff']
+      },
+      {
+        name: 'Đơn vị tính',
+        iconName: 'Boxes',
+        href: '/catalog/unit-of-quantities',
         roles: ['Manager', 'SaleStaff']
       },
       {
@@ -197,9 +210,6 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
   },
 ];
 
-/**
- * Lấy danh sách tất cả các path trong Admin Area (không phân biệt quyền)
- */
 export const getAllAdminPaths = (): string[] => {
   const paths = new Set<string>();
   ADMIN_MENU_CONFIG.forEach(section => {
@@ -211,21 +221,15 @@ export const getAllAdminPaths = (): string[] => {
   return Array.from(paths);
 };
 
-/**
- * Lấy danh sách các Route được phép truy cập cho một Role cụ thể (Whitelist)
- */
 export const getAllowedRoutes = (userRole: string): string[] => {
   const allowed: string[] = [];
 
   ADMIN_MENU_CONFIG.forEach(section => {
     section.items.forEach(item => {
-      // Nếu cha yêu cầu quyền mà user không có -> Bỏ qua toàn bộ cụm
       if (item.roles && !item.roles.includes(userRole)) return;
 
-      // Thêm href của menu chính
       if (item.href) allowed.push(item.href);
 
-      // Kiểm tra menu con
       item.subItems?.forEach(sub => {
         if (!sub.roles || sub.roles.includes(userRole)) {
           allowed.push(sub.href);
