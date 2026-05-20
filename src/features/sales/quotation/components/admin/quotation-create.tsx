@@ -395,30 +395,22 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
     if (items.length === 0) return alert("Vui lòng thêm sản phẩm");
     setIsSubmitting(true);
     try {
-      const request: QuoteCreateRequest = {
+      const requestPayload = {
         rfqId: rfqId || rfqRaw?.id || quoteDetail?.rfqId || '',
-        customerId: selectedCustomerId || '',
-        recipientName: currentCustomerInfo?.recipientName || '',
-        recipientPhone: currentCustomerInfo?.recipientPhone || '',
-        companyName: currentCustomerInfo?.companyName || '',
-        email: currentCustomerInfo?.email || '',
-        address: currentCustomerInfo?.address || '',
-        taxCode: currentCustomerInfo?.taxCode || '',
-        note: formData.note,
         quoteDate: formData.quoteDate.toISOString(),
-        shippingAddress: formData.shippingAddress,
-        paymentTermDays: formData.paymentTermDays,
+        shippingInfo: {
+          recipientName: '',
+          recipientPhone: currentCustomerInfo?.recipientPhone || currentCustomerInfo?.phone || '',
+          shippingAddress: formData.shippingAddress || '',
+        },
+        note: formData.note,
         items: items.map(i => ({
           productId: i.productId || '',
-          productCode: i.productCode || '',
-          manufacturer: i.manufacturer || '',
-          unit: i.unit || '',
-          quantity: i.quantity || 0,
           unitPrice: i.unitPrice || 0,
           taxRate: i.taxRate || 0,
         }))
       };
-      const response = await QuoteService.createQuote(request);
+      const response = await QuoteService.createQuote(requestPayload as any);
       if (response) {
         router.push('/sales/quotations');
       }
@@ -699,12 +691,8 @@ export default function QuotationCreate({ id, rfqId, rfqData, onBack }: Quotatio
                   <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.companyName || '—'}</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.recipientName || '—'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Điện thoại</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.recipientPhone || '—'}</td>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{currentCustomerInfo?.recipientPhone || currentCustomerInfo?.phone || '—'}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Email</td>

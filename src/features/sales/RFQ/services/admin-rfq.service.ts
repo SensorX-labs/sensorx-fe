@@ -77,7 +77,7 @@ export interface RfqDetail {
     staffId: string | null;
     staffName: string | null;
     customerId: string;
-    status: string;
+    status: RfqStatus;
     createdAt: string;
     updatedAt: string | null;
     // Contact Info
