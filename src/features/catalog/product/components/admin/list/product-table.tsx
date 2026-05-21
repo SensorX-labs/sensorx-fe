@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Package, Eye, Edit, Trash2, Barcode, Factory, Calendar, Scale } from 'lucide-react';
+import { Package, Edit, Trash2, Barcode, Factory, Calendar, Scale } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { ProductPageList } from '../../../models';
 import { ProductStatus } from '../../../enums/product-status';
@@ -67,7 +67,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
             <td className="px-6 py-4">
               <div className="flex items-center gap-2 text-slate-600">
                 <Factory className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-sm italic font-medium">{p.manufacture || '--'}</span>
+                <span className="text-sm italic font-medium">{p.supplierName || '--'}</span>
               </div>
             </td>
             <td className="px-6 py-4">
@@ -84,7 +84,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
             <td className="px-6 py-4">
               <div className="flex items-center gap-2 text-slate-600">
                 <Scale className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-sm font-medium">{p.unit || '--'}</span>
+                <span className="text-sm font-medium">{p.unitOfQuantityName || '--'}</span>
               </div>
             </td>
             <td className="px-6 py-4">

@@ -49,8 +49,8 @@ export function ProductDetail() {
       productId: id as string,
       productName: product.name,
       productCode: product.code || '',
-      unit: product.unit || 'Cái',
-      manufacturer: product.manufacture || 'SensorX',
+      unit: product.unitOfQuantityName || 'Cái',
+      manufacturer: product.supplierName || 'SensorX',
       quantity: selectedQuantity,
     });
 
@@ -160,7 +160,7 @@ export function ProductDetail() {
               <div className="grid grid-cols-12 gap-4 items-center">
                 <span className="col-span-4 md:col-span-3 text-gray-500 font-medium">Hãng sản xuất:</span>
                 <span className="col-span-8 md:col-span-9 font-bold text-brand-green uppercase tracking-wider">
-                  {product.manufacture || 'SensorX'}
+                  {product.supplierName || 'SensorX'}
                 </span>
               </div>
               <div className="grid grid-cols-12 gap-4 items-center">
@@ -193,7 +193,7 @@ export function ProductDetail() {
                     >+</button>
                   </div>
                   {/* Đơn vị tính chung một dòng */}
-                  <span className="font-medium text-gray-900">{product.unit || 'Cái'}</span>
+                  <span className="font-medium text-gray-900">{product.unitOfQuantityName || 'Cái'}</span>
                 </div>
               </div>
             </div>

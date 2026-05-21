@@ -51,7 +51,7 @@ const ProductItemRow = ({
           <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
           <div className="flex items-center gap-1.5 truncate">
             <Factory className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="truncate">{p.manufacture}</span>
+            <span className="truncate">{p.supplierName}</span>
           </div>
         </div>
       </div>

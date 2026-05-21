@@ -37,8 +37,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             productId: id,
             productName: name,
             productCode: product?.code || '',
-            unit: product?.unit || 'Cái',
-            manufacturer: product?.manufacture || 'SensorX',
+            unit: product?.unitOfQuantityName || 'Cái',
+            manufacturer: product?.supplierName || 'SensorX',
             quantity: 1,
         });
         toast(`+1 ${name}`, {
@@ -91,7 +91,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="p-6 flex flex-col flex-grow">
                 <div className="space-y-1 mb-4">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                        {product?.manufacture || 'SensorX'}
+                        {product?.supplierName || 'SensorX'}
                     </p>
                     <h3
                         onClick={handleCardClick}

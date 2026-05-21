@@ -12,7 +12,8 @@ export interface ProductLoadMoreForModal {
   id: string;
   code: string;
   name: string;
-  manufacture: string;
+  supplierName: string;
+  unitOfQuantityName: string;
   categoryId?: string;
   categoryName?: string;
   createdAt: string;
