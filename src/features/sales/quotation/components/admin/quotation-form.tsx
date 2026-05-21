@@ -11,79 +11,14 @@ import { Textarea } from '@/shared/components/shadcn-ui/textarea';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
-import { PaymentMethod } from '../../constants/payment-method';
-import { PaymentTern } from '../../constants/payment-term';
 import { RfqDetail } from '@/features/sales/RFQ/services/admin-rfq.service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
-import { QuoteService } from '../../services/quote.service';
+import { DraftQuoteCommand, QuoteService } from '../../services/quote.service';
 import {
-  CustomerInfoCard
+  CustomerInfoCard, SenderInfoCard
 } from './quotation-shared';
 import { toast } from 'sonner';
-
-function SearchableProductSelect({ defaultValue, defaultLabel, onSelect, disabled }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void, disabled?: boolean }) {
-  const [open, setOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
-
-  React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
-
-  const filteredProducts = MOCK_PRODUCTS.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
-  const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild disabled={disabled}>
-        <Button variant="outline" className="w-full justify-between text-sm h-10 font-normal border-gray-200 rounded shadow-none">
-          <span className="truncate">{displayLabel}</span>
-          {!disabled && <Search className="h-4 w-4 opacity-50 ml-2 shrink-0" />}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[350px] p-0 shadow-lg border-gray-200" align="start">
-        <div className="p-2 border-b bg-gray-50">
-          <Input
-            placeholder="Gõ tên hoặc mã sản phẩm..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-9 text-sm focus:ring-0 border-gray-200 shadow-none"
-            autoFocus
-          />
-        </div>
-        <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-          {filteredProducts.length === 0 ? (
-            <div className="p-8 text-sm text-center text-gray-500">Không tìm thấy sản phẩm phù hợp</div>
-          ) : (
-            filteredProducts.map(p => (
-              <div
-                key={p.id}
-                className="p-4 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-50 last:border-0"
-                onClick={() => {
-                  setSelectedCode(p.code || "");
-                  onSelect(p);
-                  setOpen(false);
-                }}
-              >
-                <span className="text-sm font-semibold text-gray-900">{p.name}</span>
-                <div className="flex justify-between items-center mt-1.5">
-                  <span className="text-xs text-gray-500">Mã: {p.code}</span>
-                  <span className="text-xs text-blue-600 font-medium">{p.manufacturer}</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
+import StaffService from '@/features/user/staff/services/staff.service';
 
 function InternalPricePopover({
   onSelect,
@@ -145,37 +80,34 @@ function InternalPricePopover({
 }
 
 export interface QuotationFormProps {
-  rfqId?: string;
-  rfqData?: RfqDetail;
+  rfqData: RfqDetail;
   onBack?: () => void;
 }
 
-export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormProps) {
+export default function QuotationForm({ rfqData, onBack }: QuotationFormProps) {
   const router = useRouter();
+  const [senderInfo, setSenderInfo] = useState<any>(null);
+  const [note, setNote] = useState('');
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState({
-    note: '',
-    paymentMethod: PaymentMethod.BANKTRANSFER as string,
-    paymentTerm: PaymentTern.FULLPAYMENT as string,
-    shippingAddress: '',
-    paymentTermDays: 0,
-    quoteDate: new Date(),
-  });
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await StaffService.getProfile();
+        if (res) {
+          setSenderInfo(res);
+        }
+      } catch (error) {
+        console.error(">>> Lỗi khi tải profile:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const [items, setItems] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (rfqData) {
-      const info = getCustomerInfoFromRfq(rfqData);
-      setFormData(prev => ({
-        ...prev,
-        shippingAddress: info?.address || '',
-      }));
-      setSelectedCustomerId((rfqData as any).customerId);
-
       const loadSuggestPrices = async () => {
         try {
           const productIds = rfqData.items.map((item: any) => item.productId).filter(Boolean);
@@ -235,21 +167,6 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
     }
   }, [rfqData]);
 
-  const getCustomerInfoFromRfq = (r: any) => {
-    if (!r) return null;
-    if (r.customerInfo) return r.customerInfo;
-    return {
-      companyName: r.companyName,
-      recipientName: r.recipientName,
-      recipientPhone: r.recipientPhone || r.phone,
-      email: r.email,
-      address: r.address,
-      taxCode: r.taxCode
-    };
-  };
-
-  const currentCustomerInfo = getCustomerInfoFromRfq(rfqData);
-
   const handleUpdateItem = (index: number, changes: any) => {
     setItems(prev => {
       const updated = [...prev];
@@ -260,41 +177,21 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
     });
   };
 
-  const handleAddItem = () => {
-    setItems(prev => [...prev, {
-      productId: '',
-      productCode: '', productName: '', quantity: 1,
-      unit: '', manufacturer: '', unitPrice: 0, taxRate: 0, key: `new-${Date.now()}-${prev.length}`,
-    }]);
-  };
-
-  const handleRemoveItem = (index: number) => {
-    setItems(prev => prev.filter((_, i) => i !== index));
-  };
-
   const handleSaveDraft = async () => {
-    if (items.length === 0) return toast.error("Vui lòng thêm sản phẩm");
     setIsSubmitting(true);
     try {
-      const requestPayload = {
-        rfqId: rfqId || rfqData?.id || '',
-        quoteDate: formData.quoteDate.toISOString(),
-        shippingInfo: {
-          recipientName: '',
-          recipientPhone: currentCustomerInfo?.recipientPhone || currentCustomerInfo?.phone || '',
-          shippingAddress: formData.shippingAddress || '',
-        },
-        note: formData.note,
+      const requestPayload: DraftQuoteCommand = {
+        rfqId: rfqData.id,
+        note: note,
         items: items.map(i => ({
-          productId: i.productId || '',
-          unitPrice: i.unitPrice || 0,
-          taxRate: i.taxRate || 0,
+          productId: i.productId,
+          unitPrice: i.unitPrice,
+          taxRate: i.taxRate,
         }))
       };
-      const response = await QuoteService.createQuote(requestPayload as any);
+      const response = await QuoteService.createQuote(requestPayload);
       if (response) {
-        toast.success("Tạo báo giá thành công");
-        router.push('/sales/quotations');
+        router.push(`/sales/quotations/${response}`);
       }
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
@@ -302,8 +199,6 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
       setIsSubmitting(false);
     }
   };
-
-
 
   const calculateTotal = () =>
     items.reduce((sum, item) => {
@@ -344,7 +239,15 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <CustomerInfoCard customerInfo={currentCustomerInfo} />
+          <CustomerInfoCard customerInfo={{
+            id: rfqData.customerId,
+            companyName: rfqData.companyName,
+            phone: rfqData.phone,
+            email: rfqData.email,
+            address: rfqData.address,
+            taxCode: rfqData.taxCode
+          }} />
+          <SenderInfoCard senderInfo={senderInfo} />
         </div>
 
         <div className="md:col-span-2 space-y-6">
@@ -354,18 +257,18 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
                 <ShoppingCart size={16} className="text-gray-400" />
                 <h4 className="text-sm font-medium text-gray-900">Danh sách sản phẩm</h4>
               </div>
-              <Button onClick={handleAddItem} size="sm" variant="outline" className="h-8 text-xs border-gray-300 rounded bg-white">+ Thêm sản phẩm</Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50/50 text-gray-500 font-medium">
                   <tr>
                     <th className="px-6 py-3 text-left">Sản phẩm</th>
-                    <th className="px-4 py-3 w-28 text-center">SL</th>
+                    <th className="px-4 py-3 w-28 text-center">Số lượng</th>
                     <th className="px-4 py-3 w-32 text-right">Đơn giá</th>
-                    <th className="px-4 py-3 w-28 text-center">Thuế %</th>
+                    <th className="px-4 py-3 w-32 text-right">Tạm tính</th>
+                    <th className="px-4 py-3 w-24 text-center">Thuế %</th>
+                    <th className="px-4 py-3 w-32 text-right">Tiền thuế</th>
                     <th className="px-6 py-3 w-32 text-right">Thành tiền</th>
-                    <th className="px-3 py-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -373,24 +276,23 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
                     const q = Number(item.quantity) || 0;
                     const p = Number(item.unitPrice) || 0;
                     const t = Number(item.taxRate) || 0;
-                    const lineValue = Math.round((q * p) * (1 + t / 100));
+                    const subtotal = q * p;
+                    const taxAmount = Math.round(subtotal * (t / 100));
+                    const lineValue = subtotal + taxAmount;
 
                     return (
                       <tr key={item.key || index} className="hover:bg-gray-50/30">
-                        <td className="px-6 py-4 min-w-[200px]">
-                          <SearchableProductSelect
-                            defaultValue={item.productCode}
-                            defaultLabel={item.productName}
-                            onSelect={(prod) => {
-                              handleUpdateItem(index, {
-                                productId: prod.id,
-                                productCode: prod.code,
-                                productName: prod.name,
-                                unit: prod.unit || item.unit,
-                                manufacturer: prod.manufacturer || item.manufacturer
-                              });
-                            }}
-                          />
+                        <td className="px-6 py-4 min-w-[250px]">
+                          <div className="flex flex-col gap-0.5">
+                            {/* Tên sản phẩm rõ nhất - Font chữ lớn và đậm hơn */}
+                            <div className="font-bold text-gray-900 text-base leading-tight">
+                              {item.productName}
+                            </div>
+                            {/* Mã sản phẩm phụ - Font chữ nhỏ, màu nhạt */}
+                            <div className="text-xs text-gray-400 font-medium tracking-wide">
+                              Mã: {item.productCode}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-4 py-4">
                           <Input type="number" value={item.quantity} onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none" />
@@ -410,22 +312,24 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
                             />
                           </InternalPricePopover>
                         </td>
+                        <td className="px-4 py-4 text-right font-medium text-gray-800">
+                          {subtotal.toLocaleString('vi-VN')} đ
+                        </td>
                         <td className="px-4 py-4">
                           <Input type="number" value={item.taxRate} onChange={(e) => handleUpdateItem(index, { taxRate: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none" />
                         </td>
-                        <td className="px-6 py-4 text-right font-semibold text-gray-900 border-l border-gray-50">{lineValue.toLocaleString('vi-VN')}</td>
-                        <td className="px-3 py-4 text-center">
-                          <Button onClick={() => handleRemoveItem(index)} variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500"><Trash size={14} /></Button>
+                        <td className="px-4 py-4 text-right font-medium text-gray-800">
+                          {taxAmount.toLocaleString('vi-VN')} đ
                         </td>
+                        <td className="px-6 py-4 text-right font-semibold text-gray-900 border-l border-gray-50">{lineValue.toLocaleString('vi-VN')} đ</td>
                       </tr>
                     );
                   })}
                 </tbody>
                 <tfoot className="bg-gray-50 border-t border-gray-200 font-bold">
                   <tr>
-                    <td colSpan={4} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px]">Tổng cộng (sau thuế):</td>
+                    <td colSpan={6} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px]">Tổng cộng (sau thuế):</td>
                     <td className="px-6 py-5 text-right text-blue-600 text-xl">{calculateTotal().toLocaleString('vi-VN')} đ</td>
-                    <td></td>
                   </tr>
                 </tfoot>
               </table>
@@ -438,7 +342,7 @@ export default function QuotationForm({ rfqId, rfqData, onBack }: QuotationFormP
               <h4 className="text-sm font-medium text-gray-900">Ghi chú & Điều khoản bổ sung</h4>
             </div>
             <div className="p-6">
-              <Textarea value={formData.note} onChange={(e) => setFormData({ ...formData, note: e.target.value })} rows={4} className="w-full text-sm border-gray-100 focus:ring-0 resize-none shadow-none bg-gray-50/20" />
+              <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} className="w-full text-sm border-gray-100 focus:ring-0 resize-none shadow-none bg-gray-50/20" />
             </div>
           </div>
         </div>

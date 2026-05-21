@@ -5,3 +5,4 @@ export * from './constants';
 export * from './customer-response-card';
 export * from './sender-info-card';
 export * from './reject-quote-modal';
+export * from './internal-price-popover';  

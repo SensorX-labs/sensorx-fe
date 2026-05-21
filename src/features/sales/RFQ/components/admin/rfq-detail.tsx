@@ -4,16 +4,12 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, FileText, User,
   ShoppingCart, ClipboardList,
-  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { useUser } from '@/shared/hooks/use-user';
 import { toast } from 'sonner';
 import QuotationForm from '../../../quotation/components/admin/quotation-form';
 import Link from 'next/link';
 import { AdminRFQService, RfqDetail } from '../../services/admin-rfq.service';
-import { StaffService } from '@/features/user/staff/services/staff.service';
-import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-status';
 
 import { SaleStaffSelectionDialog } from '@/shared/components/admin/selection-modal';
@@ -92,7 +88,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   if (isCreatingQuotation && rfq) {
     return (
       <QuotationForm
-        rfqId={id}
         rfqData={rfq}
         onBack={() => setIsCreatingQuotation(false)}
       />
@@ -223,11 +218,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center gap-2">
               <User className="w-4 h-4 text-gray-500" />
               <h4 className="text-sm font-semibold text-gray-900">Thông tin khách hàng</h4>
-            </div>
-
-            {/* THÔNG TIN DOANH NGHIỆP */}
-            <div className="px-6 py-3 bg-gray-50/30 border-b border-gray-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Thông tin doanh nghiệp</span>
             </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
