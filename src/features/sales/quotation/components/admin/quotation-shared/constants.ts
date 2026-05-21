@@ -2,7 +2,7 @@ import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 import { PaymentMethod } from '@/features/sales/quotation/constants/payment-method';
 import { PaymentTern } from '@/features/sales/quotation/constants/payment-term';
 
-export const statusColor: Record<string, string> = {
+export const statusColor: Record<QuoteStatus, string> = {
   [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-600 border-gray-200',
   [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-700 border-blue-200',
   [QuoteStatus.RETURNED]: 'bg-red-50 text-red-700 border-red-200',
@@ -12,7 +12,7 @@ export const statusColor: Record<string, string> = {
   [QuoteStatus.EXPIRED]: 'bg-yellow-50 text-yellow-700 border-yellow-200',
 };
 
-export const statusLabel: Record<string, string> = {
+export const statusLabel: Record<QuoteStatus, string> = {
   [QuoteStatus.DRAFT]: 'Nháp',
   [QuoteStatus.PENDING]: 'Chờ duyệt',
   [QuoteStatus.RETURNED]: 'Bị từ chối',

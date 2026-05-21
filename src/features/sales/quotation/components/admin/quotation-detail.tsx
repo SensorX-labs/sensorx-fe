@@ -3,20 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Edit, CheckCircle, Download, Bot, ShoppingCart, MessageSquare
+  ArrowLeft, Edit, CheckCircle, XCircle, Download, Bot, ShoppingCart, MessageSquare, Undo2, Send, Trash2
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { QuoteStatus } from '../../constants/quote-status';
-import { QuoteDetail } from '../../models/quote-detail-response';
+import { GetDetailQuoteByIdResponse } from '../../models/quote-detail-response';
 import { QuoteAnalysisService } from '../../services/quote-analysis-service';
 import { QuoteService } from '../../services/quote.service';
 import { cn } from '@/shared/utils/cn';
-import { toast } from 'sonner';
 import {
   GeneralInfoCard,
-  CustomerInfoCard,
-  PaymentInfoCard
+  CustomerInfoCard
 } from './quotation-shared';
 
 export interface QuotationDetailProps {
@@ -26,7 +24,7 @@ export interface QuotationDetailProps {
 
 export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const router = useRouter();
-  const [quoteDetail, setQuoteDetail] = useState<QuoteDetail | null>(null);
+  const [quoteDetail, setQuoteDetail] = useState<GetDetailQuoteByIdResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,7 +45,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       }
     } catch (error) {
       console.error(">>> Lỗi khi fetch chi tiết báo giá:", error);
-      toast.error("Không thể tải chi tiết báo giá");
     } finally {
       setLoading(false);
     }
@@ -73,26 +70,37 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     }
   };
 
-  const calculateTotal = () => {
-    if (!quoteDetail) return 0;
-    return quoteDetail.items.reduce((sum, item) => {
-      const q = Number(item.quantity) || 0;
-      const p = Number(item.unitPrice) || 0;
-      const t = Number(item.taxRate) || 0;
-      return sum + Math.round((q * p) * (1 + t / 100));
-    }, 0);
-  };
+  // Tổng đã được tính sẵn từ backend
+  const calculateTotal = () => quoteDetail?.grandTotal ?? 0;
 
   const handleSubmitForApproval = async () => {
     setIsSubmitting(true);
     try {
-      const response = await QuoteService.submitForApproval(id);
-      if (response) {
-        toast.success("Đã gửi yêu cầu duyệt");
-        fetchDetail();
-      }
+      await QuoteService.submitForApproval(id);
+      fetchDetail();
     } catch (error: any) {
-      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    setIsSubmitting(true);
+    try {
+      await QuoteService.withdraw(id);
+      fetchDetail();
+    } catch (error: any) {
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    setIsSubmitting(true);
+    try {
+      await QuoteService.publish(id);
+      fetchDetail();
+    } catch (error: any) {
     } finally {
       setIsSubmitting(false);
     }
@@ -101,14 +109,32 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const handleApprove = async () => {
     setIsSubmitting(true);
     try {
-      const response = await QuoteService.approve(id);
-      if (response) {
-        toast.success("Duyệt báo giá thành công");
-        fetchDetail();
-      }
+      await QuoteService.approve(id);
+      fetchDetail();
     } catch (error: any) {
-      toast.error(error.message);
     } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    setIsSubmitting(true);
+    try {
+      await QuoteService.reject(id);
+      fetchDetail();
+    } catch (error: any) {
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa báo giá này?')) return;
+    setIsSubmitting(true);
+    try {
+      await QuoteService.deleteQuote(id);
+      router.push('/sales/quotations');
+    } catch (error: any) {
       setIsSubmitting(false);
     }
   };
@@ -128,8 +154,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
   if (!quoteDetail) return <div className="py-20 text-center text-red-500 font-bold">Không tìm thấy báo giá</div>;
 
-  const currentCustomerInfo = quoteDetail;
-
   return (
     <div className="space-y-6 w-full pb-10">
       <div className="flex items-center justify-between">
@@ -143,8 +167,10 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <CanAccess roles={['SaleStaff', 'Manager', 'Admin', 2, 3, 4]}>
-            {quoteDetail.status?.toLowerCase() === QuoteStatus.DRAFT.toLowerCase() && (
+          {/* SaleStaff actions */}
+          <CanAccess roles={['SaleStaff']}>
+            {/* Draft: Chỉnh sửa + Gửi duyệt */}
+            {quoteDetail.status === QuoteStatus.DRAFT && (
               <>
                 <Button
                   onClick={handleEdit}
@@ -158,29 +184,72 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                   disabled={isSubmitting}
                   className="rounded bg-blue-600 hover:bg-blue-700 h-10 px-6 text-white"
                 >
+                  <Send className="w-4 h-4 mr-2" />
+                  {isSubmitting ? "Đang gửi..." : "Gửi duyệt"}
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="rounded border-red-200 text-red-600 hover:bg-red-50 h-10 px-6 shadow-sm"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" /> Xóa
+                </Button>
+              </>
+            )}
+            {/* Pending: Thu hồi */}
+            {quoteDetail.status === QuoteStatus.PENDING && (
+              <Button
+                onClick={handleWithdraw}
+                disabled={isSubmitting}
+                variant="outline"
+                className="rounded border-orange-200 text-orange-600 hover:bg-orange-50 h-10 px-6 shadow-sm"
+              >
+                <Undo2 className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Đang thu hồi..." : "Thu hồi"}
+              </Button>
+            )}
+            {/* Approved: Phát hành */}
+            {quoteDetail.status === QuoteStatus.APPROVED && (
+              <Button
+                onClick={handlePublish}
+                disabled={isSubmitting}
+                className="rounded bg-indigo-600 hover:bg-indigo-700 h-10 px-6 text-white"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Đang phát hành..." : "Phát hành"}
+              </Button>
+            )}
+          </CanAccess>
+
+          {/* Manager actions: chỉ khi Pending */}
+          <CanAccess roles={['Manager']}>
+            {quoteDetail.status === QuoteStatus.PENDING && (
+              <>
+                <Button
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                  className="rounded bg-green-600 hover:bg-green-700 h-10 px-6 text-white"
+                >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu duyệt"}
+                  {isSubmitting ? "Đang xử lý..." : "Phê duyệt"}
+                </Button>
+                <Button
+                  onClick={handleReject}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="rounded border-red-200 text-red-600 hover:bg-red-50 h-10 px-6 shadow-sm"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  {isSubmitting ? "Đang xử lý..." : "Từ chối"}
                 </Button>
               </>
             )}
           </CanAccess>
 
-          <CanAccess roles={['Manager', 'Admin', 3, 4]}>
-            {quoteDetail.status?.toLowerCase() === QuoteStatus.PENDING.toLowerCase() && (
-              <Button
-                onClick={handleApprove}
-                disabled={isSubmitting}
-                className="rounded bg-green-600 hover:bg-green-700 h-10 px-6 text-white"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {isSubmitting ? "Đang xử lý..." : "Duyệt báo giá"}
-              </Button>
-            )}
-          </CanAccess>
-
-          <Button variant="outline" className="rounded border-gray-200 h-10 px-6 shadow-sm">
+          {/* <Button variant="outline" className="rounded border-gray-200 h-10 px-6 shadow-sm">
             <Download className="w-4 h-4 mr-2" /> Xuất PDF
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -249,17 +318,11 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
           <GeneralInfoCard
             code={quoteDetail.code}
             status={quoteDetail.status}
-            quoteDate={quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate) : new Date()}
-            disabled
+            createAt={quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate) : new Date()}
+            quoteDate={quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate) : undefined}
           />
 
-          <CustomerInfoCard customerInfo={currentCustomerInfo} />
-
-          <PaymentInfoCard
-            paymentMethod={(quoteDetail as any).paymentMethod}
-            paymentTerm={quoteDetail.paymentTerm}
-            disabled
-          />
+          <CustomerInfoCard customerInfo={quoteDetail.customer} />
         </div>
 
         <div className="md:col-span-2 space-y-6">
@@ -283,15 +346,12 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {quoteDetail.items.map((item, index) => {
-                    const q = Number(item.quantity) || 0;
-                    const p = Number(item.unitPrice) || 0;
-                    const t = Number(item.taxRate) || 0;
-                    const lineValue = Math.round((q * p) * (1 + t / 100));
+                    const lineValue = item.totalLineAmount;
 
                     return (
                       <tr key={index} className="hover:bg-gray-50/30">
                         <td className="px-6 py-4 min-w-[200px]">
-                          <div className="font-semibold text-gray-900">{(item as any).productName || item.productCode}</div>
+                          <div className="font-semibold text-gray-900">{item.productCode}</div>
                           <div className="text-xs text-gray-500 mt-1">Mã: {item.productCode}</div>
                           {item.manufacturer && <div className="text-[10px] text-blue-600 mt-0.5 font-medium">{item.manufacturer}</div>}
                         </td>
@@ -299,13 +359,13 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                           {item.quantity} {item.unit || 'cái'}
                         </td>
                         <td className="px-4 py-4 text-right font-medium text-gray-800">
-                          {item.unitPrice.toLocaleString('vi-VN')} đ
+                          {item.unitPrice}đ
                         </td>
                         <td className="px-4 py-4 text-center font-medium text-gray-800">
                           {item.taxRate}%
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-gray-900 border-l border-gray-50">
-                          {lineValue.toLocaleString('vi-VN')} đ
+                          {lineValue}đ
                         </td>
                       </tr>
                     );

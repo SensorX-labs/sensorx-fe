@@ -1,4 +1,42 @@
-export interface QuoteDetailItem {
+import { QuoteStatus } from "../constants/quote-status";
+
+export interface GetDetailQuoteByIdResponse {
+  id: string;
+  code: string;
+  rfqId: string;
+  status: QuoteStatus;
+  quoteDate?: string | null;
+  note?: string | null;
+  reasonReject?: string | null;
+
+  subtotal: number;
+  totalTax: number;
+  grandTotal: number;
+  items: QuoteItemResponse[];
+
+  customer: CustomerInfoResponse;
+  customerFeedback: QuoteCustomerResponse;
+};
+
+export interface CustomerInfoResponse {
+  id: string;
+  companyName: string;
+  phone: string;
+  email: string;
+  address: string;
+  taxCode: string;
+};
+
+export interface QuoteCustomerResponse {
+  responseType: QuoteStatus;
+  paymentTerm: string;
+  shippingAddress: string;
+  recipientName: string;
+  recipientPhone: string;
+  feedback: string | null;
+};
+
+export interface QuoteItemResponse {
   id: string;
   productId: string;
   productCode: string;
@@ -10,29 +48,4 @@ export interface QuoteDetailItem {
   lineAmount: number;
   taxAmount: number;
   totalLineAmount: number;
-}
-
-export interface QuoteDetail {
-  id: string;
-  code: string;
-  rfqId: string;
-  customerId: string;
-  status: string;
-  quoteDate: string;
-  note: string;
-  reasonReject: string;
-  recipientName: string;
-  recipientPhone: string;
-  companyName: string;
-  email: string;
-  address: string;
-  taxCode: string;
-  customerResponseType: string;
-  shippingAddress: string;
-  paymentTerm: string;
-  customerFeedback: string;
-  subtotal: number;
-  totalTax: number;
-  grandTotal: number;
-  items: QuoteDetailItem[];
-}
+};
