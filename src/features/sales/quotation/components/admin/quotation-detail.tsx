@@ -163,7 +163,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
           </Button>
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold admin-title uppercase">Chi tiết báo giá</h2>
-            <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-bold">Số báo giá: {quoteDetail.code}</p>
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest font-bold">Mã báo giá: {quoteDetail.code}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -246,10 +246,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
               </>
             )}
           </CanAccess>
-
-          {/* <Button variant="outline" className="rounded border-gray-200 h-10 px-6 shadow-sm">
-            <Download className="w-4 h-4 mr-2" /> Xuất PDF
-          </Button> */}
         </div>
       </div>
 

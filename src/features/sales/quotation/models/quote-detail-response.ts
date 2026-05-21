@@ -27,6 +27,13 @@ export interface CustomerInfoResponse {
   taxCode: string;
 };
 
+export interface SenderInfoResponse {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+};
+
 export interface QuoteCustomerResponse {
   responseType: QuoteStatus;
   paymentTerm: string;
