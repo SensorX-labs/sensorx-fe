@@ -1,27 +1,30 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     MapPin,
     ChevronLeft,
     Phone,
     Mail,
     User,
-    Package,
-    Loader2,
-    FileText,
-    Calendar,
     DollarSign,
     CheckCircle2,
+    Package,
+    Loader2,
+    AlertCircle,
+    FileText,
+    Calendar,
     Clock
 } from 'lucide-react';
-import { cn } from '@/shared/utils';
+import { Button } from '@/shared/components/shadcn-ui/button';
+import { Dialog, DialogContent } from '@/shared/components/shadcn-ui/dialog';
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-import { QuoteService } from '@/features/sales/quotation/services/quote-service';
+import { QuoteService } from '@/features/sales/quotation/services/quote.service';
+import { CustomerInfoResponse, GetDetailQuoteByIdResponse } from '@/features/sales/quotation/models/quote-detail-response';
+import { toast } from 'sonner';
+import { cn } from '@/shared/utils';
 import { CanAccess } from '@/shared/components/common/can-access';
-import { QuoteDetail } from '@/features/sales/quotation/models/quote-detail-response';
-import StoreCustomerService, { Customer } from '../../services/store-customer.service';
-
+import { StoreQuoteService, CustomerRespondToQuoteCommand, QuoteResponseStatus, PaymentTerm } from '../../services/store-quote.service';
 const statusStyles: Record<string, string> = {
     [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
     [QuoteStatus.PENDING]: 'bg-yellow-50 text-yellow-600 border-yellow-100',
@@ -46,9 +49,12 @@ export function QuotationDetailView({ onBack, quotationId }: {
     onBack: () => void,
     quotationId?: string
 }) {
-    const [quote, setQuote] = useState<QuoteDetail | null>(null);
-    const [customer, setCustomer] = useState<Customer | null>(null);
+    const [quote, setQuote] = useState<GetDetailQuoteByIdResponse>();
+    const [customer, setCustomer] = useState<CustomerInfoResponse>();
     const [loading, setLoading] = useState(true);
+    const [rejectModalOpen, setRejectModalOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [rejectSubmitting, setRejectSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -57,15 +63,8 @@ export function QuotationDetailView({ onBack, quotationId }: {
                 setLoading(true);
                 const response = await QuoteService.getQuoteById(quotationId);
                 if (response) {
-                    const quoteData = response;
-                    setQuote(quoteData);
-
-                    if (quoteData.customerId) {
-                        const customerRes = await StoreCustomerService.getCustomerById(quoteData.customerId);
-                        if (customerRes) {
-                            setCustomer(customerRes);
-                        }
-                    }
+                    setQuote(response);
+                    setCustomer(response.customer);
                 }
             } catch (error) {
                 console.error("Error fetching quotation detail:", error);
@@ -81,20 +80,42 @@ export function QuotationDetailView({ onBack, quotationId }: {
         if (!quotationId || !quote) return;
         try {
             setLoading(true);
-            const data = {
-                responseType: 0,
-                paymentTerm: 1,
-                shippingAddress: quote.address,
+            const data: CustomerRespondToQuoteCommand = {
+                responseType: QuoteResponseStatus.Accepted,
+                paymentTerm: PaymentTerm.FullPayment,
+                shippingAddress: quote.customer.address || '',
+                recipientName: customer?.companyName || '',
+                recipientPhone: customer?.phone || '',
                 feedback: "Khách hàng đã chốt báo giá trực tuyến."
             };
-            const response = await QuoteService.accept(quotationId, data);
+            const response = await StoreQuoteService.customerResponse(quotationId, data);
             if (response) {
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
+                toast.success('Bạn đã chốt báo giá thành công.');
             }
         } catch (error) {
             console.error("Error accepting quotation:", error);
+            toast.error('Không thể chốt báo giá. Vui lòng thử lại.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleReject = async (reason: string) => {
+        if (!quotationId) return;
+        try {
+            setRejectSubmitting(true);
+            const response = await QuoteService.reject(quotationId, { reason });
+            if (response) {
+                setQuote(prev => prev ? { ...prev, status: QuoteStatus.RETURNED, reasonReject: reason } : prev);
+                toast.success('Bạn đã từ chối báo giá.');
+                setRejectModalOpen(false);
+            }
+        } catch (error) {
+            console.error("Error rejecting quotation:", error);
+            toast.error('Không thể từ chối báo giá. Vui lòng thử lại.');
+        } finally {
+            setRejectSubmitting(false);
         }
     };
 
@@ -124,18 +145,67 @@ export function QuotationDetailView({ onBack, quotationId }: {
 
     return (
         <div className="space-y-8 pb-20">
-            <div className="flex items-center justify-end">
-
-
+            <div className="flex items-center justify-end gap-3">
                 <CanAccess roles={['Customer']}>
                     {(quote.status === QuoteStatus.SENT || quote.status === QuoteStatus.APPROVED) && (
-                        <button
-                            onClick={handleAccept}
-                            className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2 shadow-xl"
-                        >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Chốt báo giá ngay
-                        </button>
+                        <>
+                            <button
+                                onClick={() => setRejectModalOpen(true)}
+                                className="btn-tracking border border-red-500 text-red-500 px-8 py-3 uppercase text-[10px] font-bold hover:bg-red-50 transition-all"
+                            >
+                                Từ chối
+                            </button>
+                            <button
+                                onClick={handleAccept}
+                                className="btn-tracking bg-gray-900 text-white px-8 py-3 uppercase text-[10px] font-bold hover:bg-gray-800 transition-all flex items-center gap-2 shadow-xl"
+                            >
+                                <CheckCircle2 className="w-4 h-4" />
+                                Chốt báo giá ngay
+                            </button>
+
+                            <Dialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>
+                                <DialogContent className="sm:max-w-md">
+                                    <div className="p-6">
+                                        <h3 className="text-lg font-bold mb-4 uppercase tracking-wider">Tại sao bạn từ chối báo giá này?</h3>
+                                        <div className="space-y-3">
+                                            {['Giá quá cao', 'Không hài lòng với sản phẩm/dịch vụ', 'Thời gian giao hàng quá lâu', 'Đã tìm được nhà cung cấp khác', 'Khác'].map((reason) => (
+                                                <label key={reason} className="flex items-center gap-3 p-3 border border-gray-100 rounded hover:bg-gray-50 cursor-pointer transition-all">
+                                                    <input
+                                                        type="radio"
+                                                        name="rejectReason"
+                                                        value={reason}
+                                                        checked={rejectReason === reason}
+                                                        onChange={(e) => setRejectReason(e.target.value)}
+                                                        className="w-4 h-4 accent-gray-900"
+                                                    />
+                                                    <span className="text-sm font-medium text-gray-700">{reason}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {rejectReason === 'Khác' && (
+                                            <textarea
+                                                className="w-full mt-4 p-3 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-gray-900 outline-none"
+                                                placeholder="Vui lòng nhập lý do khác..."
+                                                rows={3}
+                                                onChange={(e) => setRejectReason(e.target.value)}
+                                            />
+                                        )}
+
+                                        <div className="mt-6 flex gap-3">
+                                            <Button variant="outline" className="flex-1 uppercase text-[10px] font-bold" onClick={() => setRejectModalOpen(false)}>Hủy</Button>
+                                            <Button
+                                                className="flex-1 bg-red-600 hover:bg-red-700 text-white uppercase text-[10px] font-bold"
+                                                onClick={() => handleReject(rejectReason)}
+                                                disabled={!rejectReason || rejectSubmitting}
+                                            >
+                                                {rejectSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </>
                     )}
                 </CanAccess>
             </div>
@@ -163,7 +233,9 @@ export function QuotationDetailView({ onBack, quotationId }: {
                                     </div>
                                     <div>
                                         <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Ngày báo giá</p>
-                                        <p className="text-sm font-bold text-gray-900">{new Date(quote.quoteDate).toLocaleDateString('vi-VN')}</p>
+                                        <p className="text-sm font-bold text-gray-900">
+                                            {quote.quoteDate ? new Date(quote.quoteDate).toLocaleDateString('vi-VN') : '---'}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -276,19 +348,19 @@ export function QuotationDetailView({ onBack, quotationId }: {
                             </div>
                             <div className="space-y-4">
                                 <p className="breadcrumb-text uppercase !text-lg font-bold text-gray-900">
-                                    {customer?.name || quote.recipientName}
+                                    {customer?.companyName || '---'}
                                 </p>
                                 <div className="space-y-3 pt-2 border-t border-gray-50">
                                     <div className="flex items-center gap-3">
                                         <Phone className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="qty-label tracking-widest text-sm text-gray-600">
-                                            {customer?.phone || quote.recipientPhone}
+                                            {customer?.phone || '---'}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <MapPin className="w-3.5 h-3.5 text-gray-300" />
                                         <span className="meta-label lowercase text-xs text-gray-600 line-clamp-2">
-                                            {customer?.address || quote.address}
+                                            {customer?.address || '---'}
                                         </span>
                                     </div>
                                 </div>
@@ -307,7 +379,7 @@ export function QuotationDetailView({ onBack, quotationId }: {
                                     <User className="w-6 h-6 text-gray-200" />
                                 </div>
                                 <div className="space-y-0.5">
-                                    <p className="text-sm font-bold uppercase text-gray-900">Trần Văn Support</p>
+                                    <p className="text-sm font-bold uppercase text-gray-900">{quote.sender.name}</p>
                                     <p className="text-[10px] uppercase font-bold text-gray-400">Technical Sales</p>
                                 </div>
                             </div>
@@ -319,6 +391,6 @@ export function QuotationDetailView({ onBack, quotationId }: {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

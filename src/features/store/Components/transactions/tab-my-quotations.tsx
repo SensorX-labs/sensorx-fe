@@ -29,7 +29,7 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
     icon: CheckCircle2,
     className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20',
   },
-  [QuoteStatus.EXPIRED]: {
+  ['Expired']: {
     label: 'Hết hạn',
     icon: Clock,
     className: 'bg-red-50 text-red-700 border-red-200',
@@ -41,11 +41,7 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
   }
 };
 
-export function MyQuotationsTab({
-  customerId
-}: {
-  customerId?: string
-}) {
+export function MyQuotationsTab() {
   const router = useRouter();
   const [quotes, setQuotes] = useState<StoreMyQuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,11 +60,10 @@ export function MyQuotationsTab({
     { id: 'WAITING', label: 'Chờ phản hồi' },
     { id: 'ACCEPTED', label: 'Đã chốt' },
     { id: QuoteStatus.RETURNED, label: 'Đã từ chối' },
-    { id: QuoteStatus.EXPIRED, label: 'Hết hạn' }
+    { id: 'Expired', label: 'Hết hạn' }
   ];
 
   const fetchQuotes = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
-    if (!customerId) return;
     try {
       setLoading(true);
 
@@ -92,26 +87,19 @@ export function MyQuotationsTab({
     } finally {
       setLoading(false);
     }
-  }, [customerId]);
+  }, []);
 
-  // Luồng đổi Tab / Init
+  // Gộp chung LUỒNG ĐỔI FILTER và TÌM KIẾM để tránh gọi API 2 lần
   useEffect(() => {
     setQuotes([]);
-    paginationRef.current.lastId = undefined;
-    paginationRef.current.lastValue = undefined;
-    fetchQuotes(false, activeFilter, searchTerm);
-  }, [activeFilter, customerId, fetchQuotes]);
-
-  // Luồng tìm kiếm (Debounce)
-  useEffect(() => {
-    if (!searchTerm) return;
     const timer = setTimeout(() => {
       paginationRef.current.lastId = undefined;
       paginationRef.current.lastValue = undefined;
       fetchQuotes(false, activeFilter, searchTerm);
-    }, 400);
+    }, searchTerm ? 400 : 0);
+
     return () => clearTimeout(timer);
-  }, [searchTerm, activeFilter, fetchQuotes]);
+  }, [activeFilter, searchTerm, fetchQuotes]);
 
   return (
     <div>

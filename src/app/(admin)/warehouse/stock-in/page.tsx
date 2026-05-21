@@ -5,7 +5,7 @@ import { getStockIns } from '@/features/warehouse/services/warehouse-service';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
-export function StockInList() {
+export default function StockInList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stockIns, setStockIns] = useState<StockIn[]>([]);
   const [loading, setLoading] = useState(true);

@@ -77,15 +77,12 @@ export interface RfqDetail {
     staffId: string | null;
     staffName: string | null;
     customerId: string;
-    status: string;
+    status: RfqStatus;
     createdAt: string;
     updatedAt: string | null;
-    // Contact Info
-    recipientName: string;
-    recipientPhone: string;
-    shippingAddress: string;
     // Company Info
     companyName: string;
+    phone: string;
     email: string;
     address: string;
     taxCode: string;

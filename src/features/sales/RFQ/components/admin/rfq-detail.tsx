@@ -4,17 +4,13 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, FileText, User,
   ShoppingCart, ClipboardList,
-  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { useUser } from '@/shared/hooks/use-user';
 import { toast } from 'sonner';
-import QuotationCreate from '../../../quotation/components/admin/quotation-create';
+import QuotationForm from '../../../quotation/components/admin/quotation-form';
 import Link from 'next/link';
 import { AdminRFQService, RfqDetail } from '../../services/admin-rfq.service';
-import { StaffService } from '@/features/user/staff/services/staff.service';
-import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
-import { statusLabels, statusStyles } from '../../constants/rfq-status';
+import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-status';
 
 import { SaleStaffSelectionDialog } from '@/shared/components/admin/selection-modal';
 import { CanAccess } from '@/shared/components/common/can-access';
@@ -91,8 +87,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
 
   if (isCreatingQuotation && rfq) {
     return (
-      <QuotationCreate
-        rfqId={id}
+      <QuotationForm
         rfqData={rfq}
         onBack={() => setIsCreatingQuotation(false)}
       />
@@ -119,32 +114,34 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {rfq.status === 'Pending' && (
-            <>
+          <CanAccess roles={["SaleStaff"]}>
+            {rfq.status === 'Pending' && (
+              <>
+                <Button
+                  onClick={handleAcceptDetail}
+                  variant="outline"
+                  className="rounded admin-btn-primary border-transparent"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Tiếp nhận
+                </Button>
+                <Button variant="outline" className="rounded text-red-600 hover:bg-red-50 border-red-200">
+                  <X className="w-4 h-4 mr-2" />
+                  Từ chối
+                </Button>
+              </>
+            )}
+            {rfq.status === RfqStatus.ACCEPTED && (
               <Button
-                onClick={handleAcceptDetail}
+                onClick={handlePrepareQuotation}
                 variant="outline"
-                className="rounded admin-btn-primary border-transparent"
+                className="h-9 px-4 text-sm font-medium text-brand-green-600 bg-brand-green-50 border-brand-green-100 hover:bg-brand-green-100 rounded shadow-sm transition-colors"
               >
-                <Check className="w-4 h-4 mr-2" />
-                Tiếp nhận
+                <FileText className="w-4 h-4 mr-2" />
+                Lập báo giá
               </Button>
-              <Button variant="outline" className="rounded text-red-600 hover:bg-red-50 border-red-200">
-                <X className="w-4 h-4 mr-2" />
-                Từ chối
-              </Button>
-            </>
-          )}
-          {rfq.status === 'Accepted' && (
-            <Button
-              onClick={handlePrepareQuotation}
-              variant="outline"
-              className="h-9 px-4 text-sm font-medium text-brand-green-600 bg-brand-green-50 border-brand-green-100 hover:bg-brand-green-100 rounded shadow-sm transition-colors"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Lập báo giá
-            </Button>
-          )}
+            )}
+          </CanAccess>
           <Link href="/sales/RFQ">
             <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -222,11 +219,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               <User className="w-4 h-4 text-gray-500" />
               <h4 className="text-sm font-semibold text-gray-900">Thông tin khách hàng</h4>
             </div>
-
-            {/* THÔNG TIN DOANH NGHIỆP */}
-            <div className="px-6 py-3 bg-gray-50/30 border-b border-gray-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Thông tin doanh nghiệp</span>
-            </div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr>
@@ -238,33 +230,16 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   <td className="px-6 py-3 font-medium text-gray-900">{rfq.taxCode || 'Chưa cập nhật'}</td>
                 </tr>
                 <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
+                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.phone || 'Chưa cập nhật'}</td>
+                </tr>
+                <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Email chính</td>
                   <td className="px-6 py-3 font-medium text-gray-900">{rfq.email}</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ ĐKKD</td>
                   <td className="px-6 py-3 font-medium text-gray-900 text-xs leading-relaxed">{rfq.address || 'Chưa cập nhật'}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* THÔNG TIN GIAO HÀNG */}
-            <div className="px-6 py-3 bg-gray-50/30 border-t border-b border-gray-100 mt-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Thông tin liên hệ & giao hàng</span>
-            </div>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Người liên hệ</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientName || 'Chưa cập nhật'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
-                  <td className="px-6 py-3 font-medium text-gray-900">{rfq.recipientPhone || 'Chưa cập nhật'}</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ giao hàng</td>
-                  <td className="px-6 py-3 font-medium text-gray-900 text-xs leading-relaxed">{rfq.shippingAddress || 'Chưa cập nhật'}</td>
                 </tr>
               </tbody>
             </table>
@@ -308,7 +283,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             </div>
           </div>
 
-          {/* Ghi chú */}
+          {/* Ghi chú
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-gray-400" />
@@ -317,7 +292,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
             <div className="p-6">
               <p className="text-sm text-gray-400 italic">Không có ghi chú.</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
