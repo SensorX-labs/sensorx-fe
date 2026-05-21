@@ -26,7 +26,7 @@ export const QuoteService = {
 
     approve: (id: string) => api.master.post<any, string>(`/quotes/${id}/approve`),
 
-    reject: (id: string) => api.master.post<any, string>(`/quotes/${id}/reject`),
+    reject: (id: string, payload: { reason: string }) => api.master.post<any, string>(`/quotes/${id}/reject`, payload),
 
     updateQuote: (data: any) => api.master.put<any, string>(`/quotes`, data),
 

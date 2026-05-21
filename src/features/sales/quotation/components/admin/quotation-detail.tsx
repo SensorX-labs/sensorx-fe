@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Edit, CheckCircle, XCircle, Download, Bot, ShoppingCart, MessageSquare, Undo2, Send, Trash2
+  ArrowLeft, Edit, CheckCircle, XCircle, Download, Bot, ShoppingCart, MessageSquare, Undo2, Send, Trash2, Link2, AlertCircle
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { QuoteStatus } from '../../constants/quote-status';
@@ -14,8 +15,12 @@ import { QuoteService } from '../../services/quote.service';
 import { cn } from '@/shared/utils/cn';
 import {
   GeneralInfoCard,
-  CustomerInfoCard
+  CustomerInfoCard,
+  CustomerResponseCard,
+  SenderInfoCard,
+  RejectQuoteModal
 } from './quotation-shared';
+import { toast } from 'sonner';
 
 export interface QuotationDetailProps {
   id: string;
@@ -27,6 +32,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const [quoteDetail, setQuoteDetail] = useState<GetDetailQuoteByIdResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
   // AI analysis states
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -39,7 +45,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       const response = await QuoteService.getQuoteById(id);
       if (response) {
         setQuoteDetail(response);
-        if (response.status === QuoteStatus.DRAFT || response.status === QuoteStatus.PENDING) {
+        if (response.status === QuoteStatus.PENDING) {
           handleAnalyzeQuote(response.id);
         }
       }
@@ -117,16 +123,20 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     }
   };
 
-  const handleReject = async () => {
+  const handleReject = async (reason: string) => {
     setIsSubmitting(true);
     try {
-      await QuoteService.reject(id);
+      await QuoteService.reject(id, { reason });
       fetchDetail();
+      toast.success('Từ chối báo giá thành công.');
     } catch (error: any) {
+      toast.error('Lỗi không từ chối được báo giá!');
     } finally {
       setIsSubmitting(false);
     }
+    setIsRejectModalOpen(false);
   };
+
 
   const handleDelete = async () => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa báo giá này?')) return;
@@ -235,7 +245,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                   {isSubmitting ? "Đang xử lý..." : "Phê duyệt"}
                 </Button>
                 <Button
-                  onClick={handleReject}
+                  onClick={() => setIsRejectModalOpen(true)}
                   disabled={isSubmitting}
                   variant="outline"
                   className="rounded border-red-200 text-red-600 hover:bg-red-50 h-10 px-6 shadow-sm"
@@ -243,6 +253,12 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                   <XCircle className="w-4 h-4 mr-2" />
                   {isSubmitting ? "Đang xử lý..." : "Từ chối"}
                 </Button>
+                <RejectQuoteModal
+                  isOpen={isRejectModalOpen}
+                  onClose={() => setIsRejectModalOpen(false)}
+                  onConfirm={handleReject}
+                  isSubmitting={isSubmitting}
+                />
               </>
             )}
           </CanAccess>
@@ -311,14 +327,67 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
         </CanAccess>
 
         <div className="md:col-span-1 space-y-6">
-          <GeneralInfoCard
-            code={quoteDetail.code}
-            status={quoteDetail.status}
-            createAt={quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate) : new Date()}
-            quoteDate={quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate) : undefined}
-          />
+          {/* Thông tin chung - đồng bộ style như order-detail */}
+          <div className="border border-gray-200 bg-white rounded shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-gray-400" />
+              <h4 className="text-sm font-medium uppercase tracking-wider">Thông tin báo giá</h4>
+            </div>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-gray-100">
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Mã báo giá</td>
+                  <td className="px-6 py-3 font-bold">{quoteDetail.code || '—'}</td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Trạng thái</td>
+                  <td className="px-6 py-3">
+                    <span className={cn("px-2.5 py-0.5 rounded border text-xs font-medium", "bg-gray-100 text-gray-600 border-gray-200")}>
+                      {quoteDetail.status}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Ngày báo giá</td>
+                  <td className="px-6 py-3">
+                    {quoteDetail.quoteDate ? new Date(quoteDetail.quoteDate).toLocaleDateString('vi-VN') : '—'}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 admin-text-primary font-semibold">Từ RFQ</td>
+                  <td className="px-6 py-3">
+                    {quoteDetail.rfqId ? (
+                      <Link href={`/sales/rfqs/${quoteDetail.rfqId}`} className="text-blue-600 hover:underline">
+                        {quoteDetail.rfqId}
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Lý do từ chối (nếu có) */}
+          {quoteDetail.reasonReject && (
+            <div className="border border-red-200 bg-red-50 rounded shadow-sm p-4 flex gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+              <div>
+                <div className="text-xs font-bold uppercase tracking-widest text-red-600">Lý do từ chối</div>
+                <div className="text-sm text-red-700 mt-1 whitespace-pre-wrap">{quoteDetail.reasonReject}</div>
+              </div>
+            </div>
+          )}
 
           <CustomerInfoCard customerInfo={quoteDetail.customer} />
+
+          {/* Card feedback khách chỉ hiển thị nếu có phản hồi */}
+          {quoteDetail.customerFeedback && (quoteDetail.customerFeedback.responseType || quoteDetail.customerFeedback.feedback) && (
+            <CustomerResponseCard customerFeedback={quoteDetail.customerFeedback} />
+          )}
+
+          {quoteDetail.sender && <SenderInfoCard senderInfo={quoteDetail.sender} />}
         </div>
 
         <div className="md:col-span-2 space-y-6">
@@ -367,12 +436,22 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-200 font-bold">
-                  <tr>
-                    <td colSpan={4} className="px-6 py-5 text-right text-gray-500 uppercase text-[10px]">Tổng cộng (sau thuế):</td>
-                    <td className="px-6 py-5 text-right text-blue-600 text-xl">{calculateTotal().toLocaleString('vi-VN')} đ</td>
-                  </tr>
-                </tfoot>
+                <div className="p-6 bg-gray-50/30 border-t border-gray-100">
+                  <div className="ml-auto w-full md:w-80 space-y-3">
+                    <div className="flex justify-between text-xs uppercase tracking-wider">
+                      <span>Tạm tính:</span>
+                      <span>{(quoteDetail.subtotal || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                    <div className="flex justify-between text-xs uppercase tracking-wider">
+                      <span>Thuế GTGT:</span>
+                      <span>{(quoteDetail.totalTax || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-3 text-blue-600">
+                      <span>TỔNG CỘNG:</span>
+                      <span>{(quoteDetail.grandTotal || 0).toLocaleString('vi-VN')} đ</span>
+                    </div>
+                  </div>
+                </div>
               </table>
             </div>
           </div>

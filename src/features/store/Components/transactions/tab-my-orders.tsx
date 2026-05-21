@@ -8,10 +8,6 @@ import { useRouter } from 'next/navigation';
 import { StoreOrderService, StoreMyOrderItem } from '../../services/store-order.service';
 import { ListSkeleton } from '@/shared/components/common/loading';
 
-interface OrdersTabProps {
-    customerId?: string;
-}
-
 const statusConfig = {
     [OrderStatus.PendingPayment]: {
         label: 'Chờ thanh toán',
@@ -31,7 +27,7 @@ const statusConfig = {
     }
 };
 
-export function OrdersTab({ customerId }: OrdersTabProps) {
+export function OrdersTab() {
     const router = useRouter();
     const [orders, setOrders] = useState<StoreMyOrderItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,7 +50,6 @@ export function OrdersTab({ customerId }: OrdersTabProps) {
     ];
 
     const fetchOrders = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
-        if (!customerId) return;
         try {
             setLoading(true);
             const response = await StoreOrderService.getMyOrders({
@@ -78,26 +73,18 @@ export function OrdersTab({ customerId }: OrdersTabProps) {
         } finally {
             setLoading(false);
         }
-    }, [customerId]);
+    }, []);
 
-    // Luồng Tab/Init
+    // Gộp chung LUỒNG ĐỔI FILTER và TÌM KIẾM để tránh gọi API 2 lần
     useEffect(() => {
         setOrders([]);
-        paginationRef.current.lastId = undefined;
-        paginationRef.current.lastValue = undefined;
-        fetchOrders(false, activeFilter, searchTerm);
-    }, [activeFilter, customerId, fetchOrders]);
-
-    // Luồng Search (Debounce)
-    useEffect(() => {
-        if (!searchTerm) return;
         const timer = setTimeout(() => {
             paginationRef.current.lastId = undefined;
             paginationRef.current.lastValue = undefined;
             fetchOrders(false, activeFilter, searchTerm);
-        }, 400);
+        }, searchTerm ? 400 : 0);
         return () => clearTimeout(timer);
-    }, [searchTerm, activeFilter, fetchOrders]);
+    }, [activeFilter, searchTerm, fetchOrders]);
 
     return (
         <div>

@@ -31,11 +31,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     }
 };
 
-export function MyRfqsTab({
-    customerId
-}: {
-    customerId?: string
-}) {
+export function MyRfqsTab() {
     const router = useRouter();
     const [myRfqs, setMyRfqs] = useState<StoreMyRFQItem[]>([]);
 
@@ -63,7 +59,6 @@ export function MyRfqsTab({
     // 1. Hàm fetch: Để tránh fetchRfqs thay đổi liên tục làm trigger useEffect, 
     // chúng ta sẽ đưa các giá trị động vào tham số của hàm thay vì dependency của useCallback
     const fetchRfqs = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
-        if (!customerId) return;
         try {
             setLoading(true);
             const response = await StoreRFQService.getMyRFQ({
@@ -85,31 +80,20 @@ export function MyRfqsTab({
         } finally {
             setLoading(false);
         }
-    }, [customerId]); // Chỉ phụ thuộc vào customerId
+    }, []);
 
-
-    // 2. LUỒNG ĐỔI TAB: Chạy ngay lập tức
+    // Gộp chung LUỒNG ĐỔI FILTER và TÌM KIẾM để tránh gọi API 2 lần
     useEffect(() => {
+        // Reset data khi thay đổi filter/search
         setMyRfqs([]);
-        paginationRef.current = { lastId: undefined, lastValue: undefined };
-
-        // Khi đổi tab, chúng ta lấy searchTerm hiện tại để gọi
-        fetchRfqs(false, activeFilter, searchTerm);
-    }, [activeFilter, customerId, fetchRfqs]);
-
-
-    // 3. LUỒNG TÌM KIẾM (DEBOUNCE)
-    useEffect(() => {
-        // Không chạy nếu search trống (để luồng Tab xử lý ở lần đầu)
-        if (!searchTerm) return;
-
+        
         const timer = setTimeout(() => {
             paginationRef.current = { lastId: undefined, lastValue: undefined };
             fetchRfqs(false, activeFilter, searchTerm);
-        }, 400);
+        }, searchTerm ? 400 : 0); // Có search thì debounce 400ms, không thì gọi ngay
 
         return () => clearTimeout(timer);
-    }, [searchTerm, activeFilter, fetchRfqs]);
+    }, [activeFilter, searchTerm, fetchRfqs]);
     return (
         <div>
             <div className="flex items-center justify-between gap-4 mb-6">

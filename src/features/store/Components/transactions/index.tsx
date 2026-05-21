@@ -11,10 +11,6 @@ import { MyRfqsTab } from './tab-my-rfqs';
 import { MyQuotationsTab } from './tab-my-quotations';
 import { OrdersTab } from './tab-my-orders';
 import { TabInquiryCart } from './tab-inquiry-cart';
-
-import { useUser } from '@/shared/hooks/use-user';
-import { CustomerDetail, StoreCustomerService } from '../../services/store-customer.service';
-
 const TABS = [
   { id: 'inquiry-cart', label: 'Danh sách yêu cầu', icon: ClipboardList },
   { id: 'rfqs', label: 'Yêu cầu báo giá của tôi', icon: FileText },
@@ -24,41 +20,17 @@ const TABS = [
 
 type TabId = typeof TABS[number]['id'];
 
-export default function Transactions() {
+function TransactionsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get('tab') as TabId;
-  const [activeTab, setActiveTab] = useState<TabId>(TABS.some(t => t.id === tabFromUrl) ? tabFromUrl : 'inquiry-cart');
-
-  const { user } = useUser();
-  const [customerData, setCustomerData] = useState<CustomerDetail>();
-
-  useEffect(() => {
-    if (tabFromUrl && TABS.some(t => t.id === tabFromUrl) && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl, activeTab]);
-
-  useEffect(() => {
-    const fetchCustomer = async () => {
-      if (!user?.id) return;
-      try {
-        const response = await StoreCustomerService.getDetailCustomerByAccountId(user.id);
-        if (response) setCustomerData(response);
-      } catch (error) {
-        console.error("Fetch customer error:", error);
-      }
-    };
-    fetchCustomer();
-  }, [user?.id]);
+  const activeTab: TabId = (tabFromUrl && TABS.some(t => t.id === tabFromUrl)) ? tabFromUrl : 'inquiry-cart';
 
   const handleTabChange = (tabId: TabId) => {
-    setActiveTab(tabId);
-    router.push(`/transactions?tab=${tabId}`);
+    router.replace(`/transactions?tab=${tabId}`, { scroll: false });
   };
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-page-background" />}>
       <div className="min-h-screen bg-page-background">
         <StoreBreadcrumb
           items={[
@@ -101,12 +73,19 @@ export default function Transactions() {
           {/* Nội dung Tab */}
           <main>
             {activeTab === 'inquiry-cart' && <TabInquiryCart />}
-            {activeTab === 'rfqs' && <MyRfqsTab customerId={customerData?.id} />}
-            {activeTab === 'quotes' && <MyQuotationsTab customerId={customerData?.id} />}
-            {activeTab === 'orders' && <OrdersTab customerId={customerData?.id} />}
+            {activeTab === 'rfqs' && <MyRfqsTab />}
+            {activeTab === 'quotes' && <MyQuotationsTab />}
+            {activeTab === 'orders' && <OrdersTab />}
           </main>
         </div>
       </div>
+  );
+}
+
+export default function Transactions() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-page-background" />}>
+      <TransactionsContent />
     </Suspense>
   );
 }

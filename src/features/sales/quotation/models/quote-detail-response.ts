@@ -16,6 +16,7 @@ export interface GetDetailQuoteByIdResponse {
 
   customer: CustomerInfoResponse;
   customerFeedback: QuoteCustomerResponse;
+  sender: SenderInfoResponse;
 };
 
 export interface CustomerInfoResponse {
