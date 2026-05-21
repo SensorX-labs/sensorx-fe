@@ -189,7 +189,7 @@ export function InternalPriceForm({ onBack }: InternalPriceFormProps) {
                         <div>
                           <p className="text-sm font-bold text-slate-900">{selectedProduct.name}</p>
                           <p className="text-[10px] text-slate-500 font-medium">
-                            Mã: {selectedProduct.code} • NSX: {selectedProduct.manufacture}
+                            Mã: {selectedProduct.code} • NCC: {selectedProduct.supplierName}
                           </p>
                         </div>
                       </div>

@@ -1,19 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  DollarSign,
-  BookOpen,
-  LayoutDashboard
-} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { DollarSign, BookOpen } from 'lucide-react';
 import { ProductStatus } from '../../../enums/product-status';
 import { ProductService } from '../../../services/product-service';
 import { ConfirmDialog } from '@/shared/components/admin/confirm-dialog';
-import { toast } from 'sonner';
 import { GetPageProductDetailResponse } from '../../../models';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 
-// Sub-components
 import { ProductHeader } from './components/ProductHeader';
 import { ProductInfoCard } from './components/ProductInfoCard';
 import { ProductAttributesCard } from './components/ProductAttributesCard';
@@ -25,14 +19,12 @@ import { ProductPriceSummaryCard } from './components/ProductPriceSummaryCard';
 interface ProductDetailProps {
   productId: string;
   onBack: () => void;
-  onEdit: (product: any) => void;
+  onEdit: (product: GetPageProductDetailResponse) => void;
 }
 
 export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailProps) {
   const [product, setProduct] = useState<GetPageProductDetailResponse>();
   const [loading, setLoading] = useState(true);
-
-  // State for Confirm Dialogs
   const [statusConfirm, setStatusConfirm] = useState({ isOpen: false, loading: false });
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, loading: false });
 
@@ -43,8 +35,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
         if (response) {
           setProduct(response);
         }
-      } catch (error) {
-        console.error(">>> Error fetching product detail:", error);
       } finally {
         setLoading(false);
       }
@@ -73,9 +63,8 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
         setStatusConfirm({ isOpen: false, loading: false });
         onBack();
       }
-    } catch (error) {
-      console.error("Lỗi:", error);
-      setStatusConfirm({ ...statusConfirm, loading: false });
+    } finally {
+      setStatusConfirm(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -87,8 +76,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
       if (res) {
         onBack();
       }
-    } catch (error) {
-      console.error("Lỗi:", error);
     } finally {
       setDeleteConfirm({ isOpen: false, loading: false });
     }
@@ -96,7 +83,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
 
   return (
     <div className="space-y-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-      {/* Header Bar */}
       <ProductHeader
         product={product}
         onBack={onBack}
@@ -106,31 +92,20 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Essential Info */}
         <div className="lg:col-span-1 space-y-6">
           <ProductInfoCard product={product} />
           <ProductAttributesCard attributes={product?.attributes} />
           <ProductImagesCard images={product?.images} productName={product?.name} />
         </div>
 
-        {/* Right Column: Detailed Content with Tabs */}
         <div className="lg:col-span-2 relative min-h-[600px]">
           <div className="lg:absolute lg:inset-0 bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <Tabs defaultValue="details" className="w-full flex flex-col h-full">
-
-              {/* Vùng chứa TabsList với border-bottom mờ để làm nền cho đường line của Tab */}
               <div className="px-8 bg-white border-b border-slate-100">
                 <TabsList className="h-14 w-full bg-transparent p-0 flex gap-8 items-center justify-start">
                   <TabsTrigger
                     value="details"
-                    className="
-                      relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 
-                      text-[13px] font-semibold uppercase tracking-wider text-slate-500 
-                      hover:text-slate-800 hover:bg-slate-50/50
-                      data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent 
-                      data-[state=active]:shadow-none data-[state=active]:text-emerald-600 
-                      transition-all duration-200 -mb-[1px]
-                    "
+                    className="relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 text-[13px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-600 transition-all duration-200 -mb-[1px]"
                   >
                     <BookOpen className="w-[18px] h-[18px]" />
                     Thông tin chi tiết
@@ -138,14 +113,7 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
 
                   <TabsTrigger
                     value="price-history"
-                    className="
-                      relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 
-                      text-[13px] font-semibold uppercase tracking-wider text-slate-500 
-                      hover:text-slate-800 hover:bg-slate-50/50
-                      data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent 
-                      data-[state=active]:shadow-none data-[state=active]:text-emerald-600 
-                      transition-all duration-200 -mb-[1px]
-                    "
+                    className="relative h-14 rounded-none border-b-2 border-transparent px-2 gap-2.5 text-[13px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 data-[state=active]:border-b-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-emerald-600 transition-all duration-200 -mb-[1px]"
                   >
                     <DollarSign className="w-[18px] h-[18px]" />
                     Lịch sử áp dụng giá
@@ -153,10 +121,9 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
                 </TabsList>
               </div>
 
-              {/* Phần Content */}
               <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-50/30">
                 <TabsContent value="details" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-top-2 duration-500">
-                  <ProductPriceSummaryCard price={product?.internalPricesSuggestion} unit={product?.unit} />
+                  <ProductPriceSummaryCard price={product?.internalPricesSuggestion} unit={product?.unitOfQuantityName} />
                   <ProductDescriptionCard showcase={product?.showcase} />
                 </TabsContent>
 
@@ -164,7 +131,7 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
                   <ProductPriceHistoryTab
                     productId={productId}
                     currentPriceId={product?.internalPricesSuggestion?.id}
-                    unit={product?.unit}
+                    unit={product?.unitOfQuantityName}
                   />
                 </TabsContent>
               </div>
@@ -173,7 +140,6 @@ export function ProductDetailView({ productId, onBack, onEdit }: ProductDetailPr
         </div>
       </div>
 
-      {/* Dialogs */}
       <ConfirmDialog
         isOpen={statusConfirm.isOpen}
         onOpenChange={(open) => setStatusConfirm({ ...statusConfirm, isOpen: open })}

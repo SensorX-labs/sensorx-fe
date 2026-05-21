@@ -34,6 +34,8 @@ interface LineItem {
   productId?: string; // Backend Guid
   productCode: string;
   productName: string;
+  unit?: string;
+  manufactureName?: string;
   quantity: number;
   notes: string;
 }
@@ -140,7 +142,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                  <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                  <span className="text-[10px] text-brand-green font-bold italic">{p.supplierName}</span>
                 </div>
               </div>
             ))
@@ -190,6 +192,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                 id: i.productId,
                 productCode: i.productCode,
                 productName: i.productName,
+                unit: i.unit,
+                manufactureName: i.manufactureName,
                 quantity: i.quantity,
                 notes: i.note
               })),
@@ -254,9 +258,9 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               productId: item.productId,
               productCode: item.productCode,
               productName: item.productName,
-              unit: "Cái",
+              unit: item.unit || "Cái",
               quantity: item.quantity,
-              manufactureName: "N/A",
+              manufactureName: item.manufactureName || "N/A",
               note: item.notes
             }))
         };
@@ -427,6 +431,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                                   updateItem(item.id, 'productId', prod.id);
                                   updateItem(item.id, 'productCode', prod.code || '');
                                   updateItem(item.id, 'productName', prod.name);
+                                  updateItem(item.id, 'unit', prod.unitOfQuantityName || 'Cái');
+                                  updateItem(item.id, 'manufactureName', prod.supplierName || 'N/A');
                                 }}
                               />
                             ) : (

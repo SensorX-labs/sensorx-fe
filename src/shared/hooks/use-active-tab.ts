@@ -94,6 +94,14 @@ const routeMap: Record<string, TabInfo> = {
     title: 'Danh mục sản phẩm',
     description: 'Phân loại và tổ chức hệ thống danh mục sản phẩm',
   },
+  '/catalog/suppliers': {
+    title: 'Nhà cung cấp',
+    description: 'Quản lý danh sách nhà cung cấp trong catalog',
+  },
+  '/catalog/unit-of-quantities': {
+    title: 'Đơn vị tính',
+    description: 'Quản lý danh sách đơn vị tính dùng chung trong catalog',
+  },
   '/catalog/internal-prices': {
     title: 'Bảng giá nội bộ',
     description: 'Quản lý chính sách giá, phân tầng số lượng và chiết khấu cho đối tác',

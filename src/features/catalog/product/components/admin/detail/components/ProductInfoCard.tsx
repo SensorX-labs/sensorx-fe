@@ -22,21 +22,16 @@ const statusLabel: Record<string, string> = {
 export function ProductInfoCard({ product }: ProductInfoCardProps) {
   return (
     <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
-      {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
         <h4 className="text-xs font-bold uppercase tracking-widest text-slate-600">Thông tin chính</h4>
       </div>
 
-      {/* Content */}
       <div className="p-6 space-y-7">
-
-        {/* Tên hàng hóa */}
         <div>
           <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Tên hàng hóa</p>
           <p className="text-base font-bold text-slate-800 leading-snug">{product?.name || '--'}</p>
         </div>
 
-        {/* Mã hàng & Trạng thái */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Mã hàng</p>
@@ -60,20 +55,18 @@ export function ProductInfoCard({ product }: ProductInfoCardProps) {
           </div>
         </div>
 
-        {/* Nhà sản xuất */}
         <div>
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Nhà sản xuất</p>
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Nhà cung cấp</p>
           <div className="flex items-center gap-2 text-sm text-slate-700 font-bold">
             <div className="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
               <Factory className="w-3.5 h-3.5 text-slate-400" />
             </div>
-            {product?.manufacture || '--'}
+            {product?.supplierName || '--'}
           </div>
         </div>
 
         <div className="w-full h-px bg-slate-100"></div>
 
-        {/* Danh mục & Đơn vị tính */}
         <div className="grid grid-cols-2 gap-6">
           <div>
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Danh mục</p>
@@ -89,12 +82,11 @@ export function ProductInfoCard({ product }: ProductInfoCardProps) {
             <div className="flex items-center gap-2">
               <Scale className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-sm font-bold text-slate-700">
-                {product?.unit || '--'}
+                {product?.unitOfQuantityName || '--'}
               </span>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

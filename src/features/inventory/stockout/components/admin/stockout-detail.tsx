@@ -32,6 +32,7 @@ interface StockOutDetailProps {
 
 interface StockOutItem {
   id: string;
+  productId?: string;
   productCode: string;
   productName: string;
   quantity: number;
@@ -133,7 +134,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer || p.manufacture}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.supplierName}</span>
                  </div>
                </div>
              ))
@@ -196,7 +197,7 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
         const filteredItems = items
           .filter(item => item.productCode)
           .map(item => ({
-            productId: item.id, // In a real scenario, this should be Guid from SearchableProductSelect
+            productId: item.productId,
             productName: item.productName,
             productCode: item.productCode,
             quantity: item.quantity
@@ -415,6 +416,7 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                                 defaultValue={item.productCode}
                                 defaultLabel={item.productName}
                                 onSelect={(prod) => {
+                                  updateItem(item.id, 'productId', prod.id);
                                   updateItem(item.id, 'productCode', prod.code || '');
                                   updateItem(item.id, 'productName', prod.name);
                                 }}
