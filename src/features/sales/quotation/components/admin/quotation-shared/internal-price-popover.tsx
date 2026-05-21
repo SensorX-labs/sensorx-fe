@@ -1,63 +1,59 @@
 import React, { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/shadcn-ui/popover';
-import { BadgeInfo } from 'lucide-react';
 
 export function InternalPricePopover({
   onSelect,
   children,
-  priceData,
+  disabled,
+  priceData
 }: {
   onSelect: (price: number) => void;
   children: React.ReactNode;
+  disabled?: boolean;
   priceData?: any;
 }) {
   const [open, setOpen] = useState(false);
 
-  if (!priceData) return <>{children}</>;
+  const tiers = priceData?.priceTiers || [];
+
+  if (disabled || tiers.length === 0 || !React.isValidElement(children)) return <>{children}</>;
+
+  const trigger = React.cloneElement(children as React.ReactElement<any>, {
+    onClick: (e: React.MouseEvent) => {
+      if ((children as any).props.onClick) (children as any).props.onClick(e);
+      setOpen(true);
+    },
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative cursor-pointer">
-          {children}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600">
-            <BadgeInfo size={14} />
-          </div>
-        </div>
+        <div>{trigger}</div>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3 space-y-2 bg-white shadow-md border-blue-100 z-50 relative" align="end" sideOffset={5}>
-        <div className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2 border-b border-blue-50 pb-1">Gợi ý giá nội bộ</div>
-        <div className="space-y-1.5">
-          <div
-            className="flex justify-between items-center text-sm p-1.5 hover:bg-blue-50 rounded cursor-pointer transition-colors"
-            onClick={() => {
-              onSelect(priceData.importPrice);
-              setOpen(false);
-            }}
-          >
-            <span className="text-gray-600">Giá nhập:</span>
-            <span className="font-medium text-gray-900">{priceData.importPrice.toLocaleString('vi-VN')} đ</span>
-          </div>
-          <div
-            className="flex justify-between items-center text-sm p-1.5 hover:bg-blue-50 rounded cursor-pointer transition-colors"
-            onClick={() => {
-              onSelect(priceData.wholesalePrice);
-              setOpen(false);
-            }}
-          >
-            <span className="text-gray-600">Giá sỉ:</span>
-            <span className="font-medium text-gray-900">{priceData.wholesalePrice.toLocaleString('vi-VN')} đ</span>
-          </div>
-          <div
-            className="flex justify-between items-center text-sm p-1.5 hover:bg-blue-50 rounded cursor-pointer transition-colors"
-            onClick={() => {
-              onSelect(priceData.retailPrice);
-              setOpen(false);
-            }}
-          >
-            <span className="text-gray-600">Giá lẻ:</span>
-            <span className="font-medium text-gray-900">{priceData.retailPrice.toLocaleString('vi-VN')} đ</span>
-          </div>
+      <PopoverContent
+        side="bottom"
+        align="end"
+        className="w-48 p-1 shadow-md border border-gray-200"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex flex-col">
+          {tiers.map((tier: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(tier.priceAmount);
+                setOpen(false);
+              }}
+              className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
+            >
+              <span className="text-gray-500 font-medium">SL ≥ {tier.quantity}:</span>
+              <span className="font-bold text-gray-900">
+                {tier.priceAmount.toLocaleString('vi-VN')}
+              </span>
+            </button>
+          ))}
         </div>
       </PopoverContent>
     </Popover>

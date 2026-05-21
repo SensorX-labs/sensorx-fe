@@ -9,6 +9,7 @@ import { QuoteStatus } from '../../../constants/quote-status';
 import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
 import { QuoteAnalysisService } from '../../../services/quote-analysis-service';
 import { QuoteService } from '../../../services/quote.service';
+import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { RejectQuoteModal } from '../quotation-shared';
 import { toast } from 'sonner';
 
@@ -85,14 +86,43 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       return sum + Math.round((q * p) * (1 + t / 100));
     }, 0);
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!quoteDetail) return;
+    
+    // Set edit mode immediately with existing data
     setEditItems(quoteDetail.items.map(item => ({
       ...item,
-      internalPrice: undefined, // Add internal price fetching here if needed later
+      internalPrice: undefined,
     })));
     setEditNote(quoteDetail.note || '');
     setIsEditing(true);
+
+    // Fetch internal prices in the background
+    try {
+      const productIds = quoteDetail.items.map(item => item.productId).filter(Boolean);
+      if (productIds.length > 0) {
+        const response = await InternalPriceService.getSuggest({ productIds });
+        if (response) {
+          const priceMap: Record<string, any> = {};
+          response.forEach((price: any) => {
+            const priceTiers = (price.priceTiers || []).map((t: any) => ({
+              quantity: t.quantity,
+              priceAmount: t.amount ?? t.priceAmount ?? t.price,
+              priceCurrency: t.currency ?? t.priceCurrency
+            }));
+            priceMap[price.productId] = { ...price, priceTiers };
+          });
+          
+          // Update editItems with the fetched internal prices
+          setEditItems(prevItems => prevItems.map(item => ({
+            ...item,
+            internalPrice: priceMap[item.productId]
+          })));
+        }
+      }
+    } catch (error) {
+      console.error(">>> Lỗi khi tải gợi ý giá:", error);
+    }
   };
 
   const handleCancelEdit = () => {

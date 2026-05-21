@@ -15,69 +15,11 @@ import { RfqDetail } from '@/features/sales/RFQ/services/admin-rfq.service';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { DraftQuoteCommand, QuoteService } from '../../services/quote.service';
 import {
-  CustomerInfoCard, SenderInfoCard
+  CustomerInfoCard, SenderInfoCard, InternalPricePopover
 } from './quotation-shared';
 import { toast } from 'sonner';
 import StaffService from '@/features/user/staff/services/staff.service';
 
-function InternalPricePopover({
-  onSelect,
-  children,
-  disabled,
-  priceData
-}: {
-  onSelect: (price: number) => void;
-  children: React.ReactNode;
-  disabled?: boolean;
-  priceData?: any;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const tiers = priceData?.priceTiers || [];
-
-  if (disabled || tiers.length === 0 || !React.isValidElement(children)) return <>{children}</>;
-
-  const trigger = React.cloneElement(children as React.ReactElement<any>, {
-    onClick: (e: React.MouseEvent) => {
-      if ((children as any).props.onClick) (children as any).props.onClick(e);
-      setOpen(true);
-    },
-  });
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div>{trigger}</div>
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="end"
-        className="w-48 p-1 shadow-md border border-gray-200"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <div className="flex flex-col">
-          {tiers.map((tier: any, idx: number) => (
-            <button
-              key={idx}
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onSelect(tier.priceAmount);
-                setOpen(false);
-              }}
-              className="px-3 py-2 text-left hover:bg-gray-100 text-xs flex justify-between items-center transition-colors"
-            >
-              <span className="text-gray-500 font-medium">SL ≥ {tier.quantity}:</span>
-              <span className="font-bold text-gray-900">
-                {tier.priceAmount.toLocaleString('vi-VN')}
-              </span>
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 export interface QuotationFormProps {
   rfqData: RfqDetail;
@@ -295,7 +237,7 @@ export default function QuotationForm({ rfqData, onBack }: QuotationFormProps) {
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <Input type="number" value={item.quantity} onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })} onFocus={(e) => setTimeout(() => e.target.select(), 0)} className="h-10 text-sm text-center border-gray-200 shadow-none" />
+                          <Input type="number" value={item.quantity} disabled className="h-10 text-sm text-center border-gray-200 shadow-none bg-gray-50 text-gray-500 cursor-not-allowed" />
                         </td>
                         <td className="px-4 py-4">
                           <InternalPricePopover

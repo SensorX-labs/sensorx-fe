@@ -32,7 +32,6 @@ export const QuoteService = {
 
     deleteQuote: (id: string) => api.master.delete<any, string>(`/quotes/${id}`),
 
-    accept: (id: string, data: any = {}) => api.master.post<any, string>(`/quotes/${id}/accept`, data),
 };
 
 export default QuoteService;

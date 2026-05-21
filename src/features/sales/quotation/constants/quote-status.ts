@@ -6,4 +6,5 @@ export enum QuoteStatus {
     SENT = 'Sent',          // Đã gửi khách
     ORDERED = 'Ordered',    // Đã sinh đơn hàng 
     CANCELLED = 'Cancelled', // Đã hủy
+    EXPIRED = 'Expired', // Đã hết hạn
 }

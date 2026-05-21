@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingCart, MessageSquare } from 'lucide-react';
-import { GetDetailQuoteByIdResponse } from '../../models/quote-detail-response';
+import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
 
 interface QuotationItemsViewProps {
   quoteDetail: GetDetailQuoteByIdResponse;

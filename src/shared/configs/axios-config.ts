@@ -63,7 +63,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 if (isSuccess) {
                     // Tự động hiển thị toast thành công nếu có message và không phải là lệnh GET
                     const method = response.config.method?.toUpperCase();
-                    if (message && method !== 'GET') {
+                    if (message && method !== 'GET' && message.toUpperCase() !== 'SUCCESS') {
                         toast.success(message);
                     }
 
@@ -183,7 +183,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                 // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh ở trên
                 if (error.response.status !== 401) {
                     toast.error(errorMessage);
-                    
+
                     // Nếu thiếu warehouse ID, chuyển hướng về trang chọn kho
                     if (errorMessage.includes("Vui lòng chọn kho bãi") && typeof window !== 'undefined') {
                         setTimeout(() => {

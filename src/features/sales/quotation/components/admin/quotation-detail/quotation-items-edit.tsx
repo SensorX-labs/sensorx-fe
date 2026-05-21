@@ -71,14 +71,8 @@ export function QuotationItemsEdit({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleUpdateItem(index, { quantity: parseFloat(e.target.value) || 0 })}
-                        onFocus={(e) => setTimeout(() => e.target.select(), 0)}
-                        className="h-10 text-sm text-center border-gray-200 shadow-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
-                      />
+                    <td className="px-4 py-4 text-center font-medium text-gray-800">
+                      {item.quantity} {item.unit || 'cái'}
                     </td>
                     <td className="px-4 py-4">
                       <InternalPricePopover

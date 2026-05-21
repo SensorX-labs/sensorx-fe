@@ -29,7 +29,7 @@ const statusConfig: Record<string, { label: string; icon: any; className: string
     icon: CheckCircle2,
     className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20',
   },
-  [QuoteStatus.EXPIRED]: {
+  ['Expired']: {
     label: 'Hết hạn',
     icon: Clock,
     className: 'bg-red-50 text-red-700 border-red-200',
@@ -60,7 +60,7 @@ export function MyQuotationsTab() {
     { id: 'WAITING', label: 'Chờ phản hồi' },
     { id: 'ACCEPTED', label: 'Đã chốt' },
     { id: QuoteStatus.RETURNED, label: 'Đã từ chối' },
-    { id: QuoteStatus.EXPIRED, label: 'Hết hạn' }
+    { id: 'Expired', label: 'Hết hạn' }
   ];
 
   const fetchQuotes = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
@@ -97,7 +97,7 @@ export function MyQuotationsTab() {
       paginationRef.current.lastValue = undefined;
       fetchQuotes(false, activeFilter, searchTerm);
     }, searchTerm ? 400 : 0);
-    
+
     return () => clearTimeout(timer);
   }, [activeFilter, searchTerm, fetchQuotes]);
 

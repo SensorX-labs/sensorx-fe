@@ -8,6 +8,7 @@ import {
   SenderInfoCard
 } from '../quotation-shared';
 import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
+import { QuoteStatus } from '../../../constants/quote-status';
 
 interface QuotationInfoProps {
   quoteDetail: GetDetailQuoteByIdResponse;
@@ -59,7 +60,7 @@ export function QuotationInfo({ quoteDetail }: QuotationInfoProps) {
       </div>
 
       {/* Lý do từ chối (nếu có) */}
-      {quoteDetail.reasonReject && (
+      {quoteDetail.reasonReject && quoteDetail.status === QuoteStatus.RETURNED && (
         <div className="border border-red-200 bg-red-50 rounded shadow-sm p-4 flex gap-3">
           <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
           <div>

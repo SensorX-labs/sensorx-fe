@@ -24,6 +24,7 @@ import { CustomerInfoResponse, GetDetailQuoteByIdResponse } from '@/features/sal
 import { toast } from 'sonner';
 import { cn } from '@/shared/utils';
 import { CanAccess } from '@/shared/components/common/can-access';
+import { StoreQuoteService, CustomerRespondToQuoteCommand, QuoteResponseStatus, PaymentTerm } from '../../services/store-quote.service';
 const statusStyles: Record<string, string> = {
     [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
     [QuoteStatus.PENDING]: 'bg-yellow-50 text-yellow-600 border-yellow-100',
@@ -79,13 +80,15 @@ export function QuotationDetailView({ onBack, quotationId }: {
         if (!quotationId || !quote) return;
         try {
             setLoading(true);
-            const data = {
-                responseType: 1, // accepted
-                paymentTerm: 1,
-                shippingAddress: quote.customer.address,
+            const data: CustomerRespondToQuoteCommand = {
+                responseType: QuoteResponseStatus.Accepted,
+                paymentTerm: PaymentTerm.FullPayment,
+                shippingAddress: quote.customer.address || '',
+                recipientName: customer?.companyName || '',
+                recipientPhone: customer?.phone || '',
                 feedback: "Khách hàng đã chốt báo giá trực tuyến."
             };
-            const response = await QuoteService.accept(quotationId, data);
+            const response = await StoreQuoteService.customerResponse(quotationId, data);
             if (response) {
                 if (quote) setQuote({ ...quote, status: QuoteStatus.ORDERED });
                 toast.success('Bạn đã chốt báo giá thành công.');
