@@ -1,13 +1,10 @@
 import { ProductAttribute } from "./common";
 
-/**
- * Interface cho API create/update product
- */
 export interface ProductCommand {
   name: string;
-  manufacture: string;
+  supplierId: string | null;
   categoryId: string | null;
-  unit: string;
+  unitOfQuantityId: string | null;
   showcase?: string;
   images: string[];
   attributes: ProductAttribute[];

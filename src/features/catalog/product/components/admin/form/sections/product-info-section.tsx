@@ -1,15 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Box, Factory, ChevronRight } from 'lucide-react';
+import { Box, ChevronRight } from 'lucide-react';
+import { Supplier } from '@/features/catalog/supplier/models';
+import { UnitOfQuantity } from '@/features/catalog/unit-of-quantity/models';
+import { ProductDetail } from '../../../models';
 
 interface ProductInfoSectionProps {
-  formData: any;
-  setFormData: (data: any) => void;
+  formData: ProductDetail;
+  setFormData: (data: ProductDetail) => void;
   onOpenCategoryDialog: () => void;
+  suppliers: Supplier[];
+  units: UnitOfQuantity[];
 }
 
-export function ProductInfoSection({ formData, setFormData, onOpenCategoryDialog }: ProductInfoSectionProps) {
+export function ProductInfoSection({
+  formData,
+  setFormData,
+  onOpenCategoryDialog,
+  suppliers,
+  units
+}: ProductInfoSectionProps) {
   return (
     <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
@@ -29,19 +40,26 @@ export function ProductInfoSection({ formData, setFormData, onOpenCategoryDialog
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Nhà sản xuất</label>
-          <div className="relative group">
-            <input
-              type="text"
-              value={formData.manufacture}
-              onChange={(e) => setFormData({ ...formData, manufacture: e.target.value })}
-              className="admin-input-premium w-full px-4 py-3 bg-slate-50/30 border border-slate-200 rounded focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700"
-              placeholder="Hãng sản xuất, thương hiệu..."
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Factory className="w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
-            </div>
-          </div>
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Nhà cung cấp</label>
+          <select
+            value={formData.supplierId || ''}
+            onChange={(e) => {
+              const supplier = suppliers.find(item => item.id === e.target.value);
+              setFormData({
+                ...formData,
+                supplierId: e.target.value || null,
+                supplierName: supplier?.name || ''
+              });
+            }}
+            className="admin-input-premium w-full px-4 py-3 bg-slate-50/30 border border-slate-200 rounded focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700"
+          >
+            <option value="">Chọn nhà cung cấp...</option>
+            {suppliers.map(supplier => (
+              <option key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -63,13 +81,25 @@ export function ProductInfoSection({ formData, setFormData, onOpenCategoryDialog
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Đơn vị tính</label>
-            <input
-              type="text"
-              value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+            <select
+              value={formData.unitOfQuantityId || ''}
+              onChange={(e) => {
+                const unit = units.find(item => item.id === e.target.value);
+                setFormData({
+                  ...formData,
+                  unitOfQuantityId: e.target.value || null,
+                  unitOfQuantityName: unit?.name || ''
+                });
+              }}
               className="admin-input-premium w-full px-4 py-3 bg-slate-50/30 border border-slate-200 rounded focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700"
-              placeholder="Cái, Chiếc, Bộ..."
-            />
+            >
+              <option value="">Chọn đơn vị tính...</option>
+              {units.map(unit => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

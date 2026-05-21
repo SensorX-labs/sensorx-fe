@@ -114,7 +114,7 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
                  <span className="text-xs font-bold text-gray-900">{p.name}</span>
                  <div className="flex justify-between items-center mt-1">
                     <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacture}</span>
+                    <span className="text-[10px] text-brand-green font-bold italic">{p.supplierName}</span>
                  </div>
                </div>
              ))
@@ -352,7 +352,7 @@ export default function StockAdjustmentDetail() {
                               updateItem(item.id, 'productId', p.id);
                               updateItem(item.id, 'productCode', p.code);
                               updateItem(item.id, 'productName', p.name);
-                              updateItem(item.id, 'unit', 'Cái');
+                              updateItem(item.id, 'unit', p.unitOfQuantityName || 'Cái');
                             }}
                           />
                         ) : (

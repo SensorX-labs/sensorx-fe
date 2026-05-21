@@ -2,37 +2,39 @@ import { ProductStatus } from "../enums/product-status";
 import { ProductAttribute } from "./common";
 
 export interface GetPageProductDetailResponse {
-    id: string;
-    code: string;
-    name: string;
-    manufacture: string;
-    categoryId: string;
-    categoryName: string;
-    unit: string;
-    showcase: string | null;
-    attributes: ProductAttribute[];
-    status: ProductStatus;
-    createdAt: Date;
-    updatedAt: Date | null;
-    images: string[];
-    internalPricesSuggestion: InternalPriceDto | null;
+  id: string;
+  code: string;
+  name: string;
+  supplierId: string;
+  supplierName: string;
+  categoryId: string;
+  categoryName: string;
+  unitOfQuantityId: string;
+  unitOfQuantityName: string;
+  showcase: string | null;
+  attributes: ProductAttribute[];
+  status: ProductStatus;
+  createdAt: Date;
+  updatedAt: Date | null;
+  images: string[];
+  internalPricesSuggestion: InternalPriceDto | null;
 }
 
 export interface InternalPriceDto {
-    id: string;
-    productId: string;
-    suggestedPriceAmount: number;
-    suggestedPriceCurrency: string;
-    floorPriceAmount: number;
-    floorPriceCurrency: string;
-    priceTiers: PriceTierDto[];
-    createdAt: Date;
+  id: string;
+  productId: string;
+  suggestedPriceAmount: number;
+  suggestedPriceCurrency: string;
+  floorPriceAmount: number;
+  floorPriceCurrency: string;
+  priceTiers: PriceTierDto[];
+  createdAt: Date;
 }
 
 export interface PriceTierDto {
-    quantity: number;
-    amount: number;
-    currency: string;
+  quantity: number;
+  amount: number;
+  currency: string;
 }
 
-export type GetPageProductDetailResult = GetPageProductDetailResponse
+export type GetPageProductDetailResult = GetPageProductDetailResponse;

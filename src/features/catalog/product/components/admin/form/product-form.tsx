@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CategorySelectionDialog } from '@/shared/components/admin/selection-modal';
 import ProductService from '../../../services/product-service';
+import SupplierService from '@/features/catalog/supplier/services/supplier-services';
+import UnitOfQuantityService from '@/features/catalog/unit-of-quantity/services/unit-of-quantity-services';
 
-// Import sub-components
 import {
   ProductFormHeader,
   ProductInfoSection,
@@ -16,6 +17,8 @@ import {
 import { ProductDetail } from '../../../models';
 import { ProductStatus } from '../../../enums/product-status';
 import imageService from '@/shared/services/image.service';
+import { Supplier } from '@/features/catalog/supplier/models';
+import { UnitOfQuantity } from '@/features/catalog/unit-of-quantity/models';
 
 interface ProductFormProps {
   product?: ProductDetail;
@@ -28,15 +31,19 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [units, setUnits] = useState<UnitOfQuantity[]>([]);
 
   const [formData, setFormData] = useState<ProductDetail>({
     id: '',
     code: '',
     name: '',
-    manufacture: '',
+    supplierId: null,
+    supplierName: '',
     categoryId: null,
     categoryName: '',
-    unit: '',
+    unitOfQuantityId: null,
+    unitOfQuantityName: '',
     images: [],
     attributes: [],
     showcase: '',
@@ -44,6 +51,20 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     createdAt: '',
     updatedAt: ''
   });
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      const [supplierResult, unitResult] = await Promise.all([
+        SupplierService.getAll(),
+        UnitOfQuantityService.getAll()
+      ]);
+
+      setSuppliers(supplierResult || []);
+      setUnits(unitResult || []);
+    };
+
+    loadOptions();
+  }, []);
 
   useEffect(() => {
     if (mode === 'update' && initialProduct?.id) {
@@ -64,21 +85,32 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       toast.error("Vui lòng nhập tên hàng hóa");
       return;
     }
+    if (!formData.supplierId) {
+      toast.error("Vui lòng chọn nhà cung cấp");
+      return;
+    }
+    if (!formData.unitOfQuantityId) {
+      toast.error("Vui lòng chọn đơn vị tính");
+      return;
+    }
 
     try {
       setIsSaving(true);
       const command = {
-        ...formData,
+        name: formData.name,
+        supplierId: formData.supplierId,
         categoryId: formData.categoryId,
-        unit: formData.unit || '',
+        unitOfQuantityId: formData.unitOfQuantityId,
         showcase: formData.showcase || '',
         images: formData.images || [],
         attributes: formData.attributes || []
       };
 
-      const res = mode === 'create'
-        ? await ProductService.create(command)
-        : await ProductService.update(initialProduct?.id || '', command);
+      if (mode === 'create') {
+        await ProductService.create(command);
+      } else {
+        await ProductService.update(initialProduct?.id || '', command);
+      }
 
       onBack();
     } catch (error) {
@@ -88,7 +120,6 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     }
   };
 
-  // Helper handlers for complex fields
   const handleUploadImage = async (file: File) => {
     try {
       setIsUploading(true);
@@ -100,8 +131,6 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           images: [...(formData.images || []), res]
         });
       }
-    } catch (error) {
-      console.error("Lỗi:", error);
     } finally {
       setIsUploading(false);
     }
@@ -115,7 +144,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       const newImages = [...(formData.images || [])];
       newImages.splice(index, 1);
       setFormData({ ...formData, images: newImages });
-    } catch (error) {
+    } catch {
       toast.error("Lỗi khi xóa ảnh");
     }
   };
@@ -163,12 +192,13 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Left Column: Configuration & Meta (Height Reference) */}
         <div className="lg:col-span-1 space-y-6">
           <ProductInfoSection
             formData={formData}
             setFormData={setFormData}
             onOpenCategoryDialog={() => setIsCategoryDialogOpen(true)}
+            suppliers={suppliers}
+            units={units}
           />
 
           <ProductImageSection
@@ -186,7 +216,6 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
           />
         </div>
 
-        {/* Right Column: Detailed Description (Scrollable) */}
         <div className="lg:col-span-2 relative min-h-[600px]">
           <div className="lg:absolute lg:inset-0">
             <ProductShowcaseSection

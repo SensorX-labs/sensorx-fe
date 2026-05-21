@@ -1,17 +1,16 @@
 import { ProductStatus } from "../enums/product-status";
 import { ProductAttribute } from "./common";
 
-/**
- * Interface cho API get details
- */
 export interface ProductDetail {
   id: string;
   code: string;
   name: string;
-  manufacture: string;
+  supplierId: string | null;
+  supplierName: string;
   categoryId: string | null;
   categoryName: string | null;
-  unit: string;
+  unitOfQuantityId: string | null;
+  unitOfQuantityName: string;
   showcase?: string;
   attributes: ProductAttribute[];
   status: ProductStatus;
@@ -20,4 +19,4 @@ export interface ProductDetail {
   images: string[];
 }
 
-export type ProductDetailResult = ProductDetail
+export type ProductDetailResult = ProductDetail;
