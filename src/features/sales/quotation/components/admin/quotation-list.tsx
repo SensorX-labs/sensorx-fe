@@ -19,7 +19,7 @@ const statusStyles: Record<QuoteStatus, string> = {
   [QuoteStatus.RETURNED]: 'bg-red-50 text-red-600 border-red-100',
   [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-600 border-indigo-100',
   [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-  [QuoteStatus.EXPIRED]: 'bg-gray-50 text-gray-400 border-gray-200',
+  [QuoteStatus.CANCELLED]: 'bg-gray-50 text-gray-400 border-gray-200',
 };
 
 const statusLabels: Record<QuoteStatus, string> = {
@@ -29,7 +29,7 @@ const statusLabels: Record<QuoteStatus, string> = {
   [QuoteStatus.RETURNED]: 'Từ chối',
   [QuoteStatus.SENT]: 'Đã gửi khách',
   [QuoteStatus.ORDERED]: 'Đã sinh đơn',
-  [QuoteStatus.EXPIRED]: 'Hết hạn',
+  [QuoteStatus.CANCELLED]: 'Đã hủy',
 };
 
 export default function QuotationList() {
@@ -172,7 +172,7 @@ export default function QuotationList() {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      {q.status === QuoteStatus.DRAFT && (
+                      {(q.status === QuoteStatus.DRAFT || q.status === QuoteStatus.RETURNED) && (
                         <Button
                           variant="ghost" size="icon"
                           className="h-8 w-8 text-red-500 hover:bg-red-50"

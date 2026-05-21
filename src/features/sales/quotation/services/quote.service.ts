@@ -70,4 +70,5 @@ export interface QuoteStatsResponse {
     sentCount: number;
     orderedCount: number;
     expiredCount: number;
+    cancelledCount: number;
 }

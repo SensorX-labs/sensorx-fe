@@ -59,7 +59,7 @@ export function QuotationActions({
   return (
     <div className="flex items-center gap-2">
       <CanAccess roles={['SaleStaff']}>
-        {status === QuoteStatus.DRAFT && (
+        {(status === QuoteStatus.DRAFT || status === QuoteStatus.RETURNED) && (
           <>
             <Button
               onClick={onEdit}

@@ -97,9 +97,7 @@ export default function StaffList() {
             label: 'Tổng nhân viên',
             value: statsData?.totalCount ?? 0,
             icon: UserCircle,
-            color: 'bg-blue-50 text-blue-600',
-            borderColor: 'border-blue-100',
-            activeBorder: 'border-blue-500 ring-2 ring-blue-500/10',
+            colorTheme: 'blue' as any,
             isActive: statusFilter === undefined,
             onClick: () => {
                 setStatusFilter(undefined);
@@ -109,9 +107,7 @@ export default function StaffList() {
             label: 'Đang làm việc',
             value: statsData?.activeCount ?? 0,
             icon: UserCheck,
-            color: 'bg-green-50 text-green-600',
-            borderColor: 'border-green-100',
-            activeBorder: 'border-green-500 ring-2 ring-green-500/10',
+            colorTheme: 'green' as any,
             isActive: statusFilter === StaffStatus.Active,
             onClick: () => {
                 setStatusFilter(StaffStatus.Active);
@@ -121,9 +117,7 @@ export default function StaffList() {
             label: 'Vắng mặt',
             value: statsData?.onLeaveCount ?? 0,
             icon: UserMinus,
-            color: 'bg-amber-50 text-amber-600',
-            borderColor: 'border-amber-100',
-            activeBorder: 'border-amber-500 ring-2 ring-amber-500/10',
+            colorTheme: 'yellow' as any,
             isActive: statusFilter === StaffStatus.OnLeave,
             onClick: () => {
                 setStatusFilter(StaffStatus.OnLeave);
@@ -133,9 +127,7 @@ export default function StaffList() {
             label: 'Đã nghỉ việc',
             value: statsData?.resignedCount ?? 0,
             icon: Shield,
-            color: 'bg-red-50 text-red-600',
-            borderColor: 'border-red-100',
-            activeBorder: 'border-red-500 ring-2 ring-red-500/10',
+            colorTheme: 'red' as any,
             isActive: statusFilter === StaffStatus.Resigned,
             onClick: () => {
                 setStatusFilter(StaffStatus.Resigned);
