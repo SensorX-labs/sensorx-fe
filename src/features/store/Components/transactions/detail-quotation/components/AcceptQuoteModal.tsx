@@ -9,7 +9,7 @@ import { Button } from '@/shared/components/shadcn-ui/button';
 import {
     inputClass,
     textareaClass,
-} from '../constants';
+} from '../../Constants/ui.constant';
 
 import { cn } from '@/shared/utils';
 import { PaymentTerm } from '@/features/store/services/store-quote.service';
@@ -153,7 +153,7 @@ export function AcceptQuoteModal({
 
                                 <label
                                     className={cn(
-                                        'flex items-start gap-4 rounded-2xl border p-5 cursor-pointer transition-all',
+                                        'flex items-start gap-4 rounded-xl border p-5 cursor-pointer transition-all',
                                         shippingForm.paymentTerm ===
                                             PaymentTerm.FullPayment
                                             ? 'border-gray-900 bg-gray-50'
@@ -195,7 +195,7 @@ export function AcceptQuoteModal({
 
                                 <label
                                     className={cn(
-                                        'flex items-start gap-4 rounded-2xl border p-5 cursor-pointer transition-all',
+                                        'flex items-start gap-4 rounded-xl border p-5 cursor-pointer transition-all',
                                         shippingForm.paymentTerm ===
                                             PaymentTerm.Deposit
                                             ? 'border-gray-900 bg-gray-50'
@@ -234,7 +234,7 @@ export function AcceptQuoteModal({
                                 </label>
                             </div>
 
-                            <div className="mt-6 rounded-2xl bg-gray-50 border border-gray-100 p-6">
+                            <div className="mt-6 rounded-xl bg-gray-50 border border-gray-100 p-6">
 
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500">
@@ -278,7 +278,7 @@ export function AcceptQuoteModal({
 
                         <Button
                             variant="outline"
-                            className="flex-1 h-12 rounded-2xl"
+                            className="flex-1 h-12 rounded-xl"
                             onClick={() =>
                                 onOpenChange(
                                     false
@@ -289,7 +289,7 @@ export function AcceptQuoteModal({
                         </Button>
 
                         <Button
-                            className="flex-1 h-12 rounded-2xl bg-gray-900 hover:bg-black"
+                            className="flex-1 h-12 rounded-xl bg-gray-900 hover:bg-black"
                             onClick={
                                 onSubmit
                             }

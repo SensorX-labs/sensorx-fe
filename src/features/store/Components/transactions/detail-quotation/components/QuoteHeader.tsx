@@ -21,7 +21,7 @@ export function QuoteHeader({
         statusLabels[quote.status];
 
     return (
-        <div className="px-8 py-7 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+        <div className="px-8 py-7 rounded-xl border border-gray-100 bg-gradient-to-r from-white to-gray-50 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
 
             <div>
                 <p className="text-sm text-gray-500 mb-2">
@@ -52,14 +52,14 @@ export function QuoteHeader({
                             <>
                                 <button
                                     onClick={onAccept}
-                                    className="h-11 px-5 rounded-2xl bg-gray-900 text-white font-medium hover:bg-black transition-all"
+                                    className="h-11 px-5 rounded-xl bg-gray-900 text-white font-medium hover:bg-black transition-all"
                                 >
                                     Chốt báo giá
                                 </button>
 
                                 <button
                                     onClick={onReject}
-                                    className="h-11 px-5 rounded-2xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all"
+                                    className="h-11 px-5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all"
                                 >
                                     Từ chối
                                 </button>

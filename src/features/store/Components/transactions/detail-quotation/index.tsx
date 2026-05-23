@@ -28,7 +28,6 @@ import { toast } from 'sonner';
 
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 
-import { cardClass } from './constants';
 import {
     AcceptQuoteModal,
     QuoteHeader,
@@ -38,6 +37,7 @@ import {
 } from './components';
 
 import { CustomerCard, SupportCard } from '../components';
+import { cardClass } from '../Constants/ui.constant';
 
 export default function QuotationDetailView({
     quotationId,
@@ -255,7 +255,7 @@ export default function QuotationDetailView({
     }
 
     return (
-        <div className="min-h-screen bg-[#f6f7fb]">
+        <>
             <div className="max-w-7xl mx-auto px-6 py-8">
 
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
@@ -321,6 +321,6 @@ export default function QuotationDetailView({
                 }
                 onSubmit={submitReject}
             />
-        </div>
+        </>
     );
 }

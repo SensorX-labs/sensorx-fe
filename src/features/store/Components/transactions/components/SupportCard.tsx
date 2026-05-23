@@ -1,5 +1,7 @@
 import React from 'react';
 import { Headset, Phone, Mail, User } from 'lucide-react';
+import { cardClass } from '../Constants/ui.constant';
+import { cn } from '@/shared/utils';
 
 interface StaffInfo {
   name: string;
@@ -14,7 +16,7 @@ interface SupportCardProps {
 
 export function SupportCard({ staff }: SupportCardProps) {
   return (
-    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md rounded-2xl">
+    <div className={cn(cardClass, "p-8 transition-all duration-300 hover:shadow-md")}>
       <div className="space-y-6">
         <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
           <Headset className="w-4 h-4 text-[#B48F4E]" />
@@ -27,10 +29,10 @@ export function SupportCard({ staff }: SupportCardProps) {
               <img
                 src={staff.avatarUrl}
                 alt={staff.name}
-                className="w-16 h-16 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                className="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm"
               />
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+              <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
                 <User className="w-8 h-8 text-gray-200" />
               </div>
             )}

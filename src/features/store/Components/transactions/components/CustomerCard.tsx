@@ -1,5 +1,7 @@
 import React from 'react';
-import { User, Phone, Mail, MapPin } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Scroll } from 'lucide-react';
+import { cardClass } from '../Constants/ui.constant';
+import { cn } from '@/shared/utils';
 
 interface CustomerInfo {
   name?: string;
@@ -20,7 +22,7 @@ export function CustomerCard({
   actionNode,
 }: CustomerCardProps) {
   return (
-    <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md rounded-2xl">
+    <div className={cn(cardClass, "p-8 transition-all duration-300 hover:shadow-md")}>
       <div className="space-y-6">
         <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
           <User className="w-4 h-4 text-gray-400" />
@@ -31,14 +33,15 @@ export function CustomerCard({
           <p className="breadcrumb-text uppercase !text-lg font-bold">
             {customer?.name || customer?.companyName || '---'}
           </p>
-          
-          {customer?.taxCode && (
-            <p className="text-sm italic text-gray-600 mt-1">
-              {`Mã số thuế: ${customer.taxCode}`}
-            </p>
-          )}
 
           <div className="pt-2 space-y-3 border-t border-gray-50 mt-4">
+            <div className="flex items-center gap-3">
+              <Scroll className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+
+              <span className="qty-label tracking-widest text-sm">
+                {customer?.taxCode || 'Chưa cập nhật'}
+              </span>
+            </div>
             <div className="flex items-center gap-3">
               <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
 

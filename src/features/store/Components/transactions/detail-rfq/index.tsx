@@ -18,7 +18,7 @@ import {
   RfqHeader,
   RfqTable,
 } from './components';
-import { cardClass } from './constants';
+import { cardClass } from '../Constants/ui.constant';
 
 export function RfqDetailView({
   onBack,

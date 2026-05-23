@@ -23,7 +23,7 @@ export function RfqTable({ items }: RfqTableProps) {
         </h3>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-100">
+      <div className="overflow-hidden rounded-xl border border-gray-100">
 
       <table className="w-full text-left border-collapse table-fixed">
         <thead>

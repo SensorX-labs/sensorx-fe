@@ -56,7 +56,7 @@ export function RejectQuoteModal({
                                     }
                                     className={`
                                         flex items-start gap-4
-                                        rounded-2xl border p-5
+                                        rounded-xl border p-5
                                         cursor-pointer
                                         transition-all
                                         ${rejectReason ===
@@ -100,7 +100,7 @@ export function RejectQuoteModal({
                                 placeholder="Nhập lý do của bạn..."
                                 className="
                                 mt-4 w-full
-                                rounded-2xl
+                                rounded-xl
                                 border border-gray-200
                                 p-4
                                 outline-none
@@ -126,7 +126,7 @@ export function RejectQuoteModal({
 
                         <Button
                             variant="outline"
-                            className="flex-1 h-12 rounded-2xl"
+                            className="flex-1 h-12 rounded-xl"
                             onClick={() =>
                                 onOpenChange(
                                     false
@@ -138,7 +138,7 @@ export function RejectQuoteModal({
 
                         <Button
                             className="
-                                flex-1 h-12 rounded-2xl
+                                flex-1 h-12 rounded-xl
                                 bg-gray-900
                                 hover:bg-black
                             "

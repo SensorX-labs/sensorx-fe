@@ -14,10 +14,10 @@ export function QuoteSummary({
 
                 {/* DATE */}
 
-                <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <div className="rounded-xl bg-gray-50 border border-gray-100 p-5">
                     <div className="flex items-center gap-4">
 
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center">
                             <Calendar className="w-5 h-5 text-gray-500" />
                         </div>
 
@@ -41,10 +41,10 @@ export function QuoteSummary({
 
                 {/* TOTAL */}
 
-                <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <div className="rounded-xl bg-gray-50 border border-gray-100 p-5">
                     <div className="flex items-center gap-4">
 
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center">
                             <DollarSign className="w-5 h-5 text-gray-500" />
                         </div>
 
@@ -65,10 +65,10 @@ export function QuoteSummary({
 
                 {/* PRODUCT */}
 
-                <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <div className="rounded-xl bg-gray-50 border border-gray-100 p-5">
                     <div className="flex items-center gap-4">
 
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center">
                             <Package className="w-5 h-5 text-gray-500" />
                         </div>
 

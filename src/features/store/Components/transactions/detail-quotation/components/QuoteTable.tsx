@@ -10,7 +10,7 @@ export function QuoteTable({
                 </h3>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-gray-100">
+            <div className="overflow-hidden rounded-xl border border-gray-100">
                 <table className="w-full">
 
                     <thead className="bg-gray-50">
@@ -97,7 +97,7 @@ export function QuoteTable({
 
             <div className="mt-8 flex justify-end">
 
-                <div className="w-full max-w-sm rounded-2xl bg-gray-50 border border-gray-100 p-6 space-y-4">
+                <div className="w-full max-w-sm rounded-xl bg-gray-50 border border-gray-100 p-6 space-y-4">
 
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-500">
