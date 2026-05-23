@@ -11,3 +11,6 @@ export const DATA_SERVICE_URL = `${GATEWAY_URL}/api/data`;
 export const AUTH_SERVICE_URL = `${GATEWAY_URL}/auth`;
 export const MASTER_SERVICE_URL = `${GATEWAY_URL}/api/master`;
 export const WAREHOUSE_SERVICE_URL = `${GATEWAY_URL}/api/warehouse`;
+export const AI_ANALYSIS_SERVICE_URL = IS_PRODUCTION
+  ? `${PLACEHOLDER}/api/ai-analysis`
+  : "http://localhost:8000/api/v1";
