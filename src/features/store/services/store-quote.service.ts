@@ -27,11 +27,11 @@ export enum PaymentTerm {
 }
 
 export interface CustomerRespondToQuoteCommand {
-    responseType: QuoteResponseStatus | number;
-    paymentTerm: PaymentTerm | number;
-    shippingAddress: string;
-    recipientName: string;
-    recipientPhone: string;
+    responseType?: QuoteResponseStatus | null;
+    paymentTerm?: PaymentTerm | null;
+    shippingAddress?: string;
+    recipientName?: string;
+    recipientPhone?: string;
     feedback?: string;
 }
 

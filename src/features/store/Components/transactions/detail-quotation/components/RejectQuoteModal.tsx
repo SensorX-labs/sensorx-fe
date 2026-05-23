@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -5,21 +6,46 @@ import {
 } from '@/shared/components/shadcn-ui/dialog';
 
 import { Button } from '@/shared/components/shadcn-ui/button';
+import { toast } from 'sonner';
+import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
+import { StoreQuoteService, QuoteResponseStatus } from '@/features/store/services/store-quote.service';
 
 export function RejectQuoteModal({
     open,
     onOpenChange,
-    rejectReason,
-    setRejectReason,
-    rejectSubmitting,
-    onSubmit,
+    quote,
+    onSuccess,
 }: any) {
+    const [rejectReason, setRejectReason] = useState('');
+    const [customReason, setCustomReason] = useState('');
+    const [rejectSubmitting, setRejectSubmitting] = useState(false);
+
     const reasons = [
         'Giá quá cao',
         'Không phù hợp nhu cầu',
         'Đã chọn nhà cung cấp khác',
         'Khác',
     ];
+
+    const submitReject = async () => {
+        if (!quote?.id || !rejectReason) return;
+
+        try {
+            setRejectSubmitting(true);
+            const feedback = rejectReason === 'Khác' ? customReason : rejectReason;
+            await StoreQuoteService.customerResponse(quote.id, {
+                responseType: QuoteResponseStatus.Declined,
+                feedback: feedback
+            });
+            if (onSuccess) onSuccess(QuoteStatus.RETURNED);
+            onOpenChange(false);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setRejectSubmitting(false);
+        }
+    };
+
 
     return (
         <Dialog
@@ -113,7 +139,7 @@ export function RejectQuoteModal({
                                 onChange={(
                                     e
                                 ) =>
-                                    setRejectReason(
+                                    setCustomReason(
                                         e
                                             .target
                                             .value
@@ -143,10 +169,11 @@ export function RejectQuoteModal({
                                 hover:bg-black
                             "
                             onClick={
-                                onSubmit
+                                submitReject
                             }
                             disabled={
                                 !rejectReason ||
+                                (rejectReason === 'Khác' && !customReason.trim()) ||
                                 rejectSubmitting
                             }
                         >

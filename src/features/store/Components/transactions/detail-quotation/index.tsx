@@ -11,21 +11,6 @@ import {
     GetDetailQuoteByIdResponse,
 } from '@/features/sales/quotation/models/quote-detail-response';
 
-import {
-    CustomerRespondToQuoteCommand,
-    PaymentTerm,
-    QuoteResponseStatus,
-    StoreQuoteService,
-} from '../../../services/store-quote.service';
-
-import StoreCustomerService, {
-    CustomerDetail,
-} from '../../../services/store-customer.service';
-
-import { useUser } from '@/shared/hooks/use-user';
-
-import { toast } from 'sonner';
-
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 
 import {
@@ -46,8 +31,6 @@ export default function QuotationDetailView({
     quotationId?: string;
     onBack: () => void;
 }) {
-    const { user } = useUser();
-
     const [quote, setQuote] =
         useState<GetDetailQuoteByIdResponse>();
 
@@ -62,19 +45,7 @@ export default function QuotationDetailView({
     const [rejectModalOpen, setRejectModalOpen] =
         useState(false);
 
-    const [rejectReason, setRejectReason] =
-        useState('');
 
-    const [rejectSubmitting, setRejectSubmitting] =
-        useState(false);
-
-    const [shippingForm, setShippingForm] =
-        useState({
-            recipientName: '',
-            recipientPhone: '',
-            shippingAddress: '',
-            paymentTerm: PaymentTerm.FullPayment,
-        });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -99,136 +70,6 @@ export default function QuotationDetailView({
 
         fetchData();
     }, [quotationId]);
-
-    useEffect(() => {
-        const fetchCustomer = async () => {
-            if (!user?.id) return;
-
-            try {
-                const res =
-                    await StoreCustomerService.getDetailCustomerByAccountId(
-                        user.id
-                    );
-
-                if (res) {
-                    setShippingForm((prev) => ({
-                        ...prev,
-                        recipientName:
-                            res.shippingInfo?.receiverName ||
-                            res.name ||
-                            '',
-
-                        recipientPhone:
-                            res.shippingInfo?.receiverPhone ||
-                            res.phone ||
-                            '',
-
-                        shippingAddress:
-                            res.shippingInfo
-                                ?.shippingAddress ||
-                            res.address ||
-                            '',
-                    }));
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        fetchCustomer();
-    }, [user?.id]);
-
-    const submitAccept = async () => {
-        if (!quote || !quotationId) return;
-
-        try {
-            setLoading(true);
-
-            const payload: CustomerRespondToQuoteCommand =
-            {
-                responseType:
-                    QuoteResponseStatus.Accepted,
-
-                paymentTerm:
-                    shippingForm.paymentTerm,
-
-                shippingAddress:
-                    shippingForm.shippingAddress,
-
-                recipientName:
-                    shippingForm.recipientName,
-
-                recipientPhone:
-                    shippingForm.recipientPhone,
-
-                feedback:
-                    'Khách hàng xác nhận báo giá.',
-            };
-
-            await StoreQuoteService.customerResponse(
-                quotationId,
-                payload
-            );
-
-            setQuote({
-                ...quote,
-                status: QuoteStatus.ORDERED,
-            });
-
-            toast.success(
-                'Xác nhận báo giá thành công'
-            );
-
-            setAcceptModalOpen(false);
-        } catch (err) {
-            console.error(err);
-
-            toast.error(
-                'Không thể xác nhận báo giá'
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const submitReject = async () => {
-        if (!quotationId || !rejectReason) return;
-
-        try {
-            setRejectSubmitting(true);
-
-            await QuoteService.reject(
-                quotationId,
-                {
-                    reason: rejectReason,
-                }
-            );
-
-            setQuote((prev) =>
-                prev
-                    ? {
-                        ...prev,
-                        status:
-                            QuoteStatus.RETURNED,
-                    }
-                    : prev
-            );
-
-            toast.success(
-                'Đã từ chối báo giá'
-            );
-
-            setRejectModalOpen(false);
-        } catch (err) {
-            console.error(err);
-
-            toast.error(
-                'Không thể từ chối báo giá'
-            );
-        } finally {
-            setRejectSubmitting(false);
-        }
-    };
 
     if (loading && !quote) {
         return (
@@ -305,21 +146,14 @@ export default function QuotationDetailView({
                 open={acceptModalOpen}
                 onOpenChange={setAcceptModalOpen}
                 quote={quote}
-                loading={loading}
-                shippingForm={shippingForm}
-                setShippingForm={setShippingForm}
-                onSubmit={submitAccept}
+                onSuccess={(status: QuoteStatus) => setQuote({ ...quote, status } as any)}
             />
 
             <RejectQuoteModal
                 open={rejectModalOpen}
                 onOpenChange={setRejectModalOpen}
-                rejectReason={rejectReason}
-                setRejectReason={setRejectReason}
-                rejectSubmitting={
-                    rejectSubmitting
-                }
-                onSubmit={submitReject}
+                quote={quote}
+                onSuccess={(status: QuoteStatus) => setQuote({ ...quote, status } as any)}
             />
         </>
     );

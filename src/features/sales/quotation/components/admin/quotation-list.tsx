@@ -6,13 +6,15 @@ import { FileText, Eye, Edit, Trash2, Search } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { QuoteStatus } from '../../constants/quote-status';
 import { ActionType } from '@/shared/constants/action-type';
-import { QuoteListItem, QuoteService } from '../../services/quote.service';
+import { QuoteListItem, QuoteService, QuoteResponseStatus } from '../../services/quote.service';
 import { useUser } from '@/shared/hooks/use-user';
 import { cn } from '@/shared/utils/cn';
 import { QuotationStats } from './quotation-stats';
 import { toast } from 'sonner';
 
-const statusStyles: Record<QuoteStatus, string> = {
+type CombinedStatus = QuoteStatus | QuoteResponseStatus;
+
+const statusStyles: Record<CombinedStatus, string> = {
   [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-500 border-gray-200',
   [QuoteStatus.PENDING]: 'bg-blue-50 text-blue-600 border-blue-100',
   [QuoteStatus.APPROVED]: 'bg-green-50 text-green-600 border-green-100',
@@ -20,9 +22,12 @@ const statusStyles: Record<QuoteStatus, string> = {
   [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-600 border-indigo-100',
   [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-600 border-emerald-100',
   [QuoteStatus.CANCELLED]: 'bg-gray-50 text-gray-400 border-gray-200',
+  [QuoteStatus.EXPIRED]: 'bg-orange-50 text-orange-600 border-orange-100',
+  [QuoteResponseStatus.Accepted]: 'bg-green-50 text-green-600 border-green-100',
+  [QuoteResponseStatus.Declined]: 'bg-red-50 text-red-600 border-red-100',
 };
 
-const statusLabels: Record<QuoteStatus, string> = {
+const statusLabels: Record<CombinedStatus, string> = {
   [QuoteStatus.DRAFT]: 'Nháp',
   [QuoteStatus.PENDING]: 'Chờ duyệt',
   [QuoteStatus.APPROVED]: 'Đã phê duyệt',
@@ -30,6 +35,9 @@ const statusLabels: Record<QuoteStatus, string> = {
   [QuoteStatus.SENT]: 'Đã gửi khách',
   [QuoteStatus.ORDERED]: 'Đã sinh đơn',
   [QuoteStatus.CANCELLED]: 'Đã hủy',
+  [QuoteStatus.EXPIRED]: 'Đã hết hạn',
+  [QuoteResponseStatus.Accepted]: 'Khách đã chốt',
+  [QuoteResponseStatus.Declined]: 'Khách từ chối',
 };
 
 export default function QuotationList() {
@@ -38,15 +46,33 @@ export default function QuotationList() {
   const [quotes, setQuotes] = useState<QuoteListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-  const fetchData = async (status: QuoteStatus | 'ALL', search: string) => {
+  const fetchData = async (status: string, search: string) => {
     setLoading(true);
     try {
+      let queryStatus: QuoteStatus | undefined = undefined;
+      let responseType: QuoteResponseStatus | undefined = undefined;
+      let isExpired: boolean | undefined = undefined;
+
+      if (status !== 'ALL') {
+        if (status === QuoteResponseStatus.Accepted) {
+          responseType = QuoteResponseStatus.Accepted;
+        } else if (status === QuoteResponseStatus.Declined) {
+          responseType = QuoteResponseStatus.Declined;
+        } else if (status === QuoteStatus.EXPIRED) {
+          isExpired = true;
+        } else {
+          queryStatus = status as QuoteStatus;
+        }
+      }
+
       const res = await QuoteService.getListQuotes({
         pageNumber: 1,
         pageSize: 50,
-        status: status === 'ALL' ? undefined : status,
+        status: queryStatus,
+        responseType: responseType,
+        isExpired: isExpired,
         searchTerm: search || undefined,
       });
       if (res) setQuotes(res.items);
@@ -105,13 +131,21 @@ export default function QuotationList() {
           <div className="w-full md:w-[200px]">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as QuoteStatus | 'ALL')}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
             >
               <option value="ALL">Tất cả trạng thái</option>
-              {Object.entries(statusLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
+              {Object.entries(statusLabels).map(([value, label]) => {
+                if (value === QuoteResponseStatus.Accepted) {
+                  return (
+                    <React.Fragment key="separator">
+                      <hr className="my-1 border-t border-gray-200" />
+                      <option value={value}>{label}</option>
+                    </React.Fragment>
+                  );
+                }
+                return <option key={value} value={value}>{label}</option>;
+              })}
             </select>
           </div>
         </div>
@@ -148,12 +182,19 @@ export default function QuotationList() {
                   </td>
                   <td className="px-6 py-4 font-bold text-gray-900 text-right">{q.grandTotal?.toLocaleString('vi-VN')} đ</td>
                   <td className="px-6 py-4 text-center">
-                    <span className={cn(
-                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                      statusStyles[q.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'
-                    )}>
-                      {statusLabels[q.status]}
-                    </span>
+                    {(() => {
+                      const displayStatus = q.responseType === QuoteResponseStatus.Declined 
+                        ? QuoteResponseStatus.Declined 
+                        : q.status;
+                      return (
+                        <span className={cn(
+                          "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                          statusStyles[displayStatus] ?? 'bg-gray-100 text-gray-500 border-gray-200'
+                        )}>
+                          {statusLabels[displayStatus]}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 text-center">{q.createdAt ? new Date(q.createdAt).toLocaleDateString('vi-VN') : '---'}</td>
                   <td className="px-6 py-4 text-right">

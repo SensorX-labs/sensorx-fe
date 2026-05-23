@@ -73,7 +73,7 @@ export function QuotationInfo({ quoteDetail }: QuotationInfoProps) {
       <CustomerInfoCard customerInfo={quoteDetail.customer} />
 
       {/* Card feedback khách chỉ hiển thị nếu có phản hồi */}
-      {quoteDetail.customerFeedback && (quoteDetail.customerFeedback.responseType || quoteDetail.customerFeedback.feedback) && (
+      {quoteDetail.customerFeedback && (
         <CustomerResponseCard customerFeedback={quoteDetail.customerFeedback} />
       )}
 

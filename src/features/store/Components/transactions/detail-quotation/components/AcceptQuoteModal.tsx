@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -12,17 +13,70 @@ import {
 } from '../../Constants/ui.constant';
 
 import { cn } from '@/shared/utils';
-import { PaymentTerm } from '@/features/store/services/store-quote.service';
+import { PaymentTerm, CustomerRespondToQuoteCommand, QuoteResponseStatus, StoreQuoteService } from '@/features/store/services/store-quote.service';
+import StoreCustomerService from '@/features/store/services/store-customer.service';
+import { useUser } from '@/shared/hooks/use-user';
+import { toast } from 'sonner';
+import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 
 export function AcceptQuoteModal({
     open,
     onOpenChange,
     quote,
-    shippingForm,
-    setShippingForm,
-    onSubmit,
-    loading,
+    onSuccess,
 }: any) {
+    const { user } = useUser();
+    const [loading, setLoading] = useState(false);
+    const [shippingForm, setShippingForm] = useState({
+        recipientName: '',
+        recipientPhone: '',
+        shippingAddress: '',
+        paymentTerm: PaymentTerm.FullPayment,
+    });
+
+    useEffect(() => {
+        const fetchCustomer = async () => {
+            if (!user?.id) return;
+            try {
+                const res = await StoreCustomerService.getDetailCustomerByAccountId(user.id);
+                if (res) {
+                    setShippingForm((prev) => ({
+                        ...prev,
+                        recipientName: res.shippingInfo?.receiverName || res.name || '',
+                        recipientPhone: res.shippingInfo?.receiverPhone || res.phone || '',
+                        shippingAddress: res.shippingInfo?.shippingAddress || res.address || '',
+                    }));
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        if (open) fetchCustomer();
+    }, [user?.id, open]);
+
+    const submitAccept = async () => {
+        if (!quote || !quote.id) return;
+        try {
+            setLoading(true);
+            const payload: CustomerRespondToQuoteCommand = {
+                responseType: QuoteResponseStatus.Accepted,
+                paymentTerm: shippingForm.paymentTerm,
+                shippingAddress: shippingForm.shippingAddress,
+                recipientName: shippingForm.recipientName,
+                recipientPhone: shippingForm.recipientPhone,
+                feedback: 'Khách hàng xác nhận báo giá.',
+            };
+            await StoreQuoteService.customerResponse(quote.id, payload);
+            toast.success('Xác nhận báo giá thành công');
+            if (onSuccess) onSuccess(QuoteStatus.ORDERED);
+            onOpenChange(false);
+        } catch (err) {
+            console.error(err);
+            toast.error('Không thể xác nhận báo giá');
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <Dialog
             open={open}
@@ -291,7 +345,7 @@ export function AcceptQuoteModal({
                         <Button
                             className="flex-1 h-12 rounded-xl bg-gray-900 hover:bg-black"
                             onClick={
-                                onSubmit
+                                submitAccept
                             }
                             disabled={
                                 loading

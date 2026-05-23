@@ -1,4 +1,5 @@
 import { QuoteStatus } from "../constants/quote-status";
+import { QuoteResponseStatus } from '../services/quote.service';
 
 export interface GetDetailQuoteByIdResponse {
   id: string;
@@ -36,7 +37,7 @@ export interface SenderInfoResponse {
 };
 
 export interface QuoteCustomerResponse {
-  responseType: QuoteStatus;
+  responseType: QuoteResponseStatus | number;
   paymentTerm: string;
   shippingAddress: string;
   recipientName: string;
