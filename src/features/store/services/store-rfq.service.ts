@@ -38,7 +38,7 @@ export interface StoreMyRFQItem {
 export interface MyRfqDetail {
     id: string;
     code: string;
-    status: string;
+    status: RfqStatus;
     createdAt: string;
     saleStaff?: MyRfqSaleStaff;
     customer?: MyRfqDetailCustomer;

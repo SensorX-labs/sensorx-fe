@@ -5,14 +5,15 @@ import { LoadMorePagedQuery, LoadMorePagedResult } from '@/shared/models/load-mo
 export interface StoreMyQuoteItem {
     id: string;
     code: string;
-    status: QuoteStatus;
+    status: StatusCustomerCanSeeQuote;
     totalAmount: number;
     createdAt: string;
     expiryDate?: string;
 }
 
+export type StatusCustomerCanSeeQuote = 'All' | 'Pending' | 'Accepted' | 'Declined' | 'Expired';
 export interface StoreQuoteParams extends LoadMorePagedQuery {
-    status?: string;
+    status?: StatusCustomerCanSeeQuote;
 }
 
 export enum QuoteResponseStatus {
