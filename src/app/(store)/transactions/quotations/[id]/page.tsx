@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
-import { QuotationDetailView } from '@/features/store/Components/transactions/detail-quotation';
+import QuotationDetailView from '@/features/store/Components/transactions/detail-quotation';
 
 export default function QuotationDetailPage() {
     const params = useParams();
@@ -21,9 +21,7 @@ export default function QuotationDetailPage() {
                 backLink="/transactions?tab=quotes"
                 backLabel="Quay lại danh sách"
             />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <QuotationDetailView quotationId={id} onBack={() => router.push('/transactions?tab=quotes')} />
-            </div>
+            <QuotationDetailView quotationId={id} onBack={() => router.push('/transactions?tab=quotes')} />
         </div>
     );
 }

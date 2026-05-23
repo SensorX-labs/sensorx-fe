@@ -4,9 +4,16 @@ import { OffsetPagedResult } from "@/shared/models/offset-page.base";
 import { OffsetPagedQuery } from "@/shared/models/offset-page.base";
 import { GetDetailQuoteByIdResponse } from "../models/quote-detail-response";
 
+export enum QuoteResponseStatus {
+    Accepted = 'Accepted',
+    Declined = 'Declined'
+}
+
 export interface QuoteFilter extends OffsetPagedQuery {
     customerId?: string;
-    status?: QuoteStatus;
+    status?: QuoteStatus | string;
+    responseType?: QuoteResponseStatus;
+    isExpired?: boolean;
 }
 
 export const QuoteService = {
@@ -57,7 +64,8 @@ export interface QuoteListItem {
     companyName: string,
     grandTotal: number,
     itemCount: number,
-    createdAt: string
+    createdAt: string,
+    responseType?: QuoteResponseStatus
 }
 
 export interface QuoteStatsResponse {
@@ -70,4 +78,6 @@ export interface QuoteStatsResponse {
     orderedCount: number;
     expiredCount: number;
     cancelledCount: number;
+    customerAcceptedCount: number;
+    customerDeclinedCount: number;
 }

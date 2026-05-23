@@ -17,32 +17,51 @@ export function CustomerResponseCard({ customerFeedback }: CustomerResponseCardP
   const paymentTerm = customerFeedback.paymentTerm || '—';
   const feedback = customerFeedback.feedback || '—';
 
+  const isDeclined = customerFeedback.responseType === 'Declined' || customerFeedback.responseType === 1;
+  const isAccepted = customerFeedback.responseType === 'Accepted' || customerFeedback.responseType === 0;
+
   return (
     <div className="border border-gray-200 bg-white rounded-lg overflow-hidden shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-gray-500" />
-        <h4 className="text-sm font-semibold text-gray-900">Phản hồi từ khách hàng</h4>
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-gray-500" />
+          <h4 className="text-sm font-semibold text-gray-900">Phản hồi từ khách hàng</h4>
+        </div>
+        {isDeclined && (
+          <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border bg-red-50 text-red-600 border-red-100">
+            Từ chối
+          </span>
+        )}
+        {isAccepted && (
+          <span className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border bg-green-50 text-green-600 border-green-100">
+            Đã chốt
+          </span>
+        )}
       </div>
       <table className="w-full text-sm">
         <tbody className="divide-y divide-gray-100">
+          {!isDeclined && (
+            <>
+              <tr>
+                <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Người nhận</td>
+                <td className="px-6 py-3 font-medium text-gray-900">{recipientName}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
+                <td className="px-6 py-3 font-medium text-gray-900">{recipientPhone}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ giao hàng</td>
+                <td className="px-6 py-3 font-medium text-gray-600 text-xs italic">{shippingAddress}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-3 admin-text-primary font-semibold">Hạn mức thanh toán</td>
+                <td className="px-6 py-3 font-medium text-gray-900">{paymentTerm}</td>
+              </tr>
+            </>
+          )}
           <tr>
-            <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Người nhận</td>
-            <td className="px-6 py-3 font-medium text-gray-900">{recipientName}</td>
-          </tr>
-          <tr>
-            <td className="px-6 py-3 admin-text-primary font-semibold">Số điện thoại</td>
-            <td className="px-6 py-3 font-medium text-gray-900">{recipientPhone}</td>
-          </tr>
-          <tr>
-            <td className="px-6 py-3 admin-text-primary font-semibold">Địa chỉ giao hàng</td>
-            <td className="px-6 py-3 font-medium text-gray-600 text-xs italic">{shippingAddress}</td>
-          </tr>
-          <tr>
-            <td className="px-6 py-3 admin-text-primary font-semibold">Hạn mức thanh toán</td>
-            <td className="px-6 py-3 font-medium text-gray-900">{paymentTerm}</td>
-          </tr>
-          <tr>
-            <td className="px-6 py-3 admin-text-primary font-semibold">Ghi chú phản hồi</td>
+            <td className="px-6 py-3 admin-text-primary w-2/5 font-semibold">Ghi chú phản hồi</td>
             <td className="px-6 py-3 font-medium text-gray-700 text-xs leading-relaxed whitespace-pre-wrap">{feedback}</td>
           </tr>
         </tbody>

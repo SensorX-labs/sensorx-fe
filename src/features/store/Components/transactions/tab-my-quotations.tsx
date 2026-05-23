@@ -1,40 +1,34 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { FileText, Clock, CheckCircle2, ChevronRight, Search } from 'lucide-react';
+import { Clock, CheckCircle2, ChevronRight, Search, FileText } from 'lucide-react';
 import { cn } from '@/shared/utils';
-import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-import { StoreQuoteService, StoreMyQuoteItem } from '../../services/store-quote.service';
+import { StoreQuoteService, StoreMyQuoteItem, StatusCustomerCanSeeQuote } from '../../services/store-quote.service';
 import { useRouter } from 'next/navigation';
 import { ListSkeleton } from '@/shared/components/common/loading';
 
 const statusConfig: Record<string, { label: string; icon: any; className: string }> = {
-  [QuoteStatus.SENT]: {
-    label: 'Chờ phản hồi',
-    icon: CheckCircle2,
-    className: 'bg-blue-50 text-blue-700 border-blue-200',
+  'All': {
+    label: 'Tất cả',
+    icon: Clock,
+    className: 'bg-gray-50 text-gray-700 border-gray-200',
   },
-  [QuoteStatus.PENDING]: {
+  'Pending': {
     label: 'Chờ phản hồi',
     icon: Clock,
     className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   },
-  [QuoteStatus.APPROVED]: {
+  'Accepted': {
     label: 'Đã chốt',
     icon: CheckCircle2,
     className: 'bg-green-50 text-green-700 border-green-200',
   },
-  [QuoteStatus.ORDERED]: {
-    label: 'Đã chốt',
-    icon: CheckCircle2,
-    className: 'bg-[var(--brand-green)]/10 text-[var(--brand-green)] border-[var(--brand-green)]/20',
-  },
-  ['Expired']: {
+  'Expired': {
     label: 'Hết hạn',
     icon: Clock,
     className: 'bg-red-50 text-red-700 border-red-200',
   },
-  [QuoteStatus.RETURNED]: {
+  'Declined': {
     label: 'Đã từ chối',
     icon: CheckCircle2,
     className: 'bg-red-50 text-red-700 border-red-200',
@@ -46,7 +40,7 @@ export function MyQuotationsTab() {
   const [quotes, setQuotes] = useState<StoreMyQuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string>('ALL');
+  const [activeFilter, setActiveFilter] = useState<string>();
   const [hasNext, setHasNext] = useState(false);
 
   const paginationRef = useRef({
@@ -55,21 +49,21 @@ export function MyQuotationsTab() {
     pageSize: 10
   });
 
-  const filters = [
-    { id: 'ALL', label: 'Tất cả' },
-    { id: 'WAITING', label: 'Chờ phản hồi' },
-    { id: 'ACCEPTED', label: 'Đã chốt' },
-    { id: QuoteStatus.RETURNED, label: 'Đã từ chối' },
+  const filters: { id: string, label: string }[] = [
+    { id: 'All', label: 'Tất cả' },
+    { id: 'Pending', label: 'Chờ phản hồi' },
+    { id: 'Accepted', label: 'Đã chốt' },
+    { id: 'Declined', label: 'Đã từ chối' },
     { id: 'Expired', label: 'Hết hạn' }
   ];
 
-  const fetchQuotes = useCallback(async (isLoadMore = false, status?: string, search?: string) => {
+  const fetchQuotes = useCallback(async (isLoadMore = false, status?: StatusCustomerCanSeeQuote | string, search?: string) => {
     try {
       setLoading(true);
 
       const response = await StoreQuoteService.getMyQuotes({
         pageSize: paginationRef.current.pageSize,
-        status: status === 'ALL' ? undefined : status,
+        status: status === 'All' ? undefined : status as StatusCustomerCanSeeQuote,
         searchTerm: search || undefined,
         lastId: isLoadMore ? paginationRef.current.lastId : undefined,
         lastValue: isLoadMore ? paginationRef.current.lastValue : undefined,
