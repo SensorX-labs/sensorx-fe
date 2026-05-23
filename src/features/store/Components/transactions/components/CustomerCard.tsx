@@ -70,7 +70,7 @@ export function CustomerCard({
           </div>
 
           {actionNode && (
-            <div className="mt-6">
+            <div className="mt-6 pt-5 border-t border-gray-200">
               {actionNode}
             </div>
           )}

@@ -7,7 +7,7 @@ import { StoreQuoteService, StoreMyQuoteItem, StatusCustomerCanSeeQuote } from '
 import { useRouter } from 'next/navigation';
 import { ListSkeleton } from '@/shared/components/common/loading';
 
-const statusConfig: Record<StatusCustomerCanSeeQuote, { label: string; icon: any; className: string }> = {
+const statusConfig: Record<string, { label: string; icon: any; className: string }> = {
   'All': {
     label: 'Tất cả',
     icon: Clock,
@@ -40,7 +40,7 @@ export function MyQuotationsTab() {
   const [quotes, setQuotes] = useState<StoreMyQuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState<StatusCustomerCanSeeQuote>('All');
+  const [activeFilter, setActiveFilter] = useState<string>();
   const [hasNext, setHasNext] = useState(false);
 
   const paginationRef = useRef({
@@ -49,7 +49,7 @@ export function MyQuotationsTab() {
     pageSize: 10
   });
 
-  const filters: { id: StatusCustomerCanSeeQuote, label: string }[] = [
+  const filters: { id: string, label: string }[] = [
     { id: 'All', label: 'Tất cả' },
     { id: 'Pending', label: 'Chờ phản hồi' },
     { id: 'Accepted', label: 'Đã chốt' },
@@ -57,13 +57,13 @@ export function MyQuotationsTab() {
     { id: 'Expired', label: 'Hết hạn' }
   ];
 
-  const fetchQuotes = useCallback(async (isLoadMore = false, status?: StatusCustomerCanSeeQuote, search?: string) => {
+  const fetchQuotes = useCallback(async (isLoadMore = false, status?: StatusCustomerCanSeeQuote | string, search?: string) => {
     try {
       setLoading(true);
 
       const response = await StoreQuoteService.getMyQuotes({
         pageSize: paginationRef.current.pageSize,
-        status: status,
+        status: status === 'All' ? undefined : status as StatusCustomerCanSeeQuote,
         searchTerm: search || undefined,
         lastId: isLoadMore ? paginationRef.current.lastId : undefined,
         lastValue: isLoadMore ? paginationRef.current.lastValue : undefined,

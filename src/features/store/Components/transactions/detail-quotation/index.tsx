@@ -4,12 +4,10 @@ import React, { useEffect, useState } from 'react';
 
 import { Loader2, FileText } from 'lucide-react';
 
-import { QuoteService } from '@/features/sales/quotation/services/quote.service';
+import { CanAccess } from '@/shared/components/common/can-access';
+import { cn } from '@/shared/utils';
 
-import {
-    CustomerInfoResponse,
-    GetDetailQuoteByIdResponse,
-} from '@/features/sales/quotation/models/quote-detail-response';
+import { CustomerInfoResponse, GetMyQuoteDetailResponse, StoreQuoteService } from '@/features/store/services/store-quote.service';
 
 import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
 
@@ -23,6 +21,7 @@ import {
 
 import { CustomerCard, SupportCard } from '../components';
 import { cardClass } from '../Constants/ui.constant';
+import { Status } from './components/QuoteHeader';
 
 export default function QuotationDetailView({
     quotationId,
@@ -32,7 +31,7 @@ export default function QuotationDetailView({
     onBack: () => void;
 }) {
     const [quote, setQuote] =
-        useState<GetDetailQuoteByIdResponse>();
+        useState<GetMyQuoteDetailResponse>();
 
     const [customer, setCustomer] =
         useState<CustomerInfoResponse>();
@@ -46,7 +45,6 @@ export default function QuotationDetailView({
         useState(false);
 
 
-
     useEffect(() => {
         const fetchData = async () => {
             if (!quotationId) return;
@@ -55,7 +53,7 @@ export default function QuotationDetailView({
                 setLoading(true);
 
                 const response =
-                    await QuoteService.getQuoteById(
+                    await StoreQuoteService.getMyQuoteDetail(
                         quotationId
                     );
 
@@ -98,46 +96,60 @@ export default function QuotationDetailView({
     return (
         <>
             <div className="max-w-7xl mx-auto px-6 py-8">
-
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
 
+                    {/* Cột trái */}
                     <div className="space-y-6">
-
                         <div className={cardClass}>
-                            <QuoteHeader
-                                quote={quote}
-                                onAccept={() =>
-                                    setAcceptModalOpen(
-                                        true
-                                    )
-                                }
-                                onReject={() =>
-                                    setRejectModalOpen(
-                                        true
-                                    )
-                                }
+                            <QuoteHeader 
+                                status={quote.status as Status} 
+                                code={quote.code} 
                             />
-
                             <QuoteSummary quote={quote} />
-
                             <QuoteTable quote={quote} />
                         </div>
                     </div>
 
+                    {/* Cột phải */}
                     <div className="space-y-6">
-                        <CustomerCard
-                            customer={customer || null}
-                        />
-
                         {quote.sender && (
                             <SupportCard
                                 staff={{
                                     name: quote.sender.name,
                                     email: quote.sender.email,
                                     phone: quote.sender.phone || undefined,
+                                    avatarUrl: quote.sender.avatarUrl || undefined,
                                 }}
                             />
                         )}
+
+                        {/* BỌC CUSTOMERCARD VÀ NÚT VÀO CHUNG 1 DIV ĐỂ CHÚNG CHẠM SÁT NHAU */}
+                        <div className="flex flex-col">
+                            <CustomerCard
+                                customer={customer || null}
+                                actionNode={
+                                    <CanAccess roles={['Customer']}>
+                                        {(quote.status === 'Pending') && (
+                                            <div className="flex items-center gap-3 w-full">
+                                                <button
+                                                    onClick={() => setAcceptModalOpen(true)}
+                                                    className="flex-1 h-11 cursor-pointer rounded-xl bg-gray-900 text-white font-medium hover:bg-black active:scale-95 transition-all duration-200"
+                                                >
+                                                    Chốt báo giá
+                                                </button>
+                                                <button
+                                                    onClick={() => setRejectModalOpen(true)}
+                                                    className="flex-1 h-11 cursor-pointer rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 active:scale-95 transition-all duration-200"
+                                                >
+                                                    Từ chối
+                                                </button>
+                                            </div>
+                                        )}
+                                    </CanAccess>
+                                }
+                            />
+                        </div>
+
                     </div>
                 </div>
             </div>

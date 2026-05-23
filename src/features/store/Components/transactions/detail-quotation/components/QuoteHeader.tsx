@@ -1,24 +1,40 @@
-import { CanAccess } from '@/shared/components/common/can-access';
-
-import { QuoteStatus } from '@/features/sales/quotation/constants/quote-status';
-
 import { cn } from '@/shared/utils';
 
-import {
-    statusLabels,
-    statusStyles,
-} from '../constants';
+import { Clock, CheckCircle2 } from 'lucide-react';
+
+export type Status = 'Pending' | 'Accepted' | 'Declined' | 'Expired';
+const statusLabel: Record<Status, { label: string; icon: any; className: string }> = {
+    'Pending': {
+        label: 'Chờ phản hồi',
+        icon: Clock,
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    },
+    'Accepted': {
+        label: 'Đã chốt',
+        icon: CheckCircle2,
+        className: 'bg-green-50 text-green-700 border-green-200',
+    },
+    'Declined': {
+        label: 'Đã từ chối',
+        icon: CheckCircle2,
+        className: 'bg-red-50 text-red-700 border-red-200',
+    },
+    'Expired': {
+        label: 'Hết hạn',
+        icon: Clock,
+        className: 'bg-red-50 text-red-700 border-red-200',
+    }
+};
+interface QuoteHeaderProps {
+    status: Status;
+    code: string;
+}
 
 export function QuoteHeader({
-    quote,
-    onAccept,
-    onReject,
-}: any) {
-    const statusStyle =
-        statusStyles[quote.status];
-
-    const statusLabel =
-        statusLabels[quote.status];
+    status,
+    code
+}: QuoteHeaderProps) {
+    const currentStatusConfig = statusLabel[status];
 
     return (
         <div className="px-8 py-7 rounded-xl border border-gray-100 bg-gradient-to-r from-white to-gray-50 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -29,43 +45,19 @@ export function QuoteHeader({
                 </p>
 
                 <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
-                    {quote.code}
+                    {code}
                 </h1>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-
                 <div
                     className={cn(
                         'px-4 py-2 rounded-full border text-sm font-semibold',
-                        statusStyle
+                        currentStatusConfig?.className || 'bg-gray-50 text-gray-700 border-gray-200'
                     )}
                 >
-                    {statusLabel}
+                    {currentStatusConfig?.label || status}
                 </div>
-
-                <CanAccess roles={['Customer']}>
-                    {(quote.status ===
-                        QuoteStatus.SENT ||
-                        quote.status ===
-                        QuoteStatus.APPROVED) && (
-                            <>
-                                <button
-                                    onClick={onAccept}
-                                    className="h-11 px-5 rounded-xl bg-gray-900 text-white font-medium hover:bg-black transition-all"
-                                >
-                                    Chốt báo giá
-                                </button>
-
-                                <button
-                                    onClick={onReject}
-                                    className="h-11 px-5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all"
-                                >
-                                    Từ chối
-                                </button>
-                            </>
-                        )}
-                </CanAccess>
             </div>
         </div>
     );
