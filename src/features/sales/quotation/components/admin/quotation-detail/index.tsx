@@ -1,28 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { CanAccess } from '@/shared/components/common/can-access';
-import { QuoteStatus } from '../../../constants/quote-status';
+import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
 import { QuoteAnalysisService } from '../../../services/quote-analysis-service';
 import { QuoteService } from '../../../services/quote.service';
-import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { RejectQuoteModal } from '../quotation-shared';
-import { toast } from 'sonner';
-
 import { QuotationActions } from './quotation-actions';
 import { QuotationAiAnalysis } from './quotation-ai-analysis';
 import { QuotationInfo } from './quotation-info';
-import { QuotationItemsView } from './quotation-items-view';
 import { QuotationItemsEdit } from './quotation-items-edit';
+import { QuotationItemsView } from './quotation-items-view';
 
 export interface QuotationDetailProps {
   id: string;
   onBack?: () => void;
 }
+
+const ANALYSIS_POLL_INTERVAL_MS = 5000;
 
 export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const router = useRouter();
@@ -31,12 +31,10 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-  // Edit Mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editItems, setEditItems] = useState<any[]>([]);
   const [editNote, setEditNote] = useState('');
 
-  // AI analysis states
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -47,12 +45,9 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       const response = await QuoteService.getQuoteById(id);
       if (response) {
         setQuoteDetail(response);
-        if (response.status === QuoteStatus.PENDING) {
-          handleAnalyzeQuote(response.id);
-        }
       }
     } catch (error) {
-      console.error(">>> Lỗi khi fetch chi tiết báo giá:", error);
+      console.error('Failed to fetch quote detail:', error);
     } finally {
       setLoading(false);
     }
@@ -64,19 +59,43 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     }
   }, [id]);
 
-  const handleAnalyzeQuote = async (quoteId: string) => {
-    setAnalysisLoading(true);
-    setAnalysisError(null);
-    try {
-      const quoteAnalysisService = new QuoteAnalysisService();
-      const response = await quoteAnalysisService.analyzeQuote(quoteId);
-      setAnalysisResult(response);
-    } catch (error: any) {
-      setAnalysisError(error.message || 'Lỗi phân tích báo giá');
-    } finally {
-      setAnalysisLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (!id || isEditing) return;
+
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const loadAnalysis = async () => {
+      setAnalysisLoading(true);
+      setAnalysisError(null);
+
+      try {
+        const quoteAnalysisService = new QuoteAnalysisService();
+        const response = await quoteAnalysisService.analyzeQuote(id);
+        if (cancelled) return;
+
+        setAnalysisResult(response);
+
+        if (response?.status === 'pending') {
+          timeoutId = setTimeout(loadAnalysis, ANALYSIS_POLL_INTERVAL_MS);
+        }
+      } catch (error: any) {
+        if (cancelled) return;
+        setAnalysisError(error.message || 'Khong the tai phan tich AI');
+      } finally {
+        if (!cancelled) {
+          setAnalysisLoading(false);
+        }
+      }
+    };
+
+    loadAnalysis();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [id, isEditing]);
 
   const calculateEditTotal = () =>
     editItems.reduce((sum, item) => {
@@ -88,8 +107,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
 
   const handleEdit = async () => {
     if (!quoteDetail) return;
-    
-    // Set edit mode immediately with existing data
+
     setEditItems(quoteDetail.items.map(item => ({
       ...item,
       internalPrice: undefined,
@@ -97,7 +115,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     setEditNote(quoteDetail.note || '');
     setIsEditing(true);
 
-    // Fetch internal prices in the background
     try {
       const productIds = quoteDetail.items.map(item => item.productId).filter(Boolean);
       if (productIds.length > 0) {
@@ -108,20 +125,19 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
             const priceTiers = (price.priceTiers || []).map((t: any) => ({
               quantity: t.quantity,
               priceAmount: t.amount ?? t.priceAmount ?? t.price,
-              priceCurrency: t.currency ?? t.priceCurrency
+              priceCurrency: t.currency ?? t.priceCurrency,
             }));
             priceMap[price.productId] = { ...price, priceTiers };
           });
-          
-          // Update editItems with the fetched internal prices
+
           setEditItems(prevItems => prevItems.map(item => ({
             ...item,
-            internalPrice: priceMap[item.productId]
+            internalPrice: priceMap[item.productId],
           })));
         }
       }
     } catch (error) {
-      console.error(">>> Lỗi khi tải gợi ý giá:", error);
+      console.error('Failed to load internal prices:', error);
     }
   };
 
@@ -140,13 +156,13 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
           productId: i.productId,
           unitPrice: i.unitPrice,
           taxRate: i.taxRate,
-        }))
+        })),
       };
       await QuoteService.updateQuote(quoteDetail.id, updatePayload);
       setIsEditing(false);
       fetchDetail();
     } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
+      toast.error(`Loi: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,7 +173,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     try {
       await QuoteService.submitForApproval(id);
       fetchDetail();
-    } catch (error: any) {
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +183,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     try {
       await QuoteService.withdraw(id);
       fetchDetail();
-    } catch (error: any) {
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +193,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     try {
       await QuoteService.publish(id);
       fetchDetail();
-    } catch (error: any) {
     } finally {
       setIsSubmitting(false);
     }
@@ -190,7 +203,6 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     try {
       await QuoteService.approve(id);
       fetchDetail();
-    } catch (error: any) {
     } finally {
       setIsSubmitting(false);
     }
@@ -201,9 +213,9 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     try {
       await QuoteService.reject(id, { reason });
       fetchDetail();
-      toast.success('Từ chối báo giá thành công.');
+      toast.success('Tu choi bao gia thanh cong.');
     } catch (error: any) {
-      toast.error('Lỗi không từ chối được báo giá!');
+      toast.error('Khong the tu choi bao gia.');
     } finally {
       setIsSubmitting(false);
     }
@@ -211,12 +223,12 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa báo giá này?')) return;
+    if (!window.confirm('Ban co chac chan muon xoa bao gia nay?')) return;
     setIsSubmitting(true);
     try {
       await QuoteService.deleteQuote(id);
       router.push('/sales/quotations');
-    } catch (error: any) {
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -229,8 +241,13 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     }
   };
 
-  if (loading) return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
-  if (!quoteDetail) return <div className="py-20 text-center text-red-500 font-bold">Không tìm thấy báo giá</div>;
+  if (loading) {
+    return <div className="py-20 text-center animate-pulse text-blue-600 font-bold uppercase">Đang tải chi tiết báo giá...</div>;
+  }
+
+  if (!quoteDetail) {
+    return <div className="py-20 text-center text-red-500 font-bold">Không tìm thấy báo giá</div>;
+  }
 
   return (
     <div className="space-y-6 w-full pb-10">
@@ -271,7 +288,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {!isEditing && (
-          <CanAccess roles={['Admin', 4]}>
+          <CanAccess roles={['Manager', 4 , 'SaleStaff']}>
             <QuotationAiAnalysis
               analysisLoading={analysisLoading}
               analysisResult={analysisResult}

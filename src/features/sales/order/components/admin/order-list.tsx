@@ -50,10 +50,10 @@ export default function OrderList() {
   }, [fetchOrders]);
 
   const stats = useMemo(() => [
-    { title: 'Tong don hang', value: orders.length.toString(), icon: ShoppingCart, color: 'text-[#4318FF]' },
-    { title: 'Dang xu ly', value: orders.filter(o => o.status === OrderStatus.Processing).length.toString(), icon: ShoppingCart, color: 'text-blue-500' },
-    { title: 'Da xuat kho', value: orders.filter(o => o.status === OrderStatus.Dispatched).length.toString(), icon: Truck, color: 'text-green-500' },
-    { title: 'Da huy', value: orders.filter(o => o.status === OrderStatus.Cancelled).length.toString(), icon: XCircle, color: 'text-red-400' },
+    { title: 'Tổng đơn hàng', value: orders.length.toString(), icon: ShoppingCart, color: 'text-[#4318FF]' },
+    { title: 'Đang xử lý', value: orders.filter(o => o.status === OrderStatus.Processing).length.toString(), icon: ShoppingCart, color: 'text-blue-500' },
+    { title: 'Đã xuất kho', value: orders.filter(o => o.status === OrderStatus.Dispatched).length.toString(), icon: Truck, color: 'text-green-500' },
+    { title: 'Đã hủy', value: orders.filter(o => o.status === OrderStatus.Cancelled).length.toString(), icon: XCircle, color: 'text-red-400' },
   ], [orders]);
 
   const filteredOrders = useMemo(() => {
@@ -72,7 +72,7 @@ export default function OrderList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold admin-title uppercase">Quan ly don hang</h2>
+        <h2 className="text-xl font-bold admin-title uppercase">Quản lý đơn hàng</h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -97,7 +97,7 @@ export default function OrderList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tim ma don, cong ty, nguoi nhan..."
+              placeholder="Tìm kiếm"
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -109,7 +109,7 @@ export default function OrderList() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full py-2 px-3 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white text-gray-600"
             >
-              <option value="ALL">Tat ca trang thai</option>
+              <option value="ALL">Tất cả trạng thái</option>
               {Object.entries(statusLabels).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
@@ -121,13 +121,13 @@ export default function OrderList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="text-left px-6 py-4 tracking-label uppercase">Ma DH</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase">Khach hang</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase">Ngay dat</th>
-                <th className="text-center px-6 py-4 tracking-label uppercase">San pham</th>
-                <th className="text-right px-6 py-4 tracking-label uppercase">Tong tien</th>
-                <th className="text-center px-6 py-4 tracking-label uppercase">Trang thai</th>
-                <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hanh dong</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Mã ĐH</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Khách hàng</th>
+                <th className="text-left px-6 py-4 tracking-label uppercase">Ngày đặt</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Sản phẩm</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase">Tổng tiền</th>
+                <th className="text-center px-6 py-4 tracking-label uppercase">Trạng thái</th>
+                <th className="text-right px-6 py-4 tracking-label uppercase pr-10">Hành động</th>
               </tr>
             </thead>
             <tbody>
@@ -168,12 +168,12 @@ export default function OrderList() {
 
           {loading && (
             <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
-              Dang tai du lieu...
+              Đang tải dữ liệu
             </div>
           )}
           {!loading && filteredOrders.length === 0 && (
             <div className="py-20 text-center text-gray-400 uppercase tracking-widest text-xs">
-              Khong tim thay don hang nao
+              Không tìm thấy đơn hàng nào 
             </div>
           )}
         </div>
