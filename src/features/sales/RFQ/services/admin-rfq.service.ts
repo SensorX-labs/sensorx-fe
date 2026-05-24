@@ -47,6 +47,7 @@ export interface RfqListItem {
     staffId?: string;
     staffName?: string;
     itemCount: number;
+    finalScore?: number;
 }
 
 export interface RfqItem {
@@ -86,5 +87,21 @@ export interface RfqDetail {
     email: string;
     address: string;
     taxCode: string;
+    allocationLogs?: AllocationLogEntry[];
     items: RfqDetailItem[];
+}
+
+export interface AllocationSnapshot {
+    staffId: string;
+    staffName: string;
+    aggregatedSkillScore: number;
+    currentWorkload: number;
+    idleScore: number;
+    finalScore: number;
+}
+
+export interface AllocationLogEntry {
+    round: number;
+    assignedAt: string;
+    snapshotJson: string;
 }

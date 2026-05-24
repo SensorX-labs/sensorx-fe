@@ -212,6 +212,11 @@ export default function RequestForQuotationList() {
                       <span className="flex items-center gap-1.5">
                         <UserCheck className="w-3.5 h-3.5" />
                         {l.staffName || `Nhân viên ${l.staffId.slice(0, 4)}`}
+                        <CanAccess roles={['Manager']}>
+                          {l.finalScore !== undefined && l.finalScore !== null && (
+                            <span className="text-indigo-600 font-semibold ml-1">[{l.finalScore} đ]</span>
+                          )}
+                        </CanAccess>
                       </span>
                     ) : <span className="">—</span>}
                   </td>

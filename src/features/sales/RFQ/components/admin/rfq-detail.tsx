@@ -24,6 +24,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const [rfq, setRfq] = React.useState<RfqDetail | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isCreatingQuotation, setIsCreatingQuotation] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
 
   // Assign staff states
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -151,7 +152,27 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <CanAccess roles={['Manager']}>
+        <div className="flex space-x-6 border-b border-gray-200 mt-2">
+          <button
+            className={`py-2.5 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'info' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            onClick={() => setActiveTab('info')}
+          >
+            Thông tin yêu cầu
+          </button>
+          <button
+            className={`py-2.5 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'history' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            onClick={() => setActiveTab('history')}
+          >
+            Lịch sử phân bổ AI
+          </button>
+        </div>
+      </CanAccess>
+
+      {/* Tabbable Content */}
+      {/* We use a wrapper to handle Staff view (which doesn't have CanAccess for Manager, so it always sees 'info') */}
+      <div className={activeTab === 'history' ? 'hidden' : 'block'}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div className="md:col-span-1 space-y-6">
 
@@ -295,6 +316,74 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
           </div> */}
         </div>
       </div>
+      </div>
+
+      {activeTab === 'history' && (
+        <CanAccess roles={['Manager']}>
+          <div className="space-y-6">
+            {!rfq.allocationLogs || rfq.allocationLogs.length === 0 ? (
+              <div className="bg-white p-8 text-center text-gray-500 border border-gray-200 rounded">
+                Không có lịch sử phân bổ nào.
+              </div>
+            ) : (
+              rfq.allocationLogs.sort((a, b) => b.round - a.round).map((log, index) => {
+                let snapshots: any[] = [];
+                try {
+                  snapshots = JSON.parse(log.snapshotJson);
+                } catch { }
+
+                return (
+                  <div key={index} className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                      <div className="font-semibold text-gray-900">
+                        Vòng phân bổ {log.round}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(log.assignedAt).toLocaleString('vi-VN')}
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-white border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                          <tr>
+                            <th className="px-6 py-3 font-medium">Xếp hạng</th>
+                            <th className="px-6 py-3 font-medium">Nhân viên</th>
+                            <th className="px-6 py-3 font-medium text-right">Kỹ năng (Skill)</th>
+                            <th className="px-6 py-3 font-medium text-right">Khối lượng (Workload)</th>
+                            <th className="px-6 py-3 font-medium text-right">Điểm rảnh (Idle)</th>
+                            <th className="px-6 py-3 font-medium text-right text-indigo-600">Tổng điểm (Final)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {snapshots.map((s: any, sIdx: number) => (
+                            <tr key={sIdx} className={sIdx === 0 ? "bg-indigo-50/20" : ""}>
+                              <td className="px-6 py-3 font-medium text-gray-500">
+                                #{sIdx + 1}
+                              </td>
+                              <td className="px-6 py-3 font-medium text-gray-900">
+                                {s.StaffName || `Nhân viên ${s.StaffId.slice(0, 4)}`}
+                                {sIdx === 0 && (
+                                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
+                                    Winner
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.AggregatedSkillScore?.toFixed(4)}</td>
+                              <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.CurrentWorkload?.toFixed(4)}</td>
+                              <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.IdleScore?.toFixed(4)}</td>
+                              <td className="px-6 py-3 text-right font-mono font-bold text-indigo-600">{s.FinalScore?.toFixed(4)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </CanAccess>
+      )}
 
       <SaleStaffSelectionDialog
         isOpen={isAssignDialogOpen}
