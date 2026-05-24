@@ -15,9 +15,6 @@ export const StoreCustomerService = {
     updateShippingInfo: (customer: UpdateShippingInfo) =>
         api.data.put<any, UpdateShippingInfo>(`/customer/update-shipping-info`, customer),
 
-    getCustomerById: (id: string) =>
-        api.data.get<any, Customer>(`/customer/${id}`),
-
     getDetailCustomerByAccountId: (accountId: string) =>
         api.data.get<any, CustomerDetail>(`/customer/account/${accountId}`)
 };
@@ -60,20 +57,4 @@ export interface UpdateShippingInfo {
     shippingAddress: string | null;
     receiverName: string | null;
     receiverPhone: string | null;
-}
-
-export interface Customer {
-    id?: string;
-    name: string;
-    code?: string;
-    taxCode?: string;
-    email: string;
-    phone?: string;
-    address?: string;
-    wardId?: string | null;
-    provinceId?: string | null;
-    shippingAddress?: string;
-    receiverName?: string;
-    receiverPhone?: string;
-    createdAt?: string;
 }

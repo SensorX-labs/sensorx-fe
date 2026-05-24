@@ -69,11 +69,22 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
                     return value ?? true;
                 } else {
-                    // Nếu isSuccess = false, coi như một lỗi nghiệp vụ (Dùng Warning cho dễ nhìn)
+                    // Kiểm tra nếu là cảnh báo (Warning) thay vì lỗi
+                    if (result.isWarning) {
+                        toast.warning(message || "Có cảnh báo từ hệ thống", {
+                            style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }
+                        });
+                        return Promise.reject({
+                            isSuccess: false,
+                            isWarning: true,
+                            message: message || "Có cảnh báo từ hệ thống",
+                            ...result
+                        });
+                    }
+
+                    // Nếu isSuccess = false, coi như một lỗi nghiệp vụ
                     const errorMessage = message || "Đã xảy ra lỗi nghiệp vụ";
-                    toast.warning(errorMessage, {
-                        style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }
-                    });
+                    toast.error(errorMessage);
                     return Promise.reject({
                         isSuccess: false,
                         message: errorMessage,
@@ -182,7 +193,13 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
 
                 // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh ở trên
                 if (error.response.status !== 401) {
-                    toast.error(errorMessage);
+                    if (errorData?.isWarning || errorData?.IsWarning) {
+                        toast.warning(errorMessage, {
+                            style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }
+                        });
+                    } else {
+                        toast.error(errorMessage);
+                    }
 
                     // Nếu thiếu warehouse ID, chuyển hướng về trang chọn kho
                     if (errorMessage.includes("Vui lòng chọn kho bãi") && typeof window !== 'undefined') {
@@ -207,6 +224,7 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
             const enrichedError = Object.assign(error, {
                 isSuccess: false,
                 success: false,
+                isWarning: errorData?.isWarning || errorData?.IsWarning || false,
                 message: errorMessage
             });
 

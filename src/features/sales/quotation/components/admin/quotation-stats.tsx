@@ -13,11 +13,11 @@ import {
 import { StatGroup } from '@/shared/components/admin/stat-card';
 import { StatColorTheme } from '@/shared/components/admin/stat-card/stat-card';
 import { QuoteStatus } from '../../constants/quote-status';
-import { QuoteService, QuoteStatsResponse } from '../../services/quote.service';
+import { QuoteService, QuoteStatsResponse, QuoteResponseStatus } from '../../services/quote.service';
 
 interface QuotationStatsProps {
-  statusFilter: QuoteStatus | 'ALL';
-  onFilter: (status: QuoteStatus | 'ALL') => void;
+  statusFilter: string;
+  onFilter: (status: string) => void;
   /** role lấy từ useUser().user?.role — ví dụ: 'SaleStaff' | 'Manager' */
   role?: string;
 }
@@ -81,6 +81,24 @@ export function QuotationStats({ statusFilter, onFilter, role }: QuotationStatsP
         colorTheme: 'indigo' as StatColorTheme,
         isActive: statusFilter === QuoteStatus.SENT,
         onClick: () => onFilter(QuoteStatus.SENT),
+      },
+      {
+        key: 'customer-accepted',
+        label: 'Khách đã chốt',
+        value: stats?.customerAcceptedCount ?? 0,
+        icon: CheckCircle,
+        colorTheme: 'green' as StatColorTheme,
+        isActive: statusFilter === QuoteResponseStatus.Accepted,
+        onClick: () => onFilter(QuoteResponseStatus.Accepted),
+      },
+      {
+        key: 'customer-declined',
+        label: 'Khách từ chối',
+        value: stats?.customerDeclinedCount ?? 0,
+        icon: XCircle,
+        colorTheme: 'red' as StatColorTheme,
+        isActive: statusFilter === QuoteResponseStatus.Declined,
+        onClick: () => onFilter(QuoteResponseStatus.Declined),
       },
       {
         key: 'ordered',

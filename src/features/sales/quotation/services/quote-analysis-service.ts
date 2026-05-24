@@ -1,9 +1,9 @@
 import axios from "axios";
+import { AI_ANALYSIS_SERVICE_URL } from "@/shared/constants/environment";
 
 export class QuoteAnalysisService {
-    private readonly ai_endpoint = "http://localhost:8000/api/v1/";
     private readonly aiApi = axios.create({
-        baseURL: this.ai_endpoint,
+        baseURL: AI_ANALYSIS_SERVICE_URL,
     });
 
     public async analyzeQuote(quoteId : string): Promise<any> {
