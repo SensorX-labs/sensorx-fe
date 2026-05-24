@@ -90,7 +90,7 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      await AdminRFQService.rejectRFQ(selectedRfqId);
+      await AdminRFQService.rejectRFQ(selectedRfqId, declineReason);
       fetchData();
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
