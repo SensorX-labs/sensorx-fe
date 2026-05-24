@@ -15,6 +15,7 @@ import { RfqStatus, statusLabels, statusStyles } from '../../constants/rfq-statu
 import { SaleStaffSelectionDialog } from '@/shared/components/admin/selection-modal';
 import { CanAccess } from '@/shared/components/common/can-access';
 import { RfqDeclineDialog } from './rfq-decline-dialog';
+import { useRouter } from 'next/navigation';
 
 interface RequestForQuotationDetailProps {
   id: string;
@@ -35,6 +36,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   // Decline states
   const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
+  const router = useRouter();
 
   const loadData = async () => {
     setLoading(true);
@@ -57,7 +59,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   const handleAcceptDetail = async () => {
     try {
       await AdminRFQService.acceptRFQ(id);
-      toast.success("Đã tiếp nhận yêu cầu thành công");
       loadData();
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
@@ -73,10 +74,10 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
 
     try {
       await AdminRFQService.rejectRFQ(id, declineReason);
-      toast.success("Đã từ chối xử lý RFQ thành công");
       setIsDeclineDialogOpen(false);
       setDeclineReason('');
       loadData();
+      router.push('/sales/RFQ');
     } catch (error: any) {
       console.error(">>> Lỗi khi từ chối RFQ:", error);
       toast.error("Đã xảy ra lỗi khi thao tác");

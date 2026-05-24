@@ -235,7 +235,7 @@ export default function RequestForQuotationList() {
                     <div className="flex items-center justify-center gap-2">
 
                       {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
-                      {(!l.status || l.status?.toLowerCase() === 'pending') && (
+                      {(!l.status || l.status?.toLowerCase() === 'pending' || l.status?.toLowerCase() === RfqStatus.REJECTED.toLowerCase()) && (
                         <>
                           <CanAccess roles={['Manager']}>
                             <Button
