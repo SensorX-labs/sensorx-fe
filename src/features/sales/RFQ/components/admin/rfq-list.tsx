@@ -78,7 +78,6 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.acceptRFQ(id);
-      toast.success("Đã tiếp nhận yêu cầu thành công");
       fetchData();
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
@@ -95,7 +94,6 @@ export default function RequestForQuotationList() {
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
       setDeclineReason('');
-      toast.success("Đã từ chối yêu cầu");
     } catch (error) {
       console.error(">>> Lỗi khi từ chối RFQ:", error);
     }
@@ -110,7 +108,6 @@ export default function RequestForQuotationList() {
     setAssignLoading(true);
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-      toast.success("Đã chỉ định nhân viên thành công");
       fetchData();
     } catch (error: any) {
       console.error(">>> Lỗi khi chỉ định nhân viên:", error);

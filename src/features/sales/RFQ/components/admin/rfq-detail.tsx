@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   ArrowLeft, Check, X, FileText, User,
   ShoppingCart, ClipboardList,
+  UserCheck,
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from 'sonner';
@@ -93,7 +94,6 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
     setAssignLoading(true);
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-      toast.success("Đã chỉ định nhân viên thành công");
       loadData();
     } catch (error: any) {
       console.error(">>> Lỗi khi chỉ định nhân viên:", error);
@@ -145,7 +145,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 <Button
                   onClick={handleAcceptDetail}
                   variant="outline"
-                  className="rounded admin-btn-primary border-transparent"
+                  className="rounded text-emerald-600 hover:bg-emerald-50 border-emerald-200"
                 >
                   <Check className="w-4 h-4 mr-2" />
                   Tiếp nhận
@@ -168,6 +168,22 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               >
                 <FileText className="w-4 h-4 mr-2" />
                 Lập báo giá
+              </Button>
+            )}
+          </CanAccess>
+          <CanAccess roles={['Manager']}>
+            {(rfq.status === 'Pending' || rfq.status?.toLowerCase() === 'rejected') && (
+              <Button
+                variant="outline"
+                className="rounded text-indigo-600 hover:bg-indigo-50 border-indigo-200"
+                onClick={() => {
+                  setAssigningRfqId(id);
+                  setIsAssignDialogOpen(true);
+                }}
+                disabled={assignLoading}
+              >
+                <UserCheck className="w-4 h-4 mr-2" />
+                Chỉ định nhân viên
               </Button>
             )}
           </CanAccess>
@@ -233,29 +249,10 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                   <tr>
                     <td className="px-6 py-3 admin-text-primary font-semibold">Nhân viên xử lý</td>
                     <td className="px-6 py-3 font-medium text-gray-900">
-                      {rfq.staffName ? (
-                        <span>{rfq.staffName}</span>
-                      ) : (
-                        <div className="flex flex-col gap-1.5">
-                          <CanAccess roles={['Manager']}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-none w-max"
-                              onClick={() => {
-                                setAssigningRfqId(id);
-                                setIsAssignDialogOpen(true);
-                              }}
-                              disabled={assignLoading}
-                            >
-                              Chỉ định nhân viên
-                            </Button>
-                          </CanAccess>
-                          <CanAccess roles={['SaleStaff']}>
-                            <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
-                          </CanAccess>
-                        </div>
-                      )}
+                      {rfq.staffName
+                        ? <span>{rfq.staffName}</span>
+                        : <span className="text-gray-400 italic text-xs">Chưa gán nhân viên</span>
+                      }
                     </td>
                   </tr>
                 </tbody>
