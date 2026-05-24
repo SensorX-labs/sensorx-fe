@@ -9,8 +9,8 @@ export const AdminRFQService = {
     acceptRFQ: (id: string) =>
         api.master.post<any, void>(`/rfq/accept`, { Id: id }),
 
-    rejectRFQ: (id: string) =>
-        api.master.post<any, void>(`/rfq/reject`, { Id: id }),
+    rejectRFQ: (id: string, reason: string) =>
+        api.master.post<any, void>(`/rfq/reject`, { Id: id, Reason: reason }),
 
     getListRFQ: (params: RfqFilter) =>
         api.master.get<any, OffsetPagedResult<RfqListItem>>(`/rfq`, { params }),
@@ -47,6 +47,7 @@ export interface RfqListItem {
     staffId?: string;
     staffName?: string;
     itemCount: number;
+    finalScore?: number;
 }
 
 export interface RfqItem {
@@ -86,5 +87,28 @@ export interface RfqDetail {
     email: string;
     address: string;
     taxCode: string;
+    allocationLogs?: AllocationLogEntry[];
+    rejectedLogs?: RejectedLogEntry[];
     items: RfqDetailItem[];
+}
+
+export interface AllocationSnapshot {
+    staffId: string;
+    staffName: string;
+    aggregatedSkillScore: number;
+    currentWorkload: number;
+    idleHours: number;
+    finalScore: number;
+}
+
+export interface AllocationLogEntry {
+    round: number;
+    assignedAt: string;
+    snapshotJson: string;
+}
+
+export interface RejectedLogEntry {
+    staffId: string;
+    reason: string;
+    rejectedAt: string;
 }
