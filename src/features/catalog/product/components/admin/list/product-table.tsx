@@ -29,7 +29,7 @@ export function ProductTable({ products, onViewDetail, onEdit, onDelete }: Produ
       <thead>
         <tr className="bg-slate-50/50">
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Thông tin hàng hóa</th>
-          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Hãng</th>
+          <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Nhà cung cấp</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Phân loại</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Đơn vị</th>
           <th className="text-left px-6 py-4 font-black text-slate-800 uppercase tracking-widest text-[10px] border-b border-slate-100">Trạng thái</th>
