@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Edit, Loader2, Trash2 } from 'lucide-react';
+import { Edit, Loader2, PencilLine, Text, Trash2 } from 'lucide-react';
+import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Supplier } from '../../models';
 import { SupplierDeleteDialog } from './supplier-delete-dialog';
@@ -29,17 +30,23 @@ export function SupplierTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[980px] text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/50 text-left">
+          <tr className="border-b border-slate-100 bg-slate-50/70 text-left">
             <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Tên nhà cung cấp
+              Nhà cung cấp
             </th>
             <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Mô tả
             </th>
             <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Ngày tạo
+              Trạng thái
+            </th>
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Tạo lúc
+            </th>
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Cập nhật
             </th>
             <th className="w-32 px-6 py-4 text-center"></th>
           </tr>
@@ -47,28 +54,68 @@ export function SupplierTable({
         <tbody className="divide-y divide-slate-50">
           {loading ? (
             <tr>
-              <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+              <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                 <Loader2 className="mx-auto mb-2 h-8 w-8 animate-spin" />
                 Đang tải dữ liệu...
               </td>
             </tr>
           ) : suppliers.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+              <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                 Không tìm thấy nhà cung cấp nào
               </td>
             </tr>
           ) : (
             suppliers.map(supplier => (
-              <tr key={supplier.id} className="group hover:bg-slate-50/80">
-                <td className="px-6 py-4 font-bold text-slate-900">{supplier.name}</td>
+              <tr key={supplier.id} className="group hover:bg-emerald-50/40">
+                <td className="px-6 py-4">
+                  <div className="space-y-1">
+                    <div className="font-bold text-slate-900">{supplier.name}</div>
+                    <div className="text-xs text-slate-400">
+                      ID: {supplier.id.slice(0, 8).toUpperCase()}
+                    </div>
+                  </div>
+                </td>
                 <td className="max-w-md px-6 py-4 text-slate-500">
-                  {supplier.description?.trim() || (
-                    <span className="italic text-slate-350">Chưa có mô tả</span>
-                  )}
+                  <p className="line-clamp-2">
+                    {supplier.description?.trim() || 'Chưa có mô tả'}
+                  </p>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                      <Text className="mr-1 h-3 w-3" />
+                      {supplier.description?.trim() ? 'Có mô tả' : 'Thiếu mô tả'}
+                    </Badge>
+                    <Badge className="border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50">
+                      <PencilLine className="mr-1 h-3 w-3" />
+                      {supplier.updatedAt ? 'Đã cập nhật' : 'Chưa cập nhật'}
+                    </Badge>
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-slate-500">
-                  {new Date(supplier.createdAt).toLocaleDateString('vi-VN')}
+                  <div>{new Date(supplier.createdAt).toLocaleDateString('vi-VN')}</div>
+                  <div className="text-xs text-slate-400">
+                    {new Date(supplier.createdAt).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-slate-500">
+                  {supplier.updatedAt ? (
+                    <>
+                      <div>{new Date(supplier.updatedAt).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-xs text-slate-400">
+                        {new Date(supplier.updatedAt).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="italic text-slate-400">Chưa cập nhật</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
