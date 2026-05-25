@@ -60,12 +60,6 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
     title: 'BÁN HÀNG',
     items: [
       {
-        name: 'Khách hàng',
-        iconName: 'Users',
-        href: '/sales/customers',
-        roles: ['Manager', 'SaleStaff']
-      },
-      {
         name: 'Yêu cầu báo giá',
         iconName: 'TrendingUp',
         href: '/sales/RFQ',
@@ -89,11 +83,29 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         href: '/sales/invoices',
         roles: ['Manager', 'SaleStaff']
       },
+      {
+        name: 'Khách hàng',
+        iconName: 'Users',
+        href: '/sales/customers',
+        roles: ['Manager', 'SaleStaff']
+      },
     ],
   },
   {
     title: 'DANH MỤC',
     items: [
+      {
+        name: 'Hàng hóa',
+        iconName: 'Package',
+        href: '/catalog/products',
+        roles: ['Manager', 'SaleStaff']
+      },
+      {
+        name: 'Bảng giá nội bộ',
+        iconName: 'BadgeDollarSign',
+        href: '/catalog/internal-prices',
+        roles: ['Manager', 'SaleStaff']
+      },
       {
         name: 'Danh mục sản phẩm',
         iconName: 'FolderTree',
@@ -110,18 +122,6 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Đơn vị tính',
         iconName: 'Boxes',
         href: '/catalog/unit-of-quantities',
-        roles: ['Manager', 'SaleStaff']
-      },
-      {
-        name: 'Bảng giá nội bộ',
-        iconName: 'BadgeDollarSign',
-        href: '/catalog/internal-prices',
-        roles: ['Manager', 'SaleStaff']
-      },
-      {
-        name: 'Hàng hóa',
-        iconName: 'Package',
-        href: '/catalog/products',
         roles: ['Manager', 'SaleStaff']
       },
     ],

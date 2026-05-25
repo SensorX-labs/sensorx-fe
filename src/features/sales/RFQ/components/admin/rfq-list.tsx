@@ -78,7 +78,6 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.acceptRFQ(id);
-      toast.success("Đã tiếp nhận yêu cầu thành công");
       fetchData();
     } catch (error: any) {
       console.error(">>> Lỗi khi tiếp nhận RFQ:", error);
@@ -90,12 +89,11 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      await AdminRFQService.rejectRFQ(selectedRfqId);
+      await AdminRFQService.rejectRFQ(selectedRfqId, declineReason);
       fetchData();
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
       setDeclineReason('');
-      toast.success("Đã từ chối yêu cầu");
     } catch (error) {
       console.error(">>> Lỗi khi từ chối RFQ:", error);
     }
@@ -110,7 +108,6 @@ export default function RequestForQuotationList() {
     setAssignLoading(true);
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-      toast.success("Đã chỉ định nhân viên thành công");
       fetchData();
     } catch (error: any) {
       console.error(">>> Lỗi khi chỉ định nhân viên:", error);
@@ -212,6 +209,11 @@ export default function RequestForQuotationList() {
                       <span className="flex items-center gap-1.5">
                         <UserCheck className="w-3.5 h-3.5" />
                         {l.staffName || `Nhân viên ${l.staffId.slice(0, 4)}`}
+                        <CanAccess roles={['Manager']}>
+                          {l.finalScore !== undefined && l.finalScore !== null && (
+                            <span className="text-indigo-600 font-semibold ml-1">[{l.finalScore} đ]</span>
+                          )}
+                        </CanAccess>
                       </span>
                     ) : <span className="">—</span>}
                   </td>
@@ -230,7 +232,7 @@ export default function RequestForQuotationList() {
                     <div className="flex items-center justify-center gap-2">
 
                       {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
-                      {(!l.status || l.status?.toLowerCase() === 'pending') && (
+                      {(!l.status || l.status?.toLowerCase() === 'pending' || l.status?.toLowerCase() === RfqStatus.REJECTED.toLowerCase()) && (
                         <>
                           <CanAccess roles={['Manager']}>
                             <Button
