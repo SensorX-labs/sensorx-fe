@@ -3,10 +3,15 @@ import {
   CreateUnitOfQuantityRequest,
   UnitOfQuantity,
   UnitOfQuantityListResult,
+  UnitOfQuantityPageListQuery,
+  UnitOfQuantityPageListResult,
   UpdateUnitOfQuantityRequest,
 } from "../models";
 
 const UnitOfQuantityService = {
+  getPaged: (params: UnitOfQuantityPageListQuery) =>
+    api.data.get<unknown, UnitOfQuantityPageListResult>("/catalog/unit-of-quantities/list", { params }),
+
   getAll: () =>
     api.data.get<unknown, UnitOfQuantityListResult>("/catalog/unit-of-quantities/list-all"),
 

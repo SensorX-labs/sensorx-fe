@@ -9,7 +9,6 @@ import { Button } from '@/shared/components/shadcn-ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -23,8 +22,6 @@ import { SupplierTable } from './supplier-table';
 const DEFAULT_FILTERS = {
   name: '',
   description: '',
-  hasDescription: 'all',
-  isUpdated: 'all',
   createdFrom: '',
   createdTo: '',
 };
@@ -46,26 +43,6 @@ const FILTER_FIELDS: Array<FilterFieldConfig & { id: SupplierFilterKey }> = [
     placeholder: 'Nhập nội dung mô tả',
   },
   {
-    id: 'hasDescription',
-    label: 'Mô tả',
-    type: 'select',
-    options: [
-      { label: 'Tất cả', value: 'all' },
-      { label: 'Có mô tả', value: 'true' },
-      { label: 'Thiếu mô tả', value: 'false' },
-    ],
-  },
-  {
-    id: 'isUpdated',
-    label: 'Cập nhật',
-    type: 'select',
-    options: [
-      { label: 'Tất cả', value: 'all' },
-      { label: 'Đã cập nhật', value: 'true' },
-      { label: 'Chưa cập nhật', value: 'false' },
-    ],
-  },
-  {
     id: 'createdFrom',
     label: 'Từ ngày',
     type: 'date',
@@ -76,12 +53,6 @@ const FILTER_FIELDS: Array<FilterFieldConfig & { id: SupplierFilterKey }> = [
     type: 'date',
   },
 ];
-
-function toBooleanFilter(value: string) {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
-}
 
 function buildSupplierQuery(
   pageNumber: number,
@@ -95,8 +66,6 @@ function buildSupplierQuery(
     searchTerm: searchTerm.trim() || undefined,
     name: filters.name.trim() || undefined,
     description: filters.description.trim() || undefined,
-    hasDescription: toBooleanFilter(filters.hasDescription),
-    isUpdated: toBooleanFilter(filters.isUpdated),
     createdFrom: filters.createdFrom || undefined,
     createdTo: filters.createdTo || undefined,
   };
@@ -197,7 +166,7 @@ export default function SupplierManagement() {
       fieldId === 'createdFrom' ||
       fieldId === 'createdTo'
         ? ''
-        : 'all'
+        : ''
     );
   };
 
@@ -234,7 +203,7 @@ export default function SupplierManagement() {
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/>
               <Input
                 value={searchTerm}
                 onChange={event => handleSearchChange(event.target.value)}
