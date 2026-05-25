@@ -18,10 +18,7 @@ import { Input } from '@/shared/components/shadcn-ui/input';
 import { Supplier, SupplierPageListQuery } from '../../models';
 import SupplierService from '../../services/supplier-services';
 import { SupplierForm } from './supplier-form';
-import { SupplierStats } from './supplier-stats';
 import { SupplierTable } from './supplier-table';
-
-type SupplierTab = 'all' | 'updated' | 'missing-description';
 
 const DEFAULT_FILTERS = {
   name: '',
@@ -86,18 +83,6 @@ function toBooleanFilter(value: string) {
   return undefined;
 }
 
-function getTabFromFilters(filters: typeof DEFAULT_FILTERS): SupplierTab {
-  if (filters.hasDescription === 'false' && filters.isUpdated === 'all') {
-    return 'missing-description';
-  }
-
-  if (filters.isUpdated === 'true' && filters.hasDescription === 'all') {
-    return 'updated';
-  }
-
-  return 'all';
-}
-
 function buildSupplierQuery(
   pageNumber: number,
   pageSize: number,
@@ -119,11 +104,9 @@ function buildSupplierQuery(
 
 export default function SupplierManagement() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [allSuppliers, setAllSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [activeTab, setActiveTab] = useState<SupplierTab>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -132,38 +115,16 @@ export default function SupplierManagement() {
   const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
   const pageSize = 8;
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadSummary = async () => {
-      const response = await SupplierService.getAll();
-      if (isMounted && response) {
-        setAllSuppliers(response);
-      }
-    };
-
-    void loadSummary();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const refreshAll = async () => {
     setLoading(true);
     try {
-      const [pagedResponse, summaryResponse] = await Promise.all([
-        SupplierService.getPaged(buildSupplierQuery(currentPage, pageSize, searchTerm, filters)),
-        SupplierService.getAll(),
-      ]);
+      const pagedResponse = await SupplierService.getPaged(
+        buildSupplierQuery(currentPage, pageSize, searchTerm, filters)
+      );
 
       if (pagedResponse) {
         setSuppliers(pagedResponse.items);
         setTotalItems(pagedResponse.totalCount);
-      }
-
-      if (summaryResponse) {
-        setAllSuppliers(summaryResponse);
       }
     } finally {
       setLoading(false);
@@ -200,28 +161,6 @@ export default function SupplierManagement() {
 
   const totalPages = Math.ceil(totalItems / pageSize);
 
-  const handleTabChange = (tab: string) => {
-    const nextTab = tab as SupplierTab;
-    setCurrentPage(1);
-
-    if (nextTab === 'updated') {
-      const nextFilters = { ...DEFAULT_FILTERS, isUpdated: 'true' };
-      setFilters(nextFilters);
-      setActiveTab('updated');
-      return;
-    }
-
-    if (nextTab === 'missing-description') {
-      const nextFilters = { ...DEFAULT_FILTERS, hasDescription: 'false' };
-      setFilters(nextFilters);
-      setActiveTab('missing-description');
-      return;
-    }
-
-    setFilters(DEFAULT_FILTERS);
-    setActiveTab('all');
-  };
-
   const handleFilterChange = (fieldId: SupplierFilterKey, value: string) => {
     setCurrentPage(1);
     setFilters(current => {
@@ -230,7 +169,6 @@ export default function SupplierManagement() {
         [fieldId]: value,
       } as SupplierFilterState;
 
-      setActiveTab(getTabFromFilters(next));
       return next;
     });
   };
@@ -280,19 +218,9 @@ export default function SupplierManagement() {
 
   const applyDraftFilters = () => {
     setFilters(draftFilters);
-    setActiveTab(getTabFromFilters(draftFilters));
     setCurrentPage(1);
     setIsFilterOpen(false);
   };
-
-  const updatedCount = useMemo(
-    () => allSuppliers.filter(item => !!item.updatedAt).length,
-    [allSuppliers]
-  );
-  const missingDescriptionCount = useMemo(
-    () => allSuppliers.filter(item => !item.description?.trim()).length,
-    [allSuppliers]
-  );
   const activeFilterCount = useMemo(
     () =>
       Object.values(filters).filter(value => value !== '' && value !== 'all').length +
@@ -302,14 +230,6 @@ export default function SupplierManagement() {
 
   return (
     <AdminPageContainer>
-      <SupplierStats
-        totalSuppliers={allSuppliers.length}
-        updatedSuppliers={updatedCount}
-        missingDescriptionSuppliers={missingDescriptionCount}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
-
       <AdminContentCard>
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
