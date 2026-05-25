@@ -49,7 +49,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
     const items = [
       {
         key: 'all',
-        label: 'Tong yeu cau',
+        label: 'Tổng yêu cầu',
         value: statsData?.total || 0,
         icon: ClipboardList,
         colorTheme: 'slate' as StatColorTheme,
@@ -58,7 +58,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
       },
       {
         key: 'pending',
-        label: 'Cho tiep nhan',
+        label: 'Chờ tiếp nhận',
         value: statsData?.pending || 0,
         icon: Clock,
         colorTheme: 'yellow' as StatColorTheme,
@@ -68,7 +68,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
       },
       {
         key: 'accepted',
-        label: 'Da tiep nhan',
+        label: 'Đã tiếp nhận',
         value: statsData?.accepted || 0,
         icon: CheckCircle2,
         colorTheme: 'green' as StatColorTheme,
@@ -78,7 +78,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
       },
       {
         key: 'responded',
-        label: 'Da phan hoi',
+        label: 'Đã phản hồi',
         value: statsData?.responded || 0,
         icon: MessageSquare,
         colorTheme: 'blue' as StatColorTheme,
@@ -88,7 +88,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
       },
       {
         key: 'converted',
-        label: 'Da chot don',
+        label: 'Đã sinh báo giá',
         value: statsData?.converted || 0,
         icon: FilePlus2,
         colorTheme: 'indigo' as StatColorTheme,
@@ -101,7 +101,7 @@ export const RfqStatsSection: React.FC<RfqStatsProps> = ({
     if (isManager) {
       items.push({
         key: 'rejected',
-        label: 'Khong ai tiep nhan',
+        label: 'Không ai tiếp nhận',
         value: statsData?.rejected || 0,
         icon: XCircle,
         colorTheme: 'red' as StatColorTheme,

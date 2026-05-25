@@ -17,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -344,6 +345,9 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
         <DialogContent className="w-[min(960px,calc(100vw-2rem))] max-w-none sm:max-w-none p-0">
           <DialogHeader className="border-b border-slate-100 px-6 py-5">
             <DialogTitle>Bộ lọc bảng giá nội bộ</DialogTitle>
+            <DialogDescription className="sr-only">
+              Chọn các điều kiện để lọc danh sách bảng giá nội bộ.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-6">

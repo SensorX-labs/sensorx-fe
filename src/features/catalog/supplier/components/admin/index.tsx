@@ -9,6 +9,7 @@ import { Button } from '@/shared/components/shadcn-ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -301,6 +302,9 @@ export default function SupplierManagement() {
         <DialogContent className="w-[min(960px,calc(100vw-2rem))] max-w-none sm:max-w-none p-0">
           <DialogHeader className="border-b border-slate-100 px-6 py-5">
             <DialogTitle>Bộ lọc nhà cung cấp</DialogTitle>
+            <DialogDescription className="sr-only">
+              Chọn các điều kiện để lọc danh sách nhà cung cấp.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-6">

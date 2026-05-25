@@ -17,6 +17,7 @@ import { FilterFieldConfig, FilterPanel } from '@/shared/components/admin/filter
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -38,13 +39,13 @@ type RfqFilterState = typeof DEFAULT_FILTERS;
 type RfqFilterKey = keyof RfqFilterState;
 
 const FILTER_FIELDS: Array<FilterFieldConfig & { id: RfqFilterKey }> = [
-  { id: 'code', label: 'Ma RFQ', type: 'search', placeholder: 'Nhap ma RFQ' },
-  { id: 'companyName', label: 'Cong ty', type: 'search', placeholder: 'Nhap ten cong ty' },
-  { id: 'recipientName', label: 'Nguoi lien he', type: 'search', placeholder: 'Nhap ten nguoi lien he' },
-  { id: 'recipientPhone', label: 'So dien thoai', type: 'search', placeholder: 'Nhap so dien thoai' },
-  { id: 'staffName', label: 'Nguoi xu ly', type: 'search', placeholder: 'Nhap ten nhan vien' },
-  { id: 'createdFrom', label: 'Tu ngay', type: 'date' },
-  { id: 'createdTo', label: 'Den ngay', type: 'date' },
+  { id: 'code', label: 'Mã RFQ', type: 'search', placeholder: 'Nhập mã RFQ' },
+  { id: 'companyName', label: 'Công ty', type: 'search', placeholder: 'Nhập tên công ty' },
+  { id: 'recipientName', label: 'Người liên hệ', type: 'search', placeholder: 'Nhập tên người liên hệ' },
+  { id: 'recipientPhone', label: 'Số điện thoại', type: 'search', placeholder: 'Nhập số điện thoại' },
+  { id: 'staffName', label: 'Người xử lý', type: 'search', placeholder: 'Nhập tên nhân viên' },
+  { id: 'createdFrom', label: 'Từ ngày', type: 'date' },
+  { id: 'createdTo', label: 'Đến ngày', type: 'date' },
 ];
 
 const getStatusStyle = (status: string) => {
@@ -107,6 +108,7 @@ export default function RequestForQuotationList() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+
       try {
         const listResponse = await AdminRFQService.getListRFQ(
           buildRfqQuery(currentPage, pageSize, debouncedSearch, statusFilter, filters)
@@ -119,7 +121,7 @@ export default function RequestForQuotationList() {
 
         setRefreshKey(prev => prev + 1);
       } catch (error) {
-        console.error('>>> Loi khi fetch du lieu RFQ:', error);
+        console.error('>>> Lỗi khi tải danh sách RFQ:', error);
         setLeads([]);
         setTotalItems(0);
       } finally {
@@ -135,12 +137,14 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.acceptRFQ(id);
-      toast.success('Da tiep nhan yeu cau thanh cong');
+
+      toast.success('Đã tiếp nhận yêu cầu thành công');
+
       setRefreshKey(prev => prev + 1);
       setCurrentPage(1);
     } catch (error) {
-      console.error('>>> Loi khi tiep nhan RFQ:', error);
-      toast.error('Da xay ra loi khi tiep nhan yeu cau');
+      console.error('>>> Lỗi khi tiếp nhận RFQ:', error);
+      toast.error('Đã xảy ra lỗi khi tiếp nhận yêu cầu');
     }
   };
 
@@ -149,30 +153,36 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.rejectRFQ(selectedRfqId);
+
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
       setDeclineReason('');
+
       setRefreshKey(prev => prev + 1);
-      toast.success('Da tu choi yeu cau');
+
+      toast.success('Đã từ chối yêu cầu');
     } catch (error) {
-      console.error('>>> Loi khi tu choi RFQ:', error);
+      console.error('>>> Lỗi khi từ chối RFQ:', error);
     }
   };
 
   const handleAssignStaff = async (rfqId: string, staffId: string) => {
     if (!rfqId || !staffId) {
-      toast.error('Vui long chon nhan vien');
+      toast.error('Vui lòng chọn nhân viên');
       return;
     }
 
     setAssignLoading(true);
+
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-      toast.success('Da chi dinh nhan vien thanh cong');
+
+      toast.success('Đã chỉ định nhân viên thành công');
+
       setRefreshKey(prev => prev + 1);
     } catch (error) {
-      console.error('>>> Loi khi chi dinh nhan vien:', error);
-      toast.error('Da xay ra loi khi chi dinh nhan vien');
+      console.error('>>> Lỗi khi chỉ định nhân viên:', error);
+      toast.error('Đã xảy ra lỗi khi chỉ định nhân viên');
     } finally {
       setAssignLoading(false);
     }
@@ -195,6 +205,7 @@ export default function RequestForQuotationList() {
       ...current,
       [fieldId]: '',
     }));
+
     setCurrentPage(1);
   };
 
@@ -219,12 +230,14 @@ export default function RequestForQuotationList() {
 
   const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+
     setSelectedRfqId(id);
     setIsDeclineDialogOpen(true);
   };
 
   const openAssignDialog = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+
     setAssigningRfqId(id);
     setIsAssignDialogOpen(true);
   };
@@ -245,10 +258,11 @@ export default function RequestForQuotationList() {
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
               <Input
                 value={searchQuery}
                 onChange={event => handleSearchChange(event.target.value)}
-                placeholder="Tim nhanh theo ma RFQ, cong ty, nguoi lien he..."
+                placeholder="Tìm nhanh theo mã RFQ, công ty, người liên hệ..."
                 className="h-11 rounded-md border-slate-200 bg-white pl-10"
               />
             </div>
@@ -262,7 +276,9 @@ export default function RequestForQuotationList() {
               }}
             >
               <Filter className="mr-2 h-4 w-4" />
-              Bo loc
+
+              Bộ lọc
+
               {activeFilterCount > 0 ? (
                 <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
                   {activeFilterCount}
@@ -280,12 +296,13 @@ export default function RequestForQuotationList() {
                 onClick={() => handleSearchChange('')}
                 className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
               >
-                Tim nhanh: {searchQuery}
+                Tìm nhanh: {searchQuery}
               </button>
             ) : null}
 
             {FILTER_FIELDS.map(field => {
               const value = filters[field.id];
+
               if (!value || value === 'all') {
                 return null;
               }
@@ -313,25 +330,26 @@ export default function RequestForQuotationList() {
           <table className="w-full min-w-[1180px] text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="px-6 py-4 text-left uppercase tracking-label">Ma RFQ</th>
-                <th className="px-6 py-4 text-left uppercase tracking-label">Khach hang</th>
-                <th className="px-6 py-4 text-left uppercase tracking-label">Nguoi xu ly</th>
-                <th className="px-6 py-4 text-center uppercase tracking-label">Trang thai</th>
-                <th className="px-6 py-4 text-center uppercase tracking-label">Ngay yeu cau</th>
-                <th className="px-6 py-4 text-center uppercase tracking-label">Hanh dong</th>
+                <th className="px-6 py-4 text-left uppercase tracking-label">Mã RFQ</th>
+                <th className="px-6 py-4 text-left uppercase tracking-label">Khách hàng</th>
+                <th className="px-6 py-4 text-left uppercase tracking-label">Người xử lý</th>
+                <th className="px-6 py-4 text-center uppercase tracking-label">Trạng thái</th>
+                <th className="px-6 py-4 text-center uppercase tracking-label">Ngày yêu cầu</th>
+                <th className="px-6 py-4 text-center uppercase tracking-label">Hành động</th>
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center font-medium italic text-slate-400">
-                    Dang tai du lieu...
+                    Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : leads.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center font-medium italic text-slate-400">
-                    Khong tim thay yeu cau nao
+                    Không tìm thấy yêu cầu nào
                   </td>
                 </tr>
               ) : (
@@ -341,26 +359,34 @@ export default function RequestForQuotationList() {
                     className="group cursor-pointer border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/80"
                     onClick={() => router.push(`/sales/RFQ/${item.id}`)}
                   >
-                    <td className="px-6 py-4 font-bold tracking-tight text-gray-900">{item.code}</td>
+                    <td className="px-6 py-4 font-bold tracking-tight text-gray-900">
+                      {item.code}
+                    </td>
+
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <div className="font-semibold leading-tight text-gray-800">{item.companyName}</div>
+                        <div className="font-semibold leading-tight text-gray-800">
+                          {item.companyName}
+                        </div>
+
                         <div className="text-xs text-gray-500">
                           {item.recipientName || '--'}
                           {item.recipientPhone ? ` • ${item.recipientPhone}` : ''}
                         </div>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 text-left text-xs text-gray-500">
                       {item.staffId ? (
                         <span className="flex items-center gap-1.5">
                           <UserCheck className="h-3.5 w-3.5" />
-                          {item.staffName || `Nhan vien ${item.staffId.slice(0, 4)}`}
+                          {item.staffName || `Nhân viên ${item.staffId.slice(0, 4)}`}
                         </span>
                       ) : (
                         <span>—</span>
                       )}
                     </td>
+
                     <td className="px-6 py-4 text-center">
                       <span
                         className={cn(
@@ -371,6 +397,7 @@ export default function RequestForQuotationList() {
                         {getStatusLabel(item.status)}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 text-center text-xs text-slate-500">
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString('vi-VN', {
@@ -380,6 +407,7 @@ export default function RequestForQuotationList() {
                           })
                         : '—'}
                     </td>
+
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         {(!item.status || item.status.toLowerCase() === 'pending') && (
@@ -393,6 +421,7 @@ export default function RequestForQuotationList() {
                                 disabled={assignLoading}
                               >
                                 <UserPlus className="mr-1.5 h-3.5 w-3.5 opacity-70" />
+                                Chỉ định
                               </Button>
                             </CanAccess>
 
@@ -401,16 +430,17 @@ export default function RequestForQuotationList() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Tiep nhan"
+                                  title="Tiếp nhận"
                                   className="h-8 w-8 border border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
                                   onClick={e => handleAccept(item.id, e)}
                                 >
                                   <Check className="h-4 w-4" />
                                 </Button>
+
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Tu choi"
+                                  title="Từ chối"
                                   className="h-8 w-8 border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600"
                                   onClick={e => openDeclineDialog(item.id, e)}
                                 >
@@ -421,12 +451,13 @@ export default function RequestForQuotationList() {
                           </>
                         )}
 
-                        {item.status?.toLowerCase() === RfqStatus.ACCEPTED.toLowerCase() && (
+                        {item.status?.toLowerCase() ===
+                          RfqStatus.ACCEPTED.toLowerCase() && (
                           <CanAccess roles={['Manager', 'SaleStaff']}>
                             <Button
                               variant="ghost"
                               size="icon"
-                              title="Xem chi tiet"
+                              title="Xem chi tiết"
                               className="h-8 w-8 border border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                               onClick={e => {
                                 e.stopPropagation();
@@ -476,7 +507,11 @@ export default function RequestForQuotationList() {
       <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <DialogContent className="w-[min(1080px,calc(100vw-2rem))] max-w-none p-0 sm:max-w-none">
           <DialogHeader className="border-b border-slate-100 px-6 py-5">
-            <DialogTitle>Bo loc yeu cau bao gia</DialogTitle>
+            <DialogTitle>Bộ lọc yêu cầu báo giá</DialogTitle>
+
+            <DialogDescription className="sr-only">
+              Chọn các điều kiện để lọc danh sách yêu cầu báo giá.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-6">
@@ -495,13 +530,15 @@ export default function RequestForQuotationList() {
 
           <DialogFooter className="border-t border-slate-100 px-6 py-4">
             <Button variant="outline" onClick={() => setIsFilterOpen(false)}>
-              Dong
+              Đóng
             </Button>
+
             <Button variant="outline" onClick={handleResetDraftFilters}>
-              Xoa bo loc
+              Xóa bộ lọc
             </Button>
+
             <Button className="admin-btn-primary" onClick={applyDraftFilters}>
-              Ap dung
+              Áp dụng
             </Button>
           </DialogFooter>
         </DialogContent>
