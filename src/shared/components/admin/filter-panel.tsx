@@ -35,6 +35,10 @@ interface DateFieldConfig extends FilterFieldBase {
   type: 'date';
 }
 
+interface NumberFieldConfig extends FilterFieldBase {
+  type: 'number';
+}
+
 interface SelectFieldConfig extends FilterFieldBase {
   type: 'select';
   options: FilterOption[];
@@ -43,6 +47,7 @@ interface SelectFieldConfig extends FilterFieldBase {
 export type FilterFieldConfig =
   | SearchFieldConfig
   | DateFieldConfig
+  | NumberFieldConfig
   | SelectFieldConfig;
 
 export interface FilterPanelProps {
@@ -162,6 +167,16 @@ export function FilterPanel({
                 type="date"
                 value={values[field.id] ?? ''}
                 onChange={event => onChange(field.id, event.target.value)}
+                className="h-11 rounded-md border-slate-200 bg-white"
+              />
+            ) : null}
+
+            {field.type === 'number' ? (
+              <Input
+                type="number"
+                value={values[field.id] ?? ''}
+                onChange={event => onChange(field.id, event.target.value)}
+                placeholder={field.placeholder}
                 className="h-11 rounded-md border-slate-200 bg-white"
               />
             ) : null}
