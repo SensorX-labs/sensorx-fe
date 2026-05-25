@@ -14,30 +14,42 @@ export interface QuoteFilter extends OffsetPagedQuery {
     status?: QuoteStatus | string;
     responseType?: QuoteResponseStatus;
     isExpired?: boolean;
+    searchTerm?: string;
+    code?: string;
+    companyName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    senderName?: string;
+    totalFrom?: number;
+    totalTo?: number;
+    quoteDateFrom?: string;
+    quoteDateTo?: string;
+    createdFrom?: string;
+    createdTo?: string;
 }
 
 export const QuoteService = {
     createQuote: (data: DraftQuoteCommand) => api.master.post<DraftQuoteCommand, string>(`/quotes`, data),
 
-    getListQuotes: (params: QuoteFilter) => api.master.get<any, OffsetPagedResult<QuoteListItem>>(`/quotes`, { params }),
+    getListQuotes: (params: QuoteFilter) => api.master.get<unknown, OffsetPagedResult<QuoteListItem>>(`/quotes`, { params }),
 
-    getQuoteById: (id: string) => api.master.get<any, GetDetailQuoteByIdResponse>(`/quotes/${id}`),
+    getQuoteById: (id: string) => api.master.get<unknown, GetDetailQuoteByIdResponse>(`/quotes/${id}`),
 
-    getQuoteStats: () => api.master.get<any, QuoteStatsResponse>(`/quotes/stats`),
+    getQuoteStats: () => api.master.get<unknown, QuoteStatsResponse>(`/quotes/stats`),
 
-    submitForApproval: (id: string) => api.master.post<any, string>(`/quotes/${id}/submit-for-approval`),
+    submitForApproval: (id: string) => api.master.post<unknown, string>(`/quotes/${id}/submit-for-approval`),
 
-    withdraw: (id: string) => api.master.post<any, string>(`/quotes/${id}/withdraw`),
+    withdraw: (id: string) => api.master.post<unknown, string>(`/quotes/${id}/withdraw`),
 
-    publish: (id: string) => api.master.post<any, string>(`/quotes/${id}/publish`),
+    publish: (id: string) => api.master.post<unknown, string>(`/quotes/${id}/publish`),
 
-    approve: (id: string) => api.master.post<any, string>(`/quotes/${id}/approve`),
+    approve: (id: string) => api.master.post<unknown, string>(`/quotes/${id}/approve`),
 
-    reject: (id: string, payload: { reason: string }) => api.master.post<any, string>(`/quotes/${id}/reject`, payload),
+    reject: (id: string, payload: { reason: string }) => api.master.post<unknown, string>(`/quotes/${id}/reject`, payload),
 
     updateQuote: (id: string, data: DraftQuoteCommand) => api.master.put<DraftQuoteCommand, string>(`/quotes/${id}`, data),
 
-    deleteQuote: (id: string) => api.master.delete<any, string>(`/quotes/${id}`),
+    deleteQuote: (id: string) => api.master.delete<unknown, string>(`/quotes/${id}`),
 
 };
 
