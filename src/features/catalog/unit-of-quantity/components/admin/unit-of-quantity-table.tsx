@@ -65,12 +65,7 @@ export function UnitOfQuantityTable({
             units.map(unit => (
               <tr key={unit.id} className="group hover:bg-emerald-50/40">
                 <td className="px-6 py-4">
-                  <div className="space-y-1">
-                    <div className="font-bold text-slate-900">{unit.name}</div>
-                    <div className="text-xs text-slate-400">
-                      ID: {unit.id.slice(0, 8).toUpperCase()}
-                    </div>
-                  </div>
+                  <div className="font-bold text-slate-900">{unit.name}</div>
                 </td>
                 <td className="max-w-md px-6 py-4 text-slate-500">
                   <p className="line-clamp-2">
