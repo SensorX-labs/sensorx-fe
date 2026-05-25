@@ -33,6 +33,8 @@ export function AcceptQuoteModal({
         shippingAddress: '',
         paymentTerm: PaymentTerm.FullPayment,
     });
+    const isDepositDisabled = Boolean(quote?.isStockSufficient);
+    const effectivePaymentTerm = isDepositDisabled ? PaymentTerm.FullPayment : shippingForm.paymentTerm;
 
     useEffect(() => {
         const fetchCustomer = async () => {
@@ -54,13 +56,23 @@ export function AcceptQuoteModal({
         if (open) fetchCustomer();
     }, [user?.id, open]);
 
+    useEffect(() => {
+        if (isDepositDisabled && shippingForm.paymentTerm === PaymentTerm.Deposit) {
+            setShippingForm((prev) => ({
+                ...prev,
+                paymentTerm: PaymentTerm.FullPayment,
+            }));
+        }
+    }, [isDepositDisabled, shippingForm.paymentTerm]);
+
     const submitAccept = async () => {
         if (!quote || !quote.id) return;
         try {
             setLoading(true);
+            const paymentTerm = isDepositDisabled ? PaymentTerm.FullPayment : shippingForm.paymentTerm;
             const payload: CustomerRespondToQuoteCommand = {
                 responseType: QuoteResponseStatus.Accepted,
-                paymentTerm: shippingForm.paymentTerm,
+                paymentTerm,
                 shippingAddress: shippingForm.shippingAddress,
                 recipientName: shippingForm.recipientName,
                 recipientPhone: shippingForm.recipientPhone,
@@ -207,8 +219,8 @@ export function AcceptQuoteModal({
 
                                 <label
                                     className={cn(
-                                        'flex items-start gap-4 rounded-xl border p-5 cursor-pointer transition-all',
-                                        shippingForm.paymentTerm ===
+                                        'flex items-start gap-4 rounded-xl border p-5 transition-all cursor-pointer',
+                                        effectivePaymentTerm ===
                                             PaymentTerm.FullPayment
                                             ? 'border-gray-900 bg-gray-50'
                                             : 'border-gray-200 hover:border-gray-300'
@@ -217,7 +229,7 @@ export function AcceptQuoteModal({
                                     <input
                                         type="radio"
                                         checked={
-                                            shippingForm.paymentTerm ===
+                                            effectivePaymentTerm ===
                                             PaymentTerm.FullPayment
                                         }
                                         onChange={() =>
@@ -249,19 +261,24 @@ export function AcceptQuoteModal({
 
                                 <label
                                     className={cn(
-                                        'flex items-start gap-4 rounded-xl border p-5 cursor-pointer transition-all',
-                                        shippingForm.paymentTerm ===
-                                            PaymentTerm.Deposit
-                                            ? 'border-gray-900 bg-gray-50'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        'flex items-start gap-4 rounded-xl border p-5 transition-all',
+                                        isDepositDisabled
+                                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                            : 'cursor-pointer',
+                                        !isDepositDisabled &&
+                                            (effectivePaymentTerm === PaymentTerm.Deposit
+                                                ? 'border-gray-900 bg-gray-50'
+                                                : 'border-gray-200 hover:border-gray-300')
                                     )}
+                                    aria-disabled={isDepositDisabled}
                                 >
                                     <input
                                         type="radio"
                                         checked={
-                                            shippingForm.paymentTerm ===
+                                            effectivePaymentTerm ===
                                             PaymentTerm.Deposit
                                         }
+                                        disabled={isDepositDisabled}
                                         onChange={() =>
                                             setShippingForm(
                                                 (
@@ -310,7 +327,7 @@ export function AcceptQuoteModal({
                                     </span>
 
                                     <span className="text-lg font-bold">
-                                        {shippingForm.paymentTerm ===
+                                        {effectivePaymentTerm ===
                                             PaymentTerm.Deposit
                                             ? (
                                                 quote.grandTotal *
