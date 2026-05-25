@@ -9,8 +9,8 @@ export const AdminRFQService = {
   acceptRFQ: (id: string) =>
     api.master.post<unknown, void>(`/rfq/accept`, { Id: id }),
 
-  rejectRFQ: (id: string) =>
-    api.master.post<unknown, void>(`/rfq/reject`, { Id: id }),
+    rejectRFQ: (id: string, reason: string) =>
+        api.master.post<any, void>(`/rfq/reject`, { Id: id, Reason: reason }),
 
   getListRFQ: (params: RfqFilter) =>
     api.master.get<unknown, OffsetPagedResult<RfqListItem>>('/rfq', { params }),
@@ -78,18 +78,42 @@ export interface RfqDetailItem {
 }
 
 export interface RfqDetail {
-  id: string;
-  code: string;
-  staffId: string | null;
-  staffName: string | null;
-  customerId: string;
-  status: RfqStatus;
-  createdAt: string;
-  updatedAt: string | null;
-  companyName: string;
-  phone: string;
-  email: string;
-  address: string;
-  taxCode: string;
-  items: RfqDetailItem[];
+    id: string;
+    code: string;
+    staffId: string | null;
+    staffName: string | null;
+    customerId: string;
+    status: RfqStatus;
+    createdAt: string;
+    updatedAt: string | null;
+    // Company Info
+    companyName: string;
+    phone: string;
+    email: string;
+    address: string;
+    taxCode: string;
+    allocationLogs?: AllocationLogEntry[];
+    rejectedLogs?: RejectedLogEntry[];
+    items: RfqDetailItem[];
+}
+
+export interface AllocationSnapshot {
+    staffId: string;
+    staffName: string;
+    aggregatedSkillScore: number;
+    currentWorkload: number;
+    idleHours: number;
+    finalScore: number;
+}
+
+export interface AllocationLogEntry {
+    round: number;
+    assignedAt: string;
+    snapshotJson: string;
+}
+
+export interface RejectedLogEntry {
+    staffId: string;
+    reason: string;
+    rejectedAt: string;
 }

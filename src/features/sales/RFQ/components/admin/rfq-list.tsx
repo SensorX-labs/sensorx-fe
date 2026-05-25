@@ -152,7 +152,7 @@ export default function RequestForQuotationList() {
     if (!selectedRfqId) return;
 
     try {
-      await AdminRFQService.rejectRFQ(selectedRfqId);
+      await AdminRFQService.rejectRFQ(selectedRfqId, declineReason);
 
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
@@ -176,13 +176,10 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-
-      toast.success('Đã chỉ định nhân viên thành công');
-
-      setRefreshKey(prev => prev + 1);
-    } catch (error) {
-      console.error('>>> Lỗi khi chỉ định nhân viên:', error);
-      toast.error('Đã xảy ra lỗi khi chỉ định nhân viên');
+      fetchData();
+    } catch (error: any) {
+      console.error(">>> Lỗi khi chỉ định nhân viên:", error);
+      toast.error("Đã xảy ra lỗi khi chỉ định nhân viên");
     } finally {
       setAssignLoading(false);
     }
@@ -373,57 +370,50 @@ export default function RequestForQuotationList() {
                           {item.recipientName || '--'}
                           {item.recipientPhone ? ` • ${item.recipientPhone}` : ''}
                         </div>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4 text-left text-xs text-gray-500">
-                      {item.staffId ? (
-                        <span className="flex items-center gap-1.5">
-                          <UserCheck className="h-3.5 w-3.5" />
-                          {item.staffName || `Nhân viên ${item.staffId.slice(0, 4)}`}
-                        </span>
-                      ) : (
-                        <span>—</span>
                       )}
-                    </td>
-
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          'rounded border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest',
-                          getStatusStyle(item.status)
-                        )}
-                      >
-                        {getStatusLabel(item.status)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-500 text-xs text-left">
+                    {l.staffId ? (
+                      <span className="flex items-center gap-1.5">
+                        <UserCheck className="w-3.5 h-3.5" />
+                        {l.staffName || `Nhân viên ${l.staffId.slice(0, 4)}`}
+                        <CanAccess roles={['Manager']}>
+                          {l.finalScore !== undefined && l.finalScore !== null && (
+                            <span className="text-indigo-600 font-semibold ml-1">[{l.finalScore} đ]</span>
+                          )}
+                        </CanAccess>
                       </span>
-                    </td>
+                    ) : <span className="">—</span>}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={cn(
+                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
+                      getStatusStyle(l.status)
+                    )}>
+                      {getStatusLabel(l.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center text-xs text-slate-500">
+                    {l.updatedAt ? new Date(l.updatedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
 
-                    <td className="px-6 py-4 text-center text-xs text-slate-500">
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleDateString('vi-VN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })
-                        : '—'}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        {(!item.status || item.status.toLowerCase() === 'pending') && (
-                          <>
-                            <CanAccess roles={['Manager']}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 cursor-pointer border border-indigo-100 bg-indigo-50/50 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 shadow-sm transition-all duration-300 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white"
-                                onClick={e => openAssignDialog(item.id, e)}
-                                disabled={assignLoading}
-                              >
-                                <UserPlus className="mr-1.5 h-3.5 w-3.5 opacity-70" />
-                                Chỉ định
-                              </Button>
-                            </CanAccess>
+                      {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
+                      {(!l.status || l.status?.toLowerCase() === 'pending' || l.status?.toLowerCase() === RfqStatus.REJECTED.toLowerCase()) && (
+                        <>
+                          <CanAccess roles={['Manager']}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="cursor-pointer h-8 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50/50 border border-indigo-100 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-300 shadow-sm"
+                              onClick={(e) => openAssignDialog(l.id, e)}
+                              disabled={assignLoading}
+                            >
+                              <UserPlus className="w-3.5 h-3.5 mr-1.5 opacity-70" />
+                            </Button>
+                          </CanAccess>
 
                             <CanAccess roles={['SaleStaff']}>
                               <div className="flex items-center gap-1">

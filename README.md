@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SensorX - Giải pháp Quản lý Cung ứng Thông minh
 
-## Getting Started
+![Banner](https://img.shields.io/badge/SensorX-OpenSource-blue?style=for-the-badge&logo=github)
+![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-First, run the development server:
+SensorX là một hệ thống quản lý chuỗi cung ứng hiện đại, tích hợp công nghệ AI để tối ưu hóa quy trình từ báo giá (RFQ) đến kho vận. Dự án được thiết kế theo kiến trúc Microservices mạnh mẽ, dễ dàng mở rộng và bảo trì.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Tính năng nổi bật
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Quản lý RFQ & Báo giá:** Luồng xử lý chuyên nghiệp từ yêu cầu của khách hàng đến phản hồi của nhân viên.
+- **Tối ưu hóa Kho vận:** Quản lý tồn kho, nhập xuất kho và điều chỉnh kho thông minh.
+- **Phân tích AI:** Tích hợp trí tuệ nhân tạo để phân tích dữ liệu báo giá và dự báo nhu cầu.
+- **Giao diện hiện đại:** Xây dựng trên Next.js 14+ với trải nghiệm người dùng tối ưu.
+- **Kiến trúc Microservices:** Tách biệt Master, Data, Warehouse để đảm bảo tính sẵn sàng cao.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Cấu trúc dự án
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Hệ sinh thái SensorX bao gồm các thành phần chính:
+- **[SensorX.Master](https://github.com/SensorX-labs/SensorX.Master):** Core logic, quản lý người dùng và điều phối luồng công việc.
+- **[SensorX.Data](https://github.com/SensorX-labs/SensorX.Data):** Dịch vụ quản lý dữ liệu danh mục và sản phẩm.
+- **[SensorX.Warehouse](https://github.com/SensorX-labs/SensorX.Warehouse):** Dịch vụ quản lý kho chuyên sâu.
+- **[sensorx-fe](https://github.com/SensorX-labs/sensorx-fe):** Giao diện web cho cả khách hàng và quản trị viên.
 
-## Learn More
+## 🛠 Cài đặt & Sử dụng
 
-To learn more about Next.js, take a look at the following resources:
+### Yêu cầu hệ thống
+- .NET 8 SDK (cho Backend)
+- Node.js 20+ (cho Frontend)
+- PostgreSQL / SQL Server
+- Docker (khuyên dùng)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Các bước nhanh
+1. Clone các repository cần thiết.
+2. Cấu hình file `appsettings.json` hoặc `.env`.
+3. Chạy các dịch vụ backend: `dotnet run`.
+4. Khởi chạy frontend: `npm install && npm run dev`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 Đóng góp
 
-## Deploy on Vercel
+Chúng tôi luôn hoan nghênh các đóng góp từ cộng đồng!
+1. Fork dự án.
+2. Tạo nhánh tính năng (`git checkout -b feature/AmazingFeature`).
+3. Commit thay đổi (`git commit -m 'Add some AmazingFeature'`).
+4. Push lên nhánh (`git push origin feature/AmazingFeature`).
+5. Mở một Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Giấy phép
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Phân phối dưới giấy phép MIT. Xem `LICENSE` để biết thêm thông tin.
+
+---
+*Dự án được phát triển với tâm huyết bởi đội ngũ SensorX Labs.*
