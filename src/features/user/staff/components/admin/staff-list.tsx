@@ -17,7 +17,6 @@ import { StaffService, StaffListStats, StaffStatus, StaffListItem } from '../../
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { StatGroup } from '@/shared/components/admin/stat-card/stat-group';
 import {
-    AdminPageContainer,
     AdminContentCard,
     AdminHeaderBar
 } from '@/shared/components/admin/layout';
@@ -137,12 +136,12 @@ export default function StaffList() {
     ], [statsData, statusFilter]);
 
     return (
-        <AdminPageContainer>
-            <div className="shrink-0">
+        <>
+            <div className="shrink-0 mb-4">
                 <StatGroup items={statsItems} />
             </div>
 
-            <AdminContentCard>
+            <AdminContentCard className="min-h-0">
                 <AdminHeaderBar>
                     {/* Search Input (Left) */}
                     <div className="relative flex-1 min-w-[200px]">
@@ -168,7 +167,7 @@ export default function StaffList() {
                     </div>
                 </AdminHeaderBar>
 
-                <div className="relative overflow-x-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
                     {loading && (
                         <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
                             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
@@ -176,7 +175,7 @@ export default function StaffList() {
                     )}
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                            <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm">
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Mã NV</th>
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Họ tên</th>
                                 <th className="text-left px-6 py-4 tracking-label uppercase">Email</th>
@@ -190,7 +189,11 @@ export default function StaffList() {
                             {staffList.map((s) => {
                                 const status = statusConfig[s.status] || { label: 'Không xác định', className: 'bg-gray-50 text-gray-400 border border-gray-100' };
                                 return (
-                                    <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
+                                    <tr
+                                        key={s.id}
+                                        className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
+                                        onClick={() => router.push(`/users/staff/${s.id}`)}
+                                    >
                                         <td className="px-6 py-4 font-bold text-gray-900">{s.code}</td>
                                         <td className="px-6 py-4 font-semibold text-gray-900">{s.name}</td>
                                         <td className="px-6 py-4 text-gray-700">{s.email}</td>
@@ -211,14 +214,27 @@ export default function StaffList() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                                    onClick={() => router.push(`/users/staff/${s.id}`)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push(`/users/staff/${s.id}`);
+                                                    }}
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-orange-500 hover:text-orange-700 hover:bg-orange-50"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
@@ -281,6 +297,6 @@ export default function StaffList() {
                     </div>
                 )}
             </AdminContentCard>
-        </AdminPageContainer>
+        </>
     );
 }

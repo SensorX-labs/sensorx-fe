@@ -32,6 +32,8 @@ import { LocalPagination } from '@/shared/components/admin/local-pagination';
 
 import { toast } from 'sonner';
 
+import { AdminContentCard } from '@/shared/components/admin/layout';
+
 const DEFAULT_FILTERS = {
   code: '',
   orderCode: '',
@@ -347,18 +349,20 @@ export default function InvoiceList() {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
-    <div className="space-y-4">
-      <InvoiceStats
-        refreshKey={refreshKey}
-        statusFilter={statusFilter}
-        onFilter={value => {
-          setStatusFilter(value);
+    <>
+      <div className="shrink-0">
+        <InvoiceStats
+          refreshKey={refreshKey}
+          statusFilter={statusFilter}
+          onFilter={value => {
+            setStatusFilter(value);
 
-          setCurrentPage(1);
-        }}
-      />
+            setCurrentPage(1);
+          }}
+        />
+      </div>
 
-      <div className="flex flex-col overflow-hidden rounded border border-gray-100 bg-white shadow-sm">
+      <AdminContentCard className="min-h-0">
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
@@ -428,10 +432,10 @@ export default function InvoiceList() {
           </div>
         ) : null}
 
-        <div className="relative overflow-x-auto">
+        <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
           <table className="w-full min-w-[1260px] text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
+              <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm">
                 <th className="px-6 py-4 text-left uppercase tracking-label">
                   Mã HĐ
                 </th>
@@ -493,7 +497,8 @@ export default function InvoiceList() {
                 invoices.map(inv => (
                   <tr
                     key={inv.id}
-                    className="border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50/80"
+                    className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
+                    onClick={() => router.push(`/sales/invoices/${inv.id}`)}
                   >
                     <td className="px-6 py-4 font-bold tracking-tight text-gray-900">
                       {inv.code}
@@ -549,9 +554,10 @@ export default function InvoiceList() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                          onClick={() =>
-                            router.push(`/sales/invoices/${inv.id}`)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/sales/invoices/${inv.id}`);
+                          }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -570,7 +576,7 @@ export default function InvoiceList() {
           onPageChange={setCurrentPage}
           className="py-3"
         />
-      </div>
+      </AdminContentCard>
 
       <Dialog
         open={isFilterOpen}
@@ -626,6 +632,6 @@ export default function InvoiceList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
