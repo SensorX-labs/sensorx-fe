@@ -11,7 +11,6 @@ import { InternalPrice, InternalPriceStats, InternalPriceStatus } from '../../..
 import InternalPriceService from '../../../services/internal-price-services';
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
 import {
-  AdminPageContainer,
   AdminContentCard,
 } from '@/shared/components/admin/layout';
 import {
@@ -208,12 +207,12 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
   const hasActiveChips = activeFilterCount > 0 || activeTab !== 'all';
 
   return (
-    <AdminPageContainer>
+    <>
       <div className="shrink-0">
         <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <AdminContentCard>
+      <AdminContentCard className="min-h-0">
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
@@ -297,17 +296,20 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
           </div>
         ) : null}
 
-        <div className="relative overflow-x-auto flex-1 min-h-0">
+        <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
+          <InternalPriceTable
+            prices={prices}
+            onQuickView={(price) => setQuickViewPrice(price)}
+          />
+
           {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-[1px] animate-in fade-in duration-300">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500/20 border-t-emerald-500"></div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 animate-pulse">Đang tải...</p>
+              </div>
             </div>
-          ) : (
-            <InternalPriceTable
-              prices={prices}
-              onQuickView={(price) => setQuickViewPrice(price)}
-            />
-          )}
+          ) : null}
         </div>
 
         <LocalPagination
@@ -363,6 +365,6 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminPageContainer>
+    </>
   );
 }

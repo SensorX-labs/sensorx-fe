@@ -23,6 +23,7 @@ import {
 } from '@/shared/components/shadcn-ui/dialog';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
+import { AdminContentCard } from '@/shared/components/admin/layout';
 
 type CombinedStatus = QuoteStatus | QuoteResponseStatus;
 
@@ -295,17 +296,19 @@ export default function QuotationList() {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
-    <div className="space-y-4">
-      <QuotationStats
-        statusFilter={statusFilter}
-        onFilter={value => {
-          setStatusFilter(value);
-          setCurrentPage(1);
-        }}
-        role={user?.role}
-      />
+    <>
+      <div className="shrink-0">
+        <QuotationStats
+          statusFilter={statusFilter}
+          onFilter={value => {
+            setStatusFilter(value);
+            setCurrentPage(1);
+          }}
+          role={user?.role}
+        />
+      </div>
 
-      <div className="flex flex-col overflow-hidden rounded border border-gray-100 bg-white shadow-sm">
+      <AdminContentCard className="min-h-0">
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
@@ -370,10 +373,10 @@ export default function QuotationList() {
           </div>
         ) : null}
 
-        <div className="relative overflow-x-auto">
+        <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
           <table className="w-full min-w-[1160px] text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
+              <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm">
                 <th className="px-6 py-4 text-left uppercase tracking-label">Số BG</th>
                 <th className="px-6 py-4 text-left uppercase tracking-label">Khách hàng</th>
                 <th className="px-6 py-4 text-left uppercase tracking-label">Ngày báo giá</th>
@@ -402,7 +405,8 @@ export default function QuotationList() {
                 quotes.map(q => (
                   <tr
                     key={q.id}
-                    className="border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/80"
+                    className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
+                    onClick={() => goTo(q.id, ActionType.DETAIL)}
                   >
                     <td className="px-6 py-4 font-bold tracking-tight text-gray-900">
                       {q.code}
@@ -459,7 +463,10 @@ export default function QuotationList() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                          onClick={() => goTo(q.id, ActionType.DETAIL)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goTo(q.id, ActionType.DETAIL);
+                          }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -468,7 +475,10 @@ export default function QuotationList() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-yellow-600 hover:bg-yellow-50"
-                          onClick={() => goTo(q.id, ActionType.UPDATE)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goTo(q.id, ActionType.UPDATE);
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -479,7 +489,10 @@ export default function QuotationList() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-red-500 hover:bg-red-50"
-                            onClick={() => handleDelete(q.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleDelete(q.id);
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -499,7 +512,7 @@ export default function QuotationList() {
           onPageChange={setCurrentPage}
           className="py-3"
         />
-      </div>
+      </AdminContentCard>
 
       <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <DialogContent className="w-[min(1080px,calc(100vw-2rem))] max-w-none p-0 sm:max-w-none">
@@ -540,6 +553,6 @@ export default function QuotationList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

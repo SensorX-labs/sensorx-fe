@@ -220,7 +220,7 @@ export default function UserList() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={user.id} className="group odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100">
                   <td className="px-6 py-4 font-medium text-[#2B3674]">{user.email}</td>
                   <td className="px-6 py-4 text-gray-600">{user.fullName}</td>
                   <td className="px-6 py-4">
