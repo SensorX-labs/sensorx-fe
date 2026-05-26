@@ -6,30 +6,30 @@ import ImageService from "@/shared/services/image.service";
 
 export const StaffService = {
   getPagedStaffs: (params: StaffFilter) =>
-    api.data.get<any, OffsetPagedResult<StaffListItem>>(`/staff/list`, { params }),
+    api.data.get<unknown, OffsetPagedResult<StaffListItem>>(`/staff/list`, { params }),
 
   getStaffById: (id: string) =>
-    api.data.get<any, StaffListItem>(`/staff/${id}`),
+    api.data.get<unknown, StaffListItem>(`/staff/${id}`),
 
   getProfile: () =>
-    api.data.get<any, ProfileStaff>(`/staff/profile`),
+    api.data.get<unknown, ProfileStaff>(`/staff/profile`),
 
   getLoadMoreStaff: (params: LoadMoreStaffQuery) =>
-    api.master.get<any, LoadMorePagedResult<LoadMoreStaff>>(`/rfq/load-more-sale-staff`, { params }),
+    api.master.get<unknown, LoadMorePagedResult<LoadMoreStaff>>(`/rfq/load-more-sale-staff`, { params }),
 
   updateProfile: (data: UpdateProfileData) =>
-    api.data.put<any, any>(`/staff/profile`, data),
+    api.data.put<unknown, unknown>(`/staff/profile`, data),
 
   updateStaffAvatar: async (avatar: File) => {
     const avatarUrl = await ImageService.upload(avatar, "avatars");
-    return api.data.put<any, any>(`/staff/update-avatar`, { avatar: avatarUrl });
+    return api.data.put<unknown, unknown>(`/staff/update-avatar`, { avatar: avatarUrl });
   },
 
   getStaffListStats: () =>
-    api.data.get<any, StaffListStats>(`/staff/list-stats`),
+    api.data.get<unknown, StaffListStats>(`/staff/list-stats`),
 
   changeStaffStatus: (id: string, status: StaffStatus) =>
-    api.data.put<any, any>(`/staff/${id}/status`, { status }),
+    api.data.put<unknown, unknown>(`/staff/${id}/status`, { status }),
 };
 
 export default StaffService;
@@ -57,6 +57,16 @@ export interface StaffListItem {
 
 export interface StaffFilter extends OffsetPagedQuery {
   status?: StaffStatus;
+  code?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  citizenId?: string;
+  department?: string;
+  joinFrom?: string;
+  joinTo?: string;
+  createdFrom?: string;
+  createdTo?: string;
 }
 
 export interface UpdateProfileData {
@@ -88,8 +98,7 @@ export interface ProfileStaff {
   avatarUrl: string | null;
 }
 
-export interface LoadMoreStaffQuery extends LoadMorePagedQuery {
-}
+export type LoadMoreStaffQuery = LoadMorePagedQuery;
 
 export interface LoadMoreStaff {
   id: string;
