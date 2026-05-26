@@ -3,14 +3,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, Filter, Search } from 'lucide-react';
+
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { cn } from '@/shared/utils/cn';
+
 import { InvoiceStatus } from '../../enums/invoice-status';
 import { InvoiceListItem } from '../../models/invoice';
 import { InvoiceService } from '../../services/invoice-service';
+
 import { InvoiceStats } from './invoice-stats';
+
 import { useDebounce } from '@/shared/hooks/use-debounce';
+
 import { FilterFieldConfig, FilterPanel } from '@/shared/components/admin/filter-panel';
+
 import {
   Dialog,
   DialogContent,
@@ -19,8 +25,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/shadcn-ui/dialog';
+
 import { Input } from '@/shared/components/shadcn-ui/input';
+
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
+
 import { toast } from 'sonner';
 
 const DEFAULT_FILTERS = {
@@ -28,7 +37,6 @@ const DEFAULT_FILTERS = {
   orderCode: '',
   companyName: '',
   taxCode: '',
-  email: '',
   address: '',
   totalFrom: '',
   totalTo: '',
@@ -41,42 +49,128 @@ const DEFAULT_FILTERS = {
 };
 
 type InvoiceFilterState = typeof DEFAULT_FILTERS;
+
 type InvoiceFilterKey = keyof InvoiceFilterState;
 
 const FILTER_FIELDS: Array<FilterFieldConfig & { id: InvoiceFilterKey }> = [
-  { id: 'code', label: 'Mã hoá đơn', type: 'search', placeholder: 'Nhập mã hoá đơn' },
-  { id: 'orderCode', label: 'Mã đơn hàng', type: 'search', placeholder: 'Nhập mã đơn hàng' },
-  { id: 'companyName', label: 'Công ty', type: 'search', placeholder: 'Nhập tên công ty' },
-  { id: 'taxCode', label: 'Mã số thuế', type: 'search', placeholder: 'Nhập mã số thuế' },
-  { id: 'email', label: 'Email', type: 'search', placeholder: 'Nhập email' },
-  { id: 'address', label: 'Địa chỉ', type: 'search', placeholder: 'Nhập địa chỉ' },
-  { id: 'totalFrom', label: 'Tổng tiền từ', type: 'number', placeholder: 'Nhập tổng tiền từ' },
-  { id: 'totalTo', label: 'Tổng tiền đến', type: 'number', placeholder: 'Nhập tổng tiền đến' },
-  { id: 'amountPaidFrom', label: 'Đã thu từ', type: 'number', placeholder: 'Nhập số đã thu từ' },
-  { id: 'amountPaidTo', label: 'Đã thu đến', type: 'number', placeholder: 'Nhập số đã thu đến' },
-  { id: 'issueFrom', label: 'Ngày lập từ', type: 'date' },
-  { id: 'issueTo', label: 'Ngày lập đến', type: 'date' },
-  { id: 'createdFrom', label: 'Ngày tạo từ', type: 'date' },
-  { id: 'createdTo', label: 'Ngày tạo đến', type: 'date' },
+  {
+    id: 'code',
+    label: 'Mã hoá đơn',
+    type: 'search',
+    placeholder: 'Nhập mã hoá đơn',
+  },
+
+  {
+    id: 'orderCode',
+    label: 'Mã đơn hàng',
+    type: 'search',
+    placeholder: 'Nhập mã đơn hàng',
+  },
+
+  {
+    id: 'companyName',
+    label: 'Công ty',
+    type: 'search',
+    placeholder: 'Nhập tên công ty',
+  },
+
+  {
+    id: 'taxCode',
+    label: 'Mã số thuế',
+    type: 'search',
+    placeholder: 'Nhập mã số thuế',
+  },
+
+  {
+    id: 'address',
+    label: 'Địa chỉ',
+    type: 'search',
+    placeholder: 'Nhập địa chỉ',
+  },
+
+  {
+    id: 'totalFrom',
+    label: 'Tổng tiền từ',
+    type: 'number',
+    placeholder: 'Nhập tổng tiền từ',
+  },
+
+  {
+    id: 'totalTo',
+    label: 'Tổng tiền đến',
+    type: 'number',
+    placeholder: 'Nhập tổng tiền đến',
+  },
+
+  {
+    id: 'amountPaidFrom',
+    label: 'Đã thu từ',
+    type: 'number',
+    placeholder: 'Nhập số đã thu từ',
+  },
+
+  {
+    id: 'amountPaidTo',
+    label: 'Đã thu đến',
+    type: 'number',
+    placeholder: 'Nhập số đã thu đến',
+  },
+
+  {
+    id: 'issueFrom',
+    label: 'Ngày lập từ',
+    type: 'date',
+  },
+
+  {
+    id: 'issueTo',
+    label: 'Ngày lập đến',
+    type: 'date',
+  },
+
+  {
+    id: 'createdFrom',
+    label: 'Ngày tạo từ',
+    type: 'date',
+  },
+
+  {
+    id: 'createdTo',
+    label: 'Ngày tạo đến',
+    type: 'date',
+  },
 ];
 
 const statusStyles: Record<string, string> = {
   [InvoiceStatus.Unpaid]: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  [InvoiceStatus.PartiallyPaid]: 'bg-orange-50 text-orange-700 border-orange-200',
-  [InvoiceStatus.Paid]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  [InvoiceStatus.Issued]: 'bg-blue-50 text-blue-700 border-blue-200',
-  [InvoiceStatus.Cancelled]: 'bg-red-50 text-red-700 border-red-200',
+
+  [InvoiceStatus.PartiallyPaid]:
+    'bg-orange-50 text-orange-700 border-orange-200',
+
+  [InvoiceStatus.Paid]:
+    'bg-emerald-50 text-emerald-700 border-emerald-200',
+
+  [InvoiceStatus.Issued]:
+    'bg-blue-50 text-blue-700 border-blue-200',
+
+  [InvoiceStatus.Cancelled]:
+    'bg-red-50 text-red-700 border-red-200',
 };
 
 const statusLabels: Record<string, string> = {
   [InvoiceStatus.Unpaid]: 'Chờ thanh toán',
+
   [InvoiceStatus.PartiallyPaid]: 'Thanh toán một phần',
+
   [InvoiceStatus.Paid]: 'Đã thanh toán',
+
   [InvoiceStatus.Issued]: 'Đã phát hành',
+
   [InvoiceStatus.Cancelled]: 'Đã huỷ',
 };
 
-const formatMoney = (value?: number) => `${(value ?? 0).toLocaleString('vi-VN')} đ`;
+const formatMoney = (value?: number) =>
+  `${(value ?? 0).toLocaleString('vi-VN')} đ`;
 
 function buildDateStart(value: string) {
   return value ? `${value}T00:00:00` : undefined;
@@ -95,22 +189,45 @@ function buildInvoiceQuery(
 ) {
   return {
     pageNumber,
+
     pageSize,
+
     searchTerm: searchTerm.trim() || undefined,
+
     status: statusFilter === 'ALL' ? undefined : statusFilter,
+
     code: filters.code.trim() || undefined,
+
     orderCode: filters.orderCode.trim() || undefined,
+
     companyName: filters.companyName.trim() || undefined,
+
     taxCode: filters.taxCode.trim() || undefined,
-    email: filters.email.trim() || undefined,
+
     address: filters.address.trim() || undefined,
-    totalFrom: filters.totalFrom ? Number(filters.totalFrom) : undefined,
-    totalTo: filters.totalTo ? Number(filters.totalTo) : undefined,
-    amountPaidFrom: filters.amountPaidFrom ? Number(filters.amountPaidFrom) : undefined,
-    amountPaidTo: filters.amountPaidTo ? Number(filters.amountPaidTo) : undefined,
+
+    totalFrom: filters.totalFrom
+      ? Number(filters.totalFrom)
+      : undefined,
+
+    totalTo: filters.totalTo
+      ? Number(filters.totalTo)
+      : undefined,
+
+    amountPaidFrom: filters.amountPaidFrom
+      ? Number(filters.amountPaidFrom)
+      : undefined,
+
+    amountPaidTo: filters.amountPaidTo
+      ? Number(filters.amountPaidTo)
+      : undefined,
+
     issueFrom: buildDateStart(filters.issueFrom),
+
     issueTo: buildDateEnd(filters.issueTo),
+
     createdFrom: buildDateStart(filters.createdFrom),
+
     createdTo: buildDateEnd(filters.createdTo),
   };
 }
@@ -119,17 +236,21 @@ export default function InvoiceList() {
   const router = useRouter();
 
   const [invoices, setInvoices] = useState<InvoiceListItem[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
+
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
   const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+
   const [totalItems, setTotalItems] = useState(0);
 
   const [refreshKey] = useState(0);
@@ -144,10 +265,17 @@ export default function InvoiceList() {
 
       try {
         const response = await InvoiceService.getListInvoices(
-          buildInvoiceQuery(currentPage, pageSize, debouncedSearch, statusFilter, filters)
+          buildInvoiceQuery(
+            currentPage,
+            pageSize,
+            debouncedSearch,
+            statusFilter,
+            filters
+          )
         );
 
         setInvoices(response?.items ?? []);
+
         setTotalItems(response?.totalCount ?? 0);
       } catch (error) {
         console.error('>>> Lỗi khi tải hoá đơn:', error);
@@ -155,6 +283,7 @@ export default function InvoiceList() {
         toast.error('Không thể tải danh sách hoá đơn');
 
         setInvoices([]);
+
         setTotalItems(0);
       } finally {
         setLoading(false);
@@ -162,14 +291,24 @@ export default function InvoiceList() {
     };
 
     void fetchInvoices();
-  }, [currentPage, debouncedSearch, statusFilter, filters, refreshKey]);
+  }, [
+    currentPage,
+    debouncedSearch,
+    statusFilter,
+    filters,
+    refreshKey,
+  ]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+
     setCurrentPage(1);
   };
 
-  const handleDraftFilterChange = (fieldId: InvoiceFilterKey, value: string) => {
+  const handleDraftFilterChange = (
+    fieldId: InvoiceFilterKey,
+    value: string
+  ) => {
     setDraftFilters(current => ({
       ...current,
       [fieldId]: value,
@@ -191,15 +330,18 @@ export default function InvoiceList() {
 
   const applyDraftFilters = () => {
     setFilters(draftFilters);
+
     setCurrentPage(1);
+
     setIsFilterOpen(false);
   };
 
   const activeFilterCount = useMemo(
     () =>
-      Object.values(filters).filter(value => value !== '' && value !== 'all').length +
-      (searchTerm.trim() ? 1 : 0),
-    [filters, searchTerm]
+      Object.values(filters).filter(
+        value => value !== '' && value !== 'all'
+      ).length,
+    [filters]
   );
 
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -211,6 +353,7 @@ export default function InvoiceList() {
         statusFilter={statusFilter}
         onFilter={value => {
           setStatusFilter(value);
+
           setCurrentPage(1);
         }}
       />
@@ -223,7 +366,9 @@ export default function InvoiceList() {
 
               <Input
                 value={searchTerm}
-                onChange={event => handleSearchChange(event.target.value)}
+                onChange={event =>
+                  handleSearchChange(event.target.value)
+                }
                 placeholder="Tìm nhanh theo mã hoá đơn, công ty, đơn hàng..."
                 className="h-11 rounded-md border-slate-200 bg-white pl-10"
               />
@@ -234,6 +379,7 @@ export default function InvoiceList() {
               className="rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               onClick={() => {
                 setDraftFilters(filters);
+
                 setIsFilterOpen(true);
               }}
             >
@@ -252,16 +398,6 @@ export default function InvoiceList() {
 
         {activeFilterCount > 0 ? (
           <div className="flex flex-wrap gap-2 border-b border-slate-100 px-6 py-3">
-            {searchTerm.trim() ? (
-              <button
-                type="button"
-                onClick={() => handleSearchChange('')}
-                className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-              >
-                Tìm nhanh: {searchTerm}
-              </button>
-            ) : null}
-
             {FILTER_FIELDS.map(field => {
               const value = filters[field.id];
 
@@ -271,7 +407,9 @@ export default function InvoiceList() {
 
               const displayValue =
                 field.type === 'date'
-                  ? new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN')
+                  ? new Date(
+                      `${value}T00:00:00`
+                    ).toLocaleDateString('vi-VN')
                   : field.type === 'number'
                     ? Number(value).toLocaleString('vi-VN')
                     : value;
@@ -376,7 +514,9 @@ export default function InvoiceList() {
                     </td>
 
                     <td className="px-6 py-4 text-gray-700">
-                      {new Date(inv.issueAt).toLocaleDateString('vi-VN')}
+                      {new Date(inv.issueAt).toLocaleDateString(
+                        'vi-VN'
+                      )}
                     </td>
 
                     <td className="px-6 py-4 text-center font-semibold text-gray-700">
@@ -409,7 +549,9 @@ export default function InvoiceList() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                          onClick={() => router.push(`/sales/invoices/${inv.id}`)}
+                          onClick={() =>
+                            router.push(`/sales/invoices/${inv.id}`)
+                          }
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -430,7 +572,10 @@ export default function InvoiceList() {
         />
       </div>
 
-      <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+      <Dialog
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+      >
         <DialogContent className="w-[min(1080px,calc(100vw-2rem))] max-w-none p-0 sm:max-w-none">
           <DialogHeader className="border-b border-slate-100 px-6 py-5">
             <DialogTitle>Bộ lọc hoá đơn</DialogTitle>
@@ -445,7 +590,10 @@ export default function InvoiceList() {
               fields={FILTER_FIELDS}
               values={draftFilters}
               onChange={(fieldId, value) =>
-                handleDraftFilterChange(fieldId as InvoiceFilterKey, value)
+                handleDraftFilterChange(
+                  fieldId as InvoiceFilterKey,
+                  value
+                )
               }
               onReset={handleResetDraftFilters}
               hideHeader
@@ -455,15 +603,24 @@ export default function InvoiceList() {
           </div>
 
           <DialogFooter className="border-t border-slate-100 px-6 py-4">
-            <Button variant="outline" onClick={() => setIsFilterOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterOpen(false)}
+            >
               Đóng
             </Button>
 
-            <Button variant="outline" onClick={handleResetDraftFilters}>
+            <Button
+              variant="outline"
+              onClick={handleResetDraftFilters}
+            >
               Xoá bộ lọc
             </Button>
 
-            <Button className="admin-btn-primary" onClick={applyDraftFilters}>
+            <Button
+              className="admin-btn-primary"
+              onClick={applyDraftFilters}
+            >
               Áp dụng
             </Button>
           </DialogFooter>

@@ -201,12 +201,11 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
   };
 
   const activeFilterCount = useMemo(
-    () =>
-      Object.values(filters).filter(value => value !== '').length +
-      (searchTerm.trim() ? 1 : 0) +
-      (activeTab !== 'all' ? 1 : 0),
-    [filters, searchTerm, activeTab]
+    () => Object.values(filters).filter(value => value !== '').length,
+    [filters]
   );
+
+  const hasActiveChips = activeFilterCount > 0 || activeTab !== 'all';
 
   return (
     <AdminPageContainer>
@@ -256,21 +255,8 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
           </div>
         </div>
 
-        {activeFilterCount > 0 ? (
+        {hasActiveChips ? (
           <div className="flex flex-wrap gap-2 border-b border-slate-100 px-6 py-3">
-            {searchTerm.trim() ? (
-              <button
-                type="button"
-                onClick={() => {
-                  resetPage();
-                  setSearchTerm('');
-                }}
-                className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-              >
-                Tìm nhanh: {searchTerm}
-              </button>
-            ) : null}
-
             {activeTab !== 'all' ? (
               <button
                 type="button"

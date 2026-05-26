@@ -261,10 +261,8 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const activeFilterCount = useMemo(
-    () =>
-      Object.values(filters).filter(value => value !== '' && value !== 'all').length +
-      (searchTerm.trim() ? 1 : 0),
-    [filters, searchTerm]
+    () => Object.values(filters).filter(value => value !== '' && value !== 'all').length,
+    [filters]
   );
 
   return (
@@ -315,15 +313,6 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
 
         {activeFilterCount > 0 ? (
           <div className="flex flex-wrap gap-2 border-b border-slate-100 px-6 py-3">
-            {searchTerm.trim() ? (
-              <button
-                type="button"
-                onClick={() => handleSearchChange('')}
-                className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-              >
-                Tìm nhanh: {searchTerm}
-              </button>
-            ) : null}
 
             {FILTER_FIELDS.map(field => {
               const value = filters[field.id];
