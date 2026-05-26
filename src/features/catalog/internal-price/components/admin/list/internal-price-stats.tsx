@@ -1,6 +1,7 @@
 import { BadgeDollarSign, CheckCircle2, Clock, Ban } from 'lucide-react';
 import { InternalPriceStats } from '../../../models';
 import { StatGroup } from '@/shared/components/admin/stat-card';
+import { StatColorTheme } from '@/shared/components/admin/stat-card/stat-card';
 
 interface StatCardsProps {
   stats?: InternalPriceStats;
@@ -15,7 +16,7 @@ export function StatCards({ stats, activeTab, onTabChange }: StatCardsProps) {
       label: 'Tổng số bảng giá',
       value: stats?.totalCount ?? 0,
       icon: BadgeDollarSign,
-      colorTheme: 'blue' as any,
+      colorTheme: 'blue' as StatColorTheme,
       isActive: activeTab === 'all',
       onClick: () => onTabChange('all'),
     },
@@ -24,7 +25,7 @@ export function StatCards({ stats, activeTab, onTabChange }: StatCardsProps) {
       label: 'Đang hiệu lực',
       value: stats?.activeCount ?? 0,
       icon: CheckCircle2,
-      colorTheme: 'emerald' as any,
+      colorTheme: 'emerald' as StatColorTheme,
       isActive: activeTab === 'active',
       onClick: () => onTabChange('active'),
     },
@@ -33,7 +34,7 @@ export function StatCards({ stats, activeTab, onTabChange }: StatCardsProps) {
       label: 'Sắp hết hạn',
       value: stats?.expiringSoonCount ?? 0,
       icon: Clock,
-      colorTheme: 'yellow' as any,
+      colorTheme: 'yellow' as StatColorTheme,
       isActive: activeTab === 'expiring',
       onClick: () => onTabChange('expiring'),
     },
@@ -42,12 +43,11 @@ export function StatCards({ stats, activeTab, onTabChange }: StatCardsProps) {
       label: 'Đã hết hạn',
       value: stats?.expiredCount ?? 0,
       icon: Ban,
-      colorTheme: 'red' as any,
+      colorTheme: 'red' as StatColorTheme,
       isActive: activeTab === 'expired',
       onClick: () => onTabChange('expired'),
     },
   ];
 
-  return <StatGroup items={cards} gridCols={4} />;
+  return <StatGroup items={cards} variant="pill" />;
 }
-
