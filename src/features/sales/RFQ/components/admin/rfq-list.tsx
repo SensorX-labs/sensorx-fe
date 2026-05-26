@@ -41,9 +41,24 @@ type RfqFilterKey = keyof RfqFilterState;
 const FILTER_FIELDS: Array<FilterFieldConfig & { id: RfqFilterKey }> = [
   { id: 'code', label: 'Mã RFQ', type: 'search', placeholder: 'Nhập mã RFQ' },
   { id: 'companyName', label: 'Công ty', type: 'search', placeholder: 'Nhập tên công ty' },
-  { id: 'recipientName', label: 'Người liên hệ', type: 'search', placeholder: 'Nhập tên người liên hệ' },
-  { id: 'recipientPhone', label: 'Số điện thoại', type: 'search', placeholder: 'Nhập số điện thoại' },
-  { id: 'staffName', label: 'Người xử lý', type: 'search', placeholder: 'Nhập tên nhân viên' },
+  {
+    id: 'recipientName',
+    label: 'Người liên hệ',
+    type: 'search',
+    placeholder: 'Nhập tên người liên hệ',
+  },
+  {
+    id: 'recipientPhone',
+    label: 'Số điện thoại',
+    type: 'search',
+    placeholder: 'Nhập số điện thoại',
+  },
+  {
+    id: 'staffName',
+    label: 'Người xử lý',
+    type: 'search',
+    placeholder: 'Nhập tên nhân viên',
+  },
   { id: 'createdFrom', label: 'Từ ngày', type: 'date' },
   { id: 'createdTo', label: 'Đến ngày', type: 'date' },
 ];
@@ -78,6 +93,10 @@ function buildRfqQuery(
     createdFrom: filters.createdFrom || undefined,
     createdTo: filters.createdTo || undefined,
   };
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 export default function RequestForQuotationList() {
@@ -118,10 +137,9 @@ export default function RequestForQuotationList() {
           setLeads(listResponse.items);
           setTotalItems(listResponse.totalCount ?? 0);
         }
-
-        setRefreshKey(prev => prev + 1);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('>>> Lỗi khi tải danh sách RFQ:', error);
+        toast.error('Không thể tải danh sách RFQ');
         setLeads([]);
         setTotalItems(0);
       } finally {
@@ -130,19 +148,17 @@ export default function RequestForQuotationList() {
     };
 
     void fetchData();
-  }, [currentPage, pageSize, debouncedSearch, statusFilter, filters]);
+  }, [currentPage, pageSize, debouncedSearch, statusFilter, filters, refreshKey]);
 
   const handleAccept = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
 
     try {
       await AdminRFQService.acceptRFQ(id);
-
       toast.success('Đã tiếp nhận yêu cầu thành công');
-
       setRefreshKey(prev => prev + 1);
       setCurrentPage(1);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('>>> Lỗi khi tiếp nhận RFQ:', error);
       toast.error('Đã xảy ra lỗi khi tiếp nhận yêu cầu');
     }
@@ -153,16 +169,14 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.rejectRFQ(selectedRfqId, declineReason);
-
       setIsDeclineDialogOpen(false);
       setSelectedRfqId(null);
       setDeclineReason('');
-
       setRefreshKey(prev => prev + 1);
-
       toast.success('Đã từ chối yêu cầu');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('>>> Lỗi khi từ chối RFQ:', error);
+      toast.error(getErrorMessage(error, 'Không thể từ chối yêu cầu'));
     }
   };
 
@@ -176,10 +190,11 @@ export default function RequestForQuotationList() {
 
     try {
       await AdminRFQService.assignStaff(rfqId, staffId);
-      fetchData();
-    } catch (error: any) {
-      console.error(">>> Lỗi khi chỉ định nhân viên:", error);
-      toast.error("Đã xảy ra lỗi khi chỉ định nhân viên");
+      toast.success('Đã chỉ định nhân viên thành công');
+      setRefreshKey(prev => prev + 1);
+    } catch (error: unknown) {
+      console.error('>>> Lỗi khi chỉ định nhân viên:', error);
+      toast.error(getErrorMessage(error, 'Đã xảy ra lỗi khi chỉ định nhân viên'));
     } finally {
       setAssignLoading(false);
     }
@@ -202,7 +217,6 @@ export default function RequestForQuotationList() {
       ...current,
       [fieldId]: '',
     }));
-
     setCurrentPage(1);
   };
 
@@ -227,14 +241,12 @@ export default function RequestForQuotationList() {
 
   const openDeclineDialog = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-
     setSelectedRfqId(id);
     setIsDeclineDialogOpen(true);
   };
 
   const openAssignDialog = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-
     setAssigningRfqId(id);
     setIsAssignDialogOpen(true);
   };
@@ -273,7 +285,6 @@ export default function RequestForQuotationList() {
               }}
             >
               <Filter className="mr-2 h-4 w-4" />
-
               Bộ lọc
 
               {activeFilterCount > 0 ? (
@@ -331,7 +342,9 @@ export default function RequestForQuotationList() {
                 <th className="px-6 py-4 text-left uppercase tracking-label">Khách hàng</th>
                 <th className="px-6 py-4 text-left uppercase tracking-label">Người xử lý</th>
                 <th className="px-6 py-4 text-center uppercase tracking-label">Trạng thái</th>
-                <th className="px-6 py-4 text-center uppercase tracking-label">Ngày yêu cầu</th>
+                <th className="px-6 py-4 text-center uppercase tracking-label">
+                  Ngày yêu cầu
+                </th>
                 <th className="px-6 py-4 text-center uppercase tracking-label">Hành động</th>
               </tr>
             </thead>
@@ -370,50 +383,59 @@ export default function RequestForQuotationList() {
                           {item.recipientName || '--'}
                           {item.recipientPhone ? ` • ${item.recipientPhone}` : ''}
                         </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 text-xs text-left">
-                    {l.staffId ? (
-                      <span className="flex items-center gap-1.5">
-                        <UserCheck className="w-3.5 h-3.5" />
-                        {l.staffName || `Nhân viên ${l.staffId.slice(0, 4)}`}
-                        <CanAccess roles={['Manager']}>
-                          {l.finalScore !== undefined && l.finalScore !== null && (
-                            <span className="text-indigo-600 font-semibold ml-1">[{l.finalScore} đ]</span>
-                          )}
-                        </CanAccess>
-                      </span>
-                    ) : <span className="">—</span>}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={cn(
-                      "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                      getStatusStyle(l.status)
-                    )}>
-                      {getStatusLabel(l.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center text-xs text-slate-500">
-                    {l.updatedAt ? new Date(l.updatedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center gap-2">
+                      </div>
+                    </td>
 
-                      {/* 1. NẾU RFQ ĐANG Ở TRẠNG THÁI CHỜ XỬ LÝ (PENDING / NEW) */}
-                      {(!l.status || l.status?.toLowerCase() === 'pending' || l.status?.toLowerCase() === RfqStatus.REJECTED.toLowerCase()) && (
-                        <>
-                          <CanAccess roles={['Manager']}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="cursor-pointer h-8 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50/50 border border-indigo-100 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-300 shadow-sm"
-                              onClick={(e) => openAssignDialog(l.id, e)}
-                              disabled={assignLoading}
-                            >
-                              <UserPlus className="w-3.5 h-3.5 mr-1.5 opacity-70" />
-                            </Button>
-                          </CanAccess>
+                    <td className="px-6 py-4 text-left text-xs text-gray-500">
+                      {item.staffId ? (
+                        <span className="flex items-center gap-1.5">
+                          <UserCheck className="h-3.5 w-3.5" />
+                          {item.staffName || `Nhân viên ${item.staffId.slice(0, 4)}`}
+                        </span>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={cn(
+                          'rounded border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest',
+                          getStatusStyle(item.status)
+                        )}
+                      >
+                        {getStatusLabel(item.status)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-center text-xs text-slate-500">
+                      {item.createdAt
+                        ? new Date(item.createdAt).toLocaleDateString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })
+                        : '—'}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {(!item.status ||
+                          item.status.toLowerCase() === 'pending' ||
+                          item.status.toLowerCase() ===
+                            RfqStatus.REJECTED.toLowerCase()) && (
+                          <>
+                            <CanAccess roles={['Manager']}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 cursor-pointer border border-indigo-100 bg-indigo-50/50 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 shadow-sm transition-all duration-300 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white"
+                                onClick={e => openAssignDialog(item.id, e)}
+                                disabled={assignLoading}
+                              >
+                                <UserPlus className="mr-1.5 h-3.5 w-3.5 opacity-70" />
+                              </Button>
+                            </CanAccess>
 
                             <CanAccess roles={['SaleStaff']}>
                               <div className="flex items-center gap-1">
