@@ -28,6 +28,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
 import { Input } from '@/shared/components/shadcn-ui/input';
+import Cookies from 'js-cookie';
 
 interface LineItem {
   id: string; // Temp frontend ID
@@ -46,7 +47,7 @@ interface PickingNoteData {
   date: string;
   createdBy: string;
   warehouse: string;
-  status: 'draft' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'Pending' | 'Picking' | 'Completed' | 'Canceled' | 'Cancelled' | 'draft' | 'confirmed' | 'completed' | 'cancelled';
   items: LineItem[];
   createdAt: string;
   updatedAt: string;
@@ -58,6 +59,11 @@ interface PickingNoteDetailProps {
 }
 
 const statusColor: Record<string, string> = {
+  'Pending': 'bg-gray-50 text-gray-700 border-gray-200',
+  'Picking': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Completed': 'bg-green-50 text-green-700 border-green-200',
+  'Canceled': 'bg-red-50 text-red-700 border-red-200',
+  'Cancelled': 'bg-red-50 text-red-700 border-red-200',
   'draft': 'bg-gray-50 text-gray-700 border-gray-200',
   'confirmed': 'bg-blue-50 text-blue-700 border-blue-200',
   'completed': 'bg-green-50 text-green-700 border-green-200',
@@ -65,6 +71,11 @@ const statusColor: Record<string, string> = {
 };
 
 const statusLabel: Record<string, string> = {
+  'Pending': 'Chờ xử lý',
+  'Picking': 'Đang soạn hàng',
+  'Completed': 'Hoàn thành',
+  'Canceled': 'Đã hủy',
+  'Cancelled': 'Đã hủy',
   'draft': 'Nháp',
   'confirmed': 'Xác nhận',
   'completed': 'Hoàn thành',
@@ -215,8 +226,21 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       toast.success("Đã bắt đầu soạn hàng");
       window.location.reload();
     } catch (error) {
-      toast.error("Lỗi khi bắt đầu soạn hàng");
+      // The Axios interceptor already displays the error toast.
+      console.error("Start picking error:", error);
     }
+  };
+
+  const handleCreateSupplyRequest = () => {
+    const warehouseId = Cookies.get('warehouseId') || '';
+    const itemsShortage = formData.items.map(item => ({
+      productId: item.id,
+      productCode: item.productCode,
+      productName: item.productName,
+      requiredQuantity: item.quantity
+    }));
+    
+    window.location.href = `/supplychain/supplyrequest/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
   const handleCompletePicking = async () => {
@@ -294,9 +318,14 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
           {!isEditing && (
             <>
               {formData.status === 'Pending' && (
-                <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
-                  Bắt đầu soạn
-                </Button>
+                <>
+                  <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    Bắt đầu soạn
+                  </Button>
+                  <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
+                    Yêu cầu cung ứng
+                  </Button>
+                </>
               )}
               {formData.status === 'Picking' && (
                 <Button onClick={handleCompletePicking} className="bg-green-600 hover:bg-green-700 text-white rounded">

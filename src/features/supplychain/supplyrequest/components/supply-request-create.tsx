@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Package, MessageSquare, Save, X,
   ClipboardList, Search, Plus, Trash
@@ -13,13 +13,19 @@ import { Textarea } from '@/shared/components/shadcn-ui/textarea';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { toast } from 'sonner';
+import Cookies from 'js-cookie';
+import { createSupplyRequest } from '../services/supply-request-service';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 
 interface RequestItem {
-  id: string;
+  id: string; // Temp or Product Guid
   productCode: string;
   productName: string;
   requiredQuantity: number;
+  isAutofilled?: boolean;
 }
 
 interface SupplyRequestData {
@@ -29,67 +35,86 @@ interface SupplyRequestData {
   totalRequired: number;
   requestItems: RequestItem[];
   note: string;
+  warehouseId?: string;
+  pickingNoteId?: string;
 }
 
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<ProductLoadMoreForModal[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
-             <span className="truncate w-full font-semibold">{displayLabel}</span>
+          <div className="flex flex-col items-start overflow-hidden text-left">
+            <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
         <div className="p-2 border-b bg-gray-50/50">
-           <Input 
-              placeholder="Gõ tên hoặc mã sản phẩm..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
-              autoFocus
-           />
+          <Input
+            placeholder="Gõ tên hoặc mã sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+            autoFocus
+          />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {filteredProducts.length === 0 ? (
-             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
-           ) : (
-             filteredProducts.map(p => (
-               <div 
-                 key={p.id}
-                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
-                 onClick={() => {
-                    setSelectedCode(p.code || "");
-                    onSelect(p);
-                    setOpen(false);
-                 }}
-               >
-                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
-                 <div className="flex justify-between items-center mt-1">
-                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
-                 </div>
-               </div>
-             ))
-           )}
+          {loading ? (
+            <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+          ) : products.length === 0 ? (
+            <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+          ) : (
+            products.map(p => (
+              <div
+                key={p.id}
+                className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                onClick={() => {
+                  setSelectedProduct(p);
+                  onSelect(p);
+                  setOpen(false);
+                }}
+              >
+                <span className="text-xs font-bold text-gray-900">{p.name}</span>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
+                  <span className="text-[10px] text-brand-green font-bold italic">{p.supplierName}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -98,6 +123,12 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 
 export default function SupplyRequestCreate() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const pickingNoteId = searchParams.get('pickingNoteId');
+  const pickingNoteCode = searchParams.get('pickingNoteCode');
+  const warehouseIdParam = searchParams.get('warehouseId');
+  const itemsParam = searchParams.get('items');
 
   const [supplyData, setSupplyData] = useState<SupplyRequestData>({
     id: 'YC_NEW',
@@ -106,15 +137,76 @@ export default function SupplyRequestCreate() {
     totalRequired: 0,
     requestItems: [],
     note: '',
+    warehouseId: '',
   });
 
   const [note, setNote] = useState('');
+  const [warehouses, setWarehouses] = useState<any[]>([]);
 
-  const handleSave = () => {
-    const totalRequired = supplyData.requestItems.reduce((sum, item) => sum + item.requiredQuantity, 0);
-    console.log('Lưu yêu cầu cung ứng:', { ...supplyData, totalRequired, note });
-    // Redirect to list after save
-    router.push('/supplychain/supplyrequest');
+  useEffect(() => {
+    getWarehouses()
+      .then(data => setWarehouses(data || []))
+      .catch(err => console.error("Error loading warehouses:", err));
+  }, []);
+
+  useEffect(() => {
+    let parsedItems: RequestItem[] = [];
+    if (itemsParam) {
+      try {
+        const decoded = decodeURIComponent(itemsParam);
+        const rawItems = JSON.parse(decoded);
+        if (Array.isArray(rawItems)) {
+          parsedItems = rawItems.map((item: any, idx: number) => ({
+            id: item.productId || idx.toString(),
+            productCode: item.productCode || '',
+            productName: item.productName || '',
+            requiredQuantity: item.requiredQuantity || 1,
+            isAutofilled: true,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to parse items query param:", e);
+      }
+    }
+
+    setSupplyData(prev => ({
+      ...prev,
+      warehouseId: warehouseIdParam || '',
+      pickingNoteId: pickingNoteId || '',
+      requestItems: parsedItems,
+    }));
+
+    if (pickingNoteCode) {
+      setNote(`Yêu cầu này được tạo tự động từ Phiếu soạn kho #${pickingNoteCode}`);
+    }
+  }, [pickingNoteId, pickingNoteCode, warehouseIdParam, itemsParam]);
+
+  const handleSave = async () => {
+    if (!supplyData.warehouseId) {
+      toast.error("Vui lòng chọn kho yêu cầu");
+      return;
+    }
+    if (supplyData.requestItems.length === 0) {
+      toast.error("Vui lòng thêm ít nhất một sản phẩm cần cung ứng");
+      return;
+    }
+
+    try {
+      await createSupplyRequest({
+        code: supplyData.code,
+        warehouseId: supplyData.warehouseId,
+        note: note,
+        items: supplyData.requestItems.map(item => ({
+          productId: item.id,
+          requestedQuantity: item.requiredQuantity
+        })),
+        pickingNoteId: supplyData.pickingNoteId || undefined
+      });
+      toast.success("Tạo yêu cầu cung ứng thành công");
+      router.push('/supplychain/supplyrequest');
+    } catch (error) {
+      console.error("Failed to create supply request:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -123,7 +215,7 @@ export default function SupplyRequestCreate() {
 
   const addRequestItem = () => {
     const newItem: RequestItem = {
-      id: Date.now().toString(),
+      id: 'temp_' + Date.now().toString(),
       productCode: '',
       productName: '',
       requiredQuantity: 1,
@@ -144,7 +236,7 @@ export default function SupplyRequestCreate() {
   const updateRequestItem = (id: string, field: keyof RequestItem, value: any) => {
     setSupplyData({
       ...supplyData,
-      requestItems: supplyData.requestItems.map(item => 
+      requestItems: supplyData.requestItems.map(item =>
         item.id === id ? { ...item, [field]: value } : item
       ),
     });
@@ -190,6 +282,22 @@ export default function SupplyRequestCreate() {
                       onChange={(e) => setSupplyData({ ...supplyData, code: e.target.value })}
                       className="text-sm border-gray-300 rounded w-full"
                     />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-3 text-[#2B3674] font-semibold">Kho yêu cầu</td>
+                  <td className="px-6 py-3">
+                    <select
+                      disabled={!!supplyData.pickingNoteId}
+                      value={supplyData.warehouseId || ''}
+                      onChange={(e) => setSupplyData({ ...supplyData, warehouseId: e.target.value })}
+                      className="text-xs border border-gray-300 rounded w-full p-2 h-9 outline-none focus:border-brand-green"
+                    >
+                      <option value="">-- Chọn kho yêu cầu --</option>
+                      {warehouses.map(w => (
+                        <option key={w.id} value={w.id}>{w.name}</option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
                 <tr>
@@ -258,14 +366,21 @@ export default function SupplyRequestCreate() {
                   {supplyData.requestItems.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-3 py-2">
-                        <SearchableProductSelect
-                          defaultValue={item.productCode}
-                          defaultLabel={item.productName}
-                          onSelect={(prod) => {
-                            updateRequestItem(item.id, 'productCode', prod.code || '');
-                            updateRequestItem(item.id, 'productName', prod.name);
-                          }}
-                        />
+                        {item.isAutofilled ? (
+                          <div className="border border-gray-200 bg-gray-50 rounded px-3 py-2 h-9 flex items-center text-xs font-semibold text-gray-700">
+                            {item.productName} ({item.productCode})
+                          </div>
+                        ) : (
+                          <SearchableProductSelect
+                            defaultValue={item.productCode}
+                            defaultLabel={item.productName}
+                            onSelect={(prod) => {
+                              updateRequestItem(item.id, 'id', prod.id); // Swap temporary ID with database ID
+                              updateRequestItem(item.id, 'productCode', prod.code || '');
+                              updateRequestItem(item.id, 'productName', prod.name);
+                            }}
+                          />
+                        )}
                       </td>
                       <td className="px-3 py-2 text-center">
                         <input
