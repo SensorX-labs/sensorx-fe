@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import StockOutService from '@/features/inventory/stockout/services/stock-out-service';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
@@ -51,6 +52,8 @@ interface PickingNoteData {
   items: LineItem[];
   createdAt: string;
   updatedAt: string;
+  transferOrderCode?: string;
+  linkedTransferOrderId?: string;
 }
 
 interface PickingNoteDetailProps {
@@ -170,6 +173,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const isCreate = actionParam === ActionType.CREATE;
   const [loading, setLoading] = useState(false);
+  const [stockOutLoading, setStockOutLoading] = useState(false);
+
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
     code: '',
@@ -210,6 +215,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               })),
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
+              transferOrderCode: data.transferOrderCode,
+              linkedTransferOrderId: data.linkedTransferOrderId
             });
           }
         })
@@ -250,6 +257,20 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       window.location.reload();
     } catch (error) {
       toast.error("Lỗi khi hoàn thành soạn hàng");
+    }
+  };
+
+  const handleCreateStockOut = async () => {
+    setStockOutLoading(true);
+    try {
+      await StockOutService.create(id);
+      toast.success("Tạo phiếu xuất kho thành công!");
+      window.location.href = "/warehouse/stockout";
+    } catch (error) {
+      console.error("Error creating stock out:", error);
+      toast.error("Không thể tạo phiếu xuất kho hoặc phiếu đã được xuất");
+    } finally {
+      setStockOutLoading(false);
     }
   };
 
@@ -367,6 +388,20 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   Hủy phiếu
                 </Button>
               )}
+              {(formData.status === 'Completed' || formData.status === 'completed') && (
+                <Button
+                  onClick={handleCreateStockOut}
+                  disabled={stockOutLoading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white rounded gap-2"
+                >
+                  {stockOutLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Package className="w-4 h-4" />
+                  )}
+                  Xuất kho
+                </Button>
+              )}
             </>
           )}
           {isEditing && (
@@ -447,6 +482,19 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     </span>
                   </td>
                 </tr>
+                {formData.transferOrderCode && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Link
+                        href={`/warehouse/transfer-orders?search=${formData.transferOrderCode}`}
+                        className="font-bold text-blue-600 hover:underline"
+                      >
+                        {formData.transferOrderCode}
+                      </Link>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

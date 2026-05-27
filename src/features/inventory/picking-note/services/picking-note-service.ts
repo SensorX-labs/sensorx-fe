@@ -25,6 +25,8 @@ export interface PickingNoteDetail extends PickingNoteListItem {
         manufactureName: string;
         note?: string;
     }[];
+    transferOrderCode?: string;
+    linkedTransferOrderId?: string;
 }
 
 export interface PickingNoteCursorQuery {

@@ -41,6 +41,9 @@ interface StockInItem {
   unit: string;
   unitPrice: number;
   taxRate: number;
+  floor?: string;
+  brandZone?: string;
+  rackCode?: string;
 }
 
 interface StockInData {
@@ -52,6 +55,7 @@ interface StockInData {
   status: 'draft' | 'pending' | 'completed';
   items: StockInItem[];
   note: string;
+  transferOrderCode?: string;
 }
 
 const statusColor: Record<string, string> = {
@@ -171,6 +175,8 @@ export default function StockInDetail({ id }: StockInDetailProps) {
     note: '',
   });
 
+  const [linkedTransferOrderCode, setLinkedTransferOrderCode] = useState('');
+
   const [items, setItems] = useState<StockInItem[]>([]);
   const [supplier, setSupplier] = useState('');
   const [warehouse, setWarehouse] = useState('');
@@ -235,7 +241,10 @@ export default function StockInDetail({ id }: StockInDetailProps) {
             productName: item.productName,
             productCode: item.productCode,
             unit: item.unit || 'Cái',
-            quantity: item.quantity
+            quantity: item.quantity,
+            floor: item.floor || '',
+            brandZone: item.brandZone || '',
+            rackCode: item.rackCode || '',
           }));
 
         if (filteredItems.length === 0) {
@@ -248,12 +257,15 @@ export default function StockInDetail({ id }: StockInDetailProps) {
           return;
         }
 
-        const payload = {
+        const payload: any = {
           deliveredBy: deliveredBy || 'unknown',
           warehouseKeeper: warehouseKeeper || 'unknown',
           description: note,
           items: filteredItems
         };
+        if (linkedTransferOrderCode) {
+          payload.linkedTransferOrderCode = linkedTransferOrderCode;
+        }
         await createStockIn(payload, selectedWarehouseId);
         toast.success("Tạo phiếu nhập kho thành công");
         router.push("/warehouse/stockin");
@@ -378,6 +390,31 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Ngày nhập</td>
                   <td className="px-6 py-3">{new Date(stockInData.date).toLocaleDateString('vi-VN')}</td>
                 </tr>
+                {action === ActionType.CREATE ? (
+                  <tr>
+                    <td className="px-6 py-3 text-[#2B3674] font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Input
+                        value={linkedTransferOrderCode}
+                        onChange={(e) => setLinkedTransferOrderCode(e.target.value)}
+                        className="text-sm h-8 border-gray-300 rounded"
+                        placeholder="Nhập mã (nếu có)"
+                      />
+                    </td>
+                  </tr>
+                ) : stockInData.transferOrderCode ? (
+                  <tr>
+                    <td className="px-6 py-3 text-[#2B3674] font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Link
+                        href={`/warehouse/transfer-orders?search=${stockInData.transferOrderCode}`}
+                        className="font-bold text-blue-600 hover:underline text-sm"
+                      >
+                        {stockInData.transferOrderCode}
+                      </Link>
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -475,6 +512,9 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                   <tr>
                     <th className="px-6 py-3 admin-table-th text-left">Sản phẩm</th>
                     <th className="px-4 py-3 w-24 admin-table-th text-center">Số lượng</th>
+                    <th className="px-3 py-3 admin-table-th text-center">Tầng</th>
+                    <th className="px-3 py-3 admin-table-th text-center">Khu</th>
+                    <th className="px-3 py-3 admin-table-th text-center">Kệ</th>
                     {isEditing && <th className="px-1 py-3 w-5" />}
                   </tr>
                 </thead>
@@ -515,6 +555,45 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                             <span className="font-medium">{item.quantity}</span>
                           )}
                         </td>
+                        <td className="px-3 py-3 text-center">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={item.floor || ''}
+                              onChange={(e) => updateItem(item.id, 'floor', e.target.value)}
+                              placeholder="T1"
+                              className="w-14 px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-600">{item.floor || '-'}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={item.brandZone || ''}
+                              onChange={(e) => updateItem(item.id, 'brandZone', e.target.value)}
+                              placeholder="A"
+                              className="w-14 px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-600">{item.brandZone || '-'}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={item.rackCode || ''}
+                              onChange={(e) => updateItem(item.id, 'rackCode', e.target.value)}
+                              placeholder="R01"
+                              className="w-14 px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-600">{item.rackCode || '-'}</span>
+                          )}
+                        </td>
                         {isEditing && (
                           <td className="px-1 py-3 text-center">
                             <Button
@@ -532,7 +611,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                   })}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={isEditing ? 3 : 2} className="px-6 py-10 text-center text-gray-400 italic text-xs">
+                      <td colSpan={isEditing ? 8 : 5} className="px-6 py-10 text-center text-gray-400 italic text-xs">
                         Chưa có sản phẩm nào được chọn. Click "+ Thêm hàng hóa" để chọn sản phẩm.
                       </td>
                     </tr>

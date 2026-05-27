@@ -49,6 +49,7 @@ interface StockOutData {
   status: 'draft' | 'pending' | 'completed';
   items: StockOutItem[];
   note: string;
+  transferOrderCode?: string;
 }
 
 const statusColor: Record<string, string> = {
@@ -341,6 +342,19 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Ngày xuất</td>
                   <td className="px-6 py-3">{new Date(stockOutData.date).toLocaleDateString('vi-VN')}</td>
                 </tr>
+                {stockOutData.transferOrderCode && (
+                  <tr>
+                    <td className="px-6 py-3 text-[#2B3674] font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Link
+                        href={`/warehouse/transfer-orders?search=${stockOutData.transferOrderCode}`}
+                        className="font-bold text-blue-600 hover:underline"
+                      >
+                        {stockOutData.transferOrderCode}
+                      </Link>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
