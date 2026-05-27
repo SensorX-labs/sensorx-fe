@@ -263,6 +263,36 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     }
   };
 
+  const addItem = () => {
+    const newItem: LineItem = {
+      id: 'temp_' + Date.now().toString(),
+      productCode: '',
+      productName: '',
+      quantity: 1,
+      notes: ''
+    };
+    setFormData({
+      ...formData,
+      items: [...formData.items, newItem]
+    });
+  };
+
+  const removeItem = (id: string) => {
+    setFormData({
+      ...formData,
+      items: formData.items.filter(item => item.id !== id)
+    });
+  };
+
+  const updateItem = (id: string, field: keyof LineItem, value: any) => {
+    setFormData({
+      ...formData,
+      items: formData.items.map(item =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    });
+  };
+
   const handleSave = async () => {
     try {
       if (action === ActionType.CREATE) {

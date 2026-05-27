@@ -10,6 +10,7 @@ export const statusColor: Record<QuoteStatus, string> = {
   [QuoteStatus.SENT]: 'bg-indigo-50 text-indigo-700 border-indigo-200',
   [QuoteStatus.ORDERED]: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   [QuoteStatus.EXPIRED]: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  [QuoteStatus.CANCELLED]: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
 export const statusLabel: Record<QuoteStatus, string> = {
@@ -20,6 +21,7 @@ export const statusLabel: Record<QuoteStatus, string> = {
   [QuoteStatus.SENT]: 'Đã gửi',
   [QuoteStatus.ORDERED]: 'Đã sinh đơn',
   [QuoteStatus.EXPIRED]: 'Hết hạn',
+  [QuoteStatus.CANCELLED]: 'Đã hủy',
 };
 
 export const paymentMethodLabel: Record<string, string> = {

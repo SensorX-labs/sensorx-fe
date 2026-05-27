@@ -20,7 +20,7 @@ export default function StockOutList() {
   }, []);
 
   const filteredStockOuts = stockOuts.filter(so => 
-    so.code.value?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    so.code?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     so.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

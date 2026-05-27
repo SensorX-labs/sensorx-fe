@@ -1,4 +1,4 @@
-import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType, HubConnectionState } from '@microsoft/signalr';
 import Cookies from 'js-cookie';
 import { GATEWAY_URL } from '@/shared/constants/environment';
 
@@ -21,7 +21,7 @@ class SignalRClient {
    * Initialize SignalR connection
    */
   async connect(): Promise<void> {
-    if (this.connection?.state === 1) {
+    if (this.connection?.state === HubConnectionState.Connected) {
       // Already connected
       return;
     }
@@ -103,7 +103,7 @@ class SignalRClient {
    * Subscribe to payment updates for a specific order
    */
   async subscribeToOrder(orderId: string): Promise<void> {
-    if (!this.connection || this.connection.state !== 1) {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
       console.warn('SignalR not connected. Attempting to connect...');
       await this.connect();
     }
@@ -121,7 +121,7 @@ class SignalRClient {
    * Unsubscribe from payment updates for a specific order
    */
   async unsubscribeFromOrder(orderId: string): Promise<void> {
-    if (!this.connection || this.connection.state !== 1) {
+    if (!this.connection || this.connection.state !== HubConnectionState.Connected) {
       return;
     }
 
@@ -167,13 +167,13 @@ class SignalRClient {
    * Get connection status
    */
   isConnected(): boolean {
-    return this.connection?.state === 1;
+    return this.connection?.state === HubConnectionState.Connected;
   }
 
   /**
    * Get connection state
    */
-  getConnectionState(): number | null {
+  getConnectionState(): HubConnectionState | null {
     return this.connection?.state ?? null;
   }
 }

@@ -1,9 +1,8 @@
 import api from "@/shared/configs/axios-config";
-import { OffsetPagedResult } from "@/shared/models/base-response";
-import { BaseQueryOffsetPagedList } from "@/shared/models/base-query-page-list";
+import { OffsetPagedResult, OffsetPagedQuery } from "@/shared/models/offset-page.base";
 import { Invoice, InvoiceListItem } from "../models/invoice";
 
-export type InvoiceFilter = BaseQueryOffsetPagedList;
+export type InvoiceFilter = OffsetPagedQuery;
 
 export const InvoiceService = {
   getListInvoices: (params: InvoiceFilter) =>

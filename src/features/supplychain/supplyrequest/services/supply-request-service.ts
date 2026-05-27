@@ -15,6 +15,7 @@ export const createSupplyRequest = async (payload: {
   warehouseId: string;
   note: string;
   items: { productId: string; requestedQuantity: number }[];
+  pickingNoteId?: string;
 }) => {
   const response = await api.master.post('/supply-requests', payload);
   return response.data?.value || response.data;

@@ -175,7 +175,7 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
     if (id && action !== ActionType.CREATE) {
       setLoading(true);
       StockOutService.getById(id)
-        .then(data => {
+        .then((data: any) => {
           if (data) {
             setStockOutData(data);
             setItems(data.items || []);
@@ -183,7 +183,7 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
             setNote(data.description || '');
           }
         })
-        .catch(err => {
+        .catch((err: any) => {
           console.error("Error fetching stock out detail:", err);
           toast.error("Không thể tải thông tin phiếu xuất kho");
         })

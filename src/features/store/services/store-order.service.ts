@@ -48,6 +48,6 @@ export const StoreOrderService = {
             } as LoadMorePagedResult<StoreMyOrderItem>;
         }
         
-        return response;
+        return response as unknown as LoadMorePagedResult<StoreMyOrderItem>;
     }
 };

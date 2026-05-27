@@ -138,15 +138,14 @@ const StockOutTable = () => {
   };
 
   return (
-    <AdminPageContainer
-      title="Danh sách phiếu xuất kho"
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4 mt-2">
+        <h2 className="text-2xl font-bold admin-title uppercase">Danh sách phiếu xuất kho</h2>
         <Button onClick={() => router.push("/warehouse/stock-out/new")} className="gap-2">
           <Plus className="w-4 h-4" />
           Tạo phiếu xuất
         </Button>
-      }
-    >
+      </div>
       {/* Tabs navigation cao cấp hiển thị danh sách kho */}
       <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px mb-4">
         {warehouses.map((w) => {

@@ -112,7 +112,10 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
 
   if (loading) {
     return (
-      <AdminPageContainer title="Chi tiết phiếu soạn kho">
+      <AdminPageContainer>
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase mb-4">Chi tiết phiếu soạn kho</h2>
+        </div>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -122,7 +125,10 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
 
   if (!pickingNote) {
     return (
-      <AdminPageContainer title="Chi tiết phiếu soạn kho">
+      <AdminPageContainer>
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase mb-4">Chi tiết phiếu soạn kho</h2>
+        </div>
         <div className="text-center py-20 text-gray-400">
           Không tìm thấy phiếu soạn kho
         </div>
@@ -131,9 +137,13 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   }
 
   return (
-    <AdminPageContainer
-      title={`Phiếu soạn kho: ${pickingNote.code}`}
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            Phiếu soạn kho: {pickingNote.code}
+          </h2>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -178,8 +188,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
             </Button>
           )}
         </div>
-      }
-    >
+      </div>
       <div className="space-y-6">
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">

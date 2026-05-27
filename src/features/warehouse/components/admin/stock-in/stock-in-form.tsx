@@ -35,6 +35,9 @@ interface StockInItem {
   productName: string;
   unit: string;
   quantity: number;
+  floor?: string;
+  brandZone?: string;
+  rackCode?: string;
 }
 
 const StockInForm = () => {
@@ -53,7 +56,7 @@ const StockInForm = () => {
   });
 
   const addItem = () => {
-    setItems([...items, { productId: "", productCode: "", productName: "", unit: "", quantity: 1 }]);
+    setItems([...items, { productId: "", productCode: "", productName: "", unit: "", quantity: 1, floor: "", brandZone: "", rackCode: "" }]);
   };
 
   const removeItem = (index: number) => {
@@ -92,9 +95,9 @@ const StockInForm = () => {
   };
 
   return (
-    <AdminPageContainer
-      title="Tạo phiếu nhập kho"
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4 mt-2">
+        <h2 className="text-2xl font-bold admin-title uppercase">Tạo phiếu nhập kho</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.back()}>
             Hủy
@@ -103,8 +106,7 @@ const StockInForm = () => {
             {loading ? "Đang lưu..." : "Lưu phiếu nhập"}
           </Button>
         </div>
-      }
-    >
+      </div>
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
         <Form {...form}>
           <form className="space-y-6">
@@ -189,59 +191,98 @@ const StockInForm = () => {
                   {items.map((item, index) => (
                     <div
                       key={index}
-                      className="grid grid-cols-12 gap-3 items-end p-4 bg-gray-50 rounded-lg"
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3"
                     >
-                      <div className="col-span-3">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Mã sản phẩm
-                        </label>
-                        <Input
-                          value={item.productCode}
-                          onChange={(e) => updateItem(index, "productCode", e.target.value)}
-                          placeholder="Mã SP"
-                        />
+                      <div className="grid grid-cols-12 gap-3 items-end">
+                        <div className="col-span-3">
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Mã sản phẩm
+                          </label>
+                          <Input
+                            value={item.productCode}
+                            onChange={(e) => updateItem(index, "productCode", e.target.value)}
+                            placeholder="Mã SP"
+                          />
+                        </div>
+                        <div className="col-span-4">
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Tên sản phẩm
+                          </label>
+                          <Input
+                            value={item.productName}
+                            onChange={(e) => updateItem(index, "productName", e.target.value)}
+                            placeholder="Tên sản phẩm"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Đơn vị
+                          </label>
+                          <Input
+                            value={item.unit}
+                            onChange={(e) => updateItem(index, "unit", e.target.value)}
+                            placeholder="Cái"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Số lượng
+                          </label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={item.quantity}
+                            onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div className="col-span-1 flex justify-center pb-0.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:bg-red-50 h-9 w-9"
+                            onClick={() => removeItem(index)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="col-span-4">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Tên sản phẩm
-                        </label>
-                        <Input
-                          value={item.productName}
-                          onChange={(e) => updateItem(index, "productName", e.target.value)}
-                          placeholder="Tên sản phẩm"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Đơn vị
-                        </label>
-                        <Input
-                          value={item.unit}
-                          onChange={(e) => updateItem(index, "unit", e.target.value)}
-                          placeholder="Cái"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Số lượng
-                        </label>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, "quantity", parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="col-span-1 flex justify-center">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:bg-red-50"
-                          onClick={() => removeItem(index)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+
+                      {/* Vị trí sản phẩm nhập kho */}
+                      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-200/60">
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                            Tầng (Tùy chọn)
+                          </label>
+                          <Input
+                            value={item.floor || ""}
+                            onChange={(e) => updateItem(index, "floor", e.target.value)}
+                            placeholder="VD: Tầng 1"
+                            className="bg-white text-xs h-9"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                            Khu vực (Tùy chọn)
+                          </label>
+                          <Input
+                            value={item.brandZone || ""}
+                            onChange={(e) => updateItem(index, "brandZone", e.target.value)}
+                            placeholder="VD: Khu A"
+                            className="bg-white text-xs h-9"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                            Kệ (Tùy chọn)
+                          </label>
+                          <Input
+                            value={item.rackCode || ""}
+                            onChange={(e) => updateItem(index, "rackCode", e.target.value)}
+                            placeholder="VD: Kệ 01"
+                            className="bg-white text-xs h-9"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
