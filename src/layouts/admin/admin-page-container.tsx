@@ -27,7 +27,7 @@ export function AdminPageContainer({
         className
       )}
       style={{
-        height: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT - 25}px)`,
+        minHeight: `calc(100vh - ${LAYOUT_CONSTANTS.HEADER_HEIGHT + LAYOUT_CONSTANTS.FOOTER_HEIGHT - 25}px)`,
         paddingTop: '10px',
         paddingBottom: '10px',
       }}
