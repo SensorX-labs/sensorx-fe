@@ -97,7 +97,7 @@ export function UnitOfQuantityTable({
                   )}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                     <Button
                       variant="ghost"
                       size="icon"
