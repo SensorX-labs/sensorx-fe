@@ -5,15 +5,36 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 
-import { changePasswordSchema, ChangePasswordFormValues } from '@/features/system/auth/schemas/change-password-schema';
+import { cn } from '@/shared/utils/cn';
+import {
+  changePasswordSchema,
+  ChangePasswordFormValues,
+} from '@/features/system/auth/schemas/change-password-schema';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 
 const authService = new AuthService();
 
-export const ChangePasswordForm: React.FC = () => {
+interface ChangePasswordFormProps {
+  className?: string;
+  title?: string;
+  description?: string;
+  redirectTo?: string | null;
+  submitLabel?: string;
+  submittingLabel?: string;
+  onSuccess?: () => void;
+}
+
+export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
+  className,
+  title = 'Đổi mật khẩu',
+  description = 'Vui lòng nhập thông tin mới',
+  redirectTo = '/profile',
+  submitLabel = 'Đổi mật khẩu',
+  submittingLabel = 'Đang thay đổi...',
+  onSuccess,
+}) => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -34,28 +55,30 @@ export const ChangePasswordForm: React.FC = () => {
         newPassword: data.newPassword,
       });
 
-      toast.success('Mật khẩu đã được thay đổi thành công!');
-      router.push('/profile');
+      toast.success('Mật khẩu đã được thay đổi thành công.');
+      onSuccess?.();
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
     } catch {
-      // Lỗi đã được xử lý bởi axios interceptor (hiển thị toast.error)
+      // Error toast is handled by axios interceptor.
     }
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-semibold italic text-brand-green mb-2">
-          Đổi mật khẩu
+    <div className={cn('w-full max-w-md', className)}>
+      <div className="mb-12 text-center">
+        <h1 className="mb-2 text-4xl font-semibold italic text-brand-green">
+          {title}
         </h1>
-        <p className="text-xs tracking-widest text-gray-400 uppercase">
-          Vui lòng nhập thông tin mới
+        <p className="text-xs uppercase tracking-widest text-gray-400">
+          {description}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-        {/* Mật khẩu cũ */}
         <div>
-          <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
+          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
             Mật khẩu cũ
           </label>
           <div className="relative">
@@ -63,9 +86,12 @@ export const ChangePasswordForm: React.FC = () => {
               type={showOldPassword ? 'text' : 'password'}
               {...register('oldPassword')}
               placeholder="••••••••"
-              className={`w-full px-0 py-3 bg-transparent border-b focus:outline-none text-gray-900 placeholder-gray-400 transition-colors pr-8 ${
-                errors.oldPassword ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-              }`}
+              className={cn(
+                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                errors.oldPassword
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
+              )}
             />
             <button
               type="button"
@@ -80,9 +106,8 @@ export const ChangePasswordForm: React.FC = () => {
           )}
         </div>
 
-        {/* Mật khẩu mới */}
         <div>
-          <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
+          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
             Mật khẩu mới
           </label>
           <div className="relative">
@@ -90,9 +115,12 @@ export const ChangePasswordForm: React.FC = () => {
               type={showNewPassword ? 'text' : 'password'}
               {...register('newPassword')}
               placeholder="••••••••"
-              className={`w-full px-0 py-3 bg-transparent border-b focus:outline-none text-gray-900 placeholder-gray-400 transition-colors pr-8 ${
-                errors.newPassword ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-              }`}
+              className={cn(
+                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                errors.newPassword
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
+              )}
             />
             <button
               type="button"
@@ -107,9 +135,8 @@ export const ChangePasswordForm: React.FC = () => {
           )}
         </div>
 
-        {/* Xác nhận mật khẩu */}
         <div>
-          <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">
+          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
             Xác nhận mật khẩu
           </label>
           <div className="relative">
@@ -117,9 +144,12 @@ export const ChangePasswordForm: React.FC = () => {
               type={showConfirmPassword ? 'text' : 'password'}
               {...register('confirmPassword')}
               placeholder="••••••••"
-              className={`w-full px-0 py-3 bg-transparent border-b focus:outline-none text-gray-900 placeholder-gray-400 transition-colors pr-8 ${
-                errors.confirmPassword ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-              }`}
+              className={cn(
+                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                errors.confirmPassword
+                  ? 'border-red-400 focus:border-red-500'
+                  : 'border-gray-300 focus:border-blue-500'
+              )}
             />
             <button
               type="button"
@@ -134,15 +164,14 @@ export const ChangePasswordForm: React.FC = () => {
           )}
         </div>
 
-        {/* Submit */}
         <div className="pt-6">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-semibold py-3 px-6 tracking-wider uppercase transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 bg-brand-green px-6 py-3 font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-            {isSubmitting ? 'Đang thay đổi...' : 'Đổi mật khẩu'}
+            {isSubmitting ? submittingLabel : submitLabel}
           </button>
         </div>
       </form>

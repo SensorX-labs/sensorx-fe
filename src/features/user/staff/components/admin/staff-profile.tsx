@@ -14,6 +14,7 @@ import Cookies from 'js-cookie';
 import { AdminPageContainer } from '@/shared/components/admin/layout';
 import StaffService, { ProfileStaff, StaffStatus } from '../../services/staff.service';
 import { cn } from '@/shared/utils';
+import { ChangePasswordForm } from '@/features/system/auth/components/common/change-password-form';
 
 const formatDate = (dateString?: string) => {
     if (!dateString) return '---';
@@ -389,12 +390,22 @@ export default function StaffProfile() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="max-w-md space-y-4 animate-in fade-in duration-300">
+                                        <div className="mx-auto max-w-md space-y-4 animate-in fade-in duration-300">
                                             <div className="flex items-center gap-2 text-slate-500 hover:text-slate-800 cursor-pointer mb-2" onClick={() => setIsChangingPassword(false)}>
                                                 <ArrowLeft size={14} /> <span className="text-xs font-bold">Quay lại quản lý bảo mật</span>
                                             </div>
 
-                                            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); toast.info("Tính năng đổi mật khẩu đang được cấu hình."); }}>
+                                            <ChangePasswordForm
+                                                className="max-w-none"
+                                                title="Đổi mật khẩu"
+                                                description="Cập nhật mật khẩu tài khoản nhân viên"
+                                                redirectTo={null}
+                                                submitLabel="Xác nhận cập nhật mật khẩu"
+                                                submittingLabel="Đang cập nhật..."
+                                                onSuccess={() => setIsChangingPassword(false)}
+                                            />
+
+                                            <form className="hidden space-y-4" onSubmit={(e) => { e.preventDefault(); toast.info("Tính năng đổi mật khẩu đang được cấu hình."); }}>
                                                 <div className="space-y-1.5">
                                                     <label className="text-xs font-bold text-slate-600">Mật khẩu hiện tại</label>
                                                     <input type="password" placeholder="••••••••" className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" />
