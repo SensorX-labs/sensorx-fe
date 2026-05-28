@@ -30,8 +30,8 @@ export interface StockOutCursorResult {
 }
 
 export const StockOutService = {
-    create: (pickingNoteId: string) => 
-        api.warehouse.post<any, string>("/stockOut/createStockOut", { pickingNoteId }),
+    create: (pickingNoteId: string, note?: string) => 
+        api.warehouse.post<any, string>("/stockOut/createStockOut", { pickingNoteId, note }),
 
     getList: (params: StockOutCursorQuery) => {
         const { warehouseId, ...restParams } = params;

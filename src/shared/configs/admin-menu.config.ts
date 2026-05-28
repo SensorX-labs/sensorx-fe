@@ -152,12 +152,6 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         iconName: 'FileEdit',
         href: '/warehouse/picking-note',
         roles: ['Manager', 'WarehouseStaff']
-      },
-      {
-        name: 'Kiểm kê kho',
-        iconName: 'ClipboardList',
-        href: '/warehouse/stock-adjustment',
-        roles: ['Manager', 'WarehouseStaff']
       }
     ],
   },

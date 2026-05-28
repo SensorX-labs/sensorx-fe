@@ -175,6 +175,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const isCreate = actionParam === ActionType.CREATE;
   const [loading, setLoading] = useState(false);
   const [stockOutLoading, setStockOutLoading] = useState(false);
+  const [stockOutNote, setStockOutNote] = useState("");
 
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
@@ -229,6 +230,12 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     }
   }, [id, isCreate]);
 
+  useEffect(() => {
+    if (formData.status === "Completed" && formData.code && !stockOutNote) {
+      setStockOutNote(formData.code);
+    }
+  }, [formData.status, formData.code, stockOutNote]);
+
   const handleStartPicking = async () => {
     try {
       await PickingNoteService.startPicking(id);
@@ -265,7 +272,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const handleCreateStockOut = async () => {
     setStockOutLoading(true);
     try {
-      await StockOutService.create(id);
+      await StockOutService.create(id, stockOutNote);
       toast.success("Tạo phiếu xuất kho thành công!");
       window.location.href = "/warehouse/stockout";
     } catch (error) {
@@ -494,6 +501,20 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                       >
                         {formData.transferOrderCode}
                       </Link>
+                    </td>
+                  </tr>
+                )}
+                {formData.status === 'Completed' && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Ghi chú xuất kho</td>
+                    <td className="px-6 py-3">
+                      <textarea
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-purple-500 font-medium"
+                        rows={3}
+                        placeholder="Nhập ghi chú khi xuất kho..."
+                        value={stockOutNote}
+                        onChange={(e) => setStockOutNote(e.target.value)}
+                      />
                     </td>
                   </tr>
                 )}
