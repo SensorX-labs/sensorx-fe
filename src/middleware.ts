@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { getAllAdminPaths, getAllowedRoutes } from './shared/configs/admin-menu.config';
 
 const publicPaths = ['/', '/not-found', '/shop'];
-const authPaths = ['/login', '/register'];
+const authPaths = ['/login', '/register', '/forgot-password'];
 
 // Lấy danh sách tất cả các path thuộc vùng Admin để định danh vùng bảo vệ
 const adminPaths = getAllAdminPaths();
