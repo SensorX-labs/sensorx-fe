@@ -41,6 +41,14 @@ export const StockOutService = {
         }
         return api.warehouse.get<any, StockOutCursorResult>("/stockOut/list", config);
     },
+
+    getById: (id: string) => 
+        api.warehouse.get<any, any>(`/stockOut/detail/${id}`),
+
+    createStockOut: (data: any, warehouseId?: string) => {
+        const config = warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : {};
+        return api.warehouse.post<any, any>("/stockOut/createStockOut", data, config);
+    },
 };
 
 export default StockOutService;

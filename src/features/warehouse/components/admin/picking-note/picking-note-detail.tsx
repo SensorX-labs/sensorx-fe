@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/shared/components/shadcn-ui/button";
 import {
   Loader2,
@@ -24,6 +25,7 @@ import { PickingNote } from "@/features/warehouse/models";
 import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
+import StockOutService from "@/features/inventory/stockout/services/stock-out-service";
 
 interface PickingNoteDetailProps {
   id: string;
@@ -55,6 +57,8 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
     }
   }, [id]);
 
+  const [stockOutLoading, setStockOutLoading] = useState(false);
+
   const fetchPickingNoteDetail = async () => {
     setLoading(true);
     try {
@@ -65,6 +69,20 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
       toast.error("Không thể tải thông tin phiếu soạn kho");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateStockOut = async () => {
+    setStockOutLoading(true);
+    try {
+      await StockOutService.create(id);
+      toast.success("Tạo phiếu xuất kho thành công!");
+      router.push("/warehouse/stockout");
+    } catch (error) {
+      console.error("Error creating stock out:", error);
+      toast.error("Không thể tạo phiếu xuất kho hoặc phiếu đã được xuất");
+    } finally {
+      setStockOutLoading(false);
     }
   };
 
@@ -112,7 +130,10 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
 
   if (loading) {
     return (
-      <AdminPageContainer title="Chi tiết phiếu soạn kho">
+      <AdminPageContainer>
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase mb-4">Chi tiết phiếu soạn kho</h2>
+        </div>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -122,7 +143,10 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
 
   if (!pickingNote) {
     return (
-      <AdminPageContainer title="Chi tiết phiếu soạn kho">
+      <AdminPageContainer>
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase mb-4">Chi tiết phiếu soạn kho</h2>
+        </div>
         <div className="text-center py-20 text-gray-400">
           Không tìm thấy phiếu soạn kho
         </div>
@@ -131,9 +155,13 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   }
 
   return (
-    <AdminPageContainer
-      title={`Phiếu soạn kho: ${pickingNote.code}`}
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            Phiếu soạn kho: {pickingNote.code}
+          </h2>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -177,9 +205,22 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
               Hoàn thành
             </Button>
           )}
+          {pickingNote.status === "Completed" && (
+            <Button
+              onClick={handleCreateStockOut}
+              disabled={stockOutLoading}
+              className="gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded"
+            >
+              {stockOutLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Package className="w-4 h-4" />
+              )}
+              Xuất kho
+            </Button>
+          )}
         </div>
-      }
-    >
+      </div>
       <div className="space-y-6">
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
@@ -216,6 +257,19 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
               </p>
               <p className="text-gray-700">{pickingNote.createdBy}</p>
             </div>
+            {pickingNote.transferOrderCode && (
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                  Đơn điều chuyển liên kết
+                </p>
+                <Link
+                  href={`/warehouse/transfer-orders?search=${pickingNote.transferOrderCode}`}
+                  className="font-bold text-blue-600 hover:underline"
+                >
+                  {pickingNote.transferOrderCode}
+                </Link>
+              </div>
+            )}
           </div>
 
           {pickingNote.description && (

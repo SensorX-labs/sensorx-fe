@@ -47,7 +47,7 @@ const StockAdjustmentTable = () => {
     const loadW = async () => {
       try {
         const res = await getWarehouses();
-        const loadedWarehouses = res || [];
+        const loadedWarehouses: WarehouseModel[] = res || [];
         setWarehouses(loadedWarehouses);
 
         if (isWarehouseStaff && user?.warehouseId) {

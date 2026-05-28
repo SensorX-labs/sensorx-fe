@@ -202,7 +202,7 @@ export default function StockOutList() {
                       className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
                       asChild
                     >
-                      <Link href={`/inventory/stockout/${e.id}`}>
+                      <Link href={`/warehouse/stockout/${e.id}`}>
                         <Eye className="w-4 h-4" />
                       </Link>
                     </Button>

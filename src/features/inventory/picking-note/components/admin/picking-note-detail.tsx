@@ -24,10 +24,12 @@ import { toast } from 'sonner';
 import { Loader2, Search } from 'lucide-react';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import StockOutService from '@/features/inventory/stockout/services/stock-out-service';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
 import { Input } from '@/shared/components/shadcn-ui/input';
+import Cookies from 'js-cookie';
 
 interface LineItem {
   id: string; // Temp frontend ID
@@ -46,10 +48,13 @@ interface PickingNoteData {
   date: string;
   createdBy: string;
   warehouse: string;
-  status: 'draft' | 'confirmed' | 'completed' | 'cancelled';
+  warehouseId?: string;
+  status: 'Pending' | 'Picking' | 'Completed' | 'Canceled' | 'Cancelled' | 'draft' | 'confirmed' | 'completed' | 'cancelled';
   items: LineItem[];
   createdAt: string;
   updatedAt: string;
+  transferOrderCode?: string;
+  linkedTransferOrderId?: string;
 }
 
 interface PickingNoteDetailProps {
@@ -58,6 +63,11 @@ interface PickingNoteDetailProps {
 }
 
 const statusColor: Record<string, string> = {
+  'Pending': 'bg-gray-50 text-gray-700 border-gray-200',
+  'Picking': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Completed': 'bg-green-50 text-green-700 border-green-200',
+  'Canceled': 'bg-red-50 text-red-700 border-red-200',
+  'Cancelled': 'bg-red-50 text-red-700 border-red-200',
   'draft': 'bg-gray-50 text-gray-700 border-gray-200',
   'confirmed': 'bg-blue-50 text-blue-700 border-blue-200',
   'completed': 'bg-green-50 text-green-700 border-green-200',
@@ -65,6 +75,11 @@ const statusColor: Record<string, string> = {
 };
 
 const statusLabel: Record<string, string> = {
+  'Pending': 'Chờ xử lý',
+  'Picking': 'Đang soạn hàng',
+  'Completed': 'Hoàn thành',
+  'Canceled': 'Đã hủy',
+  'Cancelled': 'Đã hủy',
   'draft': 'Nháp',
   'confirmed': 'Xác nhận',
   'completed': 'Hoàn thành',
@@ -159,6 +174,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const isCreate = actionParam === ActionType.CREATE;
   const [loading, setLoading] = useState(false);
+  const [stockOutLoading, setStockOutLoading] = useState(false);
+
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
     code: '',
@@ -187,6 +204,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               date: data.createdAt,
               createdBy: 'Admin',
               warehouse: 'Kho chính', // Mock for now if not in DTO
+              warehouseId: data.warehouseId,
               status: data.status as any,
               items: data.items.map((i: any) => ({
                 id: i.productId,
@@ -199,6 +217,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               })),
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
+              transferOrderCode: data.transferOrderCode,
+              linkedTransferOrderId: data.linkedTransferOrderId
             });
           }
         })
@@ -215,8 +235,21 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       toast.success("Đã bắt đầu soạn hàng");
       window.location.reload();
     } catch (error) {
-      toast.error("Lỗi khi bắt đầu soạn hàng");
+      // The Axios interceptor already displays the error toast.
+      console.error("Start picking error:", error);
     }
+  };
+
+  const handleCreateSupplyRequest = () => {
+    const warehouseId = formData.warehouseId || Cookies.get('warehouseId') || '';
+    const itemsShortage = formData.items.map(item => ({
+      productId: item.id,
+      productCode: item.productCode,
+      productName: item.productName,
+      requiredQuantity: item.quantity
+    }));
+    
+    window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
   const handleCompletePicking = async () => {
@@ -229,6 +262,20 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     }
   };
 
+  const handleCreateStockOut = async () => {
+    setStockOutLoading(true);
+    try {
+      await StockOutService.create(id);
+      toast.success("Tạo phiếu xuất kho thành công!");
+      window.location.href = "/warehouse/stockout";
+    } catch (error) {
+      console.error("Error creating stock out:", error);
+      toast.error("Không thể tạo phiếu xuất kho hoặc phiếu đã được xuất");
+    } finally {
+      setStockOutLoading(false);
+    }
+  };
+
   const handleCancelPicking = async () => {
     try {
       await PickingNoteService.cancelPicking(id, "Người dùng hủy");
@@ -237,6 +284,36 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     } catch (error) {
       toast.error("Lỗi khi hủy phiếu soạn hàng");
     }
+  };
+
+  const addItem = () => {
+    const newItem: LineItem = {
+      id: 'temp_' + Date.now().toString(),
+      productCode: '',
+      productName: '',
+      quantity: 1,
+      notes: ''
+    };
+    setFormData({
+      ...formData,
+      items: [...formData.items, newItem]
+    });
+  };
+
+  const removeItem = (id: string) => {
+    setFormData({
+      ...formData,
+      items: formData.items.filter(item => item.id !== id)
+    });
+  };
+
+  const updateItem = (id: string, field: keyof LineItem, value: any) => {
+    setFormData({
+      ...formData,
+      items: formData.items.map(item =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    });
   };
 
   const handleSave = async () => {
@@ -294,9 +371,14 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
           {!isEditing && (
             <>
               {formData.status === 'Pending' && (
-                <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
-                  Bắt đầu soạn
-                </Button>
+                <>
+                  <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
+                    Bắt đầu soạn
+                  </Button>
+                  <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
+                    Yêu cầu cung ứng
+                  </Button>
+                </>
               )}
               {formData.status === 'Picking' && (
                 <Button onClick={handleCompletePicking} className="bg-green-600 hover:bg-green-700 text-white rounded">
@@ -306,6 +388,20 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               {(formData.status === 'Pending' || formData.status === 'Picking') && (
                 <Button onClick={handleCancelPicking} variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 rounded">
                   Hủy phiếu
+                </Button>
+              )}
+              {(formData.status === 'Completed' || formData.status === 'completed') && (
+                <Button
+                  onClick={handleCreateStockOut}
+                  disabled={stockOutLoading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white rounded gap-2"
+                >
+                  {stockOutLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Package className="w-4 h-4" />
+                  )}
+                  Xuất kho
                 </Button>
               )}
             </>
@@ -388,6 +484,19 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     </span>
                   </td>
                 </tr>
+                {formData.transferOrderCode && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Link
+                        href={`/warehouse/transfer-orders?search=${formData.transferOrderCode}`}
+                        className="font-bold text-blue-600 hover:underline"
+                      >
+                        {formData.transferOrderCode}
+                      </Link>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
