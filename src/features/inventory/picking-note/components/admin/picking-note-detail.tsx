@@ -48,6 +48,7 @@ interface PickingNoteData {
   date: string;
   createdBy: string;
   warehouse: string;
+  warehouseId?: string;
   status: 'Pending' | 'Picking' | 'Completed' | 'Canceled' | 'Cancelled' | 'draft' | 'confirmed' | 'completed' | 'cancelled';
   items: LineItem[];
   createdAt: string;
@@ -203,6 +204,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               date: data.createdAt,
               createdBy: 'Admin',
               warehouse: 'Kho chính', // Mock for now if not in DTO
+              warehouseId: data.warehouseId,
               status: data.status as any,
               items: data.items.map((i: any) => ({
                 id: i.productId,
@@ -239,7 +241,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   };
 
   const handleCreateSupplyRequest = () => {
-    const warehouseId = Cookies.get('warehouseId') || '';
+    const warehouseId = formData.warehouseId || Cookies.get('warehouseId') || '';
     const itemsShortage = formData.items.map(item => ({
       productId: item.id,
       productCode: item.productCode,
@@ -247,7 +249,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       requiredQuantity: item.quantity
     }));
     
-    window.location.href = `/supplychain/supplyrequest/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
+    window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
   const handleCompletePicking = async () => {

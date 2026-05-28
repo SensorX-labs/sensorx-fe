@@ -372,7 +372,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
         completeRequest: true
       });
       toast.success("Đã duyệt hoàn tất yêu cầu cung ứng");
-      router.push('/supplychain/supplyrequest');
+      router.push('/warehouse/supply-requests');
     } catch (error) {
       console.error("Failed to complete supply request:", error);
     } finally {
@@ -402,9 +402,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
     setPurchasePlan(purchasePlan.filter(item => item.id !== itemId));
   };
 
-  const updatePurchaseItem = (itemId: string, field: keyof PurchasePlanItem, value: any) => {
-    setPurchasePlan(purchasePlan.map(item =>
-      item.id === itemId ? { ...item, [field]: value } : item
+  const updatePurchaseItem = (itemId: string, updates: Partial<PurchasePlanItem>) => {
+    setPurchasePlan(prev => prev.map(item =>
+      item.id === itemId ? { ...item, ...updates } : item
     ));
   };
 
@@ -442,13 +442,13 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
     ));
   };
 
-  const updateTransferItem = (planId: string, itemId: string, field: keyof TransferPlanItem, value: any) => {
-    setTransferPlans(transferPlans.map(plan =>
+  const updateTransferItem = (planId: string, itemId: string, updates: Partial<TransferPlanItem>) => {
+    setTransferPlans(prev => prev.map(plan =>
       plan.id === planId
         ? {
           ...plan,
           items: plan.items.map(item =>
-            item.id === itemId ? { ...item, [field]: value } : item
+            item.id === itemId ? { ...item, ...updates } : item
           )
         }
         : plan
@@ -502,7 +502,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                   </Button>
                 </>
               )}
-              <Link href="/supplychain/supplyrequest">
+              <Link href="/warehouse/supply-requests">
                 <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Quay lại
@@ -642,9 +642,11 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                 defaultValue={item.productCode}
                                 defaultLabel={item.productName}
                                 onSelect={(prod) => {
-                                  updatePurchaseItem(item.id, 'productId', prod.id);
-                                  updatePurchaseItem(item.id, 'productCode', prod.code || '');
-                                  updatePurchaseItem(item.id, 'productName', prod.name);
+                                  updatePurchaseItem(item.id, {
+                                    productId: prod.id,
+                                    productCode: prod.code || '',
+                                    productName: prod.name
+                                  });
                                 }}
                               />
                             </div>
@@ -660,7 +662,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                             <input
                               type="number"
                               value={item.quantity}
-                              onChange={(e) => updatePurchaseItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updatePurchaseItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
@@ -672,7 +674,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                             <input
                               type="number"
                               value={item.unitPrice}
-                              onChange={(e) => updatePurchaseItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updatePurchaseItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
                               placeholder="0"
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
@@ -817,11 +819,13 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                       defaultValue={item.productCode}
                                       defaultLabel={item.productName}
                                       onSelect={(prod) => {
-                                        updateTransferItem(plan.id, item.id, 'productId', prod.id);
-                                        updateTransferItem(plan.id, item.id, 'productCode', prod.code || '');
-                                        updateTransferItem(plan.id, item.id, 'productName', prod.name);
-                                        updateTransferItem(plan.id, item.id, 'unit', prod.unitOfQuantityName || 'Cái');
-                                        updateTransferItem(plan.id, item.id, 'manufacturerName', prod.supplierName || 'N/A');
+                                        updateTransferItem(plan.id, item.id, {
+                                          productId: prod.id,
+                                          productCode: prod.code || '',
+                                          productName: prod.name,
+                                          unit: prod.unitOfQuantityName || 'Cái',
+                                          manufacturerName: prod.supplierName || 'N/A'
+                                        });
                                       }}
                                     />
                                   </div>
@@ -837,7 +841,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                   <input
                                     type="number"
                                     value={item.quantity}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { quantity: parseFloat(e.target.value) || 0 })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-blue-500"
                                   />
                                 ) : (
@@ -849,7 +853,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                   <input
                                     type="text"
                                     value={item.manufacturerName || ''}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'manufacturerName', e.target.value)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { manufacturerName: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-500"
                                     placeholder="Nhà SX"
                                   />
@@ -862,7 +866,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                   <input
                                     type="text"
                                     value={item.note || ''}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'note', e.target.value)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { note: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-500"
                                     placeholder="Ghi chú"
                                   />

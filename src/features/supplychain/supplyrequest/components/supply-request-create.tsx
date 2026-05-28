@@ -121,6 +121,18 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
   );
 }
 
+const generateCode = (prefix: string) => {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const MM = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const HH = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  const fff = String(now.getMilliseconds()).padStart(3, '0');
+  return `${prefix.toUpperCase()}-${yy}${MM}${dd}-${HH}${mm}${ss}${fff}`;
+};
+
 export default function SupplyRequestCreate() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -132,7 +144,7 @@ export default function SupplyRequestCreate() {
 
   const [supplyData, setSupplyData] = useState<SupplyRequestData>({
     id: 'YC_NEW',
-    code: 'YC_' + Date.now(),
+    code: generateCode('YC'),
     date: new Date().toISOString().split('T')[0],
     totalRequired: 0,
     requestItems: [],
@@ -203,14 +215,14 @@ export default function SupplyRequestCreate() {
         pickingNoteId: supplyData.pickingNoteId || undefined
       });
       toast.success("Tạo yêu cầu cung ứng thành công");
-      router.push('/supplychain/supplyrequest');
+      router.push('/warehouse/supply-requests');
     } catch (error) {
       console.error("Failed to create supply request:", error);
     }
   };
 
   const handleCancel = () => {
-    router.push('/supplychain/supplyrequest');
+    router.push('/warehouse/supply-requests');
   };
 
   const addRequestItem = () => {
@@ -233,13 +245,13 @@ export default function SupplyRequestCreate() {
     });
   };
 
-  const updateRequestItem = (id: string, field: keyof RequestItem, value: any) => {
-    setSupplyData({
-      ...supplyData,
-      requestItems: supplyData.requestItems.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
+  const updateRequestItem = (id: string, updates: Partial<RequestItem>) => {
+    setSupplyData(prev => ({
+      ...prev,
+      requestItems: prev.requestItems.map(item =>
+        item.id === id ? { ...item, ...updates } : item
       ),
-    });
+    }));
   };
 
   const totalRequired = supplyData.requestItems.reduce((sum, item) => sum + item.requiredQuantity, 0);
@@ -375,9 +387,11 @@ export default function SupplyRequestCreate() {
                             defaultValue={item.productCode}
                             defaultLabel={item.productName}
                             onSelect={(prod) => {
-                              updateRequestItem(item.id, 'id', prod.id); // Swap temporary ID with database ID
-                              updateRequestItem(item.id, 'productCode', prod.code || '');
-                              updateRequestItem(item.id, 'productName', prod.name);
+                              updateRequestItem(item.id, {
+                                id: prod.id,
+                                productCode: prod.code || '',
+                                productName: prod.name
+                              });
                             }}
                           />
                         )}
@@ -387,7 +401,7 @@ export default function SupplyRequestCreate() {
                           type="number"
                           min="1"
                           value={item.requiredQuantity}
-                          onChange={(e) => updateRequestItem(item.id, 'requiredQuantity', parseInt(e.target.value) || 1)}
+                          onChange={(e) => updateRequestItem(item.id, { requiredQuantity: parseInt(e.target.value) || 1 })}
                           className="w-full px-2 py-1.5 border border-gray-300 rounded-none text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                         />
                       </td>

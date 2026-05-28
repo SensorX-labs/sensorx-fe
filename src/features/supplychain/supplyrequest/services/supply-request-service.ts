@@ -1,13 +1,13 @@
 import api from '@/shared/configs/axios-config';
 
-export const getSupplyRequests = async (params?: Record<string, any>) => {
+export const getSupplyRequests = async (params?: Record<string, any>): Promise<any> => {
   const response = await api.master.get('/supply-requests', { params });
-  return response.data?.value || response.data;
+  return response as any;
 };
 
-export const getSupplyRequestById = async (id: string) => {
+export const getSupplyRequestById = async (id: string): Promise<any> => {
   const response = await api.master.get(`/supply-requests/${id}`);
-  return response.data?.value || response.data;
+  return response as any;
 };
 
 export const createSupplyRequest = async (payload: {
@@ -18,7 +18,7 @@ export const createSupplyRequest = async (payload: {
   pickingNoteId?: string;
 }) => {
   const response = await api.master.post('/supply-requests', payload);
-  return response.data?.value || response.data;
+  return response as any;
 };
 
 export const processSupplyRequest = async (payload: {
@@ -27,5 +27,5 @@ export const processSupplyRequest = async (payload: {
   completeRequest: boolean;
 }) => {
   const response = await api.master.post('/supply-requests/process', payload);
-  return response.data?.value || response.data;
+  return response as any;
 };

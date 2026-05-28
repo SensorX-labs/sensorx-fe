@@ -9,6 +9,7 @@ export interface PickingNoteListItem {
 }
 
 export interface PickingNoteDetail extends PickingNoteListItem {
+    warehouseId: string;
     deliveryInfo: {
         receiverName: string;
         receiverPhone: string;

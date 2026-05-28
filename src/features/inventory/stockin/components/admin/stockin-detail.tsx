@@ -330,7 +330,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
               </Button>
               
               {action === ActionType.CREATE ? (
-                <Link href="/inventory/stockin">
+                <Link href="/warehouse/stockin">
                   <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Quay lại
@@ -350,7 +350,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                 <Edit className="w-4 h-4 mr-2" />
                 Chỉnh sửa
               </Button>
-              <Link href="/inventory/stockin">
+              <Link href="/warehouse/stockin">
                 <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Quay lại

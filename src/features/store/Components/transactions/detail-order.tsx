@@ -138,6 +138,7 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
             const isSuccessfulPayment = ['PartiallyPaid', 'Completed'].includes(paymentHub.lastUpdate.paymentStatus);
             if (isSuccessfulPayment) {
                 toast.success('Thanh toán thành công. Đơn hàng đã được cập nhật.');
+                setIsPaymentModalOpen(false);
             }
 
             const reloadOrderData = async () => {
@@ -178,14 +179,19 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
         const selectedIndex = isPartiallyPaid ? 1 : 0;
         const fallbackUrl = paymentQrUrls[0];
 
+        const isAllPayment = order?.paymentType?.toLowerCase() === 'all';
+        const qrLabel = isAllPayment 
+            ? 'Thanh toán toàn bộ (100%)'
+            : (isPartiallyPaid ? 'Lần thanh toán thứ hai (70%)' : 'Lần thanh toán đầu tiên (30%)');
+
         return {
             qrUrl: paymentQrUrls[selectedIndex] ?? fallbackUrl,
-            qrLabel: isPartiallyPaid ? 'Lần thanh toán thứ hai (70%)' : 'Lần thanh toán đầu tiên (30%)',
+            qrLabel,
             canPay: isPending || isPartiallyPaid,
             isPending,
             isPartiallyPaid,
         };
-    }, [order?.paymentStatus, order?.paymentQRURls]);
+    }, [order?.paymentStatus, order?.paymentQRURls, order?.paymentType]);
 
     const paymentAmount = order?.paymentAmount || order?.grandTotal || 0;
 
