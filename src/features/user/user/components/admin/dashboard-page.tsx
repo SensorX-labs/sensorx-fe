@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShoppingBag,
   Package,
@@ -9,14 +9,22 @@ import {
   Truck,
   Calendar,
   ChevronRight,
-  Monitor,
-  Tablet,
-  Tv,
   TrendingUp,
   ArrowRight,
-  BarChart3,
-  PieChart,
+  MoreHorizontal,
+  Loader2
 } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 import {
   Card,
@@ -24,318 +32,352 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/shadcn-ui/card';
+import AnalyticsService, { 
+  DashboardStatsResponse, 
+  MasterStatsResponse,
+  RevenueReportResponse 
+} from '@/features/system/analytics/services/analytics-service';
 
-/* ================= TYPES & DATA ================= */
-
-const stats = [
-  { title: 'Tổng doanh số', value: '46.34k', icon: ShoppingBag },
-  { title: 'Tổng SP', value: '3,895', icon: Package },
-  { title: 'ĐH trung bình', value: '$61,985', icon: DollarSign },
-  { title: 'Khách hàng', value: '12,584', icon: Users },
-  { title: 'Giao hàng', value: '24,526', icon: Truck },
-];
-
-const topProducts = [
-  { label: 'Camera thông minh', value: '56,236', icon: Monitor },
-  { label: 'iPad 2021', value: '220k', icon: Tablet },
-  { label: 'Smart TV 4K', value: '51,568', icon: Tv },
-  { label: 'MacBook 18"', value: '1,568', icon: Monitor },
-];
-
-const weeklyData = [
-  { day: 'T2', value: 12 },
-  { day: 'T3', value: 18 },
-  { day: 'T4', value: 12 },
-  { day: 'T5', value: 15 },
-  { day: 'T6', value: 18 },
-  { day: 'T7', value: 13 },
-  { day: 'CN', value: 15 },
-];
-
-const categoryData = [
-  { name: 'Cảm biến', value: 35, color: '#4318FF' },
-  { name: 'Điều khiển', value: 25, color: '#6AD01F' },
-  { name: 'Nút nhấn', value: 20, color: '#F97316' },
-  { name: 'Khác', value: 20, color: '#EC4899' },
-];
-
-const monthlyRevenue = [
-  { month: 'Th1', revenue: 24000 },
-  { month: 'Th2', revenue: 35000 },
-  { month: 'Th3', revenue: 28000 },
-  { month: 'Th4', revenue: 42000 },
-  { month: 'Th5', revenue: 38000 },
-  { month: 'Th6', revenue: 45000 },
-];
-
-/* ================= COMPONENT ================= */
+const timeRangeMap: Record<string, string> = {
+  'Hôm nay': 'today',
+  'Tuần này': 'week',
+  'Tháng này': 'month',
+  'Năm nay': 'year',
+  'Toàn thời gian': 'all'
+};
 
 export default function DashboardPage() {
-  // Tính tổng cho pie chart
-  const totalCategory = categoryData.reduce((sum, item) => sum + item.value, 0);
+  const [timeRange, setTimeRange] = useState('Tháng này');
+  const [loading, setLoading] = useState(true);
+  
+  const [dashboardStats, setDashboardStats] = useState<DashboardStatsResponse | null>(null);
+  const [masterStats, setMasterStats] = useState<MasterStatsResponse | null>(null);
+  const [revenueReport, setRevenueReport] = useState<RevenueReportResponse | null>(null);
 
-  // Tìm max revenue cho bar chart
-  const maxRevenue = Math.max(...monthlyRevenue.map(m => m.revenue));
+  const fetchStats = async (range: string) => {
+    setLoading(true);
+    try {
+      const apiRange = timeRangeMap[range] || 'month';
+      const [dashRes, masterRes, revenueRes] = await Promise.all([
+        AnalyticsService.getDashboardStats(apiRange),
+        AnalyticsService.getMasterStats(),
+        AnalyticsService.getRevenueReport('6_months')
+      ]);
+
+      if (dashRes) {
+        setDashboardStats(dashRes);
+      }
+      if (masterRes) {
+        setMasterStats(masterRes);
+      }
+      if (revenueRes) {
+        setRevenueReport(revenueRes);
+      }
+    } catch (error) {
+      console.error('>>> Loi khi tai du lieu thong ke:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats(timeRange);
+  }, [timeRange]);
+
+  // Derived stats
+  const stats = [
+    { 
+      title: 'Tổng doanh thu', 
+      value: dashboardStats ? `${(dashboardStats.totalRevenue / 1000000).toFixed(1)} trđ` : '0 trđ', 
+      icon: DollarSign, 
+      color: 'text-[#4318FF]', 
+      bg: 'bg-[#F4F7FE]' 
+    },
+    { 
+      title: 'Đơn hàng', 
+      value: dashboardStats ? `${dashboardStats.totalOrders} đơn` : '0 đơn', 
+      icon: ShoppingBag, 
+      color: 'text-green-500', 
+      bg: 'bg-green-50' 
+    },
+    { 
+      title: 'Giá trị ĐH TB', 
+      value: dashboardStats ? `${(dashboardStats.averageOrderValue / 1000000).toFixed(1)} trđ` : '0 trđ', 
+      icon: TrendingUp, 
+      color: 'text-orange-500', 
+      bg: 'bg-orange-50' 
+    },
+    { 
+      title: 'Khách hàng', 
+      value: masterStats ? `${masterStats.totalCustomers}` : '0', 
+      icon: Users, 
+      color: 'text-purple-500', 
+      bg: 'bg-purple-50' 
+    },
+    { 
+      title: 'Danh mục SP', 
+      value: masterStats ? `${masterStats.totalProducts} SP` : '0 SP', 
+      icon: Package, 
+      color: 'text-blue-500', 
+      bg: 'bg-blue-50' 
+    },
+  ];
+
+  // Map weekly sales for BarChart
+  const weeklyData = dashboardStats?.weeklySales || [
+    { day: 'T2', value: 0 },
+    { day: 'T3', value: 0 },
+    { day: 'T4', value: 0 },
+    { day: 'T5', value: 0 },
+    { day: 'T6', value: 0 },
+    { day: 'T7', value: 0 },
+    { day: 'CN', value: 0 },
+  ];
+
+  // Map chartData from revenueReport to AreaChart
+  const revenueChartData = revenueReport?.chartData || [
+    { name: 'Th10', DoanhThu: 0, LoiNhuan: 0 },
+    { name: 'Th11', DoanhThu: 0, LoiNhuan: 0 },
+    { name: 'Th12', DoanhThu: 0, LoiNhuan: 0 },
+    { name: 'Th1', DoanhThu: 0, LoiNhuan: 0 },
+    { name: 'Th2', DoanhThu: 0, LoiNhuan: 0 },
+    { name: 'Th3', DoanhThu: 0, LoiNhuan: 0 },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* ───────────── Row 1: Stats ───────────── */}
-      <div className="grid grid-cols-5 gap-6">
-        {stats.map((item) => (
-          <Card
-            key={item.title}
-            className="border-none shadow-sm bg-white rounded"
-          >
-            <CardContent className="p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-[#2B3674]">
-                  {item.value}
-                </p>
-                <span className="text-sm font-bold text-[#A3AED0]">
-                  {item.title}
-                </span>
-              </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* ───────────── Header & Filters ───────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-[#2B3674] tracking-tight">Tổng quan hệ thống</h2>
+          <p className="text-sm text-[#A3AED0] mt-1">Theo dõi các chỉ số và dữ liệu thực tế tại SensorX</p>
+        </div>
+        
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-1">
+            {['Hôm nay', 'Tuần này', 'Tháng này', 'Năm nay', 'Toàn thời gian'].map(range => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  timeRange === range
+                    ? 'bg-[#4318FF] text-white shadow-md'
+                    : 'text-[#A3AED0] hover:text-[#2B3674] hover:bg-gray-50'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+          <button className="flex items-center gap-2 bg-[#F4F7FE] text-[#4318FF] hover:bg-[#E9EDF7] px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+            <Calendar className="w-4 h-4" />
+            Live Monitor
+          </button>
+        </div>
+      </div>
 
-              <div className="w-12 h-12 rounded flex items-center justify-center bg-[#F4F7FE]">
-                <item.icon className="w-6 h-6 text-[#4318FF]" />
+      {/* ───────────── Loading spinner ───────────── */}
+      {loading && (
+        <div className="flex items-center justify-center p-12 bg-white rounded-xl shadow-sm border border-gray-50">
+          <Loader2 className="w-8 h-8 text-[#4318FF] animate-spin mr-3" />
+          <span className="text-sm font-semibold text-[#2B3674]">Đang tải dữ liệu thực tế...</span>
+        </div>
+      )}
+
+      {/* ───────────── Row 1: Stats ───────────── */}
+      {!loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {stats.map((item, i) => (
+            <Card
+              key={item.title}
+              className="border-none shadow-sm bg-white rounded-xl hover:shadow-md transition-shadow"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${item.bg} ${item.color}`}>
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-bold">
+                    Hoạt động
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#A3AED0] mb-1">{item.title}</p>
+                  <p className="text-2xl font-bold text-[#2B3674] tracking-tight">{item.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* ───────────── Row 2: Charts ───────────── */}
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Doanh số theo thời gian (Area Chart) */}
+          <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+              <div>
+                <CardTitle className="text-lg font-bold text-[#2B3674]">Biểu đồ doanh thu</CardTitle>
+                <p className="text-xs text-[#A3AED0] mt-1">Phân tích xu hướng doanh thu và lợi nhuận (triệu đ)</p>
+              </div>
+              <button className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <MoreHorizontal className="w-5 h-5 text-[#A3AED0]" />
+              </button>
+            </CardHeader>
+            <CardContent className="p-6 pt-4">
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4318FF" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#4318FF" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#05CD99" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#05CD99" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E9EDF7" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#A3AED0', fontSize: 12 }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#A3AED0', fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      itemStyle={{ fontWeight: 'bold' }}
+                    />
+                    <Area type="monotone" dataKey="DoanhThu" name="Doanh thu" stroke="#4318FF" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                    <Area type="monotone" dataKey="LoiNhuan" name="Lợi nhuận" stroke="#05CD99" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* ───────────── Row 2: Charts ───────────── */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Doanh số theo thời gian */}
-        <Card className="lg:col-span-2 border-none shadow-sm bg-white rounded">
-          <CardHeader className="flex items-center justify-between p-6 pb-2">
-            <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Doanh số theo thời gian
-            </CardTitle>
-
-            <div className="flex items-center gap-2 bg-[#F4F7FE] rounded px-3 py-1.5 cursor-pointer">
-              <span className="text-xs font-bold text-[#2B3674]">
-                02 Th3, 2026
-              </span>
-              <Calendar className="w-4 h-4 text-[#4318FF]" />
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-6 pt-0 flex flex-row gap-8">
-            {/* Chart */}
-            <div className="flex-1 min-h-[240px]">
-              <svg viewBox="0 0 400 160" className="w-full h-full">
-                <path
-                  d="M0 140 L80 100 L160 120 L240 70 L320 110 L400 60"
-                  fill="none"
-                  stroke="#E9EDF7"
-                  strokeWidth="2"
-                  strokeDasharray="5,5"
-                />
-                <path
-                  d="M0 150 L80 80 L160 110 L240 50 L320 120 L400 40"
-                  fill="none"
-                  stroke="#4318FF"
-                  strokeWidth="3"
-                />
-              </svg>
-
-              <div className="flex justify-between text-[11px] font-bold text-[#A3AED0] mt-2">
-                {['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6'].map((m) => (
-                  <span key={m}>{m}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Side List */}
-            <div className="w-56 space-y-6">
-              <div>
-                <p className="text-2xl font-bold text-[#2B3674]">
-                  23.59M đ
-                </p>
-                <p className="text-xs font-bold text-[#A3AED0]">
-                  Số dư khả dụng
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                {topProducts.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded border border-[#E9EDF7]">
-                        <item.icon className="w-4 h-4 text-[#4318FF]" />
+          {/* Top Sản phẩm bán chạy nhất */}
+          <Card className="border-none shadow-sm bg-white rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+              <CardTitle className="text-lg font-bold text-[#2B3674]">Top Sản phẩm</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-4">
+              <div className="space-y-5">
+                {dashboardStats?.topSellingProducts && dashboardStats.topSellingProducts.length > 0 ? (
+                  dashboardStats.topSellingProducts.map((item, i) => (
+                    <div key={item.productId} className="flex items-center justify-between group cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#F4F7FE] flex items-center justify-center group-hover:bg-[#4318FF] group-hover:text-white transition-colors text-[#4318FF]">
+                          <Package className="w-5 h-5" />
+                        </div>
+                        <div className="max-w-[150px]">
+                          <p className="text-sm font-bold text-[#2B3674] group-hover:text-[#4318FF] transition-colors truncate">{item.productName}</p>
+                          <p className="text-xs text-[#A3AED0]">Mã: {item.productCode}</p>
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-[#A3AED0]">
-                        {item.label}
-                      </span>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-[#2B3674]">{item.quantitySold} cái</p>
+                        <p className="text-[10px] text-[#A3AED0]">{(item.totalAmount / 1000000).toFixed(1)} trđ</p>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-[#2B3674]">
-                      {item.value}
-                    </span>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-[#A3AED0]">
+                    Không có sản phẩm nào bán chạy trong kì
                   </div>
-                ))}
+                )}
               </div>
-
-              <button className="w-full py-1 text-[11px] font-bold text-[#4318FF] flex items-center justify-center gap-1 hover:underline">
-                Xem thêm <ArrowRight className="w-3 h-3" />
+              <button className="w-full mt-6 py-2.5 text-sm font-bold text-[#4318FF] bg-[#F4F7FE] rounded-lg hover:bg-[#E9EDF7] transition-colors flex items-center justify-center gap-2">
+                Xem tất cả <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        {/* Doanh số hàng tuần */}
-        <Card className="border-none shadow-sm bg-white rounded">
-          <CardHeader className="flex items-center justify-between p-6 pb-2">
-            <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Doanh số hàng tuần
-            </CardTitle>
-
-            <div className="text-xs font-bold text-[#A3AED0] flex items-center gap-1 cursor-pointer">
-              Hôm nay <ChevronRight className="w-4 h-4 rotate-90" />
-            </div>
-          </CardHeader>
-
-          <CardContent className="p-6">
-            <div className="flex items-end justify-between h-40 gap-2 px-2 border-b border-[#E9EDF7] pb-4">
-              {weeklyData.map((d, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                  <span className="text-[10px] font-bold text-[#A3AED0]">
-                    {d.value}%
-                  </span>
-                  <div
-                    className="w-2.5 bg-[#4318FF] rounded-full"
-                    style={{ height: `${d.value * 5}px` }}
+      {/* ───────────── Row 3: Bar & Category Charts ───────────── */}
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Tần suất đặt hàng tuần (Bar Chart) */}
+          <Card className="border-none shadow-sm bg-white rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-0">
+              <div>
+                <CardTitle className="text-lg font-bold text-[#2B3674]">Tần suất đơn hàng</CardTitle>
+                <p className="text-xs text-[#A3AED0] mt-1">Lượng đơn hàng theo các ngày trong tuần (7 ngày gần nhất)</p>
+              </div>
+              <div className="text-xs font-bold text-[#4318FF] bg-[#F4F7FE] px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer hover:bg-[#E9EDF7] transition-colors">
+                Tuần này <ChevronRight className="w-4 h-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E9EDF7" />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#A3AED0', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#A3AED0', fontSize: 12 }} />
+                  <Tooltip
+                    cursor={{ fill: '#F4F7FE' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <span className="text-[10px] font-bold text-[#A3AED0]">
-                    {d.day}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  <Bar dataKey="value" fill="#4318FF" radius={[4, 4, 0, 0]} barSize={32} name="Doanh số ngày" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            <p className="text-center text-[10px] font-bold text-[#A3AED0] mt-4">
-              Tổng doanh số & khỏe nhân viên trong tuần
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div className="text-center">
-                <p className="text-xl font-bold text-[#2B3674]">502K</p>
-                <p className="text-[10px] font-bold text-[#A3AED0]">
-                  Tổng ĐH
-                </p>
-              </div>
-
-              <div className="text-center border-l border-[#E9EDF7]">
-                <p className="text-xl font-bold text-[#2B3674]">65.4M</p>
-                <p className="text-[10px] font-bold text-[#A3AED0]">
-                  Tổng thu
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ───────────── Row 3: More Charts ───────────── */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Doanh số theo danh mục */}
-        <Card className="border-none shadow-sm bg-white rounded">
-          <CardHeader className="p-6 pb-2">
-            <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Doanh số theo danh mục
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="p-6 pt-4">
-            <div className="flex items-center justify-between">
-              {/* Pie Chart */}
-              <div className="w-32 h-32 relative">
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  {categoryData.map((item, idx) => {
-                    const percentage = (item.value / totalCategory) * 360;
-                    const startAngle = categoryData.slice(0, idx).reduce((sum, i) => sum + (i.value / totalCategory) * 360, 0);
-                    const endAngle = startAngle + percentage;
-
-                    // Tính toán vị trí circle
-                    const startRad = (startAngle - 90) * (Math.PI / 180);
-                    const endRad = (endAngle - 90) * (Math.PI / 180);
-                    const x1 = 50 + 40 * Math.cos(startRad);
-                    const y1 = 50 + 40 * Math.sin(startRad);
-                    const x2 = 50 + 40 * Math.cos(endRad);
-                    const y2 = 50 + 40 * Math.sin(endRad);
-                    const largeArc = percentage > 180 ? 1 : 0;
-
-                    return (
-                      <path
-                        key={idx}
-                        d={`M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                        fill={item.color}
-                        opacity="0.9"
-                      />
-                    );
-                  })}
-                </svg>
-              </div>
-
-              {/* Legend */}
-              <div className="flex-1 ml-6 space-y-3">
-                {categoryData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-[#2B3674]">{item.name}</p>
-                      <p className="text-[10px] text-[#A3AED0]">{item.value}%</p>
+          {/* Master data summary card */}
+          <Card className="border-none shadow-sm bg-white rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-[#2B3674] mb-1">Thống kê Dữ liệu Master</h3>
+              <p className="text-xs text-[#A3AED0] mb-6">Thông tin đăng ký phân hệ kinh doanh trên hệ thống</p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-[#F4F7FE] border border-blue-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#2B3674]">Khách hàng đối tác</h4>
+                      <p className="text-xs text-[#A3AED0]">Đã đăng ký tài khoản doanh nghiệp</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <span className="text-xl font-bold text-[#2B3674]">{masterStats?.totalCustomers ?? 0}</span>
+                </div>
 
-        {/* Doanh thu hàng tháng */}
-        <Card className="border-none shadow-sm bg-white rounded">
-          <CardHeader className="p-6 pb-2">
-            <CardTitle className="text-lg font-bold text-[#2B3674]">
-              Doanh thu 6 tháng
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="p-6 pt-4">
-            <div className="flex items-end justify-between h-44 gap-2 px-2 border-b border-[#E9EDF7] pb-4">
-              {monthlyRevenue.map((m) => {
-                const height = (m.revenue / maxRevenue) * 100;
-                return (
-                  <div key={m.month} className="flex flex-col items-center flex-1">
-                    <div
-                      className="w-full bg-gradient-to-t from-[#4318FF] to-[#6C5CF7] rounded-t"
-                      style={{ height: `${height}%`, minHeight: '20px' }}
-                      title={`${m.revenue.toLocaleString('vi')} đ`}
-                    />
-                    <span className="text-[10px] font-bold text-[#A3AED0] mt-2">
-                      {m.month}
-                    </span>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-green-50/50 border border-green-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+                      <Package className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#2B3674]">Danh mục Sản phẩm</h4>
+                      <p className="text-xs text-[#A3AED0]">Hàng hoá Catalog SensorX</p>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+                  <span className="text-xl font-bold text-[#2B3674]">{masterStats?.totalProducts ?? 0}</span>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div>
-                <p className="text-xs text-[#A3AED0]">TB cao nhất</p>
-                <p className="text-xl font-bold text-[#2B3674]">45M đ</p>
-              </div>
-              <div>
-                <p className="text-xs text-[#A3AED0]">TB thấp nhất</p>
-                <p className="text-xl font-bold text-[#2B3674]">24M đ</p>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-purple-50/50 border border-purple-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#2B3674]">Nhân sự Vận hành</h4>
+                      <p className="text-xs text-[#A3AED0]">Được cấp quyền truy cập hệ thống</p>
+                    </div>
+                  </div>
+                  <span className="text-xl font-bold text-[#2B3674]">{masterStats?.totalStaffs ?? 0}</span>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-[#A3AED0]">
+              <span>Dữ liệu đồng bộ trực tiếp từ phân hệ Data</span>
+              <span className="font-bold text-green-500 flex items-center">● Online</span>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
