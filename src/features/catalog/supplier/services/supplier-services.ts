@@ -3,10 +3,15 @@ import {
   CreateSupplierRequest,
   Supplier,
   SupplierListResult,
+  SupplierPageListQuery,
+  SupplierPageListResult,
   UpdateSupplierRequest,
 } from "../models";
 
 const SupplierService = {
+  getPaged: (params: SupplierPageListQuery) =>
+    api.data.get<unknown, SupplierPageListResult>("/catalog/suppliers/list", { params }),
+
   getAll: () =>
     api.data.get<unknown, SupplierListResult>("/catalog/suppliers/list-all"),
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,13 @@ function UnitOfQuantityFormContent({
   const [name, setName] = useState(unit?.name ?? '');
   const [description, setDescription] = useState(unit?.description ?? '');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setName(unit?.name ?? '');
+    setDescription(unit?.description ?? '');
+  }, [isOpen, unit]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -118,5 +125,5 @@ function UnitOfQuantityFormContent({
 
 export function UnitOfQuantityForm(props: UnitOfQuantityFormProps) {
   const formKey = `${props.unit?.id ?? 'new'}-${props.isOpen ? 'open' : 'closed'}`;
-  return <UnitOfQuantityFormContent {...props} formKey={formKey} />;
+  return <UnitOfQuantityFormContent key={formKey} {...props} formKey={formKey} />;
 }

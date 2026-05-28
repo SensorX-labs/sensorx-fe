@@ -1,71 +1,52 @@
 'use client';
 
 import { Building2, Clock3, FileText } from 'lucide-react';
-import { Supplier } from '../../models';
+import { StatGroup } from '@/shared/components/admin/stat-card';
 
 interface SupplierStatsProps {
-  suppliers: Supplier[];
+  totalSuppliers: number;
+  updatedSuppliers: number;
+  missingDescriptionSuppliers: number;
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const tabs = [
-  { id: 'all', label: 'Tất cả', icon: Building2 },
-  { id: 'updated', label: 'Đã cập nhật', icon: Clock3 },
-  { id: 'missing-description', label: 'Thiếu mô tả', icon: FileText },
-];
-
 export function SupplierStats({
-  suppliers,
+  totalSuppliers,
+  updatedSuppliers,
+  missingDescriptionSuppliers,
   activeTab,
   onTabChange,
 }: SupplierStatsProps) {
-  const updatedCount = suppliers.filter(item => !!item.updatedAt).length;
-  const missingDescriptionCount = suppliers.filter(
-    item => !item.description?.trim()
-  ).length;
+  const cards = [
+    {
+      key: 'all',
+      label: 'Tổng nhà cung cấp',
+      value: totalSuppliers,
+      icon: Building2,
+      colorTheme: 'blue' as const,
+      isActive: activeTab === 'all',
+      onClick: () => onTabChange('all'),
+    },
+    {
+      key: 'updated',
+      label: 'Đã cập nhật',
+      value: updatedSuppliers,
+      icon: Clock3,
+      colorTheme: 'emerald' as const,
+      isActive: activeTab === 'updated',
+      onClick: () => onTabChange('updated'),
+    },
+    {
+      key: 'missing-description',
+      label: 'Thiếu mô tả',
+      value: missingDescriptionSuppliers,
+      icon: FileText,
+      colorTheme: 'orange' as const,
+      isActive: activeTab === 'missing-description',
+      onClick: () => onTabChange('missing-description'),
+    },
+  ];
 
-  const stats = {
-    all: suppliers.length,
-    updated: updatedCount,
-    'missing-description': missingDescriptionCount,
-  };
-
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      {tabs.map(tab => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onTabChange(tab.id)}
-            className={`rounded border p-4 text-left transition-all ${
-              isActive
-                ? 'border-sky-200 bg-sky-50 shadow-sm'
-                : 'border-slate-100 bg-white hover:border-slate-200'
-            }`}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded ${
-                  isActive ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-500'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <span className="text-2xl font-black text-slate-800">
-                {stats[tab.id as keyof typeof stats]}
-              </span>
-            </div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-              {tab.label}
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
+  return <StatGroup items={cards} gridCols={3} />;
 }

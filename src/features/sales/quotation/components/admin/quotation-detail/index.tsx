@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { CanAccess } from '@/shared/components/common/can-access';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
+import { QuoteStatus } from '../../../constants/quote-status';
 import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
 import { QuoteAnalysisService } from '../../../services/quote-analysis-service';
 import { QuoteService } from '../../../services/quote.service';
@@ -23,6 +24,15 @@ export interface QuotationDetailProps {
 }
 
 const ANALYSIS_POLL_INTERVAL_MS = 5000;
+const ANALYSIS_VISIBLE_STATUSES = new Set<QuoteStatus>([
+  QuoteStatus.PENDING,
+  QuoteStatus.RETURNED,
+  QuoteStatus.APPROVED,
+  QuoteStatus.SENT,
+  QuoteStatus.ORDERED,
+  QuoteStatus.CANCELLED,
+  QuoteStatus.EXPIRED,
+]);
 
 export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const router = useRouter();
@@ -60,7 +70,16 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   }, [id]);
 
   useEffect(() => {
-    if (!id || isEditing) return;
+    const canLoadAnalysis =
+      quoteDetail?.status != null &&
+      ANALYSIS_VISIBLE_STATUSES.has(quoteDetail.status);
+
+    if (!id || isEditing || !canLoadAnalysis) {
+      setAnalysisLoading(false);
+      setAnalysisError(null);
+      setAnalysisResult(null);
+      return;
+    }
 
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -95,7 +114,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [id, isEditing]);
+  }, [id, isEditing, quoteDetail?.status]);
 
   const calculateEditTotal = () =>
     editItems.reduce((sum, item) => {
@@ -249,6 +268,8 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
     return <div className="py-20 text-center text-red-500 font-bold">Không tìm thấy báo giá</div>;
   }
 
+  const canShowAnalysis = ANALYSIS_VISIBLE_STATUSES.has(quoteDetail.status);
+
   return (
     <div className="space-y-6 w-full pb-10">
       <div className="flex items-center justify-between">
@@ -287,8 +308,8 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {!isEditing && (
-          <CanAccess roles={['Manager', 4 , 'SaleStaff']}>
+        {!isEditing && canShowAnalysis && (
+          <CanAccess roles={['Manager']}>
             <QuotationAiAnalysis
               analysisLoading={analysisLoading}
               analysisResult={analysisResult}

@@ -1,179 +1,418 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Filter, Mail, Phone, Search } from 'lucide-react';
+import { FilterFieldConfig, FilterPanel } from '@/shared/components/admin/filter-panel';
+import { AdminContentCard } from '@/shared/components/admin/layout';
+import { LocalPagination } from '@/shared/components/admin/local-pagination';
 import { Button } from '@/shared/components/shadcn-ui/button';
-import { Customer, CustomerService } from '../../services/customer-service';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/shadcn-ui/dialog';
+import { Input } from '@/shared/components/shadcn-ui/input';
+import CustomerService, {
+  Customer,
+  CustomerPageListQuery,
+} from '../../services/customer-service';
 
-export default function CustomersList() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+const DEFAULT_FILTERS = {
+  code: '',
+  name: '',
+  taxCode: '',
+  email: '',
+  phone: '',
+  address: '',
+  createdFrom: '',
+  createdTo: '',
+};
 
-  const fetchCustomers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await CustomerService.getPagedCustomers({
-        pageNumber: currentPage,
-        pageSize: pageSize,
-        searchTerm: searchTerm
-      });
+type CustomerFilterState = typeof DEFAULT_FILTERS;
+type CustomerFilterKey = keyof CustomerFilterState;
 
-      if (response) {
-        setCustomers(response.items);
-        setTotalCount(response.totalCount || 0);
-      }
-    } catch (error: any) {
-      console.error('>>> Lỗi khi fetch khách hàng:', error);
-      setCustomers([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, searchTerm]);
+const FILTER_FIELDS: Array<FilterFieldConfig & { id: CustomerFilterKey }> = [
+  {
+    id: 'code',
+    label: 'Mã khách hàng',
+    type: 'search',
+    placeholder: 'Nhập mã khách hàng',
+  },
+  {
+    id: 'name',
+    label: 'Tên công ty',
+    type: 'search',
+    placeholder: 'Nhập tên công ty',
+  },
+  {
+    id: 'taxCode',
+    label: 'Mã số thuế',
+    type: 'search',
+    placeholder: 'Nhập mã số thuế',
+  },
+  {
+    id: 'email',
+    label: 'Email',
+    type: 'search',
+    placeholder: 'Nhập email',
+  },
+  {
+    id: 'phone',
+    label: 'Điện thoại',
+    type: 'search',
+    placeholder: 'Nhập số điện thoại',
+  },
+  {
+    id: 'address',
+    label: 'Địa chỉ',
+    type: 'search',
+    placeholder: 'Nhập địa chỉ',
+  },
+  {
+    id: 'createdFrom',
+    label: 'Từ ngày',
+    type: 'date',
+  },
+  {
+    id: 'createdTo',
+    label: 'Đến ngày',
+    type: 'date',
+  },
+];
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
-
-  // Reset về trang 1 khi tìm kiếm
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  const totalPages = Math.ceil(totalCount / pageSize);
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+function buildCustomerQuery(
+  pageNumber: number,
+  pageSize: number,
+  searchTerm: string,
+  filters: CustomerFilterState
+): CustomerPageListQuery {
+  return {
+    pageNumber,
+    pageSize,
+    searchTerm: searchTerm.trim() || undefined,
+    code: filters.code.trim() || undefined,
+    name: filters.name.trim() || undefined,
+    taxCode: filters.taxCode.trim() || undefined,
+    email: filters.email.trim() || undefined,
+    phone: filters.phone.trim() || undefined,
+    address: filters.address.trim() || undefined,
+    createdFrom: filters.createdFrom || undefined,
+    createdTo: filters.createdTo || undefined,
   };
+}
 
-  const stats = [
-    { title: 'Tổng khách hàng', value: totalCount.toString(), icon: Users, color: 'admin-text-primary' },
-    { title: 'Hoạt động', value: totalCount.toString(), icon: Users, color: 'text-green-500' },
-    { title: 'Không hoạt động', value: '0', icon: Users, color: 'text-red-400' },
-  ];
+function CustomerTable({
+  customers,
+  loading,
+}: {
+  customers: Customer[];
+  loading: boolean;
+}) {
+  const router = useRouter();
 
   return (
-    <div className="space-y-4">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {stats.map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className={`p-3 rounded-full bg-gray-50 ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
+      <table className="w-full min-w-[1080px] text-sm">
+        <thead>
+          <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm text-left">
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Khách hàng
+            </th>
 
-      <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
-        <div className="flex flex-col md:flex-row gap-4 items-center p-4 border-b border-gray-100 bg-gray-50/30">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tên, mã khách hàng, mã số thuế, email, số điện thoại ..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-sm bg-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Mã số thuế
+            </th>
+
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Liên hệ
+            </th>
+
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Địa chỉ
+            </th>
+
+            <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Tạo lúc
+            </th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y divide-slate-50">
+          {loading ? (
+            <tr>
+              <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                Đang tải dữ liệu...
+              </td>
+            </tr>
+          ) : customers.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                Không tìm thấy khách hàng nào
+              </td>
+            </tr>
+          ) : (
+            customers.map(customer => (
+              <tr 
+                key={customer.id} 
+                className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
+                onClick={() => router.push(`/user/customer/${customer.id}`)}
+              >
+                <td className="px-6 py-4">
+                  <div className="space-y-1">
+                    <div className="font-bold text-slate-900">{customer.name}</div>
+
+                    <div className="text-xs font-medium text-slate-500">
+                      {customer.code || '--'}
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-6 py-4 text-slate-500">
+                  {customer.taxCode || 'Chưa cập nhật'}
+                </td>
+
+                <td className="px-6 py-4">
+                  <div className="space-y-2 text-slate-500">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5 text-slate-400" />
+                      <span>{customer.email || '---'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3.5 w-3.5 text-slate-400" />
+                      <span>{customer.phone || 'Chưa cập nhật'}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="max-w-sm px-6 py-4 text-slate-500">
+                  <p className="line-clamp-2">
+                    {customer.address || 'Chưa cập nhật địa chỉ'}
+                  </p>
+                </td>
+
+                <td className="whitespace-nowrap px-6 py-4 text-slate-500">
+                  {customer.createdAt
+                    ? new Date(customer.createdAt).toLocaleDateString('vi-VN')
+                    : '---'}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default function CustomersList() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const pageSize = 10;
+
+  useEffect(() => {
+    const loadCustomers = async () => {
+      setLoading(true);
+
+      try {
+        const response = await CustomerService.getPagedCustomers(
+          buildCustomerQuery(currentPage, pageSize, searchTerm, filters)
+        );
+
+        if (response) {
+          setCustomers(response.items);
+          setTotalItems(response.totalCount || 0);
+        }
+      } catch (error) {
+        console.error('>>> Lỗi khi fetch khách hàng:', error);
+        setCustomers([]);
+        setTotalItems(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadCustomers();
+  }, [currentPage, searchTerm, filters]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleDraftFilterChange = (
+    fieldId: CustomerFilterKey,
+    value: string
+  ) => {
+    setDraftFilters(current => ({
+      ...current,
+      [fieldId]: value,
+    }));
+  };
+
+  const handleRemoveFilter = (fieldId: CustomerFilterKey) => {
+    setFilters(current => ({
+      ...current,
+      [fieldId]: '',
+    }));
+
+    setCurrentPage(1);
+  };
+
+  const handleResetDraftFilters = () => {
+    setDraftFilters(DEFAULT_FILTERS);
+  };
+
+  const applyDraftFilters = () => {
+    setFilters(draftFilters);
+    setCurrentPage(1);
+    setIsFilterOpen(false);
+  };
+
+  const activeFilterCount = useMemo(
+    () =>
+      Object.values(filters).filter(
+        value => value !== '' && value !== 'all'
+      ).length,
+    [filters]
+  );
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  return (
+    <>
+      <AdminContentCard className="min-h-0">
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-1 flex-wrap items-center gap-3">
+            <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+              <Input
+                value={searchTerm}
+                onChange={event => handleSearchChange(event.target.value)}
+                placeholder="Tìm kiếm nhanh..."
+                className="h-11 rounded-md border-slate-200 bg-white pl-10"
+              />
+            </div>
+
+            <Button
+              variant="outline"
+              className="rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              onClick={() => {
+                setDraftFilters(filters);
+                setIsFilterOpen(true);
+              }}
+            >
+              <Filter className="mr-2 h-4 w-4" />
+              Bộ lọc
+
+              {activeFilterCount > 0 ? (
+                <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
+                  {activeFilterCount}
+                </span>
+              ) : null}
+            </Button>
+          </div>
+        </div>
+
+        {activeFilterCount > 0 ? (
+          <div className="flex flex-wrap gap-2 border-b border-slate-100 px-6 py-3">
+            {FILTER_FIELDS.map(field => {
+              const value = filters[field.id];
+
+              if (!value || value === 'all') {
+                return null;
+              }
+
+              const displayValue =
+                field.type === 'date'
+                  ? new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN')
+                  : value;
+
+              return (
+                <button
+                  key={field.id}
+                  type="button"
+                  onClick={() => handleRemoveFilter(field.id)}
+                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                >
+                  {field.label}: {displayValue}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        <CustomerTable customers={customers} loading={loading} />
+
+        <LocalPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </AdminContentCard>
+
+      <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <DialogContent className="w-[min(1080px,calc(100vw-2rem))] max-w-none p-0 sm:max-w-none">
+          <DialogHeader className="border-b border-slate-100 px-6 py-5">
+            <DialogTitle>Bộ lọc khách hàng</DialogTitle>
+            <DialogDescription className="sr-only">
+              Chọn các điều kiện để lọc danh sách khách hàng.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-6">
+            <FilterPanel
+              fields={FILTER_FIELDS}
+              values={draftFilters}
+              onChange={(fieldId, value) =>
+                handleDraftFilterChange(
+                  fieldId as CustomerFilterKey,
+                  value
+                )
+              }
+              onReset={handleResetDraftFilters}
+              hideHeader
+              gridClassName="grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3"
+              className="border-0 bg-transparent p-0"
             />
           </div>
-        </div>
 
-        <div className="relative flex-1">
-          {loading && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            </div>
-          )}
+          <DialogFooter className="border-t border-slate-100 px-6 py-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterOpen(false)}
+            >
+              Đóng
+            </Button>
 
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Mã</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Tên công ty</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Email</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Điện thoại</th>
-                <th className="text-left px-6 py-4 tracking-label uppercase text-[11px] font-bold text-gray-500">Địa chỉ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((c) => (
-                <tr key={c.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-colors">
-                  <td className="px-6 py-4 font-bold">#{c.code || c.id?.substring(0, 8)}</td>
-                  <td className="px-6 py-4">{c.name}</td>
-                  <td className="px-6 py-4">{c.email}</td>
-                  <td className="px-6 py-4">{c.phone || '---'}</td>
-                  <td className="px-6 py-4 max-w-[200px] truncate">{c.address || '---'}</td>
-                </tr>
-              ))}
-              {!loading && customers.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
-                    <div className="flex flex-col items-center gap-2">
-                      <Users className="w-12 h-12 text-gray-100" />
-                      <p>Không tìm thấy khách hàng nào.</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            <Button
+              variant="outline"
+              onClick={handleResetDraftFilters}
+            >
+              Xóa bộ lọc
+            </Button>
 
-        {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white">
-            <span className="text-sm">
-              Hiển thị {(currentPage - 1) * pageSize + 1} đến {Math.min(currentPage * pageSize, totalCount)} trong tổng số {totalCount} khách hàng
-            </span>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="h-8 w-8 p-0 rounded"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              {Array.from({ length: totalPages }).map((_, idx) => {
-                const pageNum = idx + 1;
-                const isActive = currentPage === pageNum;
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={isActive ? "default" : "outline"}
-                    size="sm"
-                    className={`h-8 w-8 p-0 rounded ${isActive ? "bg-[var(--admin-primary)] text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
-                    onClick={() => goToPage(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="h-8 w-8 p-0 rounded"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            <Button
+              className="admin-btn-primary"
+              onClick={applyDraftFilters}
+            >
+              Áp dụng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
