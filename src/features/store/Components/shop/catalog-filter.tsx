@@ -95,15 +95,15 @@ export function CatalogFilter({
     const activeFilterCount = filters.collections.length + filters.categories.length + (filters.search ? 1 : 0);
 
     return (
-        <div className="w-full md:w-64 pr-0 md:pr-4">
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-filter-border">
-                <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-900">
+        <div className="bg-[#F9F9FB] dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full lg:w-64 select-none shadow-md rounded-2xl border-t-4 border-t-[#0D9488] p-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200 dark:border-zinc-800/80">
+                <h3 className="text-xs font-heading font-extrabold uppercase tracking-widest text-stone-950 dark:text-white">
                     BỘ LỌC
                 </h3>
                 {activeFilterCount > 0 && (
                     <button
                         onClick={clearAllFilters}
-                        className="text-[10px] font-bold text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
+                        className="text-[10px] font-sans font-bold text-stone-400 hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors uppercase tracking-widest cursor-pointer"
                     >
                         Xóa tất cả
                     </button>
@@ -111,21 +111,21 @@ export function CatalogFilter({
             </div>
 
             {/* tìm kiếm theo từ khóa */}
-            <div className="mb-6">
+            <div className="mb-4">
                 <button
                     onClick={() => toggleSection('search')}
-                    className="w-full flex items-center justify-between py-4 group"
+                    className="w-full flex items-center justify-between py-3 group cursor-pointer"
                 >
-                    <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-900">
+                    <span className="text-[11px] font-sans font-bold uppercase tracking-[0.15em] text-stone-800 dark:text-white">
                         Tìm kiếm
                     </span>
                     <ChevronDown
                         size={14}
-                        className={`text-gray-400 transition-transform duration-300 ${expandedSections.search ? '' : '-rotate-90'}`}
+                        className={`text-stone-400 transition-transform duration-300 ${expandedSections.search ? '' : '-rotate-90'}`}
                     />
                 </button>
                 {expandedSections.search && (
-                    <div className="pb-6">
+                    <div className="pb-4">
                         <div className="relative">
                             <input
                                 type="text"
@@ -136,32 +136,32 @@ export function CatalogFilter({
                                     setFilters(newFilters);
                                     onFiltersChange?.(newFilters);
                                 }}
-                                className="w-full px-4 py-3 text-xs border border-filter-border rounded-none bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 transition-colors"
+                                className="w-full px-4 py-2.5 text-xs border border-stone-250 dark:border-zinc-800 rounded-full bg-white dark:bg-zinc-950 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] transition-all font-sans font-semibold shadow-sm"
                             />
-                            <Search size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <Search size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         </div>
                     </div>
                 )}
             </div>
 
             {/* lọc theo danh mục */}
-            <div className="mb-6">
+            <div className="mb-4">
                 <button
                     onClick={() => toggleSection('category')}
-                    className="w-full flex items-center justify-between py-4 group"
+                    className="w-full flex items-center justify-between py-3 group cursor-pointer"
                 >
-                    <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-900">
+                    <span className="text-[11px] font-sans font-bold uppercase tracking-[0.15em] text-stone-800 dark:text-white">
                         Danh mục
                     </span>
                     <ChevronDown
                         size={14}
-                        className={`text-gray-400 transition-transform duration-300 ${expandedSections.category ? '' : '-rotate-90'}`}
+                        className={`text-stone-400 transition-transform duration-300 ${expandedSections.category ? '' : '-rotate-90'}`}
                     />
                 </button>
                 {expandedSections.category && (
-                    <div className="space-y-1 pb-6">
+                    <div className="space-y-1 pb-4">
                         {loadingCategories ? (
-                            <div className="text-[10px] text-gray-400 uppercase animate-pulse">Đang tải...</div>
+                            <div className="text-[10px] text-stone-400 uppercase animate-pulse">Đang tải...</div>
                         ) : categoryTree.length > 0 ? (
                             categoryTree.map((node) => (
                                 <CategoryTreeItem
@@ -173,7 +173,7 @@ export function CatalogFilter({
                                 />
                             ))
                         ) : (
-                            <div className="text-[10px] text-gray-400 uppercase italic">Không có danh mục</div>
+                            <div className="text-[10px] text-stone-400 uppercase italic">Không có danh mục</div>
                         )}
                     </div>
                 )}

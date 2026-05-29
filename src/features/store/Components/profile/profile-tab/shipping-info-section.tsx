@@ -49,7 +49,6 @@ export function ShippingInfoSection({
             setWardId(shippingInfo.wardId || null);
             setReceiverName(shippingInfo.receiverName || '');
             setReceiverPhone(shippingInfo.receiverPhone || '');
-            // For street input, strip the province/ward/country suffix if previously formatted
             let street = shippingInfo.shippingAddress || '';
             if (street.toLowerCase().endsWith('việt nam')) {
                 street = street.replace(/,\s*Việt Nam\s*$/i, '');
@@ -63,7 +62,6 @@ export function ShippingInfoSection({
             }
             setStreetInput(street);
         } else if (shippingInfo) {
-            // If customer exists but no shippingInfo, reset fields
             setProvinceId(null);
             setWardId(null);
             setReceiverName('');
@@ -75,7 +73,6 @@ export function ShippingInfoSection({
     // Load provinces once
     useEffect(() => {
         AdministrativeService.getListProvince().then(setProvinces).catch(console.error);
-        console.log(provinces);
     }, []);
 
     // Load wards whenever province changes
@@ -88,7 +85,6 @@ export function ShippingInfoSection({
     }, [provinceId]);
 
     function handleCancel() {
-        // Reset form to original shippingInfo values
         if (shippingInfo) {
             setProvinceId(shippingInfo.provinceId || null);
             setWardId(shippingInfo.wardId || null);
@@ -121,7 +117,6 @@ export function ShippingInfoSection({
         try {
             setIsSubmitting(true);
 
-            // Build full address: "123 Đường Song Hành, Phường Vỹ Dạ, Thành phố Huế, Việt Nam"
             const parts: string[] = [];
             if (streetInput.trim()) parts.push(streetInput.trim());
             const wName = getWardName(wardId);
@@ -143,6 +138,7 @@ export function ShippingInfoSection({
             if (response) {
                 setIsEditing(false);
                 onRefresh();
+                toast.success('Đã cập nhật cấu hình giao hàng');
             }
         } catch (error: any) {
             toast.error(error.message || 'Lỗi cập nhật');
@@ -152,23 +148,23 @@ export function ShippingInfoSection({
     };
 
     return (
-        <div className="bg-white border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-md rounded-2xl overflow-hidden font-sans border-l-4 border-l-[#0D9488]">
             {/* Header */}
-            <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div className="px-8 py-6 border-b border-stone-200 dark:border-zinc-800/80 bg-stone-100/40 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-orange-50 flex items-center justify-center border border-orange-100">
-                        <Truck className="text-orange-600" size={24} />
+                    <div className="w-12 h-12 bg-[#0D9488] rounded-xl flex items-center justify-center text-white shadow-sm shrink-0">
+                        <Truck size={22} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-black tracking-tight text-slate-900 uppercase">Thông tin giao hàng</h2>
-                        <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Cấu hình kho/văn phòng nhận hàng hóa</p>
+                        <h2 className="text-sm font-heading font-extrabold tracking-wide text-stone-900 dark:text-white uppercase">Thông tin giao hàng</h2>
+                        <p className="text-[10px] text-stone-400 font-sans font-bold uppercase tracking-wider">Cấu hình kho/văn phòng nhận hàng hóa</p>
                     </div>
                 </div>
 
                 {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 shadow-lg shadow-orange-500/20"
+                        className="bg-[#0D9488] hover:bg-[#0F766E] text-white px-6 py-2.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-all cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
                     >
                         Thay đổi thông tin
                     </button>
@@ -176,14 +172,14 @@ export function ShippingInfoSection({
                     <div className="flex gap-3">
                         <button
                             onClick={handleCancel}
-                            className="bg-white border border-slate-200 text-slate-600 px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 transition-all flex items-center gap-2"
+                            className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 text-stone-600 dark:text-gray-300 px-6 py-2.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] hover:bg-stone-50 hover:border-stone-300 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
                         >
                             <X size={14} /> Hủy
                         </button>
                         <button
                             onClick={handleUpdate}
                             disabled={isSubmitting}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-orange-500/20"
+                            className="bg-[#10B981] hover:bg-[#059669] text-white px-6 py-2.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                             Lưu cấu hình
@@ -193,27 +189,27 @@ export function ShippingInfoSection({
             </div>
 
             {/* Body */}
-            <div className="p-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="p-8 sm:p-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     {/* Left: Contact */}
                     <div className="lg:col-span-4 space-y-8">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-4 bg-orange-500" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Nhân sự nhận hàng</h3>
+                            <div className="w-1.5 h-4 bg-[#0D9488]" />
+                            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-stone-400">Nhân sự nhận hàng</h3>
                         </div>
                         <div className="space-y-6">
                             <FormField
                                 label="Họ tên người nhận"
                                 value={receiverName}
                                 isEditing={isEditing}
-                                placeholder="Nhập tên người chịu trách nhiệm nhận hàng..."
+                                placeholder="Nhập tên người chịu trách nhiệm..."
                                 onChange={setReceiverName}
                             />
                             <FormField
                                 label="Số điện thoại nhận hàng"
                                 value={receiverPhone}
                                 isEditing={isEditing}
-                                placeholder="Số điện thoại liên lạc tại kho..."
+                                placeholder="Số điện thoại liên lạc..."
                                 onChange={setReceiverPhone}
                             />
                         </div>
@@ -222,73 +218,71 @@ export function ShippingInfoSection({
                     {/* Right: Geographic */}
                     <div className="lg:col-span-8 space-y-8">
                         <div className="flex items-center gap-2">
-                            <div className="w-1 h-4 bg-orange-500" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Vị trí địa lý & Chi tiết</h3>
+                            <div className="w-1.5 h-4 bg-[#0D9488]" />
+                            <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-stone-400">Vị trí địa lý & Chi tiết</h3>
                         </div>
 
                         {isEditing ? (
                             <div className="space-y-6 animate-in fade-in duration-300">
-                                {/* Province + Ward side by side */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-wider">Tỉnh / Thành phố</label>
+                                        <label className="block text-[10px] font-sans font-bold uppercase text-stone-500 mb-2 tracking-wider">Tỉnh / Thành phố</label>
                                         <Select
                                             value={provinceId || undefined}
                                             onValueChange={(val) => { setProvinceId(val); setWardId(null); }}
                                         >
-                                            <SelectTrigger className="w-full h-[52px] border-slate-200 font-medium">
+                                            <SelectTrigger className="w-full h-[52px] bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 rounded-xl font-semibold focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] shadow-sm">
                                                 <SelectValue placeholder="Chọn Tỉnh/Thành" />
                                             </SelectTrigger>
-                                            <SelectContent className="max-h-[300px]">
+                                            <SelectContent className="max-h-[300px] bg-white dark:bg-zinc-950 border border-stone-200">
                                                 {provinces.map(p => (
-                                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                                    <SelectItem key={p.id} value={p.id} className="cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-900">{p.name}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-wider">Phường / Xã</label>
+                                        <label className="block text-[10px] font-sans font-bold uppercase text-stone-500 mb-2 tracking-wider">Phường / Xã</label>
                                         <Select
                                             value={wardId || undefined}
                                             onValueChange={setWardId}
                                             disabled={!provinceId}
                                         >
-                                            <SelectTrigger className="w-full h-[52px] border-slate-200 font-medium">
+                                            <SelectTrigger className="w-full h-[52px] bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 rounded-xl font-semibold focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] shadow-sm">
                                                 <SelectValue placeholder="Chọn Phường/Xã" />
                                             </SelectTrigger>
-                                            <SelectContent className="max-h-[300px]">
+                                            <SelectContent className="max-h-[300px] bg-white dark:bg-zinc-950 border border-stone-200">
                                                 {wards.map(w => (
-                                                    <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                                                    <SelectItem key={w.id} value={w.id} className="cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-900">{w.name}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
 
-                                {/* Street */}
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
-                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Số nhà, Tên đường</label>
-                                        <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 uppercase">Lưu ý: Không điền lại Phường/Tỉnh</span>
+                                        <label className="text-[10px] font-sans font-bold uppercase text-stone-500 tracking-wider">Số nhà, Tên đường</label>
+                                        <span className="text-[9px] font-bold text-[#0D9488] bg-[#0D9488]/10 px-2 py-0.5 rounded uppercase">Lưu ý: Không điền lại Phường/Tỉnh</span>
                                     </div>
                                     <textarea
                                         value={streetInput}
                                         onChange={e => setStreetInput(e.target.value)}
                                         rows={2}
-                                        className="w-full bg-white border border-slate-200 px-5 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all resize-none"
+                                        className="w-full bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 px-5 py-4 text-sm font-semibold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] transition-all resize-none rounded-xl shadow-sm"
                                         placeholder="Ví dụ: 123 Đường Song Hành..."
                                     />
                                 </div>
                             </div>
                         ) : (
                             <div className="group">
-                                <label className="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-wider">Địa chỉ giao hàng hiện tại</label>
-                                <div className="flex items-start gap-4 p-5 bg-orange-50/30 border border-orange-100/50 animate-in fade-in duration-300">
+                                <label className="block text-[10px] font-sans font-bold uppercase text-stone-500 mb-2 tracking-wider">Địa chỉ giao hàng hiện tại</label>
+                                <div className="flex items-start gap-4 p-5 bg-white dark:bg-zinc-900/50 border border-stone-200 dark:border-zinc-800 rounded-xl shadow-sm animate-in fade-in duration-300">
                                     <div className="mt-1">
-                                        <MapPin size={18} className="text-orange-500" />
+                                        <MapPin size={18} className="text-[#0D9488] shrink-0" />
                                     </div>
-                                    <p className="text-sm font-medium text-slate-800 leading-relaxed italic">
+                                    <p className="text-sm font-semibold text-stone-850 dark:text-gray-150 leading-relaxed">
                                         {shippingInfo?.shippingAddress || 'Chưa cập nhật địa chỉ giao hàng'}
                                     </p>
                                 </div>

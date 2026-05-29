@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/shared/hooks/use-user';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
 
-
 import { SecurityTab } from './security-tab';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { ProfileTab } from './profile-tab';
@@ -58,12 +57,10 @@ export function UserProfile() {
       setIsUpdatingAvatar(true);
       await StoreCustomerService.updateCustomerAvatar(file);
 
-      // Refresh customer data
       const updatedCustomer = await StoreCustomerService.getDetailCustomerByAccountId(user!.id);
       if (updatedCustomer) {
         setCustomerData(updatedCustomer);
 
-        // Update user cookie for Header sync
         const userCookie = Cookies.get('user');
         if (userCookie) {
           const userData = JSON.parse(userCookie);
@@ -93,7 +90,6 @@ export function UserProfile() {
       Cookies.remove('refreshToken', { path: '/' });
       Cookies.remove('user', { path: '/' });
 
-      // Bắn event để Header đồng bộ lại ngay lập tức
       window.dispatchEvent(new Event('user-updated'));
 
       router.push('/');
@@ -102,25 +98,58 @@ export function UserProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-page-background">
-      <StoreBreadcrumb
-        items={[
-          { label: 'Trang chủ', href: '/' },
-          { label: 'Tài khoản' }
-        ]}
-        backLink="/"
-        backLabel="Quay lại trang chủ"
-      />
+    <div className="min-h-screen bg-[#ffffff] dark:bg-zinc-950 relative overflow-hidden">
+      {/* Ambient Background Glows */}
+      <div className="absolute top-[400px] left-1/4 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] dark:bg-emerald-500/[0.06] blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[200px] right-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/[0.03] dark:bg-indigo-500/[0.06] blur-[150px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="tracking-title-xl mb-2">Tài khoản của tôi</h1>
+      {/* Cinematic Banner */}
+      <div className="relative py-16 bg-stone-950 overflow-hidden border-b border-stone-900">
+        {/* Background image & gradient overlay */}
+        <div className="absolute inset-0 z-0 opacity-40">
+          <img 
+            src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=2074&auto=format&fit=crop"
+            alt="Profile Header Background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-[#042F2E]/90 to-transparent" />
         </div>
 
-        <div className="grid grid-cols-4 gap-8">
-          <aside className="lg:col-span-1">
-            {/* User Header Info */}
-            <div className="bg-white border border-gray-200 p-6 mb-4 flex flex-col items-center text-center">
+        {/* Floating glow orb */}
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full bg-emerald-500/10 blur-[90px] -translate-y-1/2" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-4">
+            <Building size={11} className="shrink-0" /> Cổng thông tin doanh nghiệp
+          </div>
+          <h1 className="font-heading text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+            TÀI KHOẢN CỦA TÔI
+          </h1>
+          <p className="text-stone-300 text-xs md:text-sm font-sans max-w-md mt-3 leading-relaxed font-light">
+            Quản lý hồ sơ công ty, thông tin giao nhận hàng hóa và thiết lập bảo mật hệ thống.
+          </p>
+        </div>
+      </div>
+
+      {/* Breadcrumb sub-bar */}
+      <div className="bg-[#F9F9FB] dark:bg-zinc-900 border-b border-stone-200 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <StoreBreadcrumb
+            items={[
+              { label: 'Trang chủ', href: '/' },
+              { label: 'Tài khoản' }
+            ]}
+            backLink="/"
+            backLabel="Quay lại trang chủ"
+          />
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1 flex flex-col gap-4">
+            {/* User Header Info Card */}
+            <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-6 flex flex-col items-center text-center shadow-md rounded-2xl border-t-4 border-t-[#0D9488]">
               <div className="relative group mb-4">
                 <input
                   type="file"
@@ -130,11 +159,11 @@ export function UserProfile() {
                   className="hidden"
                 />
                 <div className={cn(
-                  "w-24 h-24 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden transition-all group-hover:border-brand-green/30 relative",
+                  "w-24 h-24 rounded-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 flex items-center justify-center overflow-hidden transition-all group-hover:border-[#0D9488] relative shadow-inner",
                   isUpdatingAvatar && "opacity-50"
                 )}>
                   {isUpdatingAvatar ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
                   ) : customerData?.avatarUrl ? (
                     <img
                       src={customerData.avatarUrl}
@@ -142,26 +171,26 @@ export function UserProfile() {
                       className="w-full h-full object-cover"
                     />
                   ) : customerData?.name ? (
-                    <span className="text-2xl font-light tracking-widest text-gray-400 uppercase">
+                    <span className="text-2xl font-heading font-bold tracking-widest text-stone-400 dark:text-zinc-550 uppercase">
                       {customerData.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </span>
                   ) : (
-                    <User size={40} className="text-gray-200" />
+                    <User size={40} className="text-stone-300 dark:text-zinc-700" />
                   )}
                 </div>
                 <button
                   onClick={handleAvatarClick}
                   disabled={isUpdatingAvatar}
-                  className="absolute bottom-0 right-0 p-1.5 bg-white border border-gray-100 rounded-full text-gray-400 hover:text-brand-green hover:border-brand-green/30 transition-all shadow-sm disabled:opacity-50"
+                  className="absolute bottom-0 right-0 p-2 bg-white dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 rounded-full text-stone-400 hover:text-[#0D9488] dark:hover:text-secondary hover:border-[#0D9488]/55 transition-all shadow-md disabled:opacity-50 cursor-pointer"
                   title="Cập nhật ảnh đại diện"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
                 </button>
               </div>
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-900 mb-1">
+              <h2 className="text-xs font-heading font-extrabold uppercase tracking-[0.2em] text-stone-900 dark:text-white mb-1">
                 {customerData?.name || 'Khách hàng'}
               </h2>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest truncate w-full">
+              <p className="text-[10px] font-sans font-bold text-stone-400 uppercase tracking-widest truncate w-full">
                 {customerData?.email}
               </p>
             </div>
@@ -172,6 +201,7 @@ export function UserProfile() {
                 { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield },
               ].map((item) => {
                 const Icon = item.icon || ChevronRight;
+                const isActive = activeTab === item.id;
                 return (
                   <button
                     key={item.id}
@@ -179,14 +209,13 @@ export function UserProfile() {
                       setActiveTab(item.id as any);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none transition-all duration-300 border",
-                      activeTab === item.id
-                        ? "text-white border-[#2D5A27] shadow-md"
-                        : "bg-[#F9FAFB] text-[#374151] border-gray-200 hover:border-gray-400 hover:bg-white"
+                      "w-full flex items-center gap-3 px-4 py-3.5 text-xs font-sans font-bold uppercase tracking-wider rounded-xl transition-all duration-300 border cursor-pointer shadow-sm",
+                      isActive
+                        ? "text-white bg-[#0D9488] border-[#0D9488] shadow-md hover:bg-[#0F766E]"
+                        : "bg-[#F9F9FB] dark:bg-zinc-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-zinc-800 hover:bg-stone-50 dark:hover:bg-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700"
                     )}
-                    style={{ backgroundColor: activeTab === item.id ? '#2D5A27' : '' }}
                   >
-                    <Icon size={18} />
+                    <Icon size={16} className="shrink-0" />
                     <span>{item.label}</span>
                   </button>
                 );
@@ -194,9 +223,9 @@ export function UserProfile() {
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium tracking-wider rounded-none border border-red-200 text-red-700 hover:bg-red-50 transition-all duration-300 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-xs font-sans font-bold uppercase tracking-wider rounded-xl border border-red-200 text-red-700 bg-white hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-300 mt-4 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
               >
-                {isLoggingOut ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                {isLoggingOut ? <Loader2 size={16} className="animate-spin shrink-0" /> : <LogOut size={16} className="shrink-0" />}
                 <span>{isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</span>
               </button>
             </nav>
@@ -206,7 +235,7 @@ export function UserProfile() {
             {activeTab === 'business' && (
               loading ? (
                 <div className="flex justify-center py-20">
-                  <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
               ) : (
                 <ProfileTab
@@ -215,8 +244,6 @@ export function UserProfile() {
                 />
               )
             )}
-
-
 
             {activeTab === 'security' && <SecurityTab />}
           </main>
