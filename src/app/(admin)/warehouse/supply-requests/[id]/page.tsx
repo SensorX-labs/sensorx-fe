@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import SupplyRequestDetail from '@/features/supplychain/supplyrequest/components/supply-request-detail';
 
-export default function SupplyRequestDetailPage() {
+export default function WarehouseSupplyRequestDetailPage() {
   const params = useParams();
   const id = params.id as string;
 

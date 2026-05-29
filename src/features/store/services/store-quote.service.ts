@@ -62,6 +62,7 @@ export interface GetMyQuoteDetailResponse {
     subtotal: number;
     totalTax: number;
     grandTotal: number;
+    isStockSufficient: boolean;
     items: QuoteItemResponse[];
     sender: SenderInfoResponse;
     customer: CustomerInfoResponse;

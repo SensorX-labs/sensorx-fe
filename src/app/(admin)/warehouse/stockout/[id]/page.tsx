@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import StockOutDetail from '@/features/inventory/stockout/components/admin/stockout-detail';
 
-export default function StockOutDetailPage() {
+export default function WarehouseStockOutDetailPage() {
   const params = useParams();
   const id = params.id as string;
 

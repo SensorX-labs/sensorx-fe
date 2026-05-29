@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Package, Warehouse, Calendar,
-  DollarSign, MessageSquare, Save, Edit, X, Trash,
+  MessageSquare, Save, Edit, X, Trash,
   ClipboardList, Search
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
@@ -46,21 +46,24 @@ interface StockOutData {
   date: string;
   destination: string;
   warehouse: string;
-  status: 'draft' | 'pending' | 'completed';
+  status: 'draft' | 'pending' | 'completed' | 'Approved' | string;
   items: StockOutItem[];
   note: string;
+  transferOrderCode?: string;
 }
 
 const statusColor: Record<string, string> = {
   'draft': 'bg-gray-100 text-gray-600 border-gray-200',
   'pending': 'bg-yellow-50 text-yellow-700 border-yellow-200',
   'completed': 'bg-green-50 text-green-700 border-green-200',
+  'Approved': 'bg-green-50 text-green-700 border-green-200',
 };
 
 const statusLabel: Record<string, string> = {
   'draft': 'Nháp',
   'pending': 'Chờ xác nhận',
   'completed': 'Hoàn thành',
+  'Approved': 'Đã duyệt',
 };
 
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
@@ -175,15 +178,19 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
     if (id && action !== ActionType.CREATE) {
       setLoading(true);
       StockOutService.getById(id)
-        .then(data => {
+        .then((data: any) => {
           if (data) {
             setStockOutData(data);
-            setItems(data.items || []);
+            setItems((data.items || []).map((item: any) => ({
+              ...item,
+              unitPrice: item.unitPrice ?? 0,
+              taxRate: item.taxRate ?? 0,
+            })));
             setDestination(data.destination || '');
             setNote(data.description || '');
           }
         })
-        .catch(err => {
+        .catch((err: any) => {
           console.error("Error fetching stock out detail:", err);
           toast.error("Không thể tải thông tin phiếu xuất kho");
         })
@@ -233,12 +240,6 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
     setIsEditing(false);
   };
 
-  const calculateTotal = () =>
-    items.reduce((sum, item) => {
-      const sub = (item.quantity || 0) * (item.unitPrice || 0);
-      return sum + sub + sub * ((item.taxRate || 0) / 100);
-    }, 0);
-
   const addItem = () => {
     const newItem: StockOutItem = {
       id: Date.now().toString(),
@@ -272,45 +273,12 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button onClick={handleSave} className="rounded admin-btn-primary border-transparent">
-                <Save className="w-4 h-4 mr-2" />
-                Lưu
-              </Button>
-              
-              {action === ActionType.CREATE ? (
-                <Link href="/inventory/stockout">
-                  <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Quay lại
-                  </Button>
-                </Link>
-              ) : (
-                <Button variant="outline" onClick={handleCancel} className="rounded text-gray-700 hover:bg-gray-50">
-                  <X className="w-4 h-4 mr-2" />
-                  Hủy
-                </Button>
-              )}
-            </>
-          ) : (
-            <>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
-                <Package className="w-4 h-4 mr-2" />
-                Xác nhận xuất
-              </Button>
-              <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
-                <Edit className="w-4 h-4 mr-2" />
-                Chỉnh sửa
-              </Button>
-              <Link href="/inventory/stockout">
-                <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Quay lại
-                </Button>
-              </Link>
-            </>
-          )}
+          <Link href="/warehouse/stockout">
+            <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Quay lại
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -330,17 +298,22 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                   <td className="px-6 py-3">{stockOutData.code}</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-3 text-[#2B3674] font-semibold">Trạng thái</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[stockOutData.status]}`}>
-                      {statusLabel[stockOutData.status]}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Ngày xuất</td>
                   <td className="px-6 py-3">{new Date(stockOutData.date).toLocaleDateString('vi-VN')}</td>
                 </tr>
+                {stockOutData.transferOrderCode && (
+                  <tr>
+                    <td className="px-6 py-3 text-[#2B3674] font-semibold">Mã điều chuyển</td>
+                    <td className="px-6 py-3">
+                      <Link
+                        href={`/warehouse/transfer-orders?search=${stockOutData.transferOrderCode}`}
+                        className="font-bold text-blue-600 hover:underline"
+                      >
+                        {stockOutData.transferOrderCode}
+                      </Link>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -399,14 +372,11 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                     <th className="px-4 py-3 w-20 admin-table-th text-center">SL</th>
                     <th className="px-4 py-3 w-28 admin-table-th text-right">Đơn giá</th>
                     <th className="px-4 py-3 w-16 admin-table-th text-center">Thuế %</th>
-                    <th className="px-4 py-3 w-28 admin-table-th text-right">Thành tiền</th>
                     {isEditing && <th className="px-1 py-3 w-5" />}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {items.map((item, index) => {
-                    const sub = (item.quantity || 0) * (item.unitPrice || 0);
-                    const total = sub + sub * ((item.taxRate || 0) / 100);
                     return (
                       <tr key={item.id} className="hover:bg-gray-50">
                         <td className="px-6 py-3">
@@ -468,9 +438,6 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                             <span>{item.taxRate}%</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          {total.toLocaleString('vi-VN')}
-                        </td>
                         {isEditing && (
                           <td className="px-1 py-3 text-center">
                             <Button
@@ -487,16 +454,6 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-gray-50 border-t border-gray-200 text-lg">
-                  <tr>
-                    <td colSpan={isEditing ? 5 : 4} className="px-6 py-4 text-right font-semibold">
-                      Tổng cộng:
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-[var(--brand-green-600)]">
-                      {calculateTotal().toLocaleString('vi-VN')}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
@@ -515,41 +472,6 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
                 className="text-sm border-gray-300 rounded min-h-[100px]"
                 placeholder="Nhập ghi chú..."
               />
-            </div>
-          </div>
-
-          {/* Tổng cộng */}
-          <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              <h4 className="text-sm font-medium">Tổng cộng</h4>
-            </div>
-            <div className="p-6">
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-gray-100">
-                  <tr>
-                    <td className="py-2 font-semibold text-gray-700">Tổng tiền hàng</td>
-                    <td className="py-2 text-right font-bold text-[#2B3674]">
-                      {items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-semibold text-gray-700">Thuế</td>
-                    <td className="py-2 text-right font-bold text-[#2B3674]">
-                      {items.reduce((sum, item) => {
-                        const sub = item.quantity * item.unitPrice;
-                        return sum + (sub * item.taxRate / 100);
-                      }, 0).toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <td className="py-3 font-bold text-[#2B3674]">Tổng cộng</td>
-                    <td className="py-3 text-right font-bold text-lg text-[#2B3674]">
-                      {calculateTotal().toLocaleString('vi-VN')} ₫
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>

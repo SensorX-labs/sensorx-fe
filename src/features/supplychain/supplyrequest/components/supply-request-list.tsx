@@ -54,7 +54,7 @@ export function SupplyRequestList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-4">
-        <Link href="/supplychain/supplyrequest/new">
+        <Link href="/warehouse/supply-requests/new">
           <Button className="admin-btn-primary flex items-center gap-2">
             <ClipboardList className="w-4 h-4" />
             Tạo yêu cầu
@@ -169,7 +169,7 @@ export function SupplyRequestList() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <Link href={`/supplychain/supplyrequest/${req.id}`}>
+                      <Link href={`/warehouse/supply-requests/${req.id}`}>
                         <button className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded">
                           <Eye className="w-4 h-4" />
                         </button>

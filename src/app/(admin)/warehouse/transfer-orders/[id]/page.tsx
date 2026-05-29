@@ -9,7 +9,7 @@ interface TransferOrderDetailPageProps {
   };
 }
 
-export default function TransferOrderDetailPage({ params }: TransferOrderDetailPageProps) {
+export default function WarehouseTransferOrderDetailPage({ params }: TransferOrderDetailPageProps) {
   const searchParams = useSearchParams();
   const action = searchParams.get('action') || undefined;
 

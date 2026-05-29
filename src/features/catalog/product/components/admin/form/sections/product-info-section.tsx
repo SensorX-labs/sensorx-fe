@@ -4,7 +4,7 @@ import React from 'react';
 import { Box, ChevronRight } from 'lucide-react';
 import { Supplier } from '@/features/catalog/supplier/models';
 import { UnitOfQuantity } from '@/features/catalog/unit-of-quantity/models';
-import { ProductDetail } from '../../../models';
+import { ProductDetail } from '@/features/catalog/product/models';
 
 interface ProductInfoSectionProps {
   formData: ProductDetail;

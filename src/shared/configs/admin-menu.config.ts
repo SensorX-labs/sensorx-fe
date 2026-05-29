@@ -152,6 +152,12 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         iconName: 'FileEdit',
         href: '/warehouse/picking-note',
         roles: ['Manager', 'WarehouseStaff']
+      },
+      {
+        name: 'Kiểm kê kho',
+        iconName: 'ClipboardList',
+        href: '/warehouse/stock-adjustment',
+        roles: ['Manager', 'WarehouseStaff']
       }
     ],
   },
@@ -168,13 +174,13 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Yêu cầu cung ứng',
         iconName: 'ClipboardList',
         href: '/warehouse/supply-requests',
-        roles: ['Manager']
+        roles: ['Manager', 'WarehouseStaff']
       },
       {
         name: 'lệnh điều chuyển',
         iconName: 'ArrowRightLeft',
         href: '/warehouse/transfer-orders',
-        roles: ['Manager']
+        roles: ['Manager', 'WarehouseStaff']
       }
     ],
   },

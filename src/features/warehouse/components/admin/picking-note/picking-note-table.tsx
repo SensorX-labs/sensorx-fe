@@ -162,9 +162,13 @@ const PickingNoteTable = () => {
   };
 
   return (
-    <AdminPageContainer
-      title="Danh sách phiếu soạn kho"
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            Danh sách phiếu soạn kho
+          </h2>
+        </div>
         <Button
           onClick={() => router.push("/warehouse/picking-note/new")}
           className="gap-2"
@@ -172,8 +176,7 @@ const PickingNoteTable = () => {
           <Plus className="w-4 h-4" />
           Tạo phiếu soạn kho
         </Button>
-      }
-    >
+      </div>
       {/* Tabs navigation cao cấp hiển thị danh sách kho */}
       <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px mb-4">
         {warehouses.map((w) => {

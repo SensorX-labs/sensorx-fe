@@ -9,6 +9,7 @@ export interface PickingNoteListItem {
 }
 
 export interface PickingNoteDetail extends PickingNoteListItem {
+    warehouseId: string;
     deliveryInfo: {
         receiverName: string;
         receiverPhone: string;
@@ -25,6 +26,8 @@ export interface PickingNoteDetail extends PickingNoteListItem {
         manufactureName: string;
         note?: string;
     }[];
+    transferOrderCode?: string;
+    linkedTransferOrderId?: string;
 }
 
 export interface PickingNoteCursorQuery {

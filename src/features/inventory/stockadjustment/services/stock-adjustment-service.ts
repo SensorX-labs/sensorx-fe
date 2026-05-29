@@ -1,4 +1,5 @@
 import api from "@/shared/configs/axios-config";
+import Cookies from "js-cookie";
 
 export interface StockAdjustmentListItem {
     id: string;
@@ -42,8 +43,11 @@ export interface StockAdjustmentCursorResult {
 }
 
 export const StockAdjustmentService = {
-    create: (data: any) => 
-        api.warehouse.post<any, string>("/stockOut/createStockOut", { ...data, isAdjustment: true }),
+    create: (data: any) => {
+        const warehouseId = Cookies.get("warehouseId");
+        const config = warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : {};
+        return api.warehouse.post<any, string>("/stockOut/createStockOut", { ...data, isAdjustment: true }, config);
+    },
 
     approve: (id: string) => 
         api.warehouse.post<any, string>("/stockOut/approve", { id }), // Assuming there's an approve endpoint or similar logic

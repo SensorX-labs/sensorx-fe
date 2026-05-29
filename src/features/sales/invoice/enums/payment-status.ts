@@ -1,5 +1,7 @@
 export enum PaymentStatus {
-    PENDING = "PENDING" ,// chờ - dùng khi sinh QR 
-    COMPLETED = "COMPLETED", // hoàn thành : tiền đã vào túi
-    FAILED = "FAILED" // thất bại
+    PENDING = "Pending", // chờ - dùng khi sinh QR 
+    PARTIALLY_PAID = "PartiallyPaid", // đã thanh toán một phần
+    COMPLETED = "Completed", // hoàn thành : tiền đã vào túi
+    FAILED = "Failed", // thất bại
+    CANCELLED = "Cancelled" // bị hủy
 }

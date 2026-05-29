@@ -163,9 +163,13 @@ const StockAdjustmentForm = () => {
   };
 
   return (
-    <AdminPageContainer
-      title="Tạo Phiếu Kiểm Kê / Điều Chỉnh Kho"
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            Tạo Phiếu Kiểm Kê / Điều Chỉnh Kho
+          </h2>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.back()}>
             Hủy
@@ -174,8 +178,7 @@ const StockAdjustmentForm = () => {
             {loading ? "Đang xử lý..." : "Lưu phiếu kiểm kê"}
           </Button>
         </div>
-      }
-    >
+      </div>
       <Form {...form}>
         <form className="space-y-6">
           {/* Thông tin chung */}

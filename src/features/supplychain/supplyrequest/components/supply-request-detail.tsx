@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Package, Warehouse, Calendar,
   DollarSign, MessageSquare, Save, Edit, X, Trash,
-  ClipboardList, Search, Plus
+  ClipboardList, Search, Plus, Loader2
 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Input } from '@/shared/components/shadcn-ui/input';
@@ -17,7 +17,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/shared/components/shadcn-ui/select";
 import Link from 'next/link';
-import { MOCK_PRODUCTS } from '@/features/catalog/product/mocks/product-mocks';
+import { toast } from 'sonner';
+import { getSupplyRequestById, processSupplyRequest } from '../services/supply-request-service';
+import { createTransferOrder } from '@/features/supplychain/transferorder/services/transfer-order-service';
+import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { ProductService } from '@/features/catalog/product/services/product-service';
+import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 
 interface SupplyRequestDetailProps {
   id?: string;
@@ -25,13 +30,15 @@ interface SupplyRequestDetailProps {
 
 interface RequestItem {
   id: string;
+  productId: string;
   productCode: string;
   productName: string;
   requiredQuantity: number;
 }
 
 interface PurchasePlanItem {
-  id: string;
+  id: string; // Product Guid or Temp ID
+  productId?: string;
   productCode: string;
   productName: string;
   quantity: number;
@@ -39,7 +46,8 @@ interface PurchasePlanItem {
 }
 
 interface TransferPlanItem {
-  id: string;
+  id: string; // Product Guid or Temp ID
+  productId?: string;
   productCode: string;
   productName: string;
   quantity: number;
@@ -50,8 +58,11 @@ interface TransferPlanItem {
 
 interface TransferPlan {
   id: string;
-  sourceWarehouse: string;
+  code?: string;
+  sourceWarehouse: string; // Warehouse Guid ID
   items: TransferPlanItem[];
+  status?: string;
+  isNew?: boolean;
 }
 
 interface SupplyRequestData {
@@ -59,86 +70,101 @@ interface SupplyRequestData {
   code: string;
   date: string;
   totalRequired: number;
-  status: 'draft' | 'pending' | 'approved' | 'completed';
+  status: 'Pending' | 'Completed' | string;
   requestItems: RequestItem[];
   purchasePlan: PurchasePlanItem[];
   transferPlans: TransferPlan[];
   note: string;
+  warehouseId?: string;
+  pickingNoteId?: string;
 }
 
 const statusColor: Record<string, string> = {
-  'draft': 'bg-gray-100 text-gray-600 border-gray-200',
-  'pending': 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  'approved': 'bg-blue-50 text-blue-700 border-blue-200',
-  'completed': 'bg-green-50 text-green-700 border-green-200',
+  'Pending': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  'Completed': 'bg-green-50 text-green-700 border-green-200',
 };
 
 const statusLabel: Record<string, string> = {
-  'draft': 'Nháp',
-  'pending': 'Chờ duyệt',
-  'approved': 'Đã duyệt',
-  'completed': 'Hoàn thành',
+  'Pending': 'Chờ xử lý',
+  'Completed': 'Hoàn thành',
 };
 
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedCode, setSelectedCode] = React.useState(defaultValue || "");
+  const [loading, setLoading] = React.useState(false);
+  const [products, setProducts] = React.useState<ProductLoadMoreForModal[]>([]);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+
+  const fetchProducts = React.useCallback(async (term: string) => {
+    setLoading(true);
+    try {
+      const result = await ProductService.getLoadMore({
+        searchTerm: term,
+        pageSize: 10,
+        sortByName: true,
+        isDescending: false,
+      });
+      setProducts(result.items || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   React.useEffect(() => {
-    setSelectedCode(defaultValue || "");
-  }, [defaultValue]);
+    if (open) {
+      fetchProducts(searchTerm);
+    }
+  }, [open, searchTerm, fetchProducts]);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const selectedProduct = MOCK_PRODUCTS.find(p => p.code === selectedCode);
   const displayLabel = selectedProduct ? selectedProduct.name : (defaultLabel || defaultValue || "Chọn sản phẩm...");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="w-full justify-between text-xs h-9 font-normal border-gray-300 rounded shadow-none">
-          <div className="flex flex-col items-start overflow-hidden">
-             <span className="truncate w-full font-semibold">{displayLabel}</span>
+          <div className="flex flex-col items-start overflow-hidden text-left">
+            <span className="truncate w-full font-semibold">{displayLabel}</span>
           </div>
           <Search className="h-3 w-3 opacity-50 ml-2 shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0 shadow-xl border-gray-200" align="start">
         <div className="p-2 border-b bg-gray-50/50">
-           <Input 
-              placeholder="Gõ tên hoặc mã sản phẩm..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
-              autoFocus
-           />
+          <Input
+            placeholder="Gõ tên hoặc mã sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-8 text-xs focus:ring-1 focus:ring-brand-green border-gray-200"
+            autoFocus
+          />
         </div>
         <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
-           {filteredProducts.length === 0 ? (
-             <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
-           ) : (
-             filteredProducts.map(p => (
-               <div 
-                 key={p.id}
-                 className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
-                 onClick={() => {
-                    setSelectedCode(p.code || "");
-                    onSelect(p);
-                    setOpen(false);
-                 }}
-               >
-                 <span className="text-xs font-bold text-gray-900">{p.name}</span>
-                 <div className="flex justify-between items-center mt-1">
-                    <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
-                    <span className="text-[10px] text-brand-green font-bold italic">{p.manufacturer}</span>
-                 </div>
-               </div>
-             ))
-           )}
+          {loading ? (
+            <div className="p-6 text-xs text-center text-gray-500">Đang tải...</div>
+          ) : products.length === 0 ? (
+            <div className="p-6 text-xs text-center text-gray-500 italic">Không tìm thấy sản phẩm phù hợp</div>
+          ) : (
+            products.map(p => (
+              <div
+                key={p.id}
+                className="p-3 hover:bg-brand-green/5 cursor-pointer flex flex-col border-b border-gray-50 last:border-0 transition-colors"
+                onClick={() => {
+                  setSelectedProduct(p);
+                  onSelect(p);
+                  setOpen(false);
+                }}
+              >
+                <span className="text-xs font-bold text-gray-900">{p.name}</span>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="text-[10px] text-gray-500 uppercase font-medium bg-gray-100 px-1 rounded">Mã: {p.code}</span>
+                  <span className="text-[10px] text-brand-green font-bold italic">{p.supplierName}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -146,46 +172,224 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 }
 
 export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const editParam = searchParams.get('action') === 'edit';
 
   const [isEditing, setIsEditing] = useState(editParam || false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
 
   const [supplyData, setSupplyData] = useState<SupplyRequestData>({
-    id: id || 'YC001',
-    code: 'YC001',
-    date: new Date().toISOString().split('T')[0],
-    totalRequired: 25,
-    status: 'pending',
-    requestItems: [
-      { id: '1', productCode: 'CAM-4K-001', productName: 'Camera an ninh 4K', requiredQuantity: 10 },
-      { id: '2', productCode: 'MIC-DIN-002', productName: 'Micro quay đơn chiều', requiredQuantity: 15 },
-    ],
+    id: id || '',
+    code: '',
+    date: new Date().toISOString(),
+    totalRequired: 0,
+    status: 'Pending',
+    requestItems: [],
     purchasePlan: [],
     transferPlans: [],
     note: '',
   });
 
-  const [purchasePlan, setPurchasePlan] = useState<PurchasePlanItem[]>(supplyData.purchasePlan);
-  const [transferPlans, setTransferPlans] = useState<TransferPlan[]>(supplyData.transferPlans);
-  const [note, setNote] = useState(supplyData.note);
+  const [purchasePlan, setPurchasePlan] = useState<PurchasePlanItem[]>([]);
+  const [transferPlans, setTransferPlans] = useState<TransferPlan[]>([]);
+  const [note, setNote] = useState('');
 
-  const handleSave = () => {
-    console.log('Lưu yêu cầu cung ứng:', { ...supplyData, purchasePlan, transferPlans, note });
-    setIsEditing(false);
+  const loadData = async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      // 1. Fetch supply request detail
+      const data = await getSupplyRequestById(id);
+      
+      // 2. Fetch warehouse list
+      const warehouseList = await getWarehouses();
+      setWarehouses(warehouseList || []);
+
+      // 3. Resolve request items
+      const resolvedItems = await Promise.all((data.items || []).map(async (item: any) => {
+        try {
+          const p = await ProductService.getDetail(item.productId);
+          return {
+            id: item.id,
+            productId: item.productId,
+            productCode: p.code || '',
+            productName: p.name || 'Sản phẩm không tên',
+            requiredQuantity: item.requestedQuantity
+          };
+        } catch {
+          return {
+            id: item.id,
+            productId: item.productId,
+            productCode: 'Unknown',
+            productName: 'Sản phẩm không rõ',
+            requiredQuantity: item.requestedQuantity
+          };
+        }
+      }));
+
+      // 4. Resolve purchase options
+      const resolvedPurchase = await Promise.all((data.purchaseOptions || []).map(async (opt: any) => {
+        try {
+          const p = await ProductService.getDetail(opt.productId);
+          return {
+            id: opt.id,
+            productId: opt.productId,
+            productCode: p.code || '',
+            productName: p.name || 'Sản phẩm không tên',
+            quantity: opt.quantity,
+            unitPrice: 0
+          };
+        } catch {
+          return {
+            id: opt.id,
+            productId: opt.productId,
+            productCode: 'Unknown',
+            productName: 'Sản phẩm không rõ',
+            quantity: opt.quantity,
+            unitPrice: 0
+          };
+        }
+      }));
+
+      // 5. Resolve already created transfer orders
+      const resolvedTransfers = (data.transferOrders || []).map((to: any) => ({
+        id: to.id,
+        code: to.code,
+        sourceWarehouse: to.sourceWarehouseId,
+        status: to.status,
+        isNew: false,
+        items: (to.items || []).map((toi: any) => ({
+          id: toi.id,
+          productId: toi.productId,
+          productCode: toi.productCode,
+          productName: toi.productName,
+          quantity: toi.quantity,
+          unit: toi.unit,
+          manufacturerName: toi.manufacturerName,
+          note: toi.note
+        }))
+      }));
+
+      const resolvedData: SupplyRequestData = {
+        id: data.id,
+        code: data.code,
+        date: data.createdAt,
+        totalRequired: resolvedItems.reduce((sum, item) => sum + item.requiredQuantity, 0),
+        status: data.status,
+        note: data.note || '',
+        requestItems: resolvedItems,
+        purchasePlan: resolvedPurchase,
+        transferPlans: resolvedTransfers,
+        warehouseId: data.warehouseId,
+        pickingNoteId: data.pickingNoteId,
+      };
+
+      setSupplyData(resolvedData);
+      setPurchasePlan(resolvedPurchase);
+      setTransferPlans(resolvedTransfers);
+      setNote(data.note || '');
+    } catch (error) {
+      console.error("Failed to load supply request detail:", error);
+      toast.error("Không thể tải chi tiết yêu cầu cung ứng");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
-    console.log('Xác nhận yêu cầu cung ứng:', { ...supplyData, purchasePlan, transferPlans });
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // 1. Save purchase options
+      await processSupplyRequest({
+        supplyRequestId: id!,
+        purchaseOptions: purchasePlan.map(x => ({
+          productId: x.productId || x.id,
+          quantity: x.quantity,
+          note: `Mua ngoài bổ sung`
+        })),
+        completeRequest: false
+      });
+
+      // 2. Create new transfer orders
+      const newPlans = transferPlans.filter(p => p.isNew);
+      for (const plan of newPlans) {
+        if (!plan.sourceWarehouse) {
+          toast.error("Vui lòng chọn đầy đủ kho xuất cho các phương án điều chuyển");
+          setSaving(false);
+          return;
+        }
+        if (plan.items.length === 0) {
+          toast.error("Vui lòng thêm sản phẩm cho các phương án điều chuyển mới");
+          setSaving(false);
+          return;
+        }
+        await createTransferOrder({
+          code: `DC_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          sourceWarehouseId: plan.sourceWarehouse,
+          destinationWarehouseId: supplyData.warehouseId!,
+          note: `Điều chuyển từ yêu cầu cung ứng ${supplyData.code}`,
+          items: plan.items.map(toi => ({
+            productId: toi.productId || toi.id,
+            productCode: toi.productCode,
+            productName: toi.productName,
+            unit: toi.unit || 'Cái',
+            quantity: toi.quantity,
+            manufactureName: toi.manufacturerName || 'N/A',
+            note: toi.note || ''
+          })),
+          pickingNoteId: supplyData.pickingNoteId || null,
+          supplyRequestId: id!
+        });
+      }
+
+      toast.success("Lưu phương án thành công");
+      setIsEditing(false);
+      loadData();
+    } catch (error) {
+      console.error("Failed to save supply request options:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    try {
+      await processSupplyRequest({
+        supplyRequestId: id!,
+        purchaseOptions: purchasePlan.map(x => ({
+          productId: x.productId || x.id,
+          quantity: x.quantity,
+          note: `Mua ngoài bổ sung`
+        })),
+        completeRequest: true
+      });
+      toast.success("Đã duyệt hoàn tất yêu cầu cung ứng");
+      router.push('/warehouse/supply-requests');
+    } catch (error) {
+      console.error("Failed to complete supply request:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
+    setPurchasePlan(supplyData.purchasePlan);
+    setTransferPlans(supplyData.transferPlans);
+    setNote(supplyData.note);
     setIsEditing(false);
   };
 
   const addPurchaseItem = () => {
     const newItem: PurchasePlanItem = {
-      id: Date.now().toString(),
+      id: 'temp_' + Date.now().toString(),
       productCode: '',
       productName: '',
       quantity: 1,
@@ -194,56 +398,57 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
     setPurchasePlan([...purchasePlan, newItem]);
   };
 
-  const removePurchaseItem = (id: string) => {
-    setPurchasePlan(purchasePlan.filter(item => item.id !== id));
+  const removePurchaseItem = (itemId: string) => {
+    setPurchasePlan(purchasePlan.filter(item => item.id !== itemId));
   };
 
-  const updatePurchaseItem = (id: string, field: keyof PurchasePlanItem, value: any) => {
-    setPurchasePlan(purchasePlan.map(item => 
-      item.id === id ? { ...item, [field]: value } : item
+  const updatePurchaseItem = (itemId: string, updates: Partial<PurchasePlanItem>) => {
+    setPurchasePlan(prev => prev.map(item =>
+      item.id === itemId ? { ...item, ...updates } : item
     ));
   };
 
   const addTransferPlan = () => {
     const newPlan: TransferPlan = {
-      id: Date.now().toString(),
+      id: 'temp_plan_' + Date.now().toString(),
       sourceWarehouse: '',
       items: [],
+      isNew: true,
     };
     setTransferPlans([...transferPlans, newPlan]);
   };
 
-  const removeTransferPlan = (id: string) => {
-    setTransferPlans(transferPlans.filter(plan => plan.id !== id));
+  const removeTransferPlan = (planId: string) => {
+    setTransferPlans(transferPlans.filter(plan => plan.id !== planId));
   };
 
   const addTransferItem = (planId: string) => {
     const newItem: TransferPlanItem = {
-      id: Date.now().toString(),
+      id: 'temp_toi_' + Date.now().toString(),
       productCode: '',
       productName: '',
       quantity: 1,
     };
-    setTransferPlans(transferPlans.map(plan => 
+    setTransferPlans(transferPlans.map(plan =>
       plan.id === planId ? { ...plan, items: [...plan.items, newItem] } : plan
     ));
   };
 
   const removeTransferItem = (planId: string, itemId: string) => {
-    setTransferPlans(transferPlans.map(plan => 
-      plan.id === planId 
-        ? { ...plan, items: plan.items.filter(item => item.id !== itemId) } 
+    setTransferPlans(transferPlans.map(plan =>
+      plan.id === planId
+        ? { ...plan, items: plan.items.filter(item => item.id !== itemId) }
         : plan
     ));
   };
 
-  const updateTransferItem = (planId: string, itemId: string, field: keyof TransferPlanItem, value: any) => {
-    setTransferPlans(transferPlans.map(plan => 
-      plan.id === planId 
+  const updateTransferItem = (planId: string, itemId: string, updates: Partial<TransferPlanItem>) => {
+    setTransferPlans(prev => prev.map(plan =>
+      plan.id === planId
         ? {
           ...plan,
-          items: plan.items.map(item => 
-            item.id === itemId ? { ...item, [field]: value } : item
+          items: plan.items.map(item =>
+            item.id === itemId ? { ...item, ...updates } : item
           )
         }
         : plan
@@ -251,7 +456,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
   };
 
   const updateTransferWarehouse = (planId: string, warehouse: string) => {
-    setTransferPlans(transferPlans.map(plan => 
+    setTransferPlans(transferPlans.map(plan =>
       plan.id === planId ? { ...plan, sourceWarehouse: warehouse } : plan
     ));
   };
@@ -259,7 +464,12 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
   const purchaseTotal = purchasePlan.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-green" />
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <h2 className="text-2xl font-bold tracking-title-xl uppercase">
@@ -269,9 +479,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
         <div className="flex items-center gap-2">
           {isEditing ? (
             <>
-              <Button onClick={handleSave} className="rounded admin-btn-primary border-transparent">
-                <Save className="w-4 h-4 mr-2" />
-                Lưu
+              <Button onClick={handleSave} disabled={saving} className="rounded admin-btn-primary border-transparent">
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Lưu phương án
               </Button>
               <Button variant="outline" onClick={handleCancel} className="rounded text-gray-700 hover:bg-gray-50">
                 <X className="w-4 h-4 mr-2" />
@@ -280,15 +490,19 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             </>
           ) : (
             <>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white rounded">
-                <Package className="w-4 h-4 mr-2" />
-                Xác nhận
-              </Button>
-              <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
-                <Edit className="w-4 h-4 mr-2" />
-                Chỉnh sửa
-              </Button>
-              <Link href="/supplychain/supplyrequest">
+              {supplyData.status !== 'Completed' && (
+                <>
+                  <Button onClick={handleSubmit} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white rounded">
+                    {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Package className="w-4 h-4 mr-2" />}
+                    Duyệt hoàn tất
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditing(true)} className="rounded text-gray-700 hover:bg-gray-50">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Chỉnh sửa
+                  </Button>
+                </>
+              )}
+              <Link href="/warehouse/supply-requests">
                 <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Quay lại
@@ -315,10 +529,16 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                   <td className="px-6 py-3">{supplyData.code}</td>
                 </tr>
                 <tr>
+                  <td className="px-6 py-3 text-[#2B3674] font-semibold">Kho yêu cầu</td>
+                  <td className="px-6 py-3 font-semibold text-gray-800">
+                    {warehouses.find(w => w.id === supplyData.warehouseId)?.name || supplyData.warehouseId}
+                  </td>
+                </tr>
+                <tr>
                   <td className="px-6 py-3 text-[#2B3674] font-semibold">Trạng thái</td>
                   <td className="px-6 py-3">
-                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[supplyData.status]}`}>
-                      {statusLabel[supplyData.status]}
+                    <span className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${statusColor[supplyData.status] || 'bg-gray-100'}`}>
+                      {statusLabel[supplyData.status] || supplyData.status}
                     </span>
                   </td>
                 </tr>
@@ -422,8 +642,11 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                 defaultValue={item.productCode}
                                 defaultLabel={item.productName}
                                 onSelect={(prod) => {
-                                  updatePurchaseItem(item.id, 'productCode', prod.code || '');
-                                  updatePurchaseItem(item.id, 'productName', prod.name);
+                                  updatePurchaseItem(item.id, {
+                                    productId: prod.id,
+                                    productCode: prod.code || '',
+                                    productName: prod.name
+                                  });
                                 }}
                               />
                             </div>
@@ -439,7 +662,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                             <input
                               type="number"
                               value={item.quantity}
-                              onChange={(e) => updatePurchaseItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updatePurchaseItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
                           ) : (
@@ -451,7 +674,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                             <input
                               type="number"
                               value={item.unitPrice}
-                              onChange={(e) => updatePurchaseItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                              onChange={(e) => updatePurchaseItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
                               placeholder="0"
                               className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:outline-none focus:border-[var(--brand-green-500)] focus:ring-1 focus:ring-[var(--brand-green-500)]"
                             />
@@ -480,7 +703,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                 </tbody>
                 <tfoot className="bg-gray-50 border-t border-gray-200 text-lg">
                   <tr>
-                    <td colSpan={isEditing ? 3 : 3} className="px-6 py-4 text-right font-semibold">
+                    <td colSpan={3} className="px-6 py-4 text-right font-semibold">
                       Tổng giá trị mua:
                     </td>
                     <td className="px-4 py-4 text-right font-bold text-[var(--brand-green-600)]">
@@ -521,18 +744,33 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1">
                       <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho xuất (Kho nguồn)</label>
-                      <Select value={plan.sourceWarehouse} onValueChange={(value) => updateTransferWarehouse(plan.id, value)} disabled={!isEditing}>
-                        <SelectTrigger className="w-full h-9 text-sm border-gray-300 rounded">
-                          <SelectValue placeholder="Chọn kho" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="kho-chinh">Kho chính</SelectItem>
-                          <SelectItem value="kho-phu">Kho phụ</SelectItem>
-                          <SelectItem value="kho-transit">Kho trung chuyển</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {plan.isNew ? (
+                        <select
+                          value={plan.sourceWarehouse}
+                          onChange={(e) => updateTransferWarehouse(plan.id, e.target.value)}
+                          className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-brand-green"
+                        >
+                          <option value="">-- Chọn kho xuất --</option>
+                          {warehouses
+                            .filter(w => w.id !== supplyData.warehouseId)
+                            .map(w => (
+                              <option key={w.id} value={w.id}>{w.name}</option>
+                            ))
+                          }
+                        </select>
+                      ) : (
+                        <div className="text-sm font-bold text-gray-800 bg-gray-100 p-2 rounded border">
+                          {warehouses.find(w => w.id === plan.sourceWarehouse)?.name || plan.sourceWarehouse}
+                          {plan.code && <span className="text-xs font-medium text-gray-500 ml-2">({plan.code})</span>}
+                          {plan.status && (
+                            <span className="text-[10px] font-bold bg-blue-50 text-blue-600 rounded px-1.5 py-0.5 ml-2 uppercase">
+                              {plan.status}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {isEditing && (
+                    {isEditing && plan.isNew && (
                       <Button
                         onClick={() => removeTransferPlan(plan.id)}
                         variant="ghost"
@@ -548,7 +786,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h5 className="text-xs font-semibold text-gray-700">Sản phẩm cần chuyển</h5>
-                      {isEditing && (
+                      {isEditing && plan.isNew && (
                         <Button
                           onClick={() => addTransferItem(plan.id)}
                           size="sm"
@@ -568,37 +806,42 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                             <th className="px-3 py-2 text-center w-14">SL</th>
                             <th className="px-3 py-2 text-left">Nhà SX</th>
                             <th className="px-3 py-2 text-left">Ghi chú</th>
-                            {isEditing && <th className="px-2 py-2 w-6" />}
+                            {isEditing && plan.isNew && <th className="px-2 py-2 w-6" />}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {plan.items.map((item) => (
                             <tr key={item.id} className="hover:bg-white">
                               <td className="px-3 py-2">
-                                {isEditing ? (
-                                  <div>
+                                {isEditing && plan.isNew ? (
+                                  <div className="min-w-[180px]">
                                     <SearchableProductSelect
                                       defaultValue={item.productCode}
                                       defaultLabel={item.productName}
                                       onSelect={(prod) => {
-                                        updateTransferItem(plan.id, item.id, 'productCode', prod.code || '');
-                                        updateTransferItem(plan.id, item.id, 'productName', prod.name);
+                                        updateTransferItem(plan.id, item.id, {
+                                          productId: prod.id,
+                                          productCode: prod.code || '',
+                                          productName: prod.name,
+                                          unit: prod.unitOfQuantityName || 'Cái',
+                                          manufacturerName: prod.supplierName || 'N/A'
+                                        });
                                       }}
                                     />
                                   </div>
                                 ) : (
-                                  <div className="text-gray-900">{item.productName || '---'}</div>
+                                  <div className="text-gray-900 font-semibold">{item.productName || '---'} ({item.productCode})</div>
                                 )}
                               </td>
                               <td className="px-3 py-2">
-                                <span className="text-gray-700">{item.unit || '---'}</span>
+                                <span className="text-gray-700">{item.unit || 'Cái'}</span>
                               </td>
                               <td className="px-3 py-2 text-center">
-                                {isEditing ? (
+                                {isEditing && plan.isNew ? (
                                   <input
                                     type="number"
                                     value={item.quantity}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { quantity: parseFloat(e.target.value) || 0 })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:border-blue-500"
                                   />
                                 ) : (
@@ -606,24 +849,24 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                 )}
                               </td>
                               <td className="px-3 py-2">
-                                {isEditing ? (
+                                {isEditing && plan.isNew ? (
                                   <input
                                     type="text"
                                     value={item.manufacturerName || ''}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'manufacturerName', e.target.value)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { manufacturerName: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-500"
                                     placeholder="Nhà SX"
                                   />
                                 ) : (
-                                  <span className="text-gray-600">{item.manufacturerName || '---'}</span>
+                                  <span className="text-gray-600">{item.manufacturerName || 'N/A'}</span>
                                 )}
                               </td>
                               <td className="px-3 py-2">
-                                {isEditing ? (
+                                {isEditing && plan.isNew ? (
                                   <input
                                     type="text"
                                     value={item.note || ''}
-                                    onChange={(e) => updateTransferItem(plan.id, item.id, 'note', e.target.value)}
+                                    onChange={(e) => updateTransferItem(plan.id, item.id, { note: e.target.value })}
                                     className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-500"
                                     placeholder="Ghi chú"
                                   />
@@ -631,7 +874,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                                   <span className="text-gray-600 text-xs">{item.note || '---'}</span>
                                 )}
                               </td>
-                              {isEditing && (
+                              {isEditing && plan.isNew && (
                                 <td className="px-2 py-2 text-center">
                                   <Button
                                     onClick={() => removeTransferItem(plan.id, item.id)}
@@ -650,7 +893,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                     </div>
                     {plan.items.length === 0 && (
                       <div className="py-4 text-center text-gray-500 text-sm">
-                        Chưa có sản phẩm nào {isEditing ? '- Nhấn "+ Thêm sản phẩm" để bắt đầu' : ''}
+                        Chưa có sản phẩm nào {isEditing && plan.isNew ? '- Nhấn "+ Thêm sản phẩm" để bắt đầu' : ''}
                       </div>
                     )}
                   </div>
@@ -658,7 +901,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
               ))}
               {transferPlans.length === 0 && (
                 <div className="py-8 text-center text-gray-500 text-sm">
-                  Chưa có lệnh điều chuyển nào {isEditing ? '- Nhấn "+ Thêm lệnh điều chuyển" để bắt đầu' : ''}
+                  Chưa có phương án điều chuyển nào {isEditing ? '- Nhấn "+ Thêm lệnh điều chuyển" để bắt đầu' : ''}
                 </div>
               )}
             </div>
