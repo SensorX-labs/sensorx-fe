@@ -4,6 +4,8 @@ export interface DashboardStatsResponse {
   totalRevenue: number;
   averageOrderValue: number;
   totalOrders: number;
+  previousTotalOrders: number;
+  previousAverageOrderValue: number;
   topSellingProducts: Array<{
     productId: string;
     productCode: string;
@@ -41,6 +43,8 @@ export interface MasterStatsResponse {
   totalCustomers: number;
   totalProducts: number;
   totalStaffs: number;
+  newCustomers: number;
+  previousNewCustomers: number;
 }
 
 export const AnalyticsService = {
@@ -54,8 +58,10 @@ export const AnalyticsService = {
       params: { filterType },
     }),
 
-  getMasterStats: () =>
-    api.data.get<unknown, MasterStatsResponse>(`/analytics/master-stats`),
+  getMasterStats: (timeRange: string = "month") =>
+    api.data.get<unknown, MasterStatsResponse>(`/analytics/master-stats`, {
+      params: { timeRange },
+    }),
 };
 
 export default AnalyticsService;
