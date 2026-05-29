@@ -46,13 +46,13 @@ export function HomePage() {
     {
       title: 'Kho Vận & Logistics Tự Động',
       description: 'Hệ thống cảm biến phân loại sản phẩm tốc độ cao, đo lường kích thước kiện hàng và định vị AGV thông minh trong nhà kho thông minh.',
-      image: '/assets/images/banner_1.jpeg',
+      image: '/assets/images/banner_2.jpeg',
       specs: ['Độ trễ phản hồi < 0.5ms', 'Kháng bụi chuẩn IP67/IP69K', 'Kết nối công nghiệp IO-Link', 'Phát hiện mọi bề mặt vật liệu']
     },
     {
       title: 'Chế Tạo & Lắp Ráp Ô Tô',
       description: 'Giải pháp kiểm soát chất lượng chính xác bằng thị giác máy (Vision Sensors) và phát hiện vị trí chính xác micro-mét phục vụ robot hàn/lắp ráp.',
-      image: '/assets/images/banner_2.jpeg',
+      image: '/assets/images/banner_1.jpeg',
       specs: ['Độ chính xác ±0.1µm', 'Kháng nhiễu điện từ cực tốt', 'Đầu ra tích hợp Profinet', 'Vỏ kim loại chịu lực siêu bền']
     },
     {
@@ -155,10 +155,6 @@ export function HomePage() {
               Mua sắm ngay
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <button className="w-full sm:w-auto bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-sans font-bold text-sm tracking-widest uppercase transition-all flex items-center justify-center gap-2">
-              <Play className="w-4 h-4 fill-white" />
-              Xem Video Giới Thiệu
-            </button>
           </div>
         </div>
       </section>
@@ -346,14 +342,14 @@ export function HomePage() {
                   </p>
                 </div>
 
-                {/* Price and Action */}
-                <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-between mt-auto">
-                  <span className="font-sans font-black text-base text-gray-900 dark:text-white">{prod.price}</span>
+                {/* Action */}
+                <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-end mt-auto">
                   <Link 
                     href="/shop"
-                    className="w-9 h-9 rounded-xl bg-gray-900 hover:bg-emerald-600 text-white flex items-center justify-center transition-all duration-350"
+                    className="flex items-center gap-2 px-4 h-9 rounded-full bg-gray-900 hover:bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest transition-all duration-300"
                   >
-                    <ArrowRight className="w-4 h-4" />
+                    <span>Xem chi tiết</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
