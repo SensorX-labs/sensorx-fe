@@ -28,6 +28,8 @@ export interface PickingNoteDetail extends PickingNoteListItem {
     }[];
     transferOrderCode?: string;
     linkedTransferOrderId?: string;
+    sourceDocumentId?: string;
+    sourceDocumentType?: number;
 }
 
 export interface PickingNoteCursorQuery {

@@ -41,6 +41,9 @@ export const OrderService = {
 
   getMyOrderById: (id: string) =>
     api.master.get<unknown, Order>(`/orders/my/${id}`),
+
+  checkOrderPaymentStatus: (id: string) =>
+    api.master.get<unknown, { orderId: string; isPaid: boolean; paymentStatus: string }>(`/orders/${id}/payment-status`),
 };
 
 export default OrderService;

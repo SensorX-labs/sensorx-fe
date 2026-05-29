@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Warehouse, Search, Loader2, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
+import { Warehouse, Search, Loader2, ChevronLeft, ChevronRight, ClipboardCheck, Sliders } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { InventoryService, InventoryItemListItem, ConsolidatedInventoryItem } from '../../services/inventory-service';
 import { ProductService } from '@/features/catalog/product/services/product-service';
@@ -19,6 +19,11 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/shared/components/shadcn-ui/dialog';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent
+} from '@/shared/components/shadcn-ui/tooltip';
 
 interface StockItem extends InventoryItemListItem {
   productName?: string;
@@ -150,7 +155,7 @@ export default function WarehouseStockPage() {
       await createStockAdjustment(payload, adjustForm.warehouseId);
       toast.success('Điều chỉnh tồn kho thành công!');
       setIsAdjustModalOpen(false);
-      fetchStock();
+      window.location.reload();
     } catch (error) {
       console.error('Error adjusting stock:', error);
     } finally {
@@ -375,13 +380,15 @@ export default function WarehouseStockPage() {
               <th className="text-left px-6 py-4 tracking-label uppercase">Loại hàng</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Tồn kho</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Vị trí</th>
-              <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
+              {isWarehouseStaff && activeTab !== 'all' && (
+                <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
+              )}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center">
+                <td colSpan={isWarehouseStaff && activeTab !== 'all' ? 7 : 6} className="px-6 py-10 text-center">
                    <div className="flex flex-col items-center gap-2 text-gray-500">
                       <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
                       <p>Đang tải dữ liệu tồn kho...</p>
@@ -390,7 +397,7 @@ export default function WarehouseStockPage() {
               </tr>
             ) : stockItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-gray-500 italic">
+                <td colSpan={isWarehouseStaff && activeTab !== 'all' ? 7 : 6} className="px-6 py-10 text-center text-gray-500 italic">
                   Không tìm thấy dữ liệu tồn kho nào
                 </td>
               </tr>
@@ -428,16 +435,25 @@ export default function WarehouseStockPage() {
                       </>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenAdjustModal(item)}
-                      className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded text-xs font-semibold"
-                    >
-                      Điều chỉnh
-                    </Button>
-                  </td>
+                  {isWarehouseStaff && activeTab !== 'all' && (
+                    <td className="px-6 py-4 text-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenAdjustModal(item)}
+                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-full p-2 h-8 w-8 flex items-center justify-center"
+                          >
+                            <Sliders className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Điều chỉnh tồn kho</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

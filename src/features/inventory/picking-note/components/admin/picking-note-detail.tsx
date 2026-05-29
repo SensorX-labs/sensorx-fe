@@ -25,6 +25,7 @@ import { Loader2, Search } from 'lucide-react';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 import StockOutService from '@/features/inventory/stockout/services/stock-out-service';
+import OrderService from '@/features/sales/order/services/order-service';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
@@ -55,6 +56,9 @@ interface PickingNoteData {
   updatedAt: string;
   transferOrderCode?: string;
   linkedTransferOrderId?: string;
+  sourceDocumentId?: string;
+  sourceDocumentType?: number;
+  description?: string;
 }
 
 interface PickingNoteDetailProps {
@@ -176,6 +180,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const [loading, setLoading] = useState(false);
   const [stockOutLoading, setStockOutLoading] = useState(false);
   const [stockOutNote, setStockOutNote] = useState("");
+  const [isPaid, setIsPaid] = useState<boolean | null>(null);
+  const [paymentStatusStr, setPaymentStatusStr] = useState<string>("");
 
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
@@ -219,7 +225,10 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
               transferOrderCode: data.transferOrderCode,
-              linkedTransferOrderId: data.linkedTransferOrderId
+              linkedTransferOrderId: data.linkedTransferOrderId,
+              sourceDocumentId: data.sourceDocumentId,
+              sourceDocumentType: data.sourceDocumentType,
+              description: data.description
             });
           }
         })
@@ -229,6 +238,21 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
         .finally(() => setLoading(false));
     }
   }, [id, isCreate]);
+
+  useEffect(() => {
+    if (formData.sourceDocumentId && formData.sourceDocumentType === 0) {
+      OrderService.checkOrderPaymentStatus(formData.sourceDocumentId)
+        .then((res: any) => {
+          if (res) {
+            setIsPaid(res.isPaid);
+            setPaymentStatusStr(res.paymentStatus);
+          }
+        })
+        .catch(err => {
+          console.error("Lỗi khi kiểm tra trạng thái thanh toán đơn hàng:", err);
+        });
+    }
+  }, [formData.sourceDocumentId, formData.sourceDocumentType]);
 
   useEffect(() => {
     if (formData.status === "Completed" && formData.code && !stockOutNote) {
@@ -270,6 +294,11 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   };
 
   const handleCreateStockOut = async () => {
+    if (formData.sourceDocumentType === 0 && isPaid !== true) {
+      toast.error("Đơn hàng chưa được thanh toán! Vui lòng thanh toán đầy đủ trước khi xuất kho.");
+      return;
+    }
+
     setStockOutLoading(true);
     try {
       await StockOutService.create(id, stockOutNote);
@@ -491,6 +520,24 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     </span>
                   </td>
                 </tr>
+                {formData.sourceDocumentType === 0 && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold text-red-500 font-bold">Thanh toán đơn</td>
+                    <td className="px-6 py-3">
+                      {isPaid === null ? (
+                        <span className="text-gray-400 text-xs italic">Đang kiểm tra...</span>
+                      ) : isPaid ? (
+                        <span className="px-2.5 py-0.5 rounded border text-xs font-medium bg-green-50 text-green-700 border-green-200">
+                          Đã thanh toán ({paymentStatusStr})
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded border text-xs font-medium bg-red-50 text-red-700 border-red-200">
+                          Chưa thanh toán ({paymentStatusStr})
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {formData.transferOrderCode && (
                   <tr>
                     <td className="px-6 py-3 admin-text-primary font-semibold">Mã điều chuyển</td>
@@ -516,6 +563,12 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                         onChange={(e) => setStockOutNote(e.target.value)}
                       />
                     </td>
+                  </tr>
+                )}
+                {formData.description && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Mô tả</td>
+                    <td className="px-6 py-3 text-gray-700 font-medium whitespace-pre-wrap">{formData.description}</td>
                   </tr>
                 )}
               </tbody>
