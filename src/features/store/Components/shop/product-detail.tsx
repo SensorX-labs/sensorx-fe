@@ -54,10 +54,6 @@ export function ProductDetail() {
       quantity: selectedQuantity,
     });
 
-    toast.success(`Đã thêm ${selectedQuantity} sản phẩm`, {
-      description: `Tổng số lượng trong danh sách: ${qtyInCart + selectedQuantity}`,
-      duration: 2500,
-    });
     setTimeout(() => setJustAdded(false), 800);
   };
 

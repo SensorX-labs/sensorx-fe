@@ -85,11 +85,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             manufacturer: product?.supplierName || 'SensorX',
             quantity: 1,
         });
-        toast.success(`+1 ${name}`, {
-            description: `Số lượng hiện tại: ${qty + 1}`,
-            duration: 1500,
-            position: 'bottom-left',
-        });
         setTimeout(() => setJustAdded(false), 400);
     };
 

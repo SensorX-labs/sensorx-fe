@@ -144,11 +144,8 @@ export const StoreHeader = () => {
 
             {/* Logo */}
             <Link href="/" className="flex-none shrink-0 flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-lg">S</span>
-              </div>
               <span className="font-heading font-bold text-2xl tracking-wide text-gray-900 dark:text-white">
-                SENSOR<span className="text-secondary">X</span>
+                SENSOR<span className="text-[#0D9488] dark:text-[#14B8A6]">X</span>
               </span>
             </Link>
 
