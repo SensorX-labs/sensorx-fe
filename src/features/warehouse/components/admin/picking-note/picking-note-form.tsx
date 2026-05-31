@@ -21,7 +21,7 @@ import {
   getPickingNote,
 } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote, PickingNoteItem } from "@/features/warehouse/models";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from '@/shared/components/admin/layout';
 import { toast } from "sonner";
 
 const schema = z.object({

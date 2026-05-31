@@ -21,7 +21,7 @@ import {
   createStockAdjustment,
   getWarehouses,
 } from "@/features/warehouse/services/warehouse-service";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from '@/shared/components/admin/layout';
 import { toast } from "sonner";
 
 interface WarehouseOption {

@@ -22,7 +22,7 @@ import {
   cancelPicking,
 } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote } from "@/features/warehouse/models";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from '@/shared/components/admin/layout';
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
 import StockOutService from "@/features/inventory/stockout/services/stock-out-service";
