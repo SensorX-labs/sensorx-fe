@@ -204,25 +204,8 @@ export function AcceptQuoteModal({
                         </div>
 
                         {/* RIGHT */}
-
                         <div>
-
-                            <div className="space-y-3">
-                                <div
-                                    className="flex items-start gap-4 rounded-xl border p-5 bg-gray-50 border-gray-900"
-                                >
-                                    <div>
-                                        <p className="font-semibold">
-                                            Thanh toán toàn bộ
-                                        </p>
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            100% giá trị đơn hàng
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-6 rounded-xl bg-gray-50 border border-gray-100 p-6">
+                            <div className="rounded-xl bg-gray-50 border border-gray-100 p-6">
 
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500">

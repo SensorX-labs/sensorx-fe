@@ -32,5 +32,4 @@ export const paymentMethodLabel: Record<string, string> = {
 
 export const paymentTermLabel: Record<string, string> = {
   [PaymentTern.FULLPAYMENT]: '100% Trả trước',
-  [PaymentTern.DEPOSIT]: '30% Cọc',
 };

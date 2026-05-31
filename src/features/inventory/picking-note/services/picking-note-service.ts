@@ -57,17 +57,17 @@ export const PickingNoteService = {
     createPickingNote: (data: any) => 
         api.warehouse.post<any, string>("/pickingNote/createPickingNote", data),
 
-    startPicking: (id: string) => 
-        api.warehouse.post<any, string>("/pickingNote/startPicking", { pickingNoteId: id }),
+    startPicking: (id: string, warehouseId?: string) => 
+        api.warehouse.post<any, string>("/pickingNote/startPicking", { pickingNoteId: id }, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 
-    completePicking: (id: string) => 
-        api.warehouse.post<any, string>("/pickingNote/completePicking", { pickingNoteId: id }),
+    completePicking: (id: string, warehouseId?: string) => 
+        api.warehouse.post<any, string>("/pickingNote/completePicking", { pickingNoteId: id }, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 
-    cancelPicking: (id: string, reason?: string) => 
-        api.warehouse.post<any, string>("/pickingNote/cancelPicking", { pickingNoteId: id, reason }),
+    cancelPicking: (id: string, reason?: string, warehouseId?: string) => 
+        api.warehouse.post<any, string>("/pickingNote/cancelPicking", { pickingNoteId: id, reason }, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 
-    getById: (id: string) => 
-        api.warehouse.get<any, PickingNoteDetail>(`/pickingNote/getPickingNote/${id}`),
+    getById: (id: string, warehouseId?: string) => 
+        api.warehouse.get<any, PickingNoteDetail>(`/pickingNote/getPickingNote/${id}`, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 
     getList: (params: PickingNoteCursorQuery) => {
         const { warehouseId, ...restParams } = params;

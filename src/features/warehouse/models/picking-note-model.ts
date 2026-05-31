@@ -29,4 +29,5 @@ export interface PickingNote {
   items: PickingNoteItem[];
   linkedTransferOrderId?: string;
   transferOrderCode?: string;
+  warehouseId?: string;
 }

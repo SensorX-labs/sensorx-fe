@@ -26,6 +26,7 @@ import { ProductService } from '@/features/catalog/product/services/product-serv
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 import StockOutService from '@/features/inventory/stockout/services/stock-out-service';
 import OrderService from '@/features/sales/order/services/order-service';
+import { InventoryService } from '@/features/inventory/stockproduct/services/inventory-service';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
@@ -199,8 +200,11 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     (actionParam as ActionType) || ActionType.DETAIL
   );
 
+  const [inventoryList, setInventoryList] = useState<any[]>([]);
+  const [inventoryLoaded, setInventoryLoaded] = useState(false);
+
   useEffect(() => {
-    if (id && !isCreate) {
+    if (id && id !== 'undefined' && !isCreate) {
       setLoading(true);
       PickingNoteService.getById(id)
         .then(data => {
@@ -215,6 +219,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               status: data.status as any,
               items: data.items.map((i: any) => ({
                 id: i.productId,
+                productId: i.productId,
                 productCode: i.productCode,
                 productName: i.productName,
                 unit: i.unit,
@@ -260,9 +265,40 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     }
   }, [formData.status, formData.code, stockOutNote]);
 
+  useEffect(() => {
+    if (formData.warehouseId && formData.status === 'Pending') {
+      InventoryService.getInventoryList({ warehouseId: formData.warehouseId, pageSize: 200 })
+        .then(res => {
+          if (res && res.items) {
+            setInventoryList(res.items);
+          }
+          setInventoryLoaded(true);
+        })
+        .catch(err => {
+          console.error("Error loading inventory:", err);
+          setInventoryLoaded(true);
+        });
+    }
+  }, [formData.warehouseId, formData.status]);
+
+  const getAvailableStock = (productId?: string) => {
+    if (!productId) return 0;
+    const invItem = inventoryList.find(i => i.productId === productId);
+    return invItem ? (invItem.physicalQuantity - invItem.allocatedQuantity) : 0;
+  };
+
+  const checkStockShortage = () => {
+    if (formData.status !== 'Pending') return false;
+    return formData.items.some(item => {
+      if (!item.productId) return true;
+      const available = getAvailableStock(item.productId);
+      return available < item.quantity;
+    });
+  };
+
   const handleStartPicking = async () => {
     try {
-      await PickingNoteService.startPicking(id);
+      await PickingNoteService.startPicking(id, formData.warehouseId);
       toast.success("Đã bắt đầu soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -273,19 +309,29 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const handleCreateSupplyRequest = () => {
     const warehouseId = formData.warehouseId || Cookies.get('warehouseId') || '';
-    const itemsShortage = formData.items.map(item => ({
-      productId: item.id,
-      productCode: item.productCode,
-      productName: item.productName,
-      requiredQuantity: item.quantity
-    }));
+    const itemsShortage = formData.items
+      .map(item => {
+        const available = getAvailableStock(item.productId);
+        const shortage = item.quantity - available;
+        return {
+          productId: item.productId,
+          productCode: item.productCode,
+          productName: item.productName,
+          requiredQuantity: shortage > 0 ? shortage : item.quantity
+        };
+      })
+      .filter(item => {
+        const available = getAvailableStock(item.productId);
+        const reqQty = formData.items.find(i => i.productId === item.productId)?.quantity ?? 0;
+        return available < reqQty;
+      });
     
     window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
   const handleCompletePicking = async () => {
     try {
-      await PickingNoteService.completePicking(id);
+      await PickingNoteService.completePicking(id, formData.warehouseId);
       toast.success("Đã hoàn thành soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -301,7 +347,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
     setStockOutLoading(true);
     try {
-      await StockOutService.create(id, stockOutNote);
+      await StockOutService.create(id, stockOutNote, formData.warehouseId);
       toast.success("Tạo phiếu xuất kho thành công!");
       window.location.href = "/warehouse/stockout";
     } catch (error) {
@@ -314,7 +360,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const handleCancelPicking = async () => {
     try {
-      await PickingNoteService.cancelPicking(id, "Người dùng hủy");
+      await PickingNoteService.cancelPicking(id, "Người dùng hủy", formData.warehouseId);
       toast.success("Đã hủy phiếu soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -411,9 +457,11 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
                     Bắt đầu soạn
                   </Button>
-                  <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
-                    Yêu cầu cung ứng
-                  </Button>
+                  {inventoryLoaded && checkStockShortage() && (
+                    <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
+                      Yêu cầu cung ứng
+                    </Button>
+                  )}
                 </>
               )}
               {formData.status === 'Picking' && (
@@ -598,6 +646,9 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                       <tr>
                         <th className="px-6 py-3 font-medium">Mã SP</th>
                         <th className="px-6 py-3 font-medium">Tên SP</th>
+                        {!isEditing && formData.status === 'Pending' && (
+                          <th className="px-6 py-3 font-medium text-right w-[120px]">Khả dụng</th>
+                        )}
                         <th className="px-6 py-3 font-medium text-right w-[100px]">Số lượng</th>
                         {isEditing && <th className="px-6 py-3 font-medium text-center w-[80px]">Xóa</th>}
                       </tr>
@@ -625,6 +676,19 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                               </div>
                             )}
                           </td>
+                          {!isEditing && formData.status === 'Pending' && (
+                            <td className="px-6 py-3 text-right">
+                              {(() => {
+                                const available = getAvailableStock(item.productId);
+                                const isShortage = available < item.quantity;
+                                return (
+                                  <span className={`font-semibold ${isShortage ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
+                                    {available}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                          )}
                           <td className="px-6 py-3 text-right">
                             {isEditing ? (
                               <input
