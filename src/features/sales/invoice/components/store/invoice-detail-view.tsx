@@ -11,7 +11,8 @@ import {
   Mail,
   Wallet,
   XCircle,
-  Loader2
+  Loader2,
+  Receipt
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { InvoiceStatus } from '../../enums/invoice-status';
@@ -22,27 +23,27 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; cla
   [InvoiceStatus.Unpaid]: {
     label: 'Chờ thanh toán',
     icon: Clock,
-    className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    className: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30',
   },
   [InvoiceStatus.PartiallyPaid]: {
     label: 'Thanh toán một phần',
     icon: Wallet,
-    className: 'bg-orange-50 text-orange-700 border-orange-200',
+    className: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900/30',
   },
   [InvoiceStatus.Paid]: {
     label: 'Đã thanh toán',
     icon: CheckCircle2,
-    className: 'bg-green-50 text-green-700 border-green-200',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30',
   },
   [InvoiceStatus.Issued]: {
     label: 'Đã phát hành',
     icon: FileText,
-    className: 'bg-blue-50 text-blue-700 border-blue-200',
+    className: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/30',
   },
   [InvoiceStatus.Cancelled]: {
     label: 'Đã hủy',
     icon: XCircle,
-    className: 'bg-red-50 text-red-700 border-red-200',
+    className: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30',
   }
 };
 
@@ -71,19 +72,22 @@ export function InvoiceDetailView({ invoiceId, onBack }: { invoiceId: string; on
 
   if (loading) {
     return (
-      <div className="py-24 text-center bg-white border border-dashed border-gray-100">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-300 mx-auto mb-4" />
-        <p className="meta-label uppercase">Đang tải chi tiết hóa đơn...</p>
+      <div className="py-24 text-center bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-300 mx-auto mb-4" />
+        <p className="text-xs font-sans font-bold uppercase tracking-widest text-stone-400">Đang tải chi tiết hóa đơn...</p>
       </div>
     );
   }
 
   if (!invoice) {
     return (
-      <div className="py-24 text-center bg-white border border-dashed border-gray-100">
-        <p className="meta-label uppercase mb-6">Không tìm thấy hóa đơn.</p>
-        <button onClick={onBack} className="tracking-label uppercase underline underline-offset-4">
-          Quay lại danh sách hóa đơn
+      <div className="py-24 text-center bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-6">
+        <p className="text-xs font-sans font-bold uppercase tracking-widest text-stone-400">Không tìm thấy hóa đơn.</p>
+        <button
+          onClick={onBack}
+          className="px-6 py-2.5 bg-white border border-stone-250 rounded-full text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-stone-50 transition-colors cursor-pointer shadow-sm"
+        >
+          Quay lại danh sách
         </button>
       </div>
     );
@@ -92,151 +96,188 @@ export function InvoiceDetailView({ invoiceId, onBack }: { invoiceId: string; on
   const config = statusConfig[invoice.status] ?? {
     label: invoice.status,
     icon: Clock,
-    className: 'bg-gray-50 text-gray-700 border-gray-200',
+    className: 'bg-stone-50 text-stone-700 border-stone-200 dark:bg-zinc-850 dark:text-stone-350',
   };
   const StatusIcon = config.icon;
 
   return (
-    <div className="space-y-10">
-      <div className="flex items-center justify-between border-b border-gray-100">
+    <div className="space-y-8 font-sans select-none animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 dark:border-zinc-800 pb-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 tracking-breadcrumb group"
+          className="flex items-center gap-2 text-stone-500 hover:text-[#0D9488] font-bold uppercase text-[10px] tracking-widest transition-colors cursor-pointer group"
         >
-          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform shrink-0" />
           Quay lại danh sách hóa đơn
         </button>
         <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 px-8 py-2.5 border border-gray-900 tracking-label uppercase btn-tracking transition-all hover:bg-gray-900 hover:text-white !text-[10px]">
-            <Download className="w-4 h-4" />
+          <button className="flex items-center gap-2 px-6 h-10 border border-stone-250 hover:border-[#0D9488] bg-white hover:bg-stone-50 text-stone-850 hover:text-[#0D9488] text-[10px] font-bold uppercase tracking-widest rounded-full transition-all cursor-pointer shadow-sm active:scale-95">
+            <Download className="w-4 h-4 shrink-0" />
             Tải hóa đơn (PDF)
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-10 border border-gray-100">
-        <div className="flex justify-between items-start">
-          <div className="space-y-4">
-            <h1 className="tracking-title-xl">{invoice.code}</h1>
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-              <span className="tracking-label uppercase whitespace-nowrap">
-                Ngày lập: <span className="text-gray-900">{new Date(invoice.issueAt).toLocaleString('vi-VN')}</span>
-              </span>
-              <span className="tracking-label uppercase whitespace-nowrap">
-                Đơn hàng: <span className="text-gray-900">{invoice.orderId}</span>
-              </span>
-            </div>
+      {/* Summary Header Card */}
+      <div className="bg-[#F9F9FB] dark:bg-zinc-900 p-6 sm:p-8 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm border-l-4 border-l-[#0D9488] flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-stone-200/50 dark:bg-zinc-800 text-stone-600 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider">
+            <Receipt size={10} /> Chi tiết hóa đơn
           </div>
-          <div className={cn("px-6 py-2 border-2 tracking-label uppercase font-bold text-[11px] whitespace-nowrap flex items-center gap-2", config.className)}>
-            <StatusIcon className="w-4 h-4" />
-            {config.label}
+          <h2 className="text-xl sm:text-2xl font-heading font-black text-stone-900 dark:text-white uppercase tracking-wide">
+            {invoice.code}
+          </h2>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span>
+              Ngày lập: <span className="text-stone-700 dark:text-stone-300 font-extrabold">{new Date(invoice.issueAt).toLocaleDateString('vi-VN')}</span>
+            </span>
+            <span className="hidden sm:inline text-stone-300">|</span>
+            <span>
+              Đơn hàng: <span className="text-stone-700 dark:text-stone-300 font-mono font-extrabold">{invoice.orderId}</span>
+            </span>
           </div>
+        </div>
+        <div className={cn("px-4 py-2 border text-[10px] font-sans font-bold uppercase tracking-widest rounded-full flex items-center gap-2 shadow-sm self-start sm:self-auto", config.className)}>
+          <StatusIcon className="w-3.5 h-3.5 shrink-0" />
+          {config.label}
         </div>
       </div>
 
-      <div className="bg-white border border-gray-100">
-        <div className="px-10 py-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-gray-400" />
-            <h3 className="tracking-title uppercase text-lg">Danh sách hàng hóa</h3>
-          </div>
+      {/* Items Table */}
+      <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-950 flex items-center gap-3">
+          <FileText className="w-4 h-4 text-stone-400" />
+          <h3 className="font-heading font-extrabold uppercase text-xs tracking-widest text-stone-900 dark:text-white">
+            Danh sách sản phẩm
+          </h3>
         </div>
 
-        <table className="w-full text-left border-collapse table-fixed">
-          <thead>
-            <tr className="bg-gray-100 border-b border-gray-100 uppercase">
-              <th className="px-10 py-5 tracking-label border-r border-gray-50 w-[46%]">Sản phẩm</th>
-              <th className="px-4 py-5 tracking-label border-r border-gray-50 text-center w-[10%]">SL</th>
-              <th className="px-8 py-5 tracking-label border-r border-gray-50 text-right w-[14%]">Đơn giá</th>
-              <th className="px-8 py-5 tracking-label border-r border-gray-50 text-right w-[10%]">Thuế</th>
-              <th className="px-10 py-5 tracking-label text-right w-[20%] bg-gray-50/30">Thành tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoice.items.map((item, idx) => (
-              <tr key={item.id ?? idx} className={cn("border-b border-gray-50 last:border-0", idx % 2 === 1 && "bg-gray-50/30")}>
-                <td className="px-10 py-6">
-                  <div className="space-y-1">
-                    <p className="breadcrumb-text uppercase">{item.productName}</p>
-                    <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase text-[9px] font-bold tracking-widest">{item.productId.slice(0, 8)}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-6 text-center qty-label">{item.quantity}</td>
-                <td className="px-8 py-6 text-right meta-label font-bold">{formatMoney(item.unitPrice)}</td>
-                <td className="px-8 py-6 text-right meta-label font-bold">{item.taxRate}%</td>
-                <td className="px-10 py-6 text-right qty-label bg-gray-50/20 text-base">{formatMoney(item.totalLineAmount)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr className="bg-stone-50 dark:bg-zinc-950 border-b border-stone-200 dark:border-zinc-800 uppercase text-[9px] font-sans font-bold tracking-widest text-stone-400">
+                <th className="px-6 py-4">Sản phẩm</th>
+                <th className="px-4 py-4 text-center w-20">SL</th>
+                <th className="px-6 py-4 text-right w-36">Đơn giá</th>
+                <th className="px-6 py-4 text-right w-24">Thuế</th>
+                <th className="px-6 py-4 text-right w-36">Thành tiền</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-stone-150 dark:divide-zinc-850">
+              {invoice.items.map((item, idx) => (
+                <tr 
+                  key={item.id ?? idx} 
+                  className="bg-white dark:bg-zinc-900/50 hover:bg-stone-50/50 dark:hover:bg-zinc-850/55 transition-colors font-medium text-stone-800 dark:text-stone-200"
+                >
+                  <td className="px-6 py-5">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-stone-900 dark:text-white">{item.productName}</p>
+                      <span className="inline-block px-1.5 py-0.5 bg-stone-100 dark:bg-zinc-800 text-stone-500 text-[8px] font-bold tracking-widest font-mono rounded">
+                        MÃ: {item.productId.slice(0, 8)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-5 text-center text-xs font-bold text-stone-900 dark:text-white">{item.quantity}</td>
+                  <td className="px-6 py-5 text-right text-xs font-semibold">{formatMoney(item.unitPrice)} đ</td>
+                  <td className="px-6 py-5 text-right text-xs font-semibold text-stone-500">{item.taxRate}%</td>
+                  <td className="px-6 py-5 text-right text-xs font-bold text-stone-900 dark:text-white bg-stone-50/10">
+                    {formatMoney(item.totalLineAmount)} đ
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="flex justify-end p-10 border-t border-gray-100">
-          <div className="w-96 space-y-5">
-            <div className="flex justify-between meta-label uppercase">
-              <span className="text-gray-400 font-bold">Tiền hàng:</span>
-              <span className="qty-label">{formatMoney(invoice.subTotal)}</span>
+        {/* Pricing Summary */}
+        <div className="flex justify-end p-6 bg-white dark:bg-zinc-950 border-t border-stone-200 dark:border-zinc-800">
+          <div className="w-80 space-y-3.5 text-xs font-medium text-stone-500">
+            <div className="flex justify-between uppercase tracking-wider text-[10px]">
+              <span>Tiền hàng:</span>
+              <span className="text-stone-900 dark:text-white font-bold">{formatMoney(invoice.subTotal)} đ</span>
             </div>
-            <div className="flex justify-between meta-label uppercase">
-              <span className="text-gray-400 font-bold">Thuế GTGT:</span>
-              <span className="qty-label">{formatMoney(invoice.taxAmount)}</span>
+            <div className="flex justify-between uppercase tracking-wider text-[10px]">
+              <span>Thuế GTGT:</span>
+              <span className="text-stone-900 dark:text-white font-bold">{formatMoney(invoice.taxAmount)} đ</span>
             </div>
-            <div className="flex justify-between meta-label uppercase">
-              <span className="text-gray-400 font-bold">Đã thanh toán:</span>
-              <span className="qty-label">{formatMoney(invoice.amountPaid)}</span>
+            <div className="flex justify-between uppercase tracking-wider text-[10px]">
+              <span>Đã thanh toán:</span>
+              <span className="text-[#0D9488] dark:text-emerald-400 font-bold">{formatMoney(invoice.amountPaid)} đ</span>
             </div>
-            <div className="flex justify-between pt-6 border-t-2 border-gray-900 items-baseline">
-              <span className="tracking-label uppercase text-sm">Tổng:</span>
-              <span className="tracking-title-xl text-3xl text-brand-green tracking-tighter">
-                {formatMoney(invoice.grandTotal)}
+            <div className="flex justify-between pt-4 border-t border-stone-200 dark:border-zinc-800 items-baseline">
+              <span className="font-bold uppercase tracking-widest text-[10px] text-stone-950 dark:text-white">Tổng cộng:</span>
+              <span className="text-xl font-black text-[#0D9488] dark:text-emerald-400 tracking-tight">
+                {formatMoney(invoice.grandTotal)} đ
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
-        <div className="bg-white p-10 border border-gray-100 space-y-6">
-          <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-            <Building2 className="w-4 h-4 text-gray-400" />
-            <h4 className="tracking-label uppercase">Thông tin xuất hóa đơn</h4>
+      {/* Info Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-[#F9F9FB] dark:bg-zinc-900 p-6 sm:p-8 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-5 border-t-4 border-t-[#0D9488]">
+          <div className="flex items-center gap-3 border-b border-stone-200/60 dark:border-zinc-800 pb-3">
+            <Building2 className="w-4 h-4 text-stone-400" />
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-white">
+              Thông tin xuất hóa đơn
+            </h4>
           </div>
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-1">
             <div>
-              <p className="breadcrumb-text uppercase text-xl mb-1">{invoice.companyName}</p>
-              <p className="meta-label uppercase text-[#B48F4E]">{invoice.taxCode}</p>
+              <p className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-wide">
+                {invoice.companyName}
+              </p>
+              {invoice.taxCode && (
+                <p className="text-[10px] font-bold text-amber-600 dark:text-amber-500 font-mono mt-1">
+                  MST: {invoice.taxCode}
+                </p>
+              )}
             </div>
-            <div className="space-y-3 pt-6 border-t border-gray-50">
-              <div className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-gray-300" />
-                <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase">{invoice.email}</span>
-              </div>
-              <div className="qty-label font-medium leading-relaxed italic border-l-2 border-gray-100 pl-4 lowercase first-letter:uppercase">
-                {invoice.address}
-              </div>
+            <div className="space-y-2.5 pt-4 border-t border-stone-150 dark:border-zinc-850">
+              {invoice.email && (
+                <div className="flex items-center gap-2.5 text-xs text-stone-600 dark:text-stone-400">
+                  <Mail className="w-3.5 h-3.5 text-stone-400" />
+                  <span className="lowercase">{invoice.email}</span>
+                </div>
+              )}
+              {invoice.address && (
+                <div className="text-xs text-stone-650 dark:text-stone-400 leading-relaxed italic border-l-2 border-[#0D9488] pl-3.5">
+                  {invoice.address}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-10 border border-gray-100 space-y-6">
-          <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
-            <Wallet className="w-4 h-4 text-gray-400" />
-            <h4 className="tracking-label uppercase">Thanh toán</h4>
+        <div className="bg-[#F9F9FB] dark:bg-zinc-900 p-6 sm:p-8 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-5 border-t-4 border-t-[#0D9488]">
+          <div className="flex items-center gap-3 border-b border-stone-200/60 dark:border-zinc-800 pb-3">
+            <Wallet className="w-4 h-4 text-stone-400" />
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-white">
+              Thông tin thanh toán
+            </h4>
           </div>
-          <div className="space-y-6 pt-2">
-            <div className="space-y-3">
-              <div className="flex justify-between meta-label uppercase">
-                <span>Đã thu</span>
-                <span className="qty-label">{formatMoney(invoice.amountPaid)}</span>
+          <div className="space-y-4 pt-1">
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-stone-500">
+                <span className="font-bold">Đã thu:</span>
+                <span className="text-[#0D9488] dark:text-emerald-400 font-black">{formatMoney(invoice.amountPaid)} đ</span>
               </div>
-              <div className="flex justify-between meta-label uppercase">
-                <span>Còn lại</span>
-                <span className="qty-label">{formatMoney(invoice.grandTotal - invoice.amountPaid)}</span>
+              <div className="flex justify-between text-xs text-stone-500">
+                <span className="font-bold">Còn lại cần thu:</span>
+                <span className="text-rose-600 dark:text-rose-450 font-black">
+                  {formatMoney(invoice.grandTotal - invoice.amountPaid)} đ
+                </span>
               </div>
             </div>
-            <div className="pt-6 border-t border-gray-50">
-              <p className="tracking-label uppercase text-gray-400 mb-3">Nội dung chuyển khoản</p>
-              <p className="meta-label break-all">{invoice.expectedTransferSyntax || '-'}</p>
-            </div>
+            {invoice.expectedTransferSyntax && (
+              <div className="pt-4 border-t border-stone-150 dark:border-zinc-850">
+                <p className="uppercase text-[9px] font-bold text-stone-400 mb-2 tracking-widest">Nội dung chuyển khoản</p>
+                <p className="font-mono font-bold text-xs text-stone-900 dark:text-white bg-white dark:bg-zinc-950 p-3 rounded-xl border border-stone-200 dark:border-zinc-850 break-all select-all shadow-inner">
+                  {invoice.expectedTransferSyntax}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

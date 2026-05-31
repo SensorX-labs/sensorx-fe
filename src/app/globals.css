@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -7,8 +9,13 @@
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
+    --font-sans: "Josefin Sans", var(--font-geist-sans), sans-serif;
     --font-mono: var(--font-geist-mono);
+    --font-heading: "Cinzel", serif;
+    --font-body: "Josefin Sans", sans-serif;
+    --color-primary: #0F766E;
+    --color-secondary: #14B8A6;
+    --color-cta: #0369A1;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -69,28 +76,29 @@
 :root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --foreground: oklch(0.15 0.01 160);
+    --card: oklch(0.98 0.005 160);
+    --card-foreground: oklch(0.15 0.01 160);
+    --popover: oklch(0.98 0.005 160);
+    --popover-foreground: oklch(0.15 0.01 160);
+    --primary: oklch(0.55 0.14 160);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.96 0.02 190);
+    --secondary-foreground: oklch(0.42 0.12 190);
+    --muted: oklch(0.97 0.01 160);
+    --muted-foreground: oklch(0.50 0.02 160);
+    --accent: oklch(0.95 0.03 160);
+    --accent-foreground: oklch(0.35 0.10 160);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.93 0.01 160);
+    --input: oklch(0.93 0.01 160);
+    --ring: oklch(0.55 0.14 160);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
+
     /* Brand Green Unified Color Palette */
     --brand-green-50: oklch(0.97 0.02 160);
     --brand-green-100: oklch(0.92 0.03 160);
@@ -121,54 +129,54 @@
     --admin-title: var(--brand-green-900);
     --admin-muted: var(--brand-green-500);
     /* màu của card product landing page */
-    --product-card-landing: #ECECEC;
+    --product-card-landing: oklch(0.96 0.01 160);
 
     /* màu nền trang web (Store) */
-    --page-background: #FCF9F4;
+    --page-background: oklch(1 0 0);
 
     /* màu nền trang Admin (Gray-Blue) */
     --admin-background: #F4F7FE;
 
     /* màu cho trang catalog (store) */
-    --product-card-bg: #E8E3DB;
-    --product-card-border: #D6CEC4;
+    --product-card-bg: oklch(0.98 0.005 160);
+    --product-card-border: oklch(0.94 0.01 160);
     --bookmark-btn-bg: rgba(255, 255, 255, 0.7);
-    --filter-border: #D1CCC4;
-    --filter-slider-bg: #D1CCC4;
+    --filter-border: oklch(0.93 0.01 160);
+    --filter-slider-bg: oklch(0.90 0.01 160);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: oklch(0.12 0.015 160);
+    --foreground: oklch(0.94 0.02 160);
+    --card: oklch(0.15 0.02 160);
+    --card-foreground: oklch(0.94 0.02 160);
+    --popover: oklch(0.15 0.02 160);
+    --popover-foreground: oklch(0.94 0.02 160);
+    --primary: oklch(0.65 0.14 160);
+    --primary-foreground: oklch(0.10 0.02 160);
+    --secondary: oklch(0.19 0.04 190);
+    --secondary-foreground: oklch(0.85 0.04 190);
+    --muted: oklch(0.18 0.02 160);
+    --muted-foreground: oklch(0.68 0.04 160);
+    --accent: oklch(0.20 0.05 160);
+    --accent-foreground: oklch(0.90 0.02 160);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --border: oklch(0.20 0.02 160);
+    --input: oklch(0.20 0.02 160);
+    --ring: oklch(0.65 0.14 160);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar: oklch(0.15 0.02 160);
+    --sidebar-foreground: oklch(0.94 0.02 160);
+    --sidebar-primary: oklch(0.65 0.14 160);
+    --sidebar-primary-foreground: oklch(0.10 0.02 160);
+    --sidebar-accent: oklch(0.20 0.05 160);
+    --sidebar-accent-foreground: oklch(0.94 0.02 160);
+    --sidebar-border: oklch(0.20 0.02 160);
+    --sidebar-ring: oklch(0.65 0.14 160);
 }
 
 @layer base {
@@ -373,4 +381,34 @@
     .contact-item p {
         @apply text-xs text-gray-600 tracking-[0.04em];
     }
+
+    /* Glassmorphism Utilities */
+    .glass-card {
+        @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-lg shadow-black/5 rounded-2xl;
+    }
+    
+    .glass-pane {
+        @apply bg-white/80 dark:bg-[#042F2E]/80 backdrop-blur-xl border-t border-white/50 dark:border-white/10 shadow-2xl;
+    }
+    
+    .glass-button {
+        @apply bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-sm border border-white/50 dark:border-white/20 transition-all duration-300;
+    }
 }
+
+/* Custom Animations */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

@@ -19,12 +19,12 @@ export function FormField({
     icon
 }: FormFieldProps) {
     return (
-        <div className="group">
-            <label className="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-wider">{label}</label>
+        <div className="group font-sans">
+            <label className="block text-[10px] font-sans font-bold uppercase text-slate-500 mb-2 tracking-wider">{label}</label>
             {isEditing ? (
                 <div className="relative group">
                     {icon && (
-                        <div className="absolute inset-y-0 left-4 flex items-center text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+                        <div className="absolute inset-y-0 left-4 flex items-center text-slate-400 group-focus-within:text-secondary transition-colors">
                             {icon}
                         </div>
                     )}
@@ -34,15 +34,15 @@ export function FormField({
                         onChange={e => onChange(e.target.value)}
                         placeholder={placeholder}
                         className={cn(
-                            "w-full bg-white border border-slate-200 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all",
+                            "w-full bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 py-3.5 text-sm font-semibold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] transition-all rounded-xl shadow-sm",
                             icon ? "pl-12 pr-4" : "px-4"
                         )}
                     />
                 </div>
             ) : (
-                <div className="flex items-center gap-3 px-4 py-3.5 bg-slate-50 border border-slate-100">
-                    {icon && <div className="text-slate-400">{icon}</div>}
-                    <p className="text-sm font-bold text-slate-900">{value || '—'}</p>
+                <div className="flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-zinc-900/50 border border-stone-200 dark:border-zinc-800 rounded-xl shadow-sm hover:shadow transition-all duration-300">
+                    {icon && <div className="text-stone-400 dark:text-zinc-550 shrink-0">{icon}</div>}
+                    <p className="text-sm font-semibold text-stone-900 dark:text-gray-150">{value || '—'}</p>
                 </div>
             )}
         </div>

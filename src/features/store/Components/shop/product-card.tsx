@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
 interface ProductCardProps {
@@ -41,86 +40,71 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             manufacturer: product?.supplierName || 'SensorX',
             quantity: 1,
         });
-        toast(`+1 ${name}`, {
-            description: `Số lượng hiện tại: ${qty + 1}`,
-            duration: 1500,
-            position: 'bottom-left',
-        });
         setTimeout(() => setJustAdded(false), 400);
     };
 
     return (
-        <div className="group relative flex flex-col bg-white h-full transition-all duration-500 cursor-pointer hover:-translate-y-1 border border-filter-border rounded overflow-hidden hover:shadow-xl hover:shadow-gray-200/40">
-            {/* Image Container */}
-            <div
-                onClick={handleCardClick}
-                className="relative aspect-[4/5] overflow-hidden bg-product-card-bg"
-            >
-                {/* Overlay subtle gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
+        <div 
+            onClick={handleCardClick}
+            className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-3xl p-5 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative"
+        >
+            <div>
+                {/* Supplier & Code */}
+                <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        {product?.supplierName || 'SensorX'}
+                    </span>
+                    {product?.code && (
+                        <span className="text-[10px] font-black text-[#0D9488] bg-[#0D9488]/10 px-2 py-0.5 rounded uppercase font-mono">
+                            {product.code}
+                        </span>
+                    )}
+                </div>
 
-                <Image
-                    src={image}
-                    alt={name}
-                    fill
-                    className="object-contain p-10 transition-all duration-1000 ease-in-out group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
+                {/* Image container */}
+                <div className="h-44 w-full relative mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100/50 dark:border-zinc-800/50">
+                    <Image
+                        src={image || '/assets/images/products/default.png'}
+                        alt={name}
+                        fill
+                        className="object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                </div>
 
-                {/* Nút thêm báo giá - luôn có thể click */}
+                {/* Product title */}
+                <h3 className="font-bold text-xs text-gray-950 dark:text-white line-clamp-2 mb-2 group-hover:text-[#0D9488] dark:group-hover:text-emerald-400 transition-colors uppercase tracking-wide leading-snug h-10">
+                    {name}
+                </h3>
+                
+                {/* Specs/Description */}
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
+                    {product?.spec || product?.description || 'Chưa có thông số kỹ thuật chi tiết cho sản phẩm này.'}
+                </p>
+            </div>
+
+            {/* Action Footer */}
+            <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-between mt-auto gap-3">
                 <button
                     onClick={handleAddToInquiry}
-                    className={`
-                        absolute bottom-3 left-3 right-3 z-20
-                        flex items-center justify-center gap-2
-                        py-2.5
-                        text-[10px] font-bold uppercase tracking-[0.15em]
-                        transition-all duration-300
-                        translate-y-2 opacity-0
-                        group-hover:translate-y-0 group-hover:opacity-100
-                        bg-gray-900 text-white hover:bg-brand-green active:scale-95
-                    `}
-                    title="Thêm vào danh sách báo giá"
+                    className="flex items-center justify-center gap-1.5 px-4 h-9 rounded-xl text-[9px] font-sans font-bold uppercase tracking-wider bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
                 >
-                    <Plus size={13} className={justAdded ? 'rotate-90 transition-transform' : 'transition-transform'} />
-                    Thêm sản phẩm
+                    <Plus size={11} className={justAdded ? 'rotate-90 transition-transform' : ''} />
+                    Yêu cầu báo giá
+                </button>
+
+                <button
+                    onClick={handleCardClick}
+                    className="flex items-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                    <span>Chi tiết</span> 
+                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                 </button>
             </div>
 
-            {/* Content Section */}
-            <div className="p-6 flex flex-col flex-grow">
-                <div className="space-y-1 mb-4">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                        {product?.supplierName || 'SensorX'}
-                    </p>
-                    <h3
-                        onClick={handleCardClick}
-                        className="text-[13px] font-black text-gray-900 line-clamp-2 hover:text-brand-green transition-colors uppercase tracking-tight leading-tight"
-                    >
-                        {name}
-                    </h3>
-                </div>
-
-                <div className="mt-auto pt-5 border-t border-gray-100 flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[8px] text-gray-300 font-bold uppercase tracking-widest">SKU CODE</span>
-                        <span className="text-[11px] text-gray-900 font-mono font-bold tracking-tight bg-gray-50 px-2 py-0.5 rounded-sm border border-gray-100 inline-block w-fit">
-                            {product?.code || '---'}
-                        </span>
-                    </div>
-
-                    <button
-                        onClick={handleCardClick}
-                        className="flex items-center gap-2 text-[10px] font-bold text-gray-900 uppercase tracking-[0.2em] group/btn transition-colors hover:text-brand-green"
-                    >
-                        Chi tiết <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform duration-300" />
-                    </button>
-                </div>
-            </div>
-
-            {/* Badge số lượng */}
+            {/* Quantity Badge */}
             {qty > 0 && (
-                <div className={`absolute top-3 right-3 z-20 bg-brand-green text-white rounded-full min-w-6 h-6 px-1.5 flex items-center justify-center shadow-md text-[10px] font-black ${justAdded ? 'animate-bounce' : ''}`}>
+                <div className="absolute top-3 right-3 z-20 bg-[#0D9488] text-white rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center shadow-md text-[9px] font-bold animate-pulse">
                     {qty}
                 </div>
             )}

@@ -37,7 +37,7 @@ export const StoreFooter = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@cuaban.com"
                   required
-                  className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-800 text-sm focus:outline-none focus:border-brand-green transition-colors text-white placeholder-zinc-500"
+                  className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-800 text-sm focus:outline-none focus:border-secondary transition-colors text-white placeholder-zinc-500"
                 />
                 <button
                   type="submit"
@@ -47,7 +47,7 @@ export const StoreFooter = () => {
                 </button>
               </form>
               {subscribed && (
-                <p className="text-xs text-brand-green mt-2">Cảm ơn bạn đã đăng ký!</p>
+                <p className="text-xs text-secondary mt-2">Cảm ơn bạn đã đăng ký!</p>
               )}
             </div>
 
@@ -227,7 +227,7 @@ export const StoreFooter = () => {
         </div>
 
         <div className="mt-24 pb-12 text-center">
-          <h2 className="text-[10rem] font-bold tracking-[0.2em] text-white opacity-10 select-none leading-none">
+          <h2 className="text-[6rem] md:text-[10rem] font-heading font-bold tracking-[0.2em] text-white opacity-5 select-none leading-none">
             SENSORX
           </h2>
         </div>

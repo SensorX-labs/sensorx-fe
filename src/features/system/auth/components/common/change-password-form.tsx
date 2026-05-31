@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, KeyRound, Lock, ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -29,7 +29,7 @@ interface ChangePasswordFormProps {
 export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   className,
   title = 'Đổi mật khẩu',
-  description = 'Vui lòng nhập thông tin mới',
+  description = 'Vui lòng nhập thông tin mật khẩu mới',
   redirectTo = '/profile',
   submitLabel = 'Đổi mật khẩu',
   submittingLabel = 'Đang thay đổi...',
@@ -67,108 +67,134 @@ export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
 
   return (
     <div className={cn('w-full max-w-md', className)}>
-      <div className="mb-12 text-center">
-        <h1 className="mb-2 text-4xl font-semibold italic text-brand-green">
+      <div className="mb-10 text-center">
+        <div className="inline-flex items-center gap-2 mb-4 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+          <KeyRound size={12} className="text-emerald-600 dark:text-emerald-400" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">Thay đổi bảo mật</span>
+        </div>
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight mb-2">
           {title}
         </h1>
-        <p className="text-xs uppercase tracking-widest text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-stone-400 tracking-wide">
           {description}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-        <div>
-          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        {/* Old Password */}
+        <div className="group">
+          <label className={cn(
+            "block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-stone-400 mb-2 group-focus-within:text-emerald-500 transition-colors",
+            errors.oldPassword && "text-red-500"
+          )}>
             Mật khẩu cũ
           </label>
           <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors">
+              <Lock size={16} />
+            </div>
             <input
               type={showOldPassword ? 'text' : 'password'}
               {...register('oldPassword')}
               placeholder="••••••••"
               className={cn(
-                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                'w-full pl-11 pr-12 py-3.5 bg-white/50 dark:bg-stone-900/50 border rounded-2xl text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-stone-500 focus:outline-none transition-all duration-300',
                 errors.oldPassword
-                  ? 'border-red-400 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                  : 'border-gray-200 dark:border-stone-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
               )}
             />
             <button
               type="button"
               onClick={() => setShowOldPassword(!showOldPassword)}
-              className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-stone-200"
             >
-              {showOldPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showOldPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           {errors.oldPassword && (
-            <p className="mt-1 text-xs text-red-500">{errors.oldPassword.message}</p>
+            <p className="mt-1.5 text-[11px] font-bold text-red-500">{errors.oldPassword.message}</p>
           )}
         </div>
 
-        <div>
-          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
+        {/* New Password */}
+        <div className="group">
+          <label className={cn(
+            "block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-stone-400 mb-2 group-focus-within:text-emerald-500 transition-colors",
+            errors.newPassword && "text-red-500"
+          )}>
             Mật khẩu mới
           </label>
           <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors">
+              <Lock size={16} />
+            </div>
             <input
               type={showNewPassword ? 'text' : 'password'}
               {...register('newPassword')}
               placeholder="••••••••"
               className={cn(
-                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                'w-full pl-11 pr-12 py-3.5 bg-white/50 dark:bg-stone-900/50 border rounded-2xl text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-stone-500 focus:outline-none transition-all duration-300',
                 errors.newPassword
-                  ? 'border-red-400 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                  : 'border-gray-200 dark:border-stone-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
               )}
             />
             <button
               type="button"
               onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-stone-200"
             >
-              {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           {errors.newPassword && (
-            <p className="mt-1 text-xs text-red-500">{errors.newPassword.message}</p>
+            <p className="mt-1.5 text-[11px] font-bold text-red-500">{errors.newPassword.message}</p>
           )}
         </div>
 
-        <div>
-          <label className="mb-3 block text-xs uppercase tracking-widest text-gray-500">
-            Xác nhận mật khẩu
+        {/* Confirm Password */}
+        <div className="group">
+          <label className={cn(
+            "block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-stone-400 mb-2 group-focus-within:text-emerald-500 transition-colors",
+            errors.confirmPassword && "text-red-500"
+          )}>
+            Xác nhận mật khẩu mới
           </label>
           <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors">
+              <Lock size={16} />
+            </div>
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               {...register('confirmPassword')}
               placeholder="••••••••"
               className={cn(
-                'w-full border-b bg-transparent px-0 py-3 pr-8 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none',
+                'w-full pl-11 pr-12 py-3.5 bg-white/50 dark:bg-stone-900/50 border rounded-2xl text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-stone-500 focus:outline-none transition-all duration-300',
                 errors.confirmPassword
-                  ? 'border-red-400 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                  : 'border-gray-200 dark:border-stone-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
               )}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-stone-200"
             >
-              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+            <p className="mt-1.5 text-[11px] font-bold text-red-500">{errors.confirmPassword.message}</p>
           )}
         </div>
 
-        <div className="pt-6">
+        {/* Submit */}
+        <div className="pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 bg-brand-green px-6 py-3 font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-[0.2em] py-4 px-6 rounded-2xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
             {isSubmitting ? submittingLabel : submitLabel}
