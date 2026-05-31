@@ -17,7 +17,7 @@ import {
 import { getPickingNotes, getWarehouses } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote } from "@/features/warehouse/models";
 import { Warehouse as WarehouseModel } from "@/features/warehouse/models/warehouse-model";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from "@/layouts/admin/admin-page-container";
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
 import Cookies from "js-cookie";

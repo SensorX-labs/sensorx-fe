@@ -9,8 +9,9 @@ export const getPickingNotes = async (params: Record<string, any> = {}) => {
   return await api.warehouse.get<any, any>('/pickingNote/getPickingNotes', config);
 };
 
-export const getPickingNote = async (id: string) => {
-  return await api.warehouse.get<any, any>(`/pickingNote/getPickingNote/${id}`);
+export const getPickingNote = async (id: string, warehouseId?: string) => {
+  const config = warehouseId ? { headers: { 'X-Warehouse-Id': warehouseId } } : {};
+  return await api.warehouse.get<any, any>(`/pickingNote/getPickingNote/${id}`, config);
 };
 
 export const getStockIns = async (params: Record<string, any> = {}) => {
@@ -75,14 +76,17 @@ export const createStockIn = async (data: any, warehouseId?: string) => {
   return await api.warehouse.post<any, any>('/stockIn/createStockIn', data, config);
 };
 
-export const startPicking = async (data: { pickingNoteId: string }) => {
-  return await api.warehouse.post<any, any>('/pickingNote/startPicking', data);
+export const startPicking = async (data: { pickingNoteId: string }, warehouseId?: string) => {
+  const config = warehouseId ? { headers: { 'X-Warehouse-Id': warehouseId } } : {};
+  return await api.warehouse.post<any, any>('/pickingNote/startPicking', data, config);
 };
 
-export const completePicking = async (data: { pickingNoteId: string }) => {
-  return await api.warehouse.post<any, any>('/pickingNote/completePicking', data);
+export const completePicking = async (data: { pickingNoteId: string }, warehouseId?: string) => {
+  const config = warehouseId ? { headers: { 'X-Warehouse-Id': warehouseId } } : {};
+  return await api.warehouse.post<any, any>('/pickingNote/completePicking', data, config);
 };
 
-export const cancelPicking = async (data: { pickingNoteId: string; reason?: string }) => {
-  return await api.warehouse.post<any, any>('/pickingNote/cancelPicking', data);
+export const cancelPicking = async (data: { pickingNoteId: string; reason?: string }, warehouseId?: string) => {
+  const config = warehouseId ? { headers: { 'X-Warehouse-Id': warehouseId } } : {};
+  return await api.warehouse.post<any, any>('/pickingNote/cancelPicking', data, config);
 };

@@ -22,7 +22,7 @@ import {
   cancelPicking,
 } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote } from "@/features/warehouse/models";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from "@/layouts/admin/admin-page-container";
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
 import StockOutService from "@/features/inventory/stockout/services/stock-out-service";
@@ -52,7 +52,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   const [pickingNote, setPickingNote] = useState<PickingNote | null>(null);
 
   useEffect(() => {
-    if (id && id !== "new") {
+    if (id && id !== "new" && id !== "undefined") {
       fetchPickingNoteDetail();
     }
   }, [id]);
@@ -75,7 +75,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   const handleCreateStockOut = async () => {
     setStockOutLoading(true);
     try {
-      await StockOutService.create(id);
+      await StockOutService.create(id, undefined, pickingNote?.warehouseId);
       toast.success("Tạo phiếu xuất kho thành công!");
       router.push("/warehouse/stockout");
     } catch (error) {
@@ -89,7 +89,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   const handleStartPicking = async () => {
     setActionLoading(true);
     try {
-      await startPicking({ pickingNoteId: id });
+      await startPicking({ pickingNoteId: id }, pickingNote?.warehouseId);
       toast.success("Đã bắt đầu soạn kho!");
       fetchPickingNoteDetail();
     } catch (error) {
@@ -103,7 +103,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   const handleCompletePicking = async () => {
     setActionLoading(true);
     try {
-      await completePicking({ pickingNoteId: id });
+      await completePicking({ pickingNoteId: id }, pickingNote?.warehouseId);
       toast.success("Đã hoàn thành soạn kho!");
       fetchPickingNoteDetail();
     } catch (error) {
@@ -117,7 +117,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
   const handleCancelPicking = async () => {
     setActionLoading(true);
     try {
-      await cancelPicking({ pickingNoteId: id });
+      await cancelPicking({ pickingNoteId: id }, pickingNote?.warehouseId);
       toast.success("Đã hủy phiếu soạn kho!");
       fetchPickingNoteDetail();
     } catch (error) {

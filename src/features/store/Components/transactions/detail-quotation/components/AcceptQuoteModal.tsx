@@ -33,8 +33,7 @@ export function AcceptQuoteModal({
         shippingAddress: '',
         paymentTerm: PaymentTerm.FullPayment,
     });
-    const isDepositDisabled = Boolean(quote?.isStockSufficient);
-    const effectivePaymentTerm = isDepositDisabled ? PaymentTerm.FullPayment : shippingForm.paymentTerm;
+    const effectivePaymentTerm = PaymentTerm.FullPayment;
 
     useEffect(() => {
         const fetchCustomer = async () => {
@@ -56,20 +55,13 @@ export function AcceptQuoteModal({
         if (open) fetchCustomer();
     }, [user?.id, open]);
 
-    useEffect(() => {
-        if (isDepositDisabled && shippingForm.paymentTerm === PaymentTerm.Deposit) {
-            setShippingForm((prev) => ({
-                ...prev,
-                paymentTerm: PaymentTerm.FullPayment,
-            }));
-        }
-    }, [isDepositDisabled, shippingForm.paymentTerm]);
+
 
     const submitAccept = async () => {
         if (!quote || !quote.id) return;
         try {
             setLoading(true);
-            const paymentTerm = isDepositDisabled ? PaymentTerm.FullPayment : shippingForm.paymentTerm;
+            const paymentTerm = PaymentTerm.FullPayment;
             const payload: CustomerRespondToQuoteCommand = {
                 responseType: QuoteResponseStatus.Accepted,
                 paymentTerm,
@@ -212,100 +204,8 @@ export function AcceptQuoteModal({
                         </div>
 
                         {/* RIGHT */}
-
                         <div>
-
-                            <div className="space-y-3">
-
-                                <label
-                                    className={cn(
-                                        'flex items-start gap-4 rounded-xl border p-5 transition-all cursor-pointer',
-                                        effectivePaymentTerm ===
-                                            PaymentTerm.FullPayment
-                                            ? 'border-gray-900 bg-gray-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    )}
-                                >
-                                    <input
-                                        type="radio"
-                                        checked={
-                                            effectivePaymentTerm ===
-                                            PaymentTerm.FullPayment
-                                        }
-                                        onChange={() =>
-                                            setShippingForm(
-                                                (
-                                                    p: any
-                                                ) => ({
-                                                    ...p,
-                                                    paymentTerm:
-                                                        PaymentTerm.FullPayment,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                    <div>
-                                        <p className="font-semibold">
-                                            Thanh toán
-                                            toàn bộ
-                                        </p>
-
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            100% giá
-                                            trị đơn
-                                            hàng
-                                        </p>
-                                    </div>
-                                </label>
-
-                                <label
-                                    className={cn(
-                                        'flex items-start gap-4 rounded-xl border p-5 transition-all',
-                                        isDepositDisabled
-                                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                            : 'cursor-pointer',
-                                        !isDepositDisabled &&
-                                            (effectivePaymentTerm === PaymentTerm.Deposit
-                                                ? 'border-gray-900 bg-gray-50'
-                                                : 'border-gray-200 hover:border-gray-300')
-                                    )}
-                                    aria-disabled={isDepositDisabled}
-                                >
-                                    <input
-                                        type="radio"
-                                        checked={
-                                            effectivePaymentTerm ===
-                                            PaymentTerm.Deposit
-                                        }
-                                        disabled={isDepositDisabled}
-                                        onChange={() =>
-                                            setShippingForm(
-                                                (
-                                                    p: any
-                                                ) => ({
-                                                    ...p,
-                                                    paymentTerm:
-                                                        PaymentTerm.Deposit,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                    <div>
-                                        <p className="font-semibold">
-                                            Đặt cọc
-                                        </p>
-
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            Thanh toán
-                                            trước 30%
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div className="mt-6 rounded-xl bg-gray-50 border border-gray-100 p-6">
+                            <div className="rounded-xl bg-gray-50 border border-gray-100 p-6">
 
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500">
@@ -327,17 +227,9 @@ export function AcceptQuoteModal({
                                     </span>
 
                                     <span className="text-lg font-bold">
-                                        {effectivePaymentTerm ===
-                                            PaymentTerm.Deposit
-                                            ? (
-                                                quote.grandTotal *
-                                                0.3
-                                            ).toLocaleString(
-                                                'vi-VN'
-                                            )
-                                            : quote.grandTotal.toLocaleString(
-                                                'vi-VN'
-                                            )}{' '}
+                                        {quote.grandTotal.toLocaleString(
+                                            'vi-VN'
+                                        )}{' '}
                                         đ
                                     </span>
                                 </div>
