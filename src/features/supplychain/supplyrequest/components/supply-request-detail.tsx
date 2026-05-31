@@ -35,6 +35,8 @@ interface RequestItem {
   productCode: string;
   productName: string;
   requiredQuantity: number;
+  unit?: string;
+  manufacturerName?: string;
 }
 
 interface PurchasePlanItem {
@@ -232,7 +234,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             productId: item.productId,
             productCode: p.code || '',
             productName: p.name || 'Sản phẩm không tên',
-            requiredQuantity: item.requestedQuantity
+            requiredQuantity: item.requestedQuantity,
+            unit: p.unitOfQuantityName || 'Cái',
+            manufacturerName: p.supplierName || 'N/A'
           };
         } catch {
           return {
@@ -240,7 +244,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             productId: item.productId,
             productCode: 'Unknown',
             productName: 'Sản phẩm không rõ',
-            requiredQuantity: item.requestedQuantity
+            requiredQuantity: item.requestedQuantity,
+            unit: 'Cái',
+            manufacturerName: 'N/A'
           };
         }
       }));
@@ -476,6 +482,50 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
     ));
   };
 
+  const fillToPurchasePlan = () => {
+    if (supplyData.requestItems.length === 0) {
+      toast.error("Không có sản phẩm cần cung ứng nào để điền");
+      return;
+    }
+    const items: PurchasePlanItem[] = supplyData.requestItems.map(item => ({
+      id: 'temp_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      productId: item.productId,
+      productCode: item.productCode,
+      productName: item.productName,
+      quantity: item.requiredQuantity,
+      unitPrice: 0,
+    }));
+    setPurchasePlan(items);
+    toast.success("Đã điền sản phẩm vào phương án mua hàng");
+  };
+
+  const fillToTransferPlan = () => {
+    if (supplyData.requestItems.length === 0) {
+      toast.error("Không có sản phẩm cần cung ứng nào để điền");
+      return;
+    }
+    const newItems: TransferPlanItem[] = supplyData.requestItems.map(item => ({
+      id: 'temp_toi_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      productId: item.productId,
+      productCode: item.productCode,
+      productName: item.productName,
+      quantity: item.requiredQuantity,
+      unit: item.unit || 'Cái',
+      manufacturerName: item.manufacturerName || 'N/A',
+      note: ''
+    }));
+
+    const newPlan: TransferPlan = {
+      id: 'temp_plan_' + Date.now().toString(),
+      sourceWarehouse: '',
+      items: newItems,
+      isNew: true,
+    };
+
+    setTransferPlans([...transferPlans, newPlan]);
+    toast.success("Đã thêm phương án điều chuyển và điền toàn bộ sản phẩm");
+  };
+
   const purchaseTotal = purchasePlan.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
   return (
@@ -571,9 +621,38 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
 
           {/* Danh sách sản phẩm yêu cầu */}
           <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              <h4 className="text-sm font-medium">Sản phẩm cần cung ứng</h4>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                <h4 className="text-sm font-medium">Sản phẩm cần cung ứng</h4>
+              </div>
+              {isEditing && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" className="admin-btn-primary border-transparent text-xs h-7 py-1 px-3">
+                      Tự động điền
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-1 bg-white border border-gray-200 shadow-lg rounded" align="end">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-xs font-normal hover:bg-gray-100 text-left h-8 px-2"
+                        onClick={fillToPurchasePlan}
+                      >
+                        Điền vào Phương án mua hàng
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-xs font-normal hover:bg-gray-100 text-left h-8 px-2"
+                        onClick={fillToTransferPlan}
+                      >
+                        Điền vào Phương án điều chuyển
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
             <div className="p-6">
               <table className="w-full text-xs">
@@ -819,7 +898,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                           <tr>
                             <th className="px-3 py-2 text-left">Sản phẩm</th>
                             <th className="px-3 py-2 text-left">ĐV</th>
-                            <th className="px-3 py-2 text-center w-14">SL</th>
+                            <th className="px-3 py-2 text-center w-24">SL</th>
                             <th className="px-3 py-2 text-left">Nhà SX</th>
                             <th className="px-3 py-2 text-left">Ghi chú</th>
                             {isEditing && plan.isNew && <th className="px-2 py-2 w-6" />}
