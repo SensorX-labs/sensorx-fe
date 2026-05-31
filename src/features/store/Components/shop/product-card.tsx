@@ -44,7 +44,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     };
 
     return (
-        <div 
+        <div
             onClick={handleCardClick}
             className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-3xl p-5 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative"
         >
@@ -76,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <h3 className="font-bold text-xs text-gray-950 dark:text-white line-clamp-2 mb-2 group-hover:text-[#0D9488] dark:group-hover:text-emerald-400 transition-colors uppercase tracking-wide leading-snug h-10">
                     {name}
                 </h3>
-                
+
                 {/* Specs/Description */}
                 <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
                     {product?.spec || product?.description || 'Chưa có thông số kỹ thuật chi tiết cho sản phẩm này.'}
@@ -97,7 +97,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     onClick={handleCardClick}
                     className="flex items-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
                 >
-                    <span>Chi tiết</span> 
+                    <span>Chi tiết</span>
                     <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                 </button>
             </div>
