@@ -7,52 +7,8 @@ import {
 } from 'recharts';
 import { Activity, TrendingUp, TrendingDown, Minus, AlertTriangle, RefreshCw } from 'lucide-react';
 
-/**
- * Dữ liệu mẫu từ simulate-training.js
- * Sẽ được thay thế bằng API call khi backend có endpoint /ai/hyperparameters/history
- */
-const generateSimulationData = () => {
-    const data = [];
-    let k = 1.5, idleWeight = 0.1;
-    const lr = 0.01;
-
-    for (let i = 1; i <= 120; i++) {
-        // Mô phỏng Backward Pass
-        const workload = Math.floor(Math.random() * 5);
-        const idle = Math.random() * 12;
-        const aggScore = 0.3 + Math.random() * 0.5;
-        const penalty = 1 / Math.pow(workload + 1, k);
-        const boost = Math.tanh(idle / 24) * idleWeight;
-        const finalScore = aggScore * penalty + boost;
-        const yHat = 1 / (1 + Math.exp(-finalScore));
-        const y = Math.random() < Math.min(0.85, Math.max(0.2, yHat + (Math.random() - 0.5) * 0.3)) ? 1 : 0;
-
-        const error = y - yHat;
-        const loss = -(y * Math.log(yHat + 1e-9) + (1 - y) * Math.log(1 - yHat + 1e-9));
-        const dk = error * (-aggScore * penalty * Math.log(workload + 1 + 1e-9));
-        const diw = error * ((1 - Math.tanh(idle / 24) ** 2) * (1 / 24));
-
-        const clip = (x: number) => Math.max(-1, Math.min(1, x));
-        const kBefore = k, iwBefore = idleWeight;
-        k = Math.max(0, k + lr * clip(dk));
-        idleWeight = Math.max(0, idleWeight + lr * clip(diw));
-
-        data.push({
-            event: i,
-            k: +k.toFixed(5),
-            idleWeight: +idleWeight.toFixed(5),
-            loss: +loss.toFixed(4),
-            yHat: +yHat.toFixed(4),
-            y,
-            error: +error.toFixed(4),
-            deltaK: +dk.toFixed(5),
-            deltaIdleWeight: +diw.toFixed(5),
-            kBefore: +kBefore.toFixed(5),
-            iwBefore: +iwBefore.toFixed(5),
-        });
-    }
-    return data;
-};
+import { AISettingService } from '../../services/ai-setting.service';
+import { toast } from 'sonner';
 
 const TAB_CONFIG = [
     { id: 'params', label: 'Lịch sử Tham số', icon: TrendingUp },
@@ -76,8 +32,56 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function AIMonitoringCharts() {
     const [activeTab, setActiveTab] = useState('params');
-    const [data] = useState(() => generateSimulationData());
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            setLoading(true);
+            try {
+                const res = await AISettingService.getHyperparameterHistory();
+                if (res) {
+                    const mappedData = res.map((item, index) => ({
+                        event: index + 1,
+                        k: +item.kAfter.toFixed(5),
+                        idleWeight: +item.idleWeightAfter.toFixed(5),
+                        loss: +item.loss.toFixed(4),
+                        yHat: +item.predictedScore.toFixed(4),
+                        y: item.isSuccess ? 1 : 0,
+                        error: +((item.isSuccess ? 1 : 0) - item.predictedScore).toFixed(4),
+                        deltaK: +item.deltaK.toFixed(5),
+                        deltaIdleWeight: +item.deltaIdleWeight.toFixed(5),
+                        kBefore: +item.kBefore.toFixed(5),
+                        iwBefore: +item.idleWeightBefore.toFixed(5),
+                    }));
+                    setData(mappedData);
+                }
+            } catch (error) {
+                console.error(">>> Lỗi khi lấy lịch sử tham số AI:", error);
+                toast.error("Không thể lấy dữ liệu biểu đồ AI");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchHistory();
+    }, [refreshKey]);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-48">
+                <div className="text-sm text-[#4318FF] animate-pulse">Đang tải dữ liệu biểu đồ...</div>
+            </div>
+        );
+    }
+
+    if (data.length === 0) {
+        return (
+            <div className="flex justify-center items-center h-48 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                <p className="text-sm text-slate-500">Chưa có dữ liệu lịch sử huấn luyện AI</p>
+            </div>
+        );
+    }
 
     // Summary stats
     const lastRecord = data[data.length - 1];
@@ -265,8 +269,8 @@ export function AIMonitoringCharts() {
                 </div>
             )}
 
-            <p className="text-[10px] text-slate-300 text-right">
-                * Dữ liệu mô phỏng từ SensorX.Miner — sẽ thay bằng dữ liệu thực khi backend có endpoint /ai/hyperparameters/history
+            <p className="text-[10px] text-slate-300 text-right mt-2">
+                * Dữ liệu thực tế từ cơ sở dữ liệu (AIHyperparameterHistory)
             </p>
         </div>
     );
