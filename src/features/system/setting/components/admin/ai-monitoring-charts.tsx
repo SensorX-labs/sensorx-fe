@@ -42,18 +42,25 @@ export function AIMonitoringCharts() {
             try {
                 const res = await AISettingService.getHyperparameterHistory();
                 if (res) {
-                    const mappedData = res.map((item, index) => ({
+                    const parseVal = (val: any, dec: number) => {
+                        const n = Number(val);
+                        if (isNaN(n)) return 0;
+                        if (!isFinite(n)) return n > 0 ? 99 : -99; // Cap vô cực để biểu đồ không bị hỏng
+                        return Number(n.toFixed(dec));
+                    };
+
+                    const mappedData = res.map((item: any, index: number) => ({
                         event: index + 1,
-                        k: +item.kAfter.toFixed(5),
-                        idleWeight: +item.idleWeightAfter.toFixed(5),
-                        loss: +item.loss.toFixed(4),
-                        yHat: +item.predictedScore.toFixed(4),
+                        k: parseVal(item.kAfter, 5),
+                        idleWeight: parseVal(item.idleWeightAfter, 5),
+                        loss: parseVal(item.loss, 4),
+                        yHat: parseVal(item.predictedScore, 4),
                         y: item.isSuccess ? 1 : 0,
-                        error: +((item.isSuccess ? 1 : 0) - item.predictedScore).toFixed(4),
-                        deltaK: +item.deltaK.toFixed(5),
-                        deltaIdleWeight: +item.deltaIdleWeight.toFixed(5),
-                        kBefore: +item.kBefore.toFixed(5),
-                        iwBefore: +item.idleWeightBefore.toFixed(5),
+                        error: parseVal((item.isSuccess ? 1 : 0) - Number(item.predictedScore), 4),
+                        deltaK: parseVal(item.deltaK, 5),
+                        deltaIdleWeight: parseVal(item.deltaIdleWeight, 5),
+                        kBefore: parseVal(item.kBefore, 5),
+                        iwBefore: parseVal(item.idleWeightBefore, 5),
                     }));
                     setData(mappedData);
                 }
