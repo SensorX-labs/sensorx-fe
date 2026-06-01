@@ -22,7 +22,7 @@ import {
   cancelPicking,
 } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote } from "@/features/warehouse/models";
-import { AdminPageContainer } from "@/layouts/admin/admin-page-container";
+import { AdminPageContainer } from "@/shared/components/admin/layout";
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
 import StockOutService from "@/features/inventory/stockout/services/stock-out-service";
@@ -229,7 +229,7 @@ const PickingNoteDetail = ({ id }: PickingNoteDetailProps) => {
               className={cn(
                 "px-3 py-1.5 rounded text-xs font-bold uppercase tracking-widest border",
                 statusStyles[pickingNote.status] ||
-                  "bg-gray-100 text-gray-500 border-gray-200"
+                "bg-gray-100 text-gray-500 border-gray-200"
               )}
             >
               {statusLabels[pickingNote.status] || pickingNote.status}

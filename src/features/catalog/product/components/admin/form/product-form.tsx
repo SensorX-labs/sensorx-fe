@@ -136,16 +136,28 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
     }
   };
 
+  const handleAddOnlineImage = (url: string) => {
+    if (!url) return;
+    setFormData({
+      ...formData,
+      images: [...(formData.images || []), url]
+    });
+  };
+
   const handleRemoveImage = async (index: number) => {
     const image = formData.images[index];
     if (!image) return;
     try {
-      await imageService.deleteImage(image);
+      const isCloudinary = image.includes("res.cloudinary.com") || image.includes("/image/");
+      if (isCloudinary) {
+        await imageService.deleteImage(image);
+      }
+    } catch {
+      console.warn("Could not delete image from remote storage:", image);
+    } finally {
       const newImages = [...(formData.images || [])];
       newImages.splice(index, 1);
       setFormData({ ...formData, images: newImages });
-    } catch {
-      toast.error("Lỗi khi xóa ảnh");
     }
   };
 
@@ -206,6 +218,7 @@ export function ProductForm({ product: initialProduct, mode, onBack }: ProductFo
             onRemoveImage={handleRemoveImage}
             onUploadImage={handleUploadImage}
             isUploading={isUploading}
+            onAddOnlineImage={handleAddOnlineImage}
           />
 
           <ProductAttributeSection

@@ -191,19 +191,19 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Tài khoản',
         iconName: 'Shield',
         href: '/users/accounts',
-        roles: ['Manager', 'Admin']
+        roles: ['Admin']
       },
       {
         name: 'Nhân viên',
         iconName: 'UserCircle',
         href: '/users/staff',
-        roles: ['Manager']
+        roles: ['Manager', 'Admin']
       },
       {
         name: 'Cài đặt',
         iconName: 'Settings',
         href: '/settings',
-        roles: ['Admin']
+        roles: ['Admin', 'Manager']
       },
       {
         name: 'Thông tin cá nhân',
