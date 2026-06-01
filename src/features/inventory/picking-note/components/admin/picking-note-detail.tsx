@@ -25,6 +25,8 @@ import { Loader2, Search } from 'lucide-react';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 import StockOutService from '@/features/inventory/stockout/services/stock-out-service';
+import OrderService from '@/features/sales/order/services/order-service';
+import { InventoryService } from '@/features/inventory/stockproduct/services/inventory-service';
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/shared/components/shadcn-ui/popover";
@@ -55,6 +57,9 @@ interface PickingNoteData {
   updatedAt: string;
   transferOrderCode?: string;
   linkedTransferOrderId?: string;
+  sourceDocumentId?: string;
+  sourceDocumentType?: number;
+  description?: string;
 }
 
 interface PickingNoteDetailProps {
@@ -175,6 +180,9 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   const isCreate = actionParam === ActionType.CREATE;
   const [loading, setLoading] = useState(false);
   const [stockOutLoading, setStockOutLoading] = useState(false);
+  const [stockOutNote, setStockOutNote] = useState("");
+  const [isPaid, setIsPaid] = useState<boolean | null>(null);
+  const [paymentStatusStr, setPaymentStatusStr] = useState<string>("");
 
   const [formData, setFormData] = useState<PickingNoteData>(initialData || {
     id: '',
@@ -192,8 +200,11 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     (actionParam as ActionType) || ActionType.DETAIL
   );
 
+  const [inventoryList, setInventoryList] = useState<any[]>([]);
+  const [inventoryLoaded, setInventoryLoaded] = useState(false);
+
   useEffect(() => {
-    if (id && !isCreate) {
+    if (id && id !== 'undefined' && !isCreate) {
       setLoading(true);
       PickingNoteService.getById(id)
         .then(data => {
@@ -208,6 +219,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               status: data.status as any,
               items: data.items.map((i: any) => ({
                 id: i.productId,
+                productId: i.productId,
                 productCode: i.productCode,
                 productName: i.productName,
                 unit: i.unit,
@@ -218,7 +230,10 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
               transferOrderCode: data.transferOrderCode,
-              linkedTransferOrderId: data.linkedTransferOrderId
+              linkedTransferOrderId: data.linkedTransferOrderId,
+              sourceDocumentId: data.sourceDocumentId,
+              sourceDocumentType: data.sourceDocumentType,
+              description: data.description
             });
           }
         })
@@ -229,9 +244,61 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
     }
   }, [id, isCreate]);
 
+  useEffect(() => {
+    if (formData.sourceDocumentId && formData.sourceDocumentType === 0) {
+      OrderService.checkOrderPaymentStatus(formData.sourceDocumentId)
+        .then((res: any) => {
+          if (res) {
+            setIsPaid(res.isPaid);
+            setPaymentStatusStr(res.paymentStatus);
+          }
+        })
+        .catch(err => {
+          console.error("Lỗi khi kiểm tra trạng thái thanh toán đơn hàng:", err);
+        });
+    }
+  }, [formData.sourceDocumentId, formData.sourceDocumentType]);
+
+  useEffect(() => {
+    if (formData.status === "Completed" && formData.code && !stockOutNote) {
+      setStockOutNote(formData.code);
+    }
+  }, [formData.status, formData.code, stockOutNote]);
+
+  useEffect(() => {
+    if (formData.warehouseId && formData.status === 'Pending') {
+      InventoryService.getInventoryList({ warehouseId: formData.warehouseId, pageSize: 200 })
+        .then(res => {
+          if (res && res.items) {
+            setInventoryList(res.items);
+          }
+          setInventoryLoaded(true);
+        })
+        .catch(err => {
+          console.error("Error loading inventory:", err);
+          setInventoryLoaded(true);
+        });
+    }
+  }, [formData.warehouseId, formData.status]);
+
+  const getAvailableStock = (productId?: string) => {
+    if (!productId) return 0;
+    const invItem = inventoryList.find(i => i.productId === productId);
+    return invItem ? (invItem.physicalQuantity - invItem.allocatedQuantity) : 0;
+  };
+
+  const checkStockShortage = () => {
+    if (formData.status !== 'Pending') return false;
+    return formData.items.some(item => {
+      if (!item.productId) return true;
+      const available = getAvailableStock(item.productId);
+      return available < item.quantity;
+    });
+  };
+
   const handleStartPicking = async () => {
     try {
-      await PickingNoteService.startPicking(id);
+      await PickingNoteService.startPicking(id, formData.warehouseId);
       toast.success("Đã bắt đầu soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -242,19 +309,29 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const handleCreateSupplyRequest = () => {
     const warehouseId = formData.warehouseId || Cookies.get('warehouseId') || '';
-    const itemsShortage = formData.items.map(item => ({
-      productId: item.id,
-      productCode: item.productCode,
-      productName: item.productName,
-      requiredQuantity: item.quantity
-    }));
+    const itemsShortage = formData.items
+      .map(item => {
+        const available = getAvailableStock(item.productId);
+        const shortage = item.quantity - available;
+        return {
+          productId: item.productId,
+          productCode: item.productCode,
+          productName: item.productName,
+          requiredQuantity: shortage > 0 ? shortage : item.quantity
+        };
+      })
+      .filter(item => {
+        const available = getAvailableStock(item.productId);
+        const reqQty = formData.items.find(i => i.productId === item.productId)?.quantity ?? 0;
+        return available < reqQty;
+      });
     
     window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
   const handleCompletePicking = async () => {
     try {
-      await PickingNoteService.completePicking(id);
+      await PickingNoteService.completePicking(id, formData.warehouseId);
       toast.success("Đã hoàn thành soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -263,9 +340,14 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
   };
 
   const handleCreateStockOut = async () => {
+    if (formData.sourceDocumentType === 0 && isPaid !== true) {
+      toast.error("Đơn hàng chưa được thanh toán! Vui lòng thanh toán đầy đủ trước khi xuất kho.");
+      return;
+    }
+
     setStockOutLoading(true);
     try {
-      await StockOutService.create(id);
+      await StockOutService.create(id, stockOutNote, formData.warehouseId);
       toast.success("Tạo phiếu xuất kho thành công!");
       window.location.href = "/warehouse/stockout";
     } catch (error) {
@@ -278,7 +360,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
 
   const handleCancelPicking = async () => {
     try {
-      await PickingNoteService.cancelPicking(id, "Người dùng hủy");
+      await PickingNoteService.cancelPicking(id, "Người dùng hủy", formData.warehouseId);
       toast.success("Đã hủy phiếu soạn hàng");
       window.location.reload();
     } catch (error) {
@@ -375,9 +457,11 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   <Button onClick={handleStartPicking} className="bg-blue-600 hover:bg-blue-700 text-white rounded">
                     Bắt đầu soạn
                   </Button>
-                  <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
-                    Yêu cầu cung ứng
-                  </Button>
+                  {inventoryLoaded && checkStockShortage() && (
+                    <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
+                      Yêu cầu cung ứng
+                    </Button>
+                  )}
                 </>
               )}
               {formData.status === 'Picking' && (
@@ -484,6 +568,24 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                     </span>
                   </td>
                 </tr>
+                {formData.sourceDocumentType === 0 && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold text-red-500 font-bold">Thanh toán đơn</td>
+                    <td className="px-6 py-3">
+                      {isPaid === null ? (
+                        <span className="text-gray-400 text-xs italic">Đang kiểm tra...</span>
+                      ) : isPaid ? (
+                        <span className="px-2.5 py-0.5 rounded border text-xs font-medium bg-green-50 text-green-700 border-green-200">
+                          Đã thanh toán ({paymentStatusStr})
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded border text-xs font-medium bg-red-50 text-red-700 border-red-200">
+                          Chưa thanh toán ({paymentStatusStr})
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {formData.transferOrderCode && (
                   <tr>
                     <td className="px-6 py-3 admin-text-primary font-semibold">Mã điều chuyển</td>
@@ -495,6 +597,26 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                         {formData.transferOrderCode}
                       </Link>
                     </td>
+                  </tr>
+                )}
+                {formData.status === 'Completed' && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Ghi chú xuất kho</td>
+                    <td className="px-6 py-3">
+                      <textarea
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-purple-500 font-medium"
+                        rows={3}
+                        placeholder="Nhập ghi chú khi xuất kho..."
+                        value={stockOutNote}
+                        onChange={(e) => setStockOutNote(e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                )}
+                {formData.description && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold">Mô tả</td>
+                    <td className="px-6 py-3 text-gray-700 font-medium whitespace-pre-wrap">{formData.description}</td>
                   </tr>
                 )}
               </tbody>
@@ -524,6 +646,9 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                       <tr>
                         <th className="px-6 py-3 font-medium">Mã SP</th>
                         <th className="px-6 py-3 font-medium">Tên SP</th>
+                        {!isEditing && formData.status === 'Pending' && (
+                          <th className="px-6 py-3 font-medium text-right w-[120px]">Khả dụng</th>
+                        )}
                         <th className="px-6 py-3 font-medium text-right w-[100px]">Số lượng</th>
                         {isEditing && <th className="px-6 py-3 font-medium text-center w-[80px]">Xóa</th>}
                       </tr>
@@ -551,6 +676,19 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                               </div>
                             )}
                           </td>
+                          {!isEditing && formData.status === 'Pending' && (
+                            <td className="px-6 py-3 text-right">
+                              {(() => {
+                                const available = getAvailableStock(item.productId);
+                                const isShortage = available < item.quantity;
+                                return (
+                                  <span className={`font-semibold ${isShortage ? 'text-red-500 font-bold' : 'text-gray-600'}`}>
+                                    {available}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                          )}
                           <td className="px-6 py-3 text-right">
                             {isEditing ? (
                               <input

@@ -55,9 +55,9 @@ const paymentStatusConfig: Record<string, { label: string; className: string; co
         color: 'orange'
     },
     'PartiallyPaid': {
-        label: 'Đã thanh toán một phần',
-        className: 'bg-blue-50 text-blue-700 border-blue-200',
-        color: 'blue'
+        label: 'Chờ thanh toán',
+        className: 'bg-orange-50 text-orange-700 border-orange-200',
+        color: 'orange'
     },
     'Completed': {
         label: 'Thanh toán hoàn tất',
@@ -135,7 +135,7 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
         if (paymentHub.lastUpdate.orderId === orderId && lastHandledUpdateRef.current !== paymentHub.lastUpdate.timestamp) {
             lastHandledUpdateRef.current = paymentHub.lastUpdate.timestamp;
 
-            const isSuccessfulPayment = ['PartiallyPaid', 'Completed'].includes(paymentHub.lastUpdate.paymentStatus);
+            const isSuccessfulPayment = paymentHub.lastUpdate.paymentStatus === 'Completed';
             if (isSuccessfulPayment) {
                 toast.success('Thanh toán thành công. Đơn hàng đã được cập nhật.');
                 setIsPaymentModalOpen(false);
@@ -163,6 +163,8 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
         const paymentStatus = (order?.paymentStatus || '').trim();
         const normalizedStatus = paymentStatus.toLowerCase();
         const paymentQrUrls = order?.paymentQRURls ?? [];
+        const grandTotal = order?.grandTotal ?? 0;
+        const orderCode = order?.code ?? '';
 
         if (!paymentStatus || paymentQrUrls.length === 0) {
             return {
@@ -176,24 +178,34 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
 
         const isPending = normalizedStatus === 'pending';
         const isPartiallyPaid = normalizedStatus === 'partiallypaid';
-        const selectedIndex = isPartiallyPaid ? 1 : 0;
-        const fallbackUrl = paymentQrUrls[0];
-
-        const isAllPayment = order?.paymentType?.toLowerCase() === 'all';
-        const qrLabel = isAllPayment 
-            ? 'Thanh toán toàn bộ (100%)'
-            : (isPartiallyPaid ? 'Lần thanh toán thứ hai (70%)' : 'Lần thanh toán đầu tiên (30%)');
+        
+        let qrUrl = paymentQrUrls[0];
+        if (qrUrl) {
+            try {
+                const url = new URL(qrUrl);
+                url.searchParams.set('amount', Math.round(grandTotal).toString());
+                
+                let des = url.searchParams.get('des') || orderCode;
+                if (des.endsWith('-P1') || des.endsWith('-P2')) {
+                    des = des.substring(0, des.length - 3);
+                }
+                url.searchParams.set('des', des);
+                qrUrl = url.toString();
+            } catch (e) {
+                console.error("Failed to parse or reconstruct QR URL", e);
+            }
+        }
 
         return {
-            qrUrl: paymentQrUrls[selectedIndex] ?? fallbackUrl,
-            qrLabel,
+            qrUrl: qrUrl,
+            qrLabel: 'Thanh toán toàn bộ (100%)',
             canPay: isPending || isPartiallyPaid,
             isPending,
             isPartiallyPaid,
         };
-    }, [order?.paymentStatus, order?.paymentQRURls, order?.paymentType]);
+    }, [order?.paymentStatus, order?.paymentQRURls, order?.grandTotal, order?.code]);
 
-    const paymentAmount = order?.paymentAmount || order?.grandTotal || 0;
+    const paymentAmount = order?.grandTotal || 0;
 
     if (loading) {
         return (

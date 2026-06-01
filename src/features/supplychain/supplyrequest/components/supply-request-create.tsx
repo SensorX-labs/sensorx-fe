@@ -21,7 +21,8 @@ import { ProductService } from '@/features/catalog/product/services/product-serv
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
 
 interface RequestItem {
-  id: string; // Temp or Product Guid
+  id: string; // Always a stable temp ID for React key
+  productId?: string; // Actual product Guid (backend)
   productCode: string;
   productName: string;
   requiredQuantity: number;
@@ -169,7 +170,8 @@ export default function SupplyRequestCreate() {
         const rawItems = JSON.parse(decoded);
         if (Array.isArray(rawItems)) {
           parsedItems = rawItems.map((item: any, idx: number) => ({
-            id: item.productId || idx.toString(),
+            id: `autofill_${idx}`,
+            productId: item.productId || undefined,
             productCode: item.productCode || '',
             productName: item.productName || '',
             requiredQuantity: item.requiredQuantity || 1,
@@ -203,13 +205,19 @@ export default function SupplyRequestCreate() {
       return;
     }
 
+    const invalidItems = supplyData.requestItems.filter(item => !item.productId);
+    if (invalidItems.length > 0) {
+      toast.error(`Vui lòng chọn sản phẩm hợp lệ cho tất cả các dòng (${invalidItems.length} dòng chưa được chọn sản phẩm)`);
+      return;
+    }
+
     try {
       await createSupplyRequest({
         code: supplyData.code,
         warehouseId: supplyData.warehouseId,
         note: note,
         items: supplyData.requestItems.map(item => ({
-          productId: item.id,
+          productId: item.productId!,
           requestedQuantity: item.requiredQuantity
         })),
         pickingNoteId: supplyData.pickingNoteId || undefined
@@ -228,6 +236,7 @@ export default function SupplyRequestCreate() {
   const addRequestItem = () => {
     const newItem: RequestItem = {
       id: 'temp_' + Date.now().toString(),
+      productId: undefined,
       productCode: '',
       productName: '',
       requiredQuantity: 1,
@@ -388,7 +397,7 @@ export default function SupplyRequestCreate() {
                             defaultLabel={item.productName}
                             onSelect={(prod) => {
                               updateRequestItem(item.id, {
-                                id: prod.id,
+                                productId: prod.id,
                                 productCode: prod.code || '',
                                 productName: prod.name
                               });

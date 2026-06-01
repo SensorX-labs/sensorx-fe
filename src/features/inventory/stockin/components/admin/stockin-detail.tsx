@@ -26,6 +26,7 @@ import { ProductLoadMoreForModal } from '@/features/catalog/product/models/produ
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { createStockIn, getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { useUser } from '@/shared/hooks/use-user';
 
 interface StockInDetailProps {
   id?: string;
@@ -154,6 +155,8 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 }
 
 export default function StockInDetail({ id }: StockInDetailProps) {
+  const { user } = useUser();
+  const isWarehouseStaff = user?.role === 'WarehouseStaff';
   const searchParams = useSearchParams();
   const router = useRouter();
   const actionParam = searchParams.get('action') as ActionType | null;
@@ -191,23 +194,27 @@ export default function StockInDetail({ id }: StockInDetailProps) {
       try {
         const list = await getWarehouses();
         setWarehouses(list || []);
-        const savedId = Cookies.get('warehouseId');
-        if (savedId && list.some((w: any) => w.id === savedId)) {
-          setSelectedWarehouseId(savedId);
-        } else if (list.length > 0) {
-          setSelectedWarehouseId(list[0].id || '');
+        if (isWarehouseStaff && user?.warehouseId) {
+          setSelectedWarehouseId(user.warehouseId);
+        } else {
+          const savedId = Cookies.get('warehouseId');
+          if (savedId && list.some((w: any) => w.id === savedId)) {
+            setSelectedWarehouseId(savedId);
+          } else if (list.length > 0) {
+            setSelectedWarehouseId(list[0].id || '');
+          }
         }
       } catch (err) {
         console.error("Failed to load warehouses:", err);
       }
     };
     fetchW();
-  }, []);
+  }, [isWarehouseStaff, user?.warehouseId]);
 
   useEffect(() => {
-    if (id && action !== ActionType.CREATE) {
+    if (id && id !== 'undefined' && action !== ActionType.CREATE) {
       setLoading(true);
-      StockInService.getById(id)
+      StockInService.getById(id, selectedWarehouseId || undefined)
         .then(data => {
           if (data) {
             setStockInData(data);
@@ -229,7 +236,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
         })
         .finally(() => setLoading(false));
     }
-  }, [id, action]);
+  }, [id, action, selectedWarehouseId]);
 
   const handleSave = async () => {
     try {
@@ -427,6 +434,15 @@ export default function StockInDetail({ id }: StockInDetailProps) {
             </div>
             <div className="p-6 space-y-4">
               <div>
+                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
+                <Input
+                  disabled
+                  value={warehouses.find(w => w.id === selectedWarehouseId)?.name || 'Đang tải...'}
+                  className="text-sm h-9 border-gray-300 rounded bg-gray-50 text-gray-500 font-semibold"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Nhà cung cấp</label>
                 <Input
                   disabled={!isEditing}
@@ -436,34 +452,7 @@ export default function StockInDetail({ id }: StockInDetailProps) {
                   placeholder="Nhập tên nhà cung cấp"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Kho nhận</label>
-                {isEditing ? (
-                  <Select
-                    value={selectedWarehouseId}
-                    onValueChange={(val) => {
-                      setSelectedWarehouseId(val);
-                      Cookies.set('warehouseId', val, { expires: 7, path: '/' });
-                    }}
-                  >
-                    <SelectTrigger className="w-full text-xs h-9 border-gray-300 rounded shadow-none bg-white">
-                      <SelectValue placeholder="Chọn kho nhận..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-md">
-                      {warehouses.map((w) => (
-                        <SelectItem key={w.id} value={w.id} className="text-xs hover:bg-gray-50">
-                          {w.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="text-sm font-bold text-gray-900 bg-gray-50 p-2 rounded border border-gray-100 flex items-center gap-2">
-                     <Warehouse className="w-3 h-3 text-brand-green" />
-                     {warehouses.find(w => w.id === selectedWarehouseId)?.name || stockInData.warehouse || 'Chưa chọn kho'}
-                  </div>
-                )}
-              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-[#A3AED0] mb-2 uppercase">Người giao hàng</label>
                 <Input

@@ -89,6 +89,12 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         href: '/sales/customers',
         roles: ['Manager', 'SaleStaff']
       },
+      {
+        name: 'Lịch sử thanh toán',
+        iconName: 'BadgeDollarSign',
+        href: '/sales/payment-histories',
+        roles: ['Manager', 'SaleStaff']
+      },
     ],
   },
   {
@@ -133,13 +139,13 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Phiếu nhập kho',
         iconName: 'PackagePlus',
         href: '/warehouse/stockin',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       },
       {
         name: 'Phiếu xuất kho',
         iconName: 'PackageMinus',
         href: '/warehouse/stockout',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       },
       {
         name: 'Tồn kho',
@@ -151,13 +157,7 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Phiếu soạn kho',
         iconName: 'FileEdit',
         href: '/warehouse/picking-note',
-        roles: ['Manager', 'WarehouseStaff']
-      },
-      {
-        name: 'Kiểm kê kho',
-        iconName: 'ClipboardList',
-        href: '/warehouse/stock-adjustment',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       }
     ],
   },

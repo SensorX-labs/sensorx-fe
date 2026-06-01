@@ -175,9 +175,10 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
   const [note, setNote] = useState('');
 
   React.useEffect(() => {
-    if (id && action !== ActionType.CREATE) {
+    if (id && id !== 'undefined' && action !== ActionType.CREATE) {
       setLoading(true);
-      StockOutService.getById(id)
+      const warehouseId = Cookies.get('warehouseId');
+      StockOutService.getById(id, warehouseId)
         .then((data: any) => {
           if (data) {
             setStockOutData(data);
