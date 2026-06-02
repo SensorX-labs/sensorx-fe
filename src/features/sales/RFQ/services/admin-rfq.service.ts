@@ -104,6 +104,8 @@ export interface AllocationSnapshot {
     currentWorkload: number;
     idleHours: number;
     finalScore: number;
+    k?: number;
+    idleWeight?: number;
 }
 
 export interface AllocationLogEntry {
