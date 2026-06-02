@@ -56,7 +56,6 @@ interface PickingNoteData {
   createdAt: string;
   updatedAt: string;
   transferOrderCode?: string;
-  linkedTransferOrderId?: string;
   sourceDocumentId?: string;
   sourceDocumentType?: number;
   description?: string;
@@ -230,7 +229,6 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
               transferOrderCode: data.transferOrderCode,
-              linkedTransferOrderId: data.linkedTransferOrderId,
               sourceDocumentId: data.sourceDocumentId,
               sourceDocumentType: data.sourceDocumentType,
               description: data.description
