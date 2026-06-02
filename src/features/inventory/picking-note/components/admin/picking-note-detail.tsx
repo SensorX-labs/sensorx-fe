@@ -325,7 +325,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
         const reqQty = formData.items.find(i => i.productId === item.productId)?.quantity ?? 0;
         return available < reqQty;
       });
-    
+
     window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
@@ -459,7 +459,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   </Button>
                   {inventoryLoaded && checkStockShortage() && (
                     <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
-                      Yêu cầu cung ứng
+                      Báo cáo thiếu hàng
                     </Button>
                   )}
                 </>
