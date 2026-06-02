@@ -24,6 +24,7 @@ import {
 } from '@/shared/components/shadcn-ui/dialog';
 import { Input } from '@/shared/components/shadcn-ui/input';
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
+import { AdminContentCard } from '@/shared/components/admin/layout';
 
 const DEFAULT_FILTERS = {
   code: '',
@@ -250,18 +251,20 @@ export default function RequestForQuotationList() {
   };
 
   return (
-    <div className="space-y-4">
-      <RfqStatsSection
-        refreshKey={refreshKey}
-        statusFilter={statusFilter}
-        setStatusFilter={value => {
-          setStatusFilter(value);
-          setCurrentPage(1);
-        }}
-      />
+    <>
+      <div className="shrink-0">
+        <RfqStatsSection
+          refreshKey={refreshKey}
+          statusFilter={statusFilter}
+          setStatusFilter={value => {
+            setStatusFilter(value);
+            setCurrentPage(1);
+          }}
+        />
+      </div>
 
-      <div className="flex flex-col overflow-hidden rounded border border-gray-100 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center">
+      <AdminContentCard className="min-h-0">
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -322,10 +325,10 @@ export default function RequestForQuotationList() {
           </div>
         ) : null}
 
-        <div className="relative overflow-x-auto">
+        <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
           <table className="w-full min-w-[1180px] text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
+              <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm">
                 <th className="px-6 py-4 text-left uppercase tracking-label">Mã RFQ</th>
                 <th className="px-6 py-4 text-left uppercase tracking-label">Khách hàng</th>
                 <th className="px-6 py-4 text-left uppercase tracking-label">Người xử lý</th>
@@ -354,7 +357,7 @@ export default function RequestForQuotationList() {
                 leads.map(item => (
                   <tr
                     key={item.id}
-                    className="group cursor-pointer border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/80"
+                    className="group cursor-pointer odd:bg-white even:bg-slate-100 transition-colors hover:bg-blue-50"
                     onClick={() => router.push(`/sales/RFQ/${item.id}`)}
                   >
                     <td className="px-6 py-4 font-bold tracking-tight text-gray-900">
@@ -399,10 +402,10 @@ export default function RequestForQuotationList() {
                     <td className="px-6 py-4 text-center text-xs text-slate-500">
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString('vi-VN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })
                         : '—'}
                     </td>
 
@@ -411,63 +414,63 @@ export default function RequestForQuotationList() {
                         {(!item.status ||
                           item.status.toLowerCase() === 'pending' ||
                           item.status.toLowerCase() ===
-                            RfqStatus.REJECTED.toLowerCase()) && (
-                          <>
-                            <CanAccess roles={['Manager']}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 cursor-pointer border border-indigo-100 bg-indigo-50/50 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 shadow-sm transition-all duration-300 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white"
-                                onClick={e => openAssignDialog(item.id, e)}
-                                disabled={assignLoading}
-                              >
-                                <UserPlus className="mr-1.5 h-3.5 w-3.5 opacity-70" />
-                              </Button>
-                            </CanAccess>
-
-                            <CanAccess roles={['SaleStaff']}>
-                              <div className="flex items-center gap-1">
+                          RfqStatus.REJECTED.toLowerCase()) && (
+                            <>
+                              <CanAccess roles={['Manager']}>
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  title="Tiếp nhận"
-                                  className="h-8 w-8 border border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
-                                  onClick={e => handleAccept(item.id, e)}
+                                  size="sm"
+                                  className="h-8 cursor-pointer border border-indigo-100 bg-indigo-50/50 px-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 shadow-sm transition-all duration-300 hover:border-indigo-600 hover:bg-indigo-600 hover:text-white"
+                                  onClick={e => openAssignDialog(item.id, e)}
+                                  disabled={assignLoading}
                                 >
-                                  <Check className="h-4 w-4" />
+                                  <UserPlus className="mr-1.5 h-3.5 w-3.5 opacity-70" />
                                 </Button>
+                              </CanAccess>
 
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  title="Từ chối"
-                                  className="h-8 w-8 border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600"
-                                  onClick={e => openDeclineDialog(item.id, e)}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CanAccess>
-                          </>
-                        )}
+                              <CanAccess roles={['SaleStaff']}>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Tiếp nhận"
+                                    className="h-8 w-8 border border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
+                                    onClick={e => handleAccept(item.id, e)}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Từ chối"
+                                    className="h-8 w-8 border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600"
+                                    onClick={e => openDeclineDialog(item.id, e)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CanAccess>
+                            </>
+                          )}
 
                         {item.status?.toLowerCase() ===
                           RfqStatus.ACCEPTED.toLowerCase() && (
-                          <CanAccess roles={['Manager', 'SaleStaff']}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="Xem chi tiết"
-                              className="h-8 w-8 border border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                              onClick={e => {
-                                e.stopPropagation();
-                                router.push(`/sales/RFQ/${item.id}`);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </CanAccess>
-                        )}
+                            <CanAccess roles={['Manager', 'SaleStaff']}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Xem chi tiết"
+                                className="h-8 w-8 border border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  router.push(`/sales/RFQ/${item.id}`);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </CanAccess>
+                          )}
                       </div>
                     </td>
                   </tr>
@@ -483,7 +486,7 @@ export default function RequestForQuotationList() {
           onPageChange={setCurrentPage}
           className="py-3"
         />
-      </div>
+      </AdminContentCard>
 
       <RfqDeclineDialog
         isOpen={isDeclineDialogOpen}
@@ -543,6 +546,6 @@ export default function RequestForQuotationList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ >
   );
 }

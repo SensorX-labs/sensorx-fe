@@ -9,7 +9,7 @@ export const StaffService = {
     api.data.get<unknown, OffsetPagedResult<StaffListItem>>(`/staff/list`, { params }),
 
   getStaffById: (id: string) =>
-    api.data.get<unknown, StaffListItem>(`/staff/${id}`),
+    api.data.get<any, ProfileStaff>(`/staff/${id}`),
 
   getProfile: () =>
     api.data.get<unknown, ProfileStaff>(`/staff/profile`),

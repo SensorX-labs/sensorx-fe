@@ -16,7 +16,7 @@ import { useUser } from '@/shared/hooks/use-user';
 
 export function WarehouseSelector() {
   const { user } = useUser();
-  const isWarehouseStaff = user?.roles?.some(r => r.toLowerCase() === 'warehousestaff');
+  const isWarehouseStaff = user?.role?.toLowerCase() === 'warehousestaff';
   const userWarehouseId = user?.warehouseId;
 
   const [open, setOpen] = useState(false);

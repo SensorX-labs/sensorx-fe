@@ -673,21 +673,96 @@ export default function UserList() {
             </div>
           </div>
 
-          {activeFilterChips.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {activeFilterChips.map(chip => (
-                <button
-                  key={chip.id}
-                  type="button"
-                  onClick={() => handleRemoveFilter(chip.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-                >
-                  <span>{chip.label}</span>
-                  <X className="h-3.5 w-3.5" />
-                </button>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Email</th>
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Họ tên</th>
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Vai trò</th>
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Trạng thái</th>
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Ngày tạo</th>
+                <th className="px-6 py-4 text-left font-semibold text-[#2B3674]">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {users.map((user) => (
+                <tr key={user.id} className="group odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100">
+                  <td className="px-6 py-4 font-medium text-[#2B3674]">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-600">{user.fullName}</td>
+                  <td className="px-6 py-4">
+                    {user.role === 'Admin' || user.role === 'Customer' ? (
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${roleColor[user.role]}`}>
+                        {roleLabels[user.role] ?? user.role}
+                      </span>
+                    ) : (
+                      <Select
+                        value={getRoleNumber(user.role)}
+                        onValueChange={(val) => onRoleSelectChange(user.id, val)}
+                      >
+                        <SelectTrigger className="h-8 w-40 text-xs border-gray-200">
+                          <SelectValue placeholder="Chọn vai trò" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.length > 0 ? (
+                            roles
+                              .filter((r) => r.name !== 'Customer' && r.name !== 'Admin')
+                              .map((r) => (
+                                <SelectItem key={r.id} value={String(r.id)}>
+                                  {roleLabels[r.name] ?? r.name}
+                                </SelectItem>
+                              ))
+                          ) : (
+                            Object.entries(roleLabels)
+                              .filter(([key]) => key !== 'Customer' && key !== 'Admin')
+                              .map(([key, label]) => (
+                                <SelectItem key={key} value={key}>
+                                  {label}
+                                </SelectItem>
+                              ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {user.isLocked ? (
+                      <span className="inline-flex items-center gap-1 text-red-600 text-xs font-medium">
+                        <ShieldAlert className="w-3.5 h-3.5" />
+                        Đã khóa
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-green-600 text-xs font-medium">
+                        <Shield className="w-3.5 h-3.5" />
+                        Hoạt động
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-gray-500">{formatDate(user.createdAt)}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleToggleLock(user.id)}
+                      title={user.isLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors ${user.isLocked
+                        ? 'bg-green-50 text-green-600 hover:bg-green-100'
+                        : 'bg-red-50 text-red-600 hover:bg-red-100'
+                        }`}
+                    >
+                      {user.isLocked ? <LockOpen className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    </button>
+                  </td>
+                </tr>
               ))}
-            </div>
-          ) : null}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                    Không có tài khoản nào
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         <UserTable

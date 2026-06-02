@@ -89,6 +89,12 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         href: '/sales/customers',
         roles: ['Manager', 'SaleStaff']
       },
+      {
+        name: 'Lịch sử thanh toán',
+        iconName: 'BadgeDollarSign',
+        href: '/sales/payment-histories',
+        roles: ['Manager', 'SaleStaff']
+      },
     ],
   },
   {
@@ -133,13 +139,13 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Phiếu nhập kho',
         iconName: 'PackagePlus',
         href: '/warehouse/stockin',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       },
       {
         name: 'Phiếu xuất kho',
         iconName: 'PackageMinus',
         href: '/warehouse/stockout',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       },
       {
         name: 'Tồn kho',
@@ -151,7 +157,7 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Phiếu soạn kho',
         iconName: 'FileEdit',
         href: '/warehouse/picking-note',
-        roles: ['Manager', 'WarehouseStaff']
+        roles: ['WarehouseStaff']
       }
     ],
   },
@@ -168,13 +174,13 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Yêu cầu cung ứng',
         iconName: 'ClipboardList',
         href: '/warehouse/supply-requests',
-        roles: ['Manager']
+        roles: ['Manager', 'WarehouseStaff']
       },
       {
         name: 'lệnh điều chuyển',
         iconName: 'ArrowRightLeft',
         href: '/warehouse/transfer-orders',
-        roles: ['Manager']
+        roles: ['Manager', 'WarehouseStaff']
       }
     ],
   },
@@ -185,19 +191,19 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
         name: 'Tài khoản',
         iconName: 'Shield',
         href: '/users/accounts',
-        roles: ['Manager', 'Admin']
+        roles: ['Admin']
       },
       {
         name: 'Nhân viên',
         iconName: 'UserCircle',
         href: '/users/staff',
-        roles: ['Manager']
+        roles: ['Manager', 'Admin']
       },
       {
         name: 'Cài đặt',
         iconName: 'Settings',
         href: '/settings',
-        roles: ['Admin']
+        roles: ['Admin', 'Manager']
       },
       {
         name: 'Thông tin cá nhân',

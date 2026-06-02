@@ -17,7 +17,7 @@ import {
 import { getPickingNotes, getWarehouses } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote } from "@/features/warehouse/models";
 import { Warehouse as WarehouseModel } from "@/features/warehouse/models/warehouse-model";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from "@/shared/components/admin/layout";
 import { cn } from "@/shared/utils";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
@@ -162,9 +162,13 @@ const PickingNoteTable = () => {
   };
 
   return (
-    <AdminPageContainer
-      title="Danh sách phiếu soạn kho"
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            Danh sách phiếu soạn kho
+          </h2>
+        </div>
         <Button
           onClick={() => router.push("/warehouse/picking-note/new")}
           className="gap-2"
@@ -172,8 +176,7 @@ const PickingNoteTable = () => {
           <Plus className="w-4 h-4" />
           Tạo phiếu soạn kho
         </Button>
-      }
-    >
+      </div>
       {/* Tabs navigation cao cấp hiển thị danh sách kho */}
       <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px mb-4">
         {warehouses.map((w) => {
@@ -184,11 +187,10 @@ const PickingNoteTable = () => {
             <button
               key={w.id}
               onClick={() => handleTabChange(w.id!)}
-              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === w.id
+              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${activeTab === w.id
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <WarehouseIcon className="w-3.5 h-3.5" />
               {w.name}
@@ -292,7 +294,7 @@ const PickingNoteTable = () => {
                         className={cn(
                           "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
                           statusStyles[note.status] ||
-                            "bg-gray-100 text-gray-500 border-gray-200"
+                          "bg-gray-100 text-gray-500 border-gray-200"
                         )}
                       >
                         {statusLabels[note.status] || note.status}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     FileText,
     MapPin,
@@ -14,12 +14,17 @@ import {
     DollarSign,
     CreditCard,
     Truck,
-    Download
+    Download,
+    QrCode
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { OrderStatus } from '@/features/sales/order/enums/order-status';
 import { OrderService } from '@/features/sales/order/services/order-service';
 import { Order } from '@/features/sales/order/models/order';
+import { usePaymentHub } from '@/shared/hooks/usePaymentHub';
+import { toast } from 'sonner';
+import { Button } from '@/shared/components/shadcn-ui/button';
+import { PaymentQrModal } from './payment-qr-modal';
 
 const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
     [OrderStatus.PendingPayment]: {
@@ -43,10 +48,42 @@ const statusConfig: Record<string, { label: string; className: string; icon: any
         icon: Clock
     },
 };
+const paymentStatusConfig: Record<string, { label: string; className: string; color: string }> = {
+    'Pending': {
+        label: 'Chờ thanh toán',
+        className: 'bg-orange-50 text-orange-700 border-orange-200',
+        color: 'orange'
+    },
+    'PartiallyPaid': {
+        label: 'Chờ thanh toán',
+        className: 'bg-orange-50 text-orange-700 border-orange-200',
+        color: 'orange'
+    },
+    'Completed': {
+        label: 'Thanh toán hoàn tất',
+        className: 'bg-green-50 text-green-700 border-green-200',
+        color: 'green'
+    },
+    'Failed': {
+        label: 'Thanh toán thất bại',
+        className: 'bg-red-50 text-red-700 border-red-200',
+        color: 'red'
+    },
+    'Cancelled': {
+        label: 'Thanh toán bị hủy',
+        className: 'bg-gray-50 text-gray-700 border-gray-200',
+        color: 'gray'
+    }
+};
 
 export function OrderDetailView({ onBack, orderId }: { onBack: () => void, orderId?: string }) {
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const paymentHub = usePaymentHub();
+    const lastHandledUpdateRef = useRef<number | null>(null);
+    const subscribedOrderIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -66,6 +103,109 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
 
         fetchDetail();
     }, [orderId]);
+
+    // Subscribe to payment updates via SignalR
+    useEffect(() => {
+        if (!orderId || loading || !order) return;
+        if (subscribedOrderIdRef.current === orderId) return;
+        subscribedOrderIdRef.current = orderId;
+
+        const subscribeToPaymentUpdates = async () => {
+            try {
+                await paymentHub.subscribeToOrder(orderId);
+            } catch (error) {
+                console.error('Failed to subscribe to payment updates:', error);
+            }
+        };
+
+        subscribeToPaymentUpdates();
+
+        return () => {
+            // Unsubscribe when component unmounts
+            subscribedOrderIdRef.current = null;
+            paymentHub.unsubscribeFromOrder(orderId).catch(console.error);
+        };
+    }, [orderId, loading, order, paymentHub.subscribeToOrder, paymentHub.unsubscribeFromOrder]);
+
+    // Listen for payment status changes
+    useEffect(() => {
+        if (!orderId || !paymentHub.lastUpdate) return;
+
+        // If payment status changed for this order, reload the order data
+        if (paymentHub.lastUpdate.orderId === orderId && lastHandledUpdateRef.current !== paymentHub.lastUpdate.timestamp) {
+            lastHandledUpdateRef.current = paymentHub.lastUpdate.timestamp;
+
+            const isSuccessfulPayment = paymentHub.lastUpdate.paymentStatus === 'Completed';
+            if (isSuccessfulPayment) {
+                toast.success('Thanh toán thành công. Đơn hàng đã được cập nhật.');
+                setIsPaymentModalOpen(false);
+            }
+
+            const reloadOrderData = async () => {
+                try {
+                    setRefreshing(true);
+                    const response = await OrderService.getOrderById(orderId);
+                    if (response) {
+                        setOrder(response);
+                    }
+                } catch (error) {
+                    console.error('Failed to reload order data:', error);
+                } finally {
+                    setRefreshing(false);
+                }
+            };
+
+            reloadOrderData();
+        }
+    }, [orderId, paymentHub.lastUpdate]);
+
+    const paymentQrConfig = useMemo(() => {
+        const paymentStatus = (order?.paymentStatus || '').trim();
+        const normalizedStatus = paymentStatus.toLowerCase();
+        const paymentQrUrls = order?.paymentQRURls ?? [];
+        const grandTotal = order?.grandTotal ?? 0;
+        const orderCode = order?.code ?? '';
+
+        if (!paymentStatus || paymentQrUrls.length === 0) {
+            return {
+                qrUrl: undefined as string | undefined,
+                qrLabel: 'Chưa có mã QR',
+                canPay: false,
+                isPending: false,
+                isPartiallyPaid: false,
+            };
+        }
+
+        const isPending = normalizedStatus === 'pending';
+        const isPartiallyPaid = normalizedStatus === 'partiallypaid';
+        
+        let qrUrl = paymentQrUrls[0];
+        if (qrUrl) {
+            try {
+                const url = new URL(qrUrl);
+                url.searchParams.set('amount', Math.round(grandTotal).toString());
+                
+                let des = url.searchParams.get('des') || orderCode;
+                if (des.endsWith('-P1') || des.endsWith('-P2')) {
+                    des = des.substring(0, des.length - 3);
+                }
+                url.searchParams.set('des', des);
+                qrUrl = url.toString();
+            } catch (e) {
+                console.error("Failed to parse or reconstruct QR URL", e);
+            }
+        }
+
+        return {
+            qrUrl: qrUrl,
+            qrLabel: 'Thanh toán toàn bộ (100%)',
+            canPay: isPending || isPartiallyPaid,
+            isPending,
+            isPartiallyPaid,
+        };
+    }, [order?.paymentStatus, order?.paymentQRURls, order?.grandTotal, order?.code]);
+
+    const paymentAmount = order?.grandTotal || 0;
 
     if (loading) {
         return (
@@ -210,6 +350,88 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
 
                 {/* CỘT PHẢI: THÔNG TIN CHUNG */}
                 <div className="space-y-6 sticky top-28">
+                                        {/* Thông tin thanh toán */}
+                                        {order.paymentStatus && (
+                                            <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                                                <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
+                                                    <CreditCard className="w-4 h-4 text-gray-400" />
+                                                    Thông tin thanh toán
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    {/* Payment Status Badge */}
+                                                    <div>
+                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Trạng thái</p>
+                                                        <div className={cn(
+                                                            "px-4 py-2 border tracking-label text-[10px] uppercase font-bold text-center",
+                                                            paymentStatusConfig[order.paymentStatus]?.className || 'bg-gray-50 text-gray-700 border-gray-200'
+                                                        )}>
+                                                            {paymentStatusConfig[order.paymentStatus]?.label || order.paymentStatus}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Payment Amount */}
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số tiền cần thanh toán</p>
+                                                        <p className="text-lg font-bold text-gray-900">
+                                                            {paymentAmount.toLocaleString('vi-VN')} đ
+                                                        </p>
+                                                    </div>
+
+                                                    {/* QR Payment Action */}
+                                                    {order.paymentStatus && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
+                                                        <div className="space-y-3">
+                                                            <Button
+                                                                type="button"
+                                                                onClick={() => setIsPaymentModalOpen(true)}
+                                                                disabled={!paymentQrConfig.canPay}
+                                                                className="w-full mt-2 bg-brand-green hover:bg-brand-green-hover shadow-lg shadow-brand-green/20 text-white uppercase tracking-widest text-[10px] font-bold disabled:bg-gray-200 disabled:text-gray-500"
+                                                            >
+                                                                <QrCode className="w-4 h-4 mr-2" />
+                                                                Thanh toán
+                                                            </Button>
+                                                            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider text-center">
+                                                                {paymentQrConfig.qrLabel}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {!paymentQrConfig.canPay && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
+                                                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+                                                            <p className="text-sm font-bold text-yellow-700 text-center">
+                                                                Chưa có mã QR thanh toán phù hợp.
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Completion Message */}
+                                                    {order.paymentStatus === 'Completed' && (
+                                                        <div className="p-4 bg-green-50 border border-green-200 rounded">
+                                                            <p className="text-sm font-bold text-green-700 text-center">
+                                                                ✓ Thanh toán thành công. Cảm ơn bạn đã mua hàng!
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Error Message */}
+                                                    {['Failed', 'Cancelled'].includes(order.paymentStatus) && (
+                                                        <div className="p-4 bg-red-50 border border-red-200 rounded">
+                                                            <p className="text-sm font-bold text-red-700 text-center">
+                                                                ✗ Thanh toán không thành công. Vui lòng liên hệ hỗ trợ.
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Refresh Indicator */}
+                                                    {refreshing && (
+                                                        <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                                                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                                                            <p className="text-[10px] uppercase text-blue-700 font-bold">Đang cập nhật...</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                     {/* Trạng thái đơn hàng (Timeline) */}
                     <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
                         <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
@@ -294,6 +516,16 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                     </div>
                 </div>
             </div>
+
+            <PaymentQrModal
+                open={isPaymentModalOpen}
+                onOpenChange={setIsPaymentModalOpen}
+                orderCode={order.code}
+                paymentStatus={order.paymentStatus || 'Pending'}
+                paymentAmount={paymentAmount}
+                qrUrl={paymentQrConfig.qrUrl}
+                qrLabel={paymentQrConfig.qrLabel}
+            />
         </div>
     );
 }

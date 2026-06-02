@@ -22,6 +22,11 @@ export interface Order {
   grandTotal: number;
   items: OrderItem[];
   orderItems?: OrderItem[];
+  paymentId?: string;
+  paymentStatus?: string;
+  paymentType?: string;
+  paymentQRURls?: string[];
+  paymentAmount?: number;
 }
 
 export interface OrderListItem {

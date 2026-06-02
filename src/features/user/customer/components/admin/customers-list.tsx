@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Filter, Mail, Phone, Search } from 'lucide-react';
 import { FilterFieldConfig, FilterPanel } from '@/shared/components/admin/filter-panel';
-import { AdminContentCard, AdminPageContainer } from '@/shared/components/admin/layout';
+import { AdminContentCard } from '@/shared/components/admin/layout';
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import {
@@ -111,11 +112,13 @@ function CustomerTable({
   customers: Customer[];
   loading: boolean;
 }) {
+  const router = useRouter();
+
   return (
-    <div className="relative overflow-x-auto">
+    <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
       <table className="w-full min-w-[1080px] text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/70 text-left">
+          <tr className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100/95 backdrop-blur-sm shadow-sm text-left">
             <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Khách hàng
             </th>
@@ -153,7 +156,11 @@ function CustomerTable({
             </tr>
           ) : (
             customers.map(customer => (
-              <tr key={customer.id} className="hover:bg-emerald-50/30">
+              <tr 
+                key={customer.id} 
+                className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
+                onClick={() => router.push(`/user/customer/${customer.id}`)}
+              >
                 <td className="px-6 py-4">
                   <div className="space-y-1">
                     <div className="font-bold text-slate-900">{customer.name}</div>
@@ -284,9 +291,9 @@ export default function CustomersList() {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
-    <AdminPageContainer>
-      <AdminContentCard>
-        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center">
+    <>
+      <AdminContentCard className="min-h-0">
+        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -347,9 +354,7 @@ export default function CustomersList() {
           </div>
         ) : null}
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <CustomerTable customers={customers} loading={loading} />
-        </div>
+        <CustomerTable customers={customers} loading={loading} />
 
         <LocalPagination
           currentPage={currentPage}
@@ -408,6 +413,6 @@ export default function CustomersList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminPageContainer>
+    </>
   );
 }

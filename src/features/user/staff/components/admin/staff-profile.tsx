@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     User, Phone, Mail, FileText, Loader2, Save, Lock,
-    Edit2, X, Calendar, Clock, Briefcase, KeyRound, ShieldAlert
+    Edit2, X, Calendar, Clock, Briefcase, KeyRound, ShieldAlert,
+    CreditCard, ArrowLeft
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/shadcn-ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/shadcn-ui/tabs';
 import { toast } from 'sonner';
@@ -13,8 +14,8 @@ import Cookies from 'js-cookie';
 import { AdminPageContainer } from '@/shared/components/admin/layout';
 import StaffService, { ProfileStaff, StaffStatus } from '../../services/staff.service';
 import { cn } from '@/shared/utils';
+import { ChangePasswordForm } from '@/features/system/auth/components/common/change-password-form';
 
-// Helper function format ngày tháng
 const formatDate = (dateString?: string) => {
     if (!dateString) return '---';
     return new Intl.DateTimeFormat('vi-VN', {
@@ -24,17 +25,16 @@ const formatDate = (dateString?: string) => {
     }).format(new Date(dateString));
 };
 
-// Helper function render trạng thái
 const renderStatusBadge = (status?: StaffStatus) => {
     switch (status) {
         case StaffStatus.Active:
-            return <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-sm border border-emerald-200">Đang làm việc</span>;
+            return <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-bold rounded-full flex items-center gap-1.5">Đang làm việc</span>;
         case StaffStatus.Resigned:
-            return <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-sm border border-red-200">Đã nghỉ việc</span>;
+            return <span className="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold rounded-full flex items-center gap-1.5">Đã nghỉ việc</span>;
         case StaffStatus.OnLeave:
-            return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-sm border border-yellow-200">Vắng mặt</span>;
+            return <span className="px-3 py-1 bg-amber-50 border border-amber-200 text-amber-600 text-xs font-bold rounded-full flex items-center gap-1.5">Vắng mặt</span>;
         default:
-            return <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-sm border border-slate-200">Chưa xác định</span>;
+            return <span className="px-3 py-1 bg-slate-50 border border-slate-200 text-slate-500 text-xs font-bold rounded-full flex items-center gap-1.5">Chưa xác định</span>;
     }
 };
 
@@ -43,11 +43,9 @@ export default function StaffProfile() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    // States quản lý chế độ hiển thị
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-    // Form states cho Profile
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [citizenId, setCitizenId] = useState('');
@@ -107,6 +105,7 @@ export default function StaffProfile() {
 
             setProfile(prev => prev ? { ...prev, name, phone, citizenId, biography, email } : null);
             setIsEditingProfile(false);
+            toast.success('Cập nhật hồ sơ thành công!');
 
             const userCookie = Cookies.get('user');
             if (userCookie) {
@@ -138,12 +137,10 @@ export default function StaffProfile() {
             setIsUpdatingAvatar(true);
             await StaffService.updateStaffAvatar(file);
 
-            // Refresh lại profile
             const updatedProfile = await StaffService.getProfile();
             if (updatedProfile) {
                 setProfile(updatedProfile);
 
-                // Đồng bộ sang Cookie của Header Admin
                 const userCookie = Cookies.get('user');
                 if (userCookie) {
                     try {
@@ -168,7 +165,7 @@ export default function StaffProfile() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-2">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
                 <span className="text-slate-500 font-medium text-sm">Đang tải dữ liệu...</span>
             </div>
         );
@@ -176,278 +173,265 @@ export default function StaffProfile() {
 
     return (
         <AdminPageContainer>
-            <div className="flex flex-col h-full overflow-hidden pb-4">
+            {/* Tối ưu vùng cuộn: Chỉ cho phép cuộn dọc form chi tiết khi view nhỏ, không tràn khung */}
+            <div className="flex flex-col h-full overflow-y-auto custom-scrollbar pb-6">
+                <Tabs defaultValue="profile" className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start w-full">
 
-                {/* Header Summary */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-6 bg-white p-5 rounded-md shadow-sm border border-slate-200 mb-6 shrink-0">
-                    <div className="relative group shrink-0">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleAvatarChange}
-                            accept="image/*"
-                            className="hidden"
-                        />
-                        <div className={cn(
-                            "w-20 h-20 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-300 relative",
-                            isUpdatingAvatar && "opacity-50"
-                        )}>
-                            {isUpdatingAvatar ? (
-                                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                            ) : profile?.avatarUrl ? (
-                                <img
-                                    src={profile.avatarUrl}
-                                    alt={profile.name}
-                                    className="w-full h-full object-cover"
+                    {/* CỘT TRÁI: ĐỒNG BỘ ROUNDED-XL VÀ MÀU TÔNG CHUẨN */}
+                    <div className="md:col-span-1 bg-white p-6 rounded-xl border border-slate-100 flex flex-col gap-6 shadow-sm">
+                        <div className="flex flex-col items-center text-center space-y-3.5">
+                            <div className="relative group shrink-0">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleAvatarChange}
+                                    accept="image/*"
+                                    className="hidden"
                                 />
-                            ) : (
-                                <span className="text-xl font-bold text-slate-500 uppercase">
-                                    {(profile?.name || '').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2) || 'NV'}
-                                </span>
-                            )}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={handleAvatarClick}
-                            disabled={isUpdatingAvatar}
-                            className="absolute bottom-0 right-0 p-1 bg-white border border-slate-200 rounded-full text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-all shadow-sm disabled:opacity-50"
-                            title="Cập nhật ảnh đại diện"
-                        >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
-                        </button>
-                    </div>
-
-                    <div className="flex-1 space-y-2">
-                        <h1 className="text-xl font-bold text-slate-900">{profile?.name || '---'}</h1>
-                        <div className="flex flex-wrap items-center gap-3 text-sm">
-                            <span className="flex items-center gap-1.5 text-slate-600 font-medium">
-                                <Briefcase size={14} className="text-slate-400" />
-                                {profile?.department || 'Chưa cập nhật'}
-                            </span>
-                            <span className="text-slate-300">|</span>
-                            <span className="flex items-center gap-1.5 text-slate-600 font-medium">
-                                <FileText size={14} className="text-slate-400" />
-                                Mã NV: <strong className="text-slate-900">{profile?.code || '---'}</strong>
-                            </span>
-                            <span className="text-slate-300">|</span>
-                            {renderStatusBadge(profile?.status)}
-                        </div>
-                    </div>
-                </div>
-
-                <Tabs defaultValue="profile" className="flex flex-col flex-1 min-h-0 w-full">
-                    <TabsList className="bg-slate-100 p-1 mb-6 rounded-md border border-slate-200 w-full md:w-fit overflow-x-auto justify-start h-auto shrink-0">
-                        <TabsTrigger value="profile" className="px-6 py-2 rounded-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 font-semibold text-sm transition-all">
-                            <User size={16} className="mr-2" /> Hồ sơ cá nhân
-                        </TabsTrigger>
-                        <TabsTrigger value="security" className="px-6 py-2 rounded-sm data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 font-semibold text-sm transition-all" onClick={() => setIsChangingPassword(false)}>
-                            <Lock size={16} className="mr-2" /> Bảo mật
-                        </TabsTrigger>
-                    </TabsList>
-
-                    {/* TAB 1: HỒ SƠ CÁ NHÂN */}
-                    <TabsContent value="profile" className="mt-0 outline-none flex-1 min-h-0 overflow-hidden">
-                        {/* Thêm overflow-hidden vào Card để nền xám của Header không bị lòi ra ngoài góc bo tròn */}
-                        <Card className="rounded-md border-slate-200 shadow-sm bg-white flex flex-col h-full overflow-hidden">
-
-                            {/* CardHeader được đổi sang nền xám (bg-slate-50), viền rõ hơn và thu hẹp padding dọc (py-3.5) */}
-                            <CardHeader className="bg-slate-50 border-b border-slate-200 px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-                                <div>
-                                    <CardTitle className="text-base font-bold text-slate-900 uppercase">Thông tin chi tiết</CardTitle>
+                                <div className={cn(
+                                    "w-24 h-24 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center overflow-hidden transition-all group-hover:border-indigo-200 relative shadow-inner",
+                                    isUpdatingAvatar && "opacity-50"
+                                )}>
+                                    {isUpdatingAvatar ? (
+                                        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                                    ) : profile?.avatarUrl ? (
+                                        <img
+                                            src={profile.avatarUrl}
+                                            alt={profile.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-2xl font-bold text-slate-400 uppercase tracking-wider">
+                                            {(profile?.name || '').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2) || 'NV'}
+                                        </span>
+                                    )}
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={handleAvatarClick}
+                                    disabled={isUpdatingAvatar}
+                                    className="absolute bottom-0 right-0 p-2 bg-white border border-slate-200 rounded-full text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-all shadow-sm disabled:opacity-50"
+                                    title="Cập nhật ảnh đại diện"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" /></svg>
+                                </button>
+                            </div>
 
-                                {!isEditingProfile ? (
-                                    <Button onClick={() => setIsEditingProfile(true)} variant="outline" className="h-9 px-4 rounded-md border-slate-300 bg-white text-sm font-medium">
-                                        <Edit2 size={14} className="mr-2" /> Chỉnh sửa
-                                    </Button>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <Button onClick={handleCancelEdit} variant="outline" className="h-9 px-4 rounded-md border-slate-300 bg-white text-sm font-medium text-slate-600 hover:bg-slate-100">
-                                            Hủy
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 tracking-tight">{profile?.name || '---'}</h3>
+                                <p className="text-xs font-semibold text-slate-400 mt-0.5">{profile?.code || '---'}</p>
+                            </div>
+
+                            <div className="flex gap-2 justify-center">
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-50 border border-slate-200 text-slate-600">
+                                    {profile?.department || 'Chưa cập nhật'}
+                                </span>
+                                {renderStatusBadge(profile?.status)}
+                            </div>
+                        </div>
+
+                        <div className="pt-5 border-t border-slate-100">
+                            <TabsList className="flex flex-col w-full h-auto bg-transparent p-0 gap-1.5">
+                                <TabsTrigger
+                                    value="profile"
+                                    className="w-full justify-start px-4 py-2.5 rounded-lg data-[state=active]:bg-indigo-50/60 data-[state=active]:text-indigo-600 text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm border border-transparent data-[state=active]:border-indigo-100/50"
+                                >
+                                    <User size={15} className="mr-2.5" /> Hồ sơ cá nhân
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="security"
+                                    className="w-full justify-start px-4 py-2.5 rounded-lg data-[state=active]:bg-indigo-50/60 data-[state=active]:text-indigo-600 text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm border border-transparent data-[state=active]:border-indigo-100/50"
+                                    onClick={() => setIsChangingPassword(false)}
+                                >
+                                    <Lock size={15} className="mr-2.5" /> Bảo mật & Tài khoản
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+                    </div>
+
+                    {/* CỘT PHẢI: BỎ ÉP CHIỀU CAO H-FULL ĐỂ FORM CO GIÃN TỰ NHIÊN, CÂN XỨNG THỊ GIÁC */}
+                    <div className="md:col-span-2">
+
+                        {/* TAB 1: HỒ SƠ CÁ NHÂN */}
+                        <TabsContent value="profile" className="mt-0 outline-none">
+                            <Card className="rounded-xl border-slate-100 shadow-sm bg-white overflow-hidden">
+                                <CardHeader className="bg-slate-50/70 border-b border-slate-100 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Thông tin chi tiết</CardTitle>
+
+                                    {!isEditingProfile ? (
+                                        <Button onClick={() => setIsEditingProfile(true)} variant="outline" className="h-9 px-4 rounded-lg border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                            <Edit2 size={13} className="mr-1.5" /> Chỉnh sửa hồ sơ
                                         </Button>
-                                        <Button onClick={handleUpdateProfile} disabled={saving} className="h-9 px-4 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium">
-                                            {saving ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Save size={14} className="mr-2" />}
-                                            Lưu thay đổi
-                                        </Button>
-                                    </div>
-                                )}
-                            </CardHeader>
-
-                            {/* Chỉnh lại padding top thành pt-4 thay vì padding đều để giảm khoảng cách với Header */}
-                            <CardContent className="px-6 pt-4 pb-6 flex-1 overflow-y-auto pr-4">
-                                <form className="space-y-6">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* Cột 1: Thông tin cá nhân */}
-                                        <div className="space-y-4">
-                                            <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">Thông tin cá nhân</h3>
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-slate-500 uppercase">Họ và tên</label>
-                                                {isEditingProfile ? (
-                                                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm text-slate-900" />
-                                                ) : (
-                                                    <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">{profile?.name || '---'}</div>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-slate-500 uppercase">Số CCCD</label>
-                                                {isEditingProfile ? (
-                                                    <input type="text" value={citizenId} onChange={(e) => setCitizenId(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm text-slate-900" />
-                                                ) : (
-                                                    <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">{profile?.citizenId || '---'}</div>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1"><Calendar size={12} /> Ngày tham gia</label>
-                                                <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-md text-sm text-slate-500 cursor-not-allowed">
-                                                    {formatDate(profile?.joinDate)}
-                                                </div>
-                                            </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <Button onClick={handleCancelEdit} variant="outline" className="h-9 px-4 rounded-lg border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                                                Hủy
+                                            </Button>
+                                            <Button onClick={handleUpdateProfile} disabled={saving} className="h-9 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm">
+                                                {saving ? <Loader2 size={13} className="mr-1.5 animate-spin" /> : <Save size={13} className="mr-1.5" />}
+                                                Lưu thay đổi
+                                            </Button>
                                         </div>
+                                    )}
+                                </CardHeader>
 
-                                        {/* Cột 2: Thông tin liên hệ */}
-                                        <div className="space-y-4">
-                                            <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">Thông tin liên hệ</h3>
+                                <CardContent className="p-6">
+                                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+
+                                            {/* Nhóm Thông tin cá nhân */}
+                                            <div className="space-y-4 sm:col-span-2">
+                                                <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-50 pb-1.5">Thông tin cá nhân</h4>
+                                            </div>
 
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-slate-500 uppercase">Số điện thoại</label>
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><User size={12} /> Họ và tên</label>
                                                 {isEditingProfile ? (
-                                                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm text-slate-900" />
+                                                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 transition-all" />
                                                 ) : (
-                                                    <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">{profile?.phone || '---'}</div>
+                                                    <input type="text" value={profile?.name || '---'} disabled className="w-full h-10 px-3 bg-slate-50/60 border border-slate-100 text-slate-500 rounded-lg text-sm cursor-not-allowed" />
                                                 )}
                                             </div>
 
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-slate-500 uppercase">
-                                                    Email
-                                                </label>
-
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><CreditCard size={12} /> Số CCCD</label>
                                                 {isEditingProfile ? (
+                                                    <input type="text" value={citizenId} onChange={(e) => setCitizenId(e.target.value)} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 transition-all" />
+                                                ) : (
+                                                    <input type="text" value={profile?.citizenId || '---'} disabled className="w-full h-10 px-3 bg-slate-50/60 border border-slate-100 text-slate-500 rounded-lg text-sm cursor-not-allowed" />
+                                                )}
+                                            </div>
+
+                                            {/* Nhóm Thông tin liên hệ */}
+                                            <div className="space-y-4 sm:col-span-2 pt-2">
+                                                <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-widest border-b border-indigo-50 pb-1.5">Thông tin liên hệ</h4>
+                                            </div>
+
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Phone size={12} /> Số điện thoại</label>
+                                                {isEditingProfile ? (
+                                                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 transition-all" />
+                                                ) : (
+                                                    <input type="text" value={profile?.phone || '---'} disabled className="w-full h-10 px-3 bg-slate-50/60 border border-slate-100 text-slate-500 rounded-lg text-sm cursor-not-allowed" />
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Mail size={12} /> Email (Chứng từ / Báo giá)</label>
+                                                {isEditingProfile ? (
+                                                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 transition-all" />
+                                                ) : (
+                                                    <input type="text" value={profile?.email || '---'} disabled className="w-full h-10 px-3 bg-slate-50/60 border border-slate-100 text-slate-500 rounded-lg text-sm cursor-not-allowed" />
+                                                )}
+                                            </div>
+
+                                            {/* Ngày tham gia chuyển xuống góc dưới cùng hệ thống */}
+                                            <div className="space-y-1.5 sm:col-span-2 pt-2">
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Calendar size={12} /> Ngày gia nhập hệ thống SensorX</label>
+                                                <input type="text" value={formatDate(profile?.joinDate)} disabled className="w-full h-10 px-3 bg-slate-100/70 border border-slate-200/60 text-slate-400 rounded-lg text-sm cursor-not-allowed font-medium" />
+                                            </div>
+
+                                            {/* Khối Tiểu sử chuyên môn */}
+                                            <div className="space-y-1.5 sm:col-span-2 pt-2">
+                                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><FileText size={12} /> Tiểu sử chuyên môn & Kinh nghiệm</label>
+                                                {isEditingProfile ? (
+                                                    <textarea value={biography} onChange={(e) => setBiography(e.target.value)} placeholder="Nhập tiểu sử ngắn hoặc ghi chú chuyên môn..." rows={4} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm text-slate-800 resize-none transition-all" />
+                                                ) : (
+                                                    <div className="p-4 bg-slate-50/60 border border-slate-100 rounded-lg min-h-[90px] leading-relaxed text-sm text-slate-600">
+                                                        {profile?.biography || <span className="italic text-slate-400">Chưa cập nhật dữ liệu tiểu sử chuyên môn.</span>}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                        </div>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* TAB 2: BẢO MẬT & ĐỔI MẬT KHẨU */}
+                        <TabsContent value="security" className="mt-0 outline-none">
+                            <Card className="rounded-xl border-slate-100 shadow-sm bg-white overflow-hidden">
+                                <CardHeader className="bg-slate-50/70 border-b border-slate-100 px-6 py-4">
+                                    <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">Bảo mật tài khoản</CardTitle>
+                                </CardHeader>
+
+                                <CardContent className="p-6">
+                                    {!isChangingPassword ? (
+                                        <div className="space-y-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/40 gap-4">
+                                                <div className="flex items-start gap-3.5">
+                                                    <div className="p-2 bg-white border border-slate-100 rounded-lg text-slate-600 shadow-sm shrink-0">
+                                                        <KeyRound size={18} />
+                                                    </div>
                                                     <div>
-                                                        <input
-                                                            type="email"
-                                                            value={email}
-                                                            onChange={(e) => setEmail(e.target.value)}
-                                                            placeholder="Nhập email hiển thị cho đối tác..."
-                                                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm text-slate-900"
-                                                        />
-                                                        <p className="text-[11px] text-slate-500 italic mt-1.5">
-                                                            * Email này dùng để hiển thị trên báo giá/hợp đồng, không làm thay đổi tài khoản đăng nhập.
-                                                        </p>
+                                                        <h4 className="text-sm font-bold text-slate-800">Mật khẩu xác thực</h4>
+                                                        <p className="text-xs text-slate-400 mt-0.5">Khuyên dùng thay đổi định kỳ để bảo vệ dữ liệu khách hàng.</p>
                                                     </div>
-                                                ) : (
-                                                    <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900">
-                                                        {profile?.email || '---'}
+                                                </div>
+                                                <Button onClick={() => setIsChangingPassword(true)} className="rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold h-9 px-4 shadow-sm shrink-0">
+                                                    Đổi mật khẩu mới
+                                                </Button>
+                                            </div>
+
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/40 gap-4">
+                                                <div className="flex items-start gap-3.5">
+                                                    <div className="p-2 bg-white border border-slate-100 rounded-lg text-slate-400 shadow-sm shrink-0">
+                                                        <ShieldAlert size={18} />
                                                     </div>
-                                                )}
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-slate-400">Xác thực OTP hai lớp (2FA)</h4>
+                                                        <p className="text-xs text-slate-400 mt-0.5">Trạng thái bảo mật: <span className="font-bold text-rose-500">Chưa kích hoạt</span></p>
+                                                    </div>
+                                                </div>
+                                                <Button variant="outline" className="rounded-lg border-slate-200 text-slate-400 text-xs font-semibold h-9 px-4 bg-white cursor-not-allowed shrink-0" disabled>
+                                                    Thiết lập bảo mật
+                                                </Button>
                                             </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="mx-auto max-w-md space-y-4 animate-in fade-in duration-300">
+                                            <div className="flex items-center gap-2 text-slate-500 hover:text-slate-800 cursor-pointer mb-2" onClick={() => setIsChangingPassword(false)}>
+                                                <ArrowLeft size={14} /> <span className="text-xs font-bold">Quay lại quản lý bảo mật</span>
+                                            </div>
 
-                                    {/* Khối Biography */}
-                                    <div className="space-y-2 pt-2 border-t border-slate-100">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase">Tiểu sử chuyên môn</label>
-                                        {isEditingProfile ? (
-                                            <textarea
-                                                value={biography}
-                                                onChange={(e) => setBiography(e.target.value)}
-                                                placeholder="Nhập tiểu sử, kinh nghiệm làm việc..."
-                                                rows={4}
-                                                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm text-slate-900 resize-y"
+                                            <ChangePasswordForm
+                                                className="max-w-none"
+                                                title="Đổi mật khẩu"
+                                                description="Cập nhật mật khẩu tài khoản nhân viên"
+                                                redirectTo={null}
+                                                submitLabel="Xác nhận cập nhật mật khẩu"
+                                                submittingLabel="Đang cập nhật..."
+                                                onSuccess={() => setIsChangingPassword(false)}
                                             />
-                                        ) : (
-                                            <div className="p-3 bg-slate-50 border border-slate-200 rounded-md min-h-[80px] flex items-start">
-                                                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed w-full">
-                                                    {profile?.biography || <span className="italic text-slate-400">Chưa cập nhật tiểu sử chuyên môn.</span>}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
 
-                    {/* TAB 2: BẢO MẬT & ĐỔI MẬT KHẨU */}
-                    <TabsContent value="security" className="mt-0 outline-none flex-1 min-h-0 overflow-hidden">
-                        <Card className="rounded-md border-slate-200 shadow-sm bg-white flex flex-col h-full overflow-hidden">
-
-                            {/* Cập nhật UI Header tương tự cho Tab 2 */}
-                            <CardHeader className="bg-slate-50 border-b border-slate-200 px-6 py-3.5 shrink-0">
-                                <CardTitle className="text-base font-bold text-slate-900 uppercase">Bảo mật tài khoản</CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="px-6 pb-6 flex-1 pr-4">
-                                {!isChangingPassword ? (
-                                    <div className="max-w-2xl space-y-4">
-                                        <div className="flex items-center justify-between p-4 border border-slate-200 rounded-md bg-slate-50">
-                                            <div className="flex items-start gap-4">
-                                                <div className="p-2 bg-white border border-slate-200 rounded-md text-slate-700 shadow-sm">
-                                                    <KeyRound size={20} />
+                                            <form className="hidden space-y-4" onSubmit={(e) => { e.preventDefault(); toast.info("Tính năng đổi mật khẩu đang được cấu hình."); }}>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-slate-600">Mật khẩu hiện tại</label>
+                                                    <input type="password" placeholder="••••••••" className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" />
                                                 </div>
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-slate-900">Mật khẩu đăng nhập</h4>
-                                                    <p className="text-xs text-slate-500 mt-1">Nên thay đổi mật khẩu định kỳ để bảo vệ tài khoản tốt hơn.</p>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-slate-600">Mật khẩu mới</label>
+                                                    <input type="password" placeholder="••••••••" className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" />
                                                 </div>
-                                            </div>
-                                            <Button onClick={() => setIsChangingPassword(true)} className="rounded-md bg-slate-900 text-white hover:bg-slate-800 text-sm font-medium">
-                                                Đổi mật khẩu
-                                            </Button>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-slate-600">Xác nhận lại mật khẩu mới</label>
+                                                    <input type="password" placeholder="••••••••" className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" />
+                                                </div>
+
+                                                <div className="flex items-center gap-2 pt-2">
+                                                    <Button type="submit" className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold h-10 px-5 shadow-sm">
+                                                        Xác nhận cập nhật mật khẩu
+                                                    </Button>
+                                                </div>
+                                            </form>
                                         </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
-                                        <div className="flex items-center justify-between p-4 border border-slate-200 rounded-md bg-slate-50">
-                                            <div className="flex items-start gap-4">
-                                                <div className="p-2 bg-white border border-slate-200 rounded-md text-slate-700 shadow-sm">
-                                                    <ShieldAlert size={20} />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-slate-900">Xác thực 2 lớp (2FA)</h4>
-                                                    <p className="text-xs text-slate-500 mt-1">Trạng thái: <span className="font-semibold text-slate-700">Đang tắt</span></p>
-                                                </div>
-                                            </div>
-                                            <Button variant="outline" className="rounded-md border-slate-300 text-slate-700 text-sm font-medium bg-white" disabled>
-                                                Thiết lập
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="max-w-xl">
-                                        <div className="mb-6">
-                                            <h3 className="text-sm font-bold text-slate-900">Đổi mật khẩu mới</h3>
-                                            <p className="text-xs text-slate-500 mt-1">Vui lòng nhập mật khẩu hiện tại để xác thực.</p>
-                                        </div>
-
-                                        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); toast.info("API đổi mật khẩu đang được phát triển."); }}>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-semibold text-slate-700">Mật khẩu hiện tại</label>
-                                                <input type="password" placeholder="••••••••" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-semibold text-slate-700">Mật khẩu mới</label>
-                                                <input type="password" placeholder="••••••••" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className="text-xs font-semibold text-slate-700">Xác nhận mật khẩu mới</label>
-                                                <input type="password" placeholder="••••••••" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 text-sm" />
-                                            </div>
-
-                                            <div className="flex items-center gap-3 pt-2">
-                                                <Button type="button" onClick={() => setIsChangingPassword(false)} variant="outline" className="rounded-md border-slate-300 text-slate-700 text-sm font-medium bg-white hover:bg-slate-50">
-                                                    Quay lại
-                                                </Button>
-                                                <Button type="submit" className="rounded-md bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium">
-                                                    Cập nhật mật khẩu
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
+                    </div>
                 </Tabs>
             </div>
         </AdminPageContainer>

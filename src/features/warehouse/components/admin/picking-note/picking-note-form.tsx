@@ -21,7 +21,7 @@ import {
   getPickingNote,
 } from "@/features/warehouse/services/warehouse-service";
 import { PickingNote, PickingNoteItem } from "@/features/warehouse/models";
-import { AdminPageContainer } from "@/shared/components/admin/layout/admin-page-container";
+import { AdminPageContainer } from "@/shared/components/admin/layout";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -144,9 +144,13 @@ const PickingNoteForm = ({ id }: PickingNoteFormProps) => {
   };
 
   return (
-    <AdminPageContainer
-      title={id && id !== "new" ? "Sửa phiếu soạn kho" : "Tạo phiếu soạn kho"}
-      actions={
+    <AdminPageContainer>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-bold tracking-title-xl uppercase">
+            {id && id !== "new" ? "Sửa phiếu soạn kho" : "Tạo phiếu soạn kho"}
+          </h2>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.back()}>
             Hủy
@@ -155,8 +159,7 @@ const PickingNoteForm = ({ id }: PickingNoteFormProps) => {
             {loading ? "Đang lưu..." : "Lưu phiếu soạn kho"}
           </Button>
         </div>
-      }
-    >
+      </div>
       <Form {...form}>
         <form className="space-y-6">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">

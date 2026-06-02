@@ -10,7 +10,6 @@ import { ProductPageList, ProductStats } from '../../../models';
 import { ProductService } from '../../../services/product-service';
 import { LocalPagination } from '@/shared/components/admin/local-pagination';
 import {
-  AdminPageContainer,
   AdminContentCard,
   AdminHeaderBar,
 } from '@/shared/components/admin/layout';
@@ -266,12 +265,12 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
   );
 
   return (
-    <AdminPageContainer>
+    <>
       <div className="shrink-0">
         <StatCards stats={stats} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <AdminContentCard>
+      <AdminContentCard className="min-h-0">
         <AdminHeaderBar>
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <div className="relative min-w-[280px] flex-1">
@@ -341,7 +340,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
           </div>
         ) : null}
 
-        <div className="relative overflow-x-auto flex-1 min-h-0 custom-scrollbar">
+        <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
           <ProductTable
             products={products}
             onViewDetail={onViewDetail}
@@ -416,6 +415,6 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminPageContainer>
+    </>
   );
 }

@@ -1,5 +1,17 @@
-import { KeysetPagedResult, Result } from "@/shared/models/base-response";
+export interface CursorPagedResult<T> {
+  items: T[];
+  firstCreatedAt?: string;
+  firstId?: string;
+  lastCreatedAt?: string;
+  lastId?: string;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
 
-export interface CursorPagedResult<T> extends KeysetPagedResult<T> {}
+export interface Result<T> {
+  isSuccess: boolean;
+  value: T;
+  error?: string;
+}
 
 export type CursorPagedListResult<T> = Result<CursorPagedResult<T>>;

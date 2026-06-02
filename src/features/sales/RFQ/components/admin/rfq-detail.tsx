@@ -54,7 +54,9 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
   };
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleAcceptDetail = async () => {
@@ -352,6 +354,7 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
               </div>
             ) : (
               rfq.allocationLogs.sort((a, b) => b.round - a.round).map((log, index) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let snapshots: any[] = [];
                 try {
                   snapshots = JSON.parse(log.snapshotJson);
@@ -360,8 +363,15 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                 return (
                   <div key={index} className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                      <div className="font-semibold text-gray-900">
-                        Vòng phân bổ {log.round}
+                      <div className="flex flex-col">
+                        <div className="font-semibold text-gray-900">
+                          Vòng phân bổ {log.round}
+                        </div>
+                        {snapshots[0] && (snapshots[0].K !== undefined || snapshots[0].k !== undefined) && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Cấu hình AI hoạt động lúc gán: <span className="font-mono">k = {(snapshots[0].K ?? snapshots[0].k)?.toFixed(2)}</span>, <span className="font-mono">idleWeight = {(snapshots[0].IdleWeight ?? snapshots[0].idleWeight)?.toFixed(3)}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500">
                         {new Date(log.assignedAt).toLocaleString('vi-VN')}
@@ -377,15 +387,20 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                             <th className="px-6 py-3 font-medium text-right">Khối lượng (Workload)</th>
                             <th className="px-6 py-3 font-medium text-right">Giờ rảnh (Idle Hours)</th>
                             <th className="px-6 py-3 font-medium text-right text-indigo-600">Tổng điểm (Final)</th>
+                            <th className="px-6 py-3 font-medium text-right text-emerald-600">Xác suất chốt (y-hat)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                           {snapshots.map((s: any, sIdx: number) => {
                             const isWinner = sIdx === 0;
                             // Kiểm tra xem ông winner này có từ chối không
                             const rejectedLog = isWinner && rfq.rejectedLogs
-                              ? rfq.rejectedLogs.find(r => r.staffId === s.StaffId)
+                              ? rfq.rejectedLogs.find(r => r.staffId === s.StaffId || r.staffId === s.staffId)
                               : null;
+
+                            const finalScore = s.FinalScore ?? s.finalScore ?? 0;
+                            const yHat = 1 / (1 + Math.exp(-finalScore));
 
                             return (
                               <React.Fragment key={sIdx}>
@@ -394,21 +409,22 @@ export default function RequestForQuotationDetail({ id, onBack }: RequestForQuot
                                     #{sIdx + 1}
                                   </td>
                                   <td className="px-6 py-3 font-medium text-gray-900">
-                                    {s.StaffName || `Nhân viên ${s.StaffId.slice(0, 4)}`}
+                                    {s.StaffName || s.staffName || `Nhân viên ${(s.StaffId ?? s.staffId)?.slice(0, 4)}`}
                                     {isWinner && (
                                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">
                                         Winner
                                       </span>
                                     )}
                                   </td>
-                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.AggregatedSkillScore?.toFixed(4)}</td>
-                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.CurrentWorkload?.toFixed(4)}</td>
-                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{s.IdleHours?.toFixed(4)}</td>
-                                  <td className="px-6 py-3 text-right font-mono font-bold text-indigo-600">{s.FinalScore?.toFixed(4)}</td>
+                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{(s.AggregatedSkillScore ?? s.aggregatedSkillScore)?.toFixed(4)}</td>
+                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{(s.CurrentWorkload ?? s.currentWorkload)?.toFixed(0)}</td>
+                                  <td className="px-6 py-3 text-right font-mono text-xs text-gray-600">{(s.IdleHours ?? s.idleHours)?.toFixed(2)}h</td>
+                                  <td className="px-6 py-3 text-right font-mono font-bold text-indigo-600">{finalScore?.toFixed(4)}</td>
+                                  <td className="px-6 py-3 text-right font-mono font-bold text-emerald-600">{(yHat * 100).toFixed(2)}%</td>
                                 </tr>
                                 {rejectedLog && (
                                   <tr className="bg-red-50/50">
-                                    <td colSpan={6} className="px-6 py-2.5 text-xs text-red-600">
+                                    <td colSpan={7} className="px-6 py-2.5 text-xs text-red-600">
                                       <div className="flex items-start gap-2">
                                         <X className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                                         <span>

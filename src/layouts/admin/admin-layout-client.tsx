@@ -1,10 +1,11 @@
 'use client';
 
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import CrmHeader from './admin-header';
 import CrmFooter from './admin-footer';
-import {SidebarProvider, SidebarInset} from '@/shared/components/shadcn-ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/shared/components/shadcn-ui/sidebar';
+import { AdminPageContainer } from './admin-page-container';
 
 const CrmSidebar = dynamic(() => import('./admin-sidebar'), { ssr: false });
 
@@ -13,18 +14,19 @@ interface AdminLayoutClientProps {
     defaultOpen: boolean;
 }
 
-export const AdminLayoutClient = ({children, defaultOpen} : AdminLayoutClientProps) => {
+export const AdminLayoutClient = ({ children, defaultOpen }: AdminLayoutClientProps) => {
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
-            <CrmSidebar/>
+            <CrmSidebar />
 
             <SidebarInset className="flex min-h-screen flex-1 min-w-0 flex-col bg-[var(--admin-background)]">
-                <CrmHeader/>
+                <CrmHeader />
 
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-                    {children} </main>
+                <AdminPageContainer className="flex-1 md:p-6 lg:p-8">
+                    {children}
+                </AdminPageContainer>
 
-                <CrmFooter/>
+                <CrmFooter />
             </SidebarInset>
         </SidebarProvider>
     );
