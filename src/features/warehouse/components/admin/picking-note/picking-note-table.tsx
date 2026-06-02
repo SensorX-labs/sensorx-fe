@@ -187,11 +187,10 @@ const PickingNoteTable = () => {
             <button
               key={w.id}
               onClick={() => handleTabChange(w.id!)}
-              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === w.id
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`px-4 py-2 text-sm font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${activeTab === w.id
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
             >
               <WarehouseIcon className="w-3.5 h-3.5" />
               {w.name}
@@ -295,7 +294,7 @@ const PickingNoteTable = () => {
                         className={cn(
                           "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
                           statusStyles[note.status] ||
-                            "bg-gray-100 text-gray-500 border-gray-200"
+                          "bg-gray-100 text-gray-500 border-gray-200"
                         )}
                       >
                         {statusLabels[note.status] || note.status}

@@ -1,17 +1,13 @@
 'use client';
 
 import { TransferOrderDetail } from '@/features/supplychain/transferorder/components/admin/transfer-order-detail';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useParams } from 'next/navigation';
 
-interface TransferOrderDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function WarehouseTransferOrderDetailPage({ params }: TransferOrderDetailPageProps) {
+export default function WarehouseTransferOrderDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const searchParams = useSearchParams();
   const action = searchParams.get('action') || undefined;
 
-  return <TransferOrderDetail id={params.id} action={action} />;
+  return <TransferOrderDetail id={id} action={action} />;
 }

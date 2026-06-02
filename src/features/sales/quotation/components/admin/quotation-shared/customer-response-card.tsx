@@ -14,7 +14,9 @@ export function CustomerResponseCard({ customerFeedback }: CustomerResponseCardP
   const recipientName = customerFeedback.recipientName || '—';
   const recipientPhone = customerFeedback.recipientPhone || '—';
   const shippingAddress = customerFeedback.shippingAddress || '—';
-  const paymentTerm = customerFeedback.paymentTerm || '—';
+  const paymentTerm = customerFeedback.paymentTerm === 'FullPayment'
+    ? 'Thanh toán 100%'
+    : (customerFeedback.paymentTerm === 'Deposit' ? 'Đặt cọc 30%' : (customerFeedback.paymentTerm || '—'));
   const feedback = customerFeedback.feedback || '—';
 
   const isDeclined = customerFeedback.responseType === 'Declined' || customerFeedback.responseType === 1;

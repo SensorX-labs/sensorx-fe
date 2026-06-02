@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Building, ShieldCheck, Mail, Lock, Phone, MapPin, User, ArrowRight } from 'lucide-react';
 import { AuthService } from '../../services/auth-service';
 import { toast } from 'sonner';
 
@@ -45,7 +45,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         address: address || null
       });
       toast.success("Đăng ký tài khoản thành công!");
-      // Chờ một chút rồi chuyển sang trang login
       setTimeout(() => {
         onSwitchToLogin?.();
       }, 1500);
@@ -57,187 +56,189 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-semibold italic text-brand-green mb-2">
-          Create Account
+    <div className="w-full font-sans">
+      {/* Header */}
+      <div className="mb-8 text-center sm:text-left">
+        <div className="inline-flex items-center gap-2 mb-4 bg-[#0D9488]/10 px-3 py-1 rounded-full border border-[#0D9488]/20">
+          <Building size={12} className="text-[#0D9488] dark:text-emerald-400" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0D9488] dark:text-emerald-400">Đăng ký doanh nghiệp</span>
+        </div>
+        <h1 className="text-3xl font-black text-stone-900 dark:text-white uppercase tracking-tight leading-tight mb-2">
+          Đăng Ký Tài Khoản
         </h1>
-        <p className="text-xs tracking-widest text-gray-400 uppercase">
-          Đăng ký tài khoản doanh nghiệp SensorX
-        </p>
+        <p className="text-xs text-stone-500 dark:text-stone-400 tracking-wide font-medium">Khởi tạo tài khoản SensorX B2B của bạn</p>
       </div>
 
-      <form onSubmit={handleRegister} className="space-y-6">
-        {/* Tên doanh nghiệp */}
+      <form onSubmit={handleRegister} className="space-y-4">
+        {/* Doanh nghiệp */}
         <div className="group">
-          <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
+          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
             Tên doanh nghiệp / Tổ chức <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Công ty TNHH SensorX"
-            required
-            className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Mã số thuế */}
-          <div className="group">
-            <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
-              Mã số thuế <span className="text-red-500">*</span>
-            </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+              <Building size={15} />
+            </div>
             <input
               type="text"
-              name="taxCode"
-              placeholder="0123456789"
+              name="name"
+              placeholder="Công ty TNHH SensorX"
               required
-              className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
             />
           </div>
+        </div>
 
-          {/* Số điện thoại */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Mã số thuế */}
           <div className="group">
-            <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
-              Số điện thoại <span className="text-gray-400 lowercase italic">(tùy chọn)</span>
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
+              Mã số thuế <span className="text-red-500">*</span>
             </label>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="0912345678"
-              className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
-            />
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+                <ShieldCheck size={15} />
+              </div>
+              <input
+                type="text"
+                name="taxCode"
+                placeholder="0123456789"
+                required
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
+              />
+            </div>
+          </div>
+
+          {/* Điện thoại */}
+          <div className="group">
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
+              Số điện thoại <span className="text-[9px] text-stone-450 dark:text-stone-550 normal-case font-normal">(tùy chọn)</span>
+            </label>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+                <Phone size={15} />
+              </div>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="0912345678"
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
+              />
+            </div>
           </div>
         </div>
 
         {/* Địa chỉ */}
         <div className="group">
-          <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
-            Địa chỉ trụ sở <span className="text-gray-400 lowercase italic">(tùy chọn)</span>
+          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
+            Địa chỉ trụ sở <span className="text-[9px] text-stone-450 dark:text-stone-550 normal-case font-normal">(tùy chọn)</span>
           </label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Số 123, Đường ABC, Quận XYZ, Hà Nội"
-            className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
-          />
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+              <MapPin size={15} />
+            </div>
+            <input
+              type="text"
+              name="address"
+              placeholder="Số 123, Đường ABC, Hà Nội"
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
+            />
+          </div>
         </div>
 
-        {/* email */}
+        {/* Email */}
         <div className="group">
-          <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
+          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
             Email đăng nhập <span className="text-red-500">*</span>
           </label>
-          <input
-            type="email"
-            name="email"
-            placeholder="admin@sensorx.com"
-            required
-            className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
-          />
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+              <Mail size={15} />
+            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="admin@sensorx.com"
+              required
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* mật khẩu */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Mật khẩu */}
           <div className="group">
-            <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
               Mật khẩu <span className="text-red-500">*</span>
             </label>
             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+                <Lock size={15} />
+              </div>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="••••••••"
                 required
-                className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
+                className="w-full pl-11 pr-12 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-3 text-gray-400 hover:text-brand-green transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-[#0D9488] transition-colors cursor-pointer"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
 
-          {/* xác nhận mật khẩu */}
+          {/* Confirm */}
           <div className="group">
-            <label className="flex items-center gap-1 text-xs tracking-widest text-gray-500 uppercase mb-2 group-focus-within:text-brand-green transition-colors">
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-1.5 group-focus-within:text-[#0D9488] transition-colors">
               Xác nhận <span className="text-red-500">*</span>
             </label>
             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#0D9488] transition-colors">
+                <Lock size={15} />
+              </div>
               <input
                 type={showPasswordConfirm ? 'text' : 'password'}
                 name="passwordConfirm"
                 placeholder="••••••••"
                 required
-                className="w-full px-0 py-3 bg-transparent border-b border-gray-200 focus:border-brand-green focus:outline-none text-gray-900 placeholder-gray-400 transition-all duration-300"
+                className="w-full pl-11 pr-12 py-3 bg-white dark:bg-zinc-950 border border-stone-250 dark:border-zinc-800 focus:border-[#0D9488] focus:ring-4 focus:ring-[#0D9488]/10 rounded-2xl text-sm font-semibold text-stone-900 dark:text-white placeholder-stone-450 focus:outline-none transition-all duration-300 shadow-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                className="absolute right-0 top-3 text-gray-400 hover:text-brand-green transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-[#0D9488] transition-colors cursor-pointer"
               >
-                {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPasswordConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="pt-8">
+        {/* Submit */}
+        <div className="pt-4">
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-brand-green hover:bg-brand-green-hover text-white font-bold py-4 px-6 tracking-[0.2em] uppercase transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-brand-green/20 hover:shadow-brand-green/40 hover:-translate-y-0.5 active:translate-y-0"
+            className="w-full bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-black uppercase tracking-[0.2em] py-4 px-6 rounded-2xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-[#0D9488]/20 hover:shadow-[#0D9488]/40 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
-            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? 'Đang khởi tạo...' : 'Đăng ký ngay'}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loading ? 'Đang đăng ký...' : 'Đăng ký ngay'}
           </button>
         </div>
       </form>
 
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200"></div>
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-gray-500 tracking-widest">Hoặc đăng ký với</span>
-        </div>
-      </div>
-
-      {/* phương thức đăng nhập khác */}
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          type="button"
-          className="flex items-center justify-center gap-2 py-3 px-4 border border-gray-300 hover:bg-gray-50 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-          </svg>
-          <span className="text-xs font-semibold tracking-wide uppercase">Facebook</span>
-        </button>
-        <button
-          type="button"
-          className="flex items-center justify-center gap-2 py-3 px-4 border border-gray-300 hover:bg-gray-50 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
-            <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
-            <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
-            <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
-            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.021 35.596 44 30.138 44 24c0-1.341-.138-2.65-.389-3.917z" />
-          </svg>
-          <span className="text-xs font-semibold tracking-wide uppercase">Google</span>
-        </button>
-      </div>
-
-      <div className="mt-8 text-center">
-        <span className="text-xs text-gray-500">Đã có tài khoản? </span>
+      {/* Footer Switch */}
+      <div className="mt-6 text-center text-xs text-stone-500 dark:text-stone-400">
+        <span>Đã có tài khoản doanh nghiệp? </span>
         <button
           type="button"
           onClick={onSwitchToLogin}
-          className="text-xs text-blue-500 hover:text-blue-600 font-semibold"
+          className="text-[#0D9488] hover:text-[#0F766E] dark:text-emerald-400 font-bold uppercase tracking-wider transition-colors ml-1 cursor-pointer"
         >
           Đăng nhập
         </button>

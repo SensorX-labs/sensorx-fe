@@ -23,6 +23,7 @@ import { createTransferOrder } from '@/features/supplychain/transferorder/servic
 import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductLoadMoreForModal } from '@/features/catalog/product/models/product-load-more';
+import { useUser } from '@/shared/hooks/use-user';
 
 interface SupplyRequestDetailProps {
   id?: string;
@@ -34,6 +35,8 @@ interface RequestItem {
   productCode: string;
   productName: string;
   requiredQuantity: number;
+  unit?: string;
+  manufacturerName?: string;
 }
 
 interface PurchasePlanItem {
@@ -87,6 +90,18 @@ const statusColor: Record<string, string> = {
 const statusLabel: Record<string, string> = {
   'Pending': 'Chờ xử lý',
   'Completed': 'Hoàn thành',
+};
+
+const generateCode = (prefix: string) => {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const MM = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const HH = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  const fff = String(now.getMilliseconds()).padStart(3, '0');
+  return `${prefix.toUpperCase()}-${yy}${MM}${dd}-${HH}${mm}${ss}${fff}`;
 };
 
 function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { defaultValue?: string, defaultLabel?: string, onSelect: (prod: any) => void }) {
@@ -172,6 +187,8 @@ function SearchableProductSelect({ defaultValue, defaultLabel, onSelect }: { def
 }
 
 export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
+  const { user } = useUser();
+  const isWarehouseStaff = user?.role === 'WarehouseStaff';
   const router = useRouter();
   const searchParams = useSearchParams();
   const editParam = searchParams.get('action') === 'edit';
@@ -217,7 +234,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             productId: item.productId,
             productCode: p.code || '',
             productName: p.name || 'Sản phẩm không tên',
-            requiredQuantity: item.requestedQuantity
+            requiredQuantity: item.requestedQuantity,
+            unit: p.unitOfQuantityName || 'Cái',
+            manufacturerName: p.supplierName || 'N/A'
           };
         } catch {
           return {
@@ -225,7 +244,9 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             productId: item.productId,
             productCode: 'Unknown',
             productName: 'Sản phẩm không rõ',
-            requiredQuantity: item.requestedQuantity
+            requiredQuantity: item.requestedQuantity,
+            unit: 'Cái',
+            manufacturerName: 'N/A'
           };
         }
       }));
@@ -331,7 +352,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
           return;
         }
         await createTransferOrder({
-          code: `DC_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          code: generateCode('DC'),
           sourceWarehouseId: plan.sourceWarehouse,
           destinationWarehouseId: supplyData.warehouseId!,
           note: `Điều chuyển từ yêu cầu cung ứng ${supplyData.code}`,
@@ -461,6 +482,50 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
     ));
   };
 
+  const fillToPurchasePlan = () => {
+    if (supplyData.requestItems.length === 0) {
+      toast.error("Không có sản phẩm cần cung ứng nào để điền");
+      return;
+    }
+    const items: PurchasePlanItem[] = supplyData.requestItems.map(item => ({
+      id: 'temp_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      productId: item.productId,
+      productCode: item.productCode,
+      productName: item.productName,
+      quantity: item.requiredQuantity,
+      unitPrice: 0,
+    }));
+    setPurchasePlan(items);
+    toast.success("Đã điền sản phẩm vào phương án mua hàng");
+  };
+
+  const fillToTransferPlan = () => {
+    if (supplyData.requestItems.length === 0) {
+      toast.error("Không có sản phẩm cần cung ứng nào để điền");
+      return;
+    }
+    const newItems: TransferPlanItem[] = supplyData.requestItems.map(item => ({
+      id: 'temp_toi_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+      productId: item.productId,
+      productCode: item.productCode,
+      productName: item.productName,
+      quantity: item.requiredQuantity,
+      unit: item.unit || 'Cái',
+      manufacturerName: item.manufacturerName || 'N/A',
+      note: ''
+    }));
+
+    const newPlan: TransferPlan = {
+      id: 'temp_plan_' + Date.now().toString(),
+      sourceWarehouse: '',
+      items: newItems,
+      isNew: true,
+    };
+
+    setTransferPlans([...transferPlans, newPlan]);
+    toast.success("Đã thêm phương án điều chuyển và điền toàn bộ sản phẩm");
+  };
+
   const purchaseTotal = purchasePlan.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
   return (
@@ -477,7 +542,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing ? (
+          {isEditing && !isWarehouseStaff ? (
             <>
               <Button onClick={handleSave} disabled={saving} className="rounded admin-btn-primary border-transparent">
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -490,7 +555,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             </>
           ) : (
             <>
-              {supplyData.status !== 'Completed' && (
+              {supplyData.status !== 'Completed' && !isWarehouseStaff && (
                 <>
                   <Button onClick={handleSubmit} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white rounded">
                     {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Package className="w-4 h-4 mr-2" />}
@@ -515,7 +580,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div className="md:col-span-1 space-y-6">
+        <div className={isWarehouseStaff ? "md:col-span-3 space-y-6 max-w-4xl" : "md:col-span-1 space-y-6"}>
           {/* Thông tin cơ bản */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
@@ -556,9 +621,38 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
 
           {/* Danh sách sản phẩm yêu cầu */}
           <div className="border border-gray-200 bg-white rounded">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              <h4 className="text-sm font-medium">Sản phẩm cần cung ứng</h4>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                <h4 className="text-sm font-medium">Sản phẩm cần cung ứng</h4>
+              </div>
+              {isEditing && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="sm" className="admin-btn-primary border-transparent text-xs h-7 py-1 px-3">
+                      Tự động điền
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-1 bg-white border border-gray-200 shadow-lg rounded" align="end">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-xs font-normal hover:bg-gray-100 text-left h-8 px-2"
+                        onClick={fillToPurchasePlan}
+                      >
+                        Điền vào Phương án mua hàng
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-xs font-normal hover:bg-gray-100 text-left h-8 px-2"
+                        onClick={fillToTransferPlan}
+                      >
+                        Điền vào Phương án điều chuyển
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
             <div className="p-6">
               <table className="w-full text-xs">
@@ -601,7 +695,8 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
           </div>
         </div>
 
-        <div className="md:col-span-2 space-y-6">
+        {!isWarehouseStaff && (
+          <div className="md:col-span-2 space-y-6">
           {/* Phương án mua hàng */}
           <div className="border border-gray-200 bg-white rounded">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -803,7 +898,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
                           <tr>
                             <th className="px-3 py-2 text-left">Sản phẩm</th>
                             <th className="px-3 py-2 text-left">ĐV</th>
-                            <th className="px-3 py-2 text-center w-14">SL</th>
+                            <th className="px-3 py-2 text-center w-24">SL</th>
                             <th className="px-3 py-2 text-left">Nhà SX</th>
                             <th className="px-3 py-2 text-left">Ghi chú</th>
                             {isEditing && plan.isNew && <th className="px-2 py-2 w-6" />}
@@ -907,6 +1002,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
             </div>
           </div>
         </div>
+        )}
 
       </div>
     </div>

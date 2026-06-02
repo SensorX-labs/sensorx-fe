@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Warehouse, Search, Loader2, ChevronLeft, ChevronRight, ClipboardCheck } from 'lucide-react';
+import { Warehouse, Search, Loader2, ChevronLeft, ChevronRight, ClipboardCheck, Sliders } from 'lucide-react';
 import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { InventoryService, InventoryItemListItem, ConsolidatedInventoryItem } from '../../services/inventory-service';
 import { ProductService } from '@/features/catalog/product/services/product-service';
@@ -9,13 +9,27 @@ import { Button } from '@/shared/components/shadcn-ui/button';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useUser } from '@/shared/hooks/use-user';
-import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
+import { getWarehouses, createStockAdjustment } from '@/features/warehouse/services/warehouse-service';
 import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehouse-model';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/shared/components/shadcn-ui/dialog';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent
+} from '@/shared/components/shadcn-ui/tooltip';
 
 interface StockItem extends InventoryItemListItem {
   productName?: string;
   productCode?: string;
   salableQuantity?: number;
+  unit?: string;
   warehouses?: ConsolidatedInventoryItem['warehouses'];
 }
 
@@ -54,6 +68,100 @@ export default function WarehouseStockPage() {
   });
 
   const isWarehouseStaff = user?.role === 'WarehouseStaff';
+
+  // States for row-level stock adjustment
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [adjustSubmitLoading, setAdjustSubmitLoading] = useState(false);
+  const [adjustForm, setAdjustForm] = useState({
+    warehouseId: '',
+    warehouseName: '',
+    productId: '',
+    productCode: '',
+    productName: '',
+    unit: 'Cái',
+    type: 'add', // 'add' | 'reduce'
+    quantity: 1,
+    description: '',
+    note: '',
+  });
+
+  const handleOpenAdjustModal = (item: StockItem) => {
+    let currentWarehouseId = '';
+    let currentWarehouseName = '';
+
+    if (activeTab && activeTab !== 'all') {
+      currentWarehouseId = activeTab;
+      currentWarehouseName = warehouses.find(w => w.id === activeTab)?.name || '';
+    } else if (item.warehouses && item.warehouses.length > 0) {
+      const wName = item.warehouses[0].warehouseName;
+      currentWarehouseName = wName;
+      currentWarehouseId = warehouses.find(w => w.name === wName)?.id || '';
+    } else if (warehouses.length > 0) {
+      currentWarehouseId = warehouses[0].id || '';
+      currentWarehouseName = warehouses[0].name || '';
+    }
+
+    setAdjustForm({
+      warehouseId: currentWarehouseId,
+      warehouseName: currentWarehouseName,
+      productId: item.productId,
+      productCode: item.productCode || '',
+      productName: item.productName || '',
+      unit: item.unit || 'Cái',
+      type: 'add',
+      quantity: 1,
+      description: '',
+      note: '',
+    });
+    setIsAdjustModalOpen(true);
+  };
+
+  const handleAdjustSubmit = async () => {
+    if (!adjustForm.warehouseId) {
+      toast.error('Vui lòng chọn kho hàng');
+      return;
+    }
+    if (!adjustForm.productId) {
+      toast.error('Vui lòng chọn sản phẩm');
+      return;
+    }
+    if (!adjustForm.description.trim()) {
+      toast.error('Vui lòng nhập lý do điều chỉnh');
+      return;
+    }
+    if (adjustForm.quantity <= 0) {
+      toast.error('Số lượng điều chỉnh phải lớn hơn 0');
+      return;
+    }
+
+    setAdjustSubmitLoading(true);
+    try {
+      const adjustedQty = adjustForm.type === 'add' ? adjustForm.quantity : -adjustForm.quantity;
+      const payload = {
+        isAdjustment: true,
+        description: adjustForm.description,
+        items: [{
+          productId: adjustForm.productId,
+          productCode: adjustForm.productCode,
+          productName: adjustForm.productName,
+          unit: adjustForm.unit || 'Cái',
+          quantity: adjustForm.quantity,
+          adjustedQuantity: adjustedQty,
+          manufactureName: 'N/A',
+          note: adjustForm.note || '',
+        }]
+      };
+
+      await createStockAdjustment(payload, adjustForm.warehouseId);
+      toast.success('Điều chỉnh tồn kho thành công!');
+      setIsAdjustModalOpen(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error adjusting stock:', error);
+    } finally {
+      setAdjustSubmitLoading(false);
+    }
+  };
 
   React.useEffect(() => {
     const loadWarehouses = async () => {
@@ -129,15 +237,15 @@ export default function WarehouseStockPage() {
       }
 
       const enrichedItems: StockItem[] = await Promise.all(filteredItems.map(async (item) => {
-        if (item.productCode && item.productName && activeTab === 'all') {
+        if (item.productCode && item.productName && item.unit && activeTab === 'all') {
           return item;
         }
 
         try {
           const product = await ProductService.getDetail(item.productId);
-          return { ...item, productName: product.name, productCode: product.code };
+          return { ...item, productName: product.name, productCode: product.code, unit: product.unitOfQuantityName || 'Cái' };
         } catch {
-          return { ...item, productName: 'Sản phẩm không xác định', productCode: 'N/A' };
+          return { ...item, productName: 'Sản phẩm không xác định', productCode: 'N/A', unit: 'Cái' };
         }
       }));
 
@@ -194,11 +302,6 @@ export default function WarehouseStockPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold admin-title uppercase">Quản lý tồn kho</h2>
-        <Link href="/warehouse/stock-adjustment?action=create">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded">
-            <ClipboardCheck className="w-4 h-4 mr-2" /> Kiểm kê kho
-          </Button>
-        </Link>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -277,12 +380,15 @@ export default function WarehouseStockPage() {
               <th className="text-left px-6 py-4 tracking-label uppercase">Loại hàng</th>
               <th className="text-center px-6 py-4 tracking-label uppercase">Tồn kho</th>
               <th className="text-left px-6 py-4 tracking-label uppercase">Vị trí</th>
+              {isWarehouseStaff && activeTab !== 'all' && (
+                <th className="text-center px-6 py-4 tracking-label uppercase">Thao tác</th>
+              )}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center">
+                <td colSpan={isWarehouseStaff && activeTab !== 'all' ? 7 : 6} className="px-6 py-10 text-center">
                    <div className="flex flex-col items-center gap-2 text-gray-500">
                       <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
                       <p>Đang tải dữ liệu tồn kho...</p>
@@ -291,7 +397,7 @@ export default function WarehouseStockPage() {
               </tr>
             ) : stockItems.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-gray-500 italic">
+                <td colSpan={isWarehouseStaff && activeTab !== 'all' ? 7 : 6} className="px-6 py-10 text-center text-gray-500 italic">
                   Không tìm thấy dữ liệu tồn kho nào
                 </td>
               </tr>
@@ -329,6 +435,25 @@ export default function WarehouseStockPage() {
                       </>
                     )}
                   </td>
+                  {isWarehouseStaff && activeTab !== 'all' && (
+                    <td className="px-6 py-4 text-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenAdjustModal(item)}
+                            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-full p-2 h-8 w-8 flex items-center justify-center"
+                          >
+                            <Sliders className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Điều chỉnh tồn kho</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -363,6 +488,134 @@ export default function WarehouseStockPage() {
             </div>
           </div>
         )}
+        {/* Dialog điều chỉnh tồn kho */}
+        <Dialog open={isAdjustModalOpen} onOpenChange={setIsAdjustModalOpen}>
+          <DialogContent className="sm:max-w-md rounded-lg">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold text-gray-900 uppercase">
+                Điều chỉnh tồn kho
+              </DialogTitle>
+              <DialogDescription className="text-xs text-gray-500">
+                Thiết lập số lượng điều chỉnh trực tiếp cho mặt hàng tại kho đã chọn.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4 text-sm">
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <span className="font-semibold text-gray-700">Kho hàng:</span>
+                <span className="col-span-2 font-medium text-gray-900 bg-gray-50 px-3 py-1.5 rounded border border-gray-100">
+                  {adjustForm.warehouseName || 'Chưa xác định'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <span className="font-semibold text-gray-700">Mã HH:</span>
+                <span className="col-span-2 font-mono text-gray-900 bg-gray-50 px-3 py-1.5 rounded border border-gray-100">
+                  {adjustForm.productCode}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <span className="font-semibold text-gray-700">Tên sản phẩm:</span>
+                <span className="col-span-2 font-medium text-gray-900 bg-gray-50 px-3 py-1.5 rounded border border-gray-100">
+                  {adjustForm.productName}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <span className="font-semibold text-gray-700">Hình thức:</span>
+                <div className="col-span-2 flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-800">
+                    <input
+                      type="radio"
+                      name="adjustType"
+                      value="add"
+                      checked={adjustForm.type === 'add'}
+                      onChange={() => setAdjustForm(prev => ({ ...prev, type: 'add' }))}
+                      className="accent-emerald-600"
+                    />
+                    Nhập thêm (+)
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-800">
+                    <input
+                      type="radio"
+                      name="adjustType"
+                      value="reduce"
+                      checked={adjustForm.type === 'reduce'}
+                      onChange={() => setAdjustForm(prev => ({ ...prev, type: 'reduce' }))}
+                      className="accent-red-600"
+                    />
+                    Xuất giảm (-)
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <label htmlFor="adjustQty" className="font-semibold text-gray-700">
+                  Số lượng điều chỉnh * :
+                </label>
+                <div className="col-span-2 flex gap-2">
+                  <input
+                    id="adjustQty"
+                    type="number"
+                    min={1}
+                    value={adjustForm.quantity}
+                    onChange={(e) => setAdjustForm(prev => ({ ...prev, quantity: Math.max(1, parseInt(e.target.value) || 0) }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                  />
+                  <span className="px-3 py-2 bg-gray-100 rounded text-gray-500 border border-gray-200">
+                    {adjustForm.unit || 'Cái'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <label htmlFor="adjustDesc" className="font-semibold text-gray-700">
+                  Lý do điều chỉnh * :
+                </label>
+                <input
+                  id="adjustDesc"
+                  type="text"
+                  placeholder="VD: Nhập thêm hao hụt, điều chỉnh thực tế..."
+                  value={adjustForm.description}
+                  onChange={(e) => setAdjustForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="col-span-2 px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <label htmlFor="adjustNote" className="font-semibold text-gray-700">
+                  Ghi chú:
+                </label>
+                <input
+                  id="adjustNote"
+                  type="text"
+                  placeholder="Nhập ghi chú thêm..."
+                  value={adjustForm.note}
+                  onChange={(e) => setAdjustForm(prev => ({ ...prev, note: e.target.value }))}
+                  className="col-span-2 px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsAdjustModalOpen(false)}
+                className="rounded"
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleAdjustSubmit}
+                disabled={adjustSubmitLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded"
+              >
+                {adjustSubmitLoading ? 'Đang xử lý...' : 'Xác nhận'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

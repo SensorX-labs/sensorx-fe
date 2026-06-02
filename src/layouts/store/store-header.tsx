@@ -25,13 +25,13 @@ const DropdownItem = ({ icon: Icon, label, href, onClick, isDanger, isSuccess }:
       <div className="flex items-center gap-3">
         <div className={cn(
           "w-9 h-9 rounded-full flex items-center justify-center transition-colors",
-          isDanger ? "bg-red-50 text-red-600" : isSuccess ? "bg-brand-green/10 text-brand-green" : "bg-gray-100 text-gray-900"
+          isDanger ? "bg-red-50 text-red-600" : isSuccess ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-900"
         )}>
           <Icon size={20} />
         </div>
         <span className={cn(
           "text-[15px] font-medium",
-          isDanger ? "text-red-600" : isSuccess ? "text-brand-green" : "text-gray-900"
+          isDanger ? "text-red-600" : isSuccess ? "text-primary" : "text-gray-900"
         )}>{label}</span>
       </div>
       <ChevronRight size={20} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
@@ -136,31 +136,31 @@ export const StoreHeader = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 bg-white border-b border-gray-200 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
+        className={`sticky top-0 z-50 bg-white/80 dark:bg-[#042F2E]/80 backdrop-blur-md border-b border-white/40 dark:border-white/10 shadow-lg shadow-black/5 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
           }`}
       >
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20 gap-8">
+        <div className="w-full px-6 sm:px-8">
+          <div className="flex items-center justify-between h-20 gap-8">
 
             {/* Logo */}
-            <Link href="/" className="flex-none shrink-0">
-              <span className="text-xl sm:text-2xl md:text-2xl font-black tracking-tighter text-gray-900 uppercase italic">
-                Sensor<span className="text-brand-green italic">X</span>
+            <Link href="/" className="flex-none shrink-0 flex items-center gap-2">
+              <span className="font-heading font-bold text-2xl tracking-wide text-gray-900 dark:text-white">
+                SENSOR<span className="text-[#0D9488] dark:text-[#14B8A6]">X</span>
               </span>
             </Link>
 
             {/* Navigation Menu (Desktop) */}
             <nav className="hidden lg:flex flex-1 items-center justify-center gap-10">
-              <Link href="/shop" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+              <Link href="/shop" className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gray-900 dark:text-white/95 hover:text-primary dark:hover:text-secondary transition-all">
                 Sản phẩm
               </Link>
-              <Link href="/catalog" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+              <Link href="/catalog" className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gray-900 dark:text-white/95 hover:text-primary dark:hover:text-secondary transition-all">
                 Giải pháp
               </Link>
-              <Link href="/brands" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+              <Link href="/brands" className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gray-900 dark:text-white/95 hover:text-primary dark:hover:text-secondary transition-all">
                 Thương hiệu
               </Link>
-              <Link href="/contact" className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-900 hover:text-brand-green transition-colors">
+              <Link href="/contact" className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gray-900 dark:text-white/95 hover:text-primary dark:hover:text-secondary transition-all">
                 Liên hệ
               </Link>
             </nav>
@@ -168,10 +168,10 @@ export const StoreHeader = () => {
             <div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-2">
               <Link
                 href="/transactions?tab=inquiry-cart"
-                className="relative group p-2 text-gray-700 hover:text-brand-green transition-colors"
+                className="relative group p-2 text-gray-700 dark:text-white/80 hover:text-primary dark:hover:text-secondary transition-all"
               >
                 <ShoppingBag size={22} strokeWidth={1.5} />
-                <span className="absolute -top-1 -right-1 bg-brand-green text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-[#042F2E]">
                   {totalItems}
                 </span>
                 {/* Tooltip */}
@@ -181,7 +181,7 @@ export const StoreHeader = () => {
               </Link>
 
               {/* Separator */}
-              <div className="w-px h-6 bg-gray-200 mx-1 sm:mx-2 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 sm:mx-2 hidden sm:block" />
 
               {/* Icons & Menu */}
               <div className="relative" ref={dropdownRef}>

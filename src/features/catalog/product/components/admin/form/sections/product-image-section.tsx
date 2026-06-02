@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Image as ImageIcon, Plus, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 
@@ -9,10 +9,18 @@ interface ProductImageSectionProps {
   onRemoveImage: (index: number) => void;
   onUploadImage: (file: File) => Promise<void>;
   isUploading?: boolean;
+  onAddOnlineImage?: (url: string) => void;
 }
 
-export function ProductImageSection({ imageUrls, onRemoveImage, onUploadImage, isUploading }: ProductImageSectionProps) {
+export function ProductImageSection({ 
+  imageUrls, 
+  onRemoveImage, 
+  onUploadImage, 
+  isUploading,
+  onAddOnlineImage 
+}: ProductImageSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [onlineUrl, setOnlineUrl] = useState('');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -20,6 +28,20 @@ export function ProductImageSection({ imageUrls, onRemoveImage, onUploadImage, i
       await onUploadImage(file);
       // Reset input để có thể chọn lại cùng một file nếu cần
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAddOnlineClick = () => {
+    if (onlineUrl.trim() && onAddOnlineImage) {
+      onAddOnlineImage(onlineUrl.trim());
+      setOnlineUrl('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddOnlineClick();
     }
   };
 
@@ -71,6 +93,31 @@ export function ProductImageSection({ imageUrls, onRemoveImage, onUploadImage, i
             )}
           </button>
         </div>
+
+        {onAddOnlineImage && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Nhập link ảnh online</label>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                placeholder="https://example.com/image.jpg"
+                value={onlineUrl}
+                onChange={(e) => setOnlineUrl(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 px-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700 placeholder-slate-400"
+              />
+              <Button 
+                type="button" 
+                variant="outline"
+                size="sm"
+                onClick={handleAddOnlineClick}
+                className="border-indigo-100 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 font-medium transition-all"
+              >
+                Thêm
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

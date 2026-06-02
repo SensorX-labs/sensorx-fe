@@ -45,16 +45,16 @@ export function CategoryTreeItem({
         <div className="space-y-1">
             <button
                 onClick={() => onCategorySelect(node.id)}
-                className={`w-full text-left py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-3 group/item ${isSelected
-                    ? 'text-brand-green translate-x-1'
-                    : 'text-gray-500 hover:text-gray-900 hover:translate-x-1'
+                className={`w-full text-left py-1.5 text-[10px] font-sans font-bold uppercase tracking-widest transition-all flex items-center gap-3 group/item ${isSelected
+                    ? 'text-primary dark:text-secondary translate-x-1'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white hover:translate-x-1'
                     }`}
                 style={{ paddingLeft: `${level * 16}px` }}
             >
                 <div className="relative flex items-center justify-center">
                     <span className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSelected
-                        ? 'bg-brand-green scale-125'
-                        : 'bg-transparent border border-gray-300 group-hover/item:border-gray-900'
+                        ? 'bg-secondary scale-125 shadow-sm'
+                        : 'bg-transparent border border-gray-300 dark:border-zinc-700 group-hover/item:border-gray-900 dark:group-hover/item:border-white'
                         }`} />
                 </div>
                 <span>{node.name}</span>

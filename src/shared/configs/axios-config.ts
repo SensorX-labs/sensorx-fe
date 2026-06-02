@@ -37,7 +37,23 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
     // Request interceptor: Thêm token vào header
     instance.interceptors.request.use((config) => {
         const token = Cookies.get("token");
-        const warehouseId = Cookies.get("warehouseId");
+        let warehouseId = Cookies.get("warehouseId");
+
+        // Fallback: If warehouseId cookie is not set, but token is present, decode warehouse_id from token (for WarehouseStaff)
+        if (!warehouseId && token && token !== 'undefined' && typeof window !== 'undefined' && typeof window.atob !== 'undefined') {
+            try {
+                const payloadPart = token.split('.')[1];
+                if (payloadPart) {
+                    const decoded = JSON.parse(window.atob(payloadPart));
+                    if (decoded && decoded.warehouse_id) {
+                        warehouseId = decoded.warehouse_id;
+                    }
+                }
+            } catch (e) {
+                console.error("Error decoding token for warehouse_id fallback:", e);
+            }
+        }
+
         if (warehouseId && warehouseId !== 'undefined') {
             if (!config.headers["X-Warehouse-Id"]) {
                 config.headers["X-Warehouse-Id"] = warehouseId;

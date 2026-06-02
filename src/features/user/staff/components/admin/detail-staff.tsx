@@ -5,6 +5,7 @@ import { Mail, Phone, Briefcase, ArrowLeft, Loader2, CreditCard, Calendar, FileT
 import { Button } from '@/shared/components/shadcn-ui/button';
 import Link from 'next/link';
 import StaffService, { ProfileStaff, StaffStatus } from '../../services/staff.service';
+import { StaffAIMetrics } from './staff-ai-metrics';
 
 const formatDate = (dateString?: string) => {
     if (!dateString) return '---';
@@ -192,6 +193,11 @@ export function DetailStaff({ id }: DetailStaffProps) {
              </div>
            </div>
         </div>
+      </div>
+
+      {/* AI Performance Metrics - full width */}
+      <div className="mt-2">
+        <StaffAIMetrics staffId={id ?? staff.id} />
       </div>
     </div>
   );

@@ -40,11 +40,11 @@ export const StockInService = {
         return api.warehouse.get<any, StockInCursorResult>("/stockIn/list", config);
     },
         
-    getById: (id: string) =>
-        api.warehouse.get<any, any>(`/stockIn/${id}`),
+    getById: (id: string, warehouseId?: string) =>
+        api.warehouse.get<any, any>(`/stockIn/${id}`, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 
-    createStockIn: (data: any) => 
-        api.warehouse.post<any, string>("/stockIn/createStockIn", data),
+    createStockIn: (data: any, warehouseId?: string) => 
+        api.warehouse.post<any, string>("/stockIn/createStockIn", data, warehouseId ? { headers: { "X-Warehouse-Id": warehouseId } } : undefined),
 };
 
 export default StockInService;

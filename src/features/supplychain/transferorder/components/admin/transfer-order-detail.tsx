@@ -163,7 +163,7 @@ export function TransferOrderDetail({ id, action }: TransferOrderDetailProps) {
   }, []);
 
   useEffect(() => {
-    if (isCreate) return;
+    if (isCreate || !id || id === 'undefined') return;
     const fetchDetail = async () => {
       setLoading(true);
       try {
