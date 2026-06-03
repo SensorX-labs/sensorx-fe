@@ -27,7 +27,6 @@ export interface PickingNoteDetail extends PickingNoteListItem {
         note?: string;
     }[];
     transferOrderCode?: string;
-    linkedTransferOrderId?: string;
     sourceDocumentId?: string;
     sourceDocumentType?: number;
 }

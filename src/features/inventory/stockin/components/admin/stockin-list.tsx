@@ -3,7 +3,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { PackagePlus, Eye, Edit, Trash2, Search, Warehouse as WarehouseIcon } from 'lucide-react';
-import { Card, CardContent } from '@/shared/components/shadcn-ui/card';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { StockInService, StockInListItem } from '../../services/stock-in-service';
 import { toast } from 'sonner';
@@ -11,13 +10,6 @@ import Cookies from 'js-cookie';
 import { useUser } from '@/shared/hooks/use-user';
 import { getWarehouses } from '@/features/warehouse/services/warehouse-service';
 import { Warehouse as WarehouseModel } from '@/features/warehouse/models/warehouse-model';
-
-const stats = [
-  { title: 'Phiếu nhập tháng này', value: '143', icon: PackagePlus, color: 'text-[#4318FF]' },
-  { title: 'Nhà cung cấp', value: '28', icon: PackagePlus, color: 'text-blue-500' },
-  { title: 'Tổng giá trị nhập', value: '2.8 tỷ', icon: PackagePlus, color: 'text-green-500' },
-  { title: 'Mặt hàng đã nhập', value: '3,241', icon: PackagePlus, color: 'text-purple-500' },
-];
 
 const statusColor: Record<string, string> = {
   'Hoàn thành': 'bg-green-100 text-green-600',
@@ -131,22 +123,6 @@ export default function StockInList() {
             <PackagePlus className="w-4 h-4" /> Thêm phiếu nhập
           </button>
         </Link>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <Card key={s.title} className="border-none shadow-sm bg-white rounded">
-            <CardContent className="p-2.5 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-[#2B3674]">{s.value}</p>
-                <p className="text-xs font-semibold text-[#A3AED0]">{s.title}</p>
-              </div>
-              <div className="w-8 h-8 rounded bg-[#F4F7FE] flex items-center justify-center">
-                <s.icon className={`w-4 h-4 ${s.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       {/* Tabs navigation cao cấp */}

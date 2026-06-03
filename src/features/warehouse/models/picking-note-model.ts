@@ -27,7 +27,6 @@ export interface PickingNote {
   createdBy: string;
   deliveryInfo?: PickingNoteDeliveryInfo;
   items: PickingNoteItem[];
-  linkedTransferOrderId?: string;
   transferOrderCode?: string;
   warehouseId?: string;
 }

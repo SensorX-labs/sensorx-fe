@@ -56,7 +56,6 @@ interface PickingNoteData {
   createdAt: string;
   updatedAt: string;
   transferOrderCode?: string;
-  linkedTransferOrderId?: string;
   sourceDocumentId?: string;
   sourceDocumentType?: number;
   description?: string;
@@ -230,7 +229,6 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               createdAt: data.createdAt,
               updatedAt: data.createdAt,
               transferOrderCode: data.transferOrderCode,
-              linkedTransferOrderId: data.linkedTransferOrderId,
               sourceDocumentId: data.sourceDocumentId,
               sourceDocumentType: data.sourceDocumentType,
               description: data.description
@@ -325,7 +323,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
         const reqQty = formData.items.find(i => i.productId === item.productId)?.quantity ?? 0;
         return available < reqQty;
       });
-    
+
     window.location.href = `/warehouse/supply-requests/new?pickingNoteId=${id}&pickingNoteCode=${formData.code}&warehouseId=${warehouseId}&items=${encodeURIComponent(JSON.stringify(itemsShortage))}`;
   };
 
@@ -459,7 +457,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   </Button>
                   {inventoryLoaded && checkStockShortage() && (
                     <Button onClick={handleCreateSupplyRequest} className="bg-orange-600 hover:bg-orange-700 text-white rounded">
-                      Yêu cầu cung ứng
+                      Báo cáo thiếu hàng
                     </Button>
                   )}
                 </>

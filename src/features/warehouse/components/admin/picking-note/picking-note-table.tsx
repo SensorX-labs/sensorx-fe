@@ -169,13 +169,6 @@ const PickingNoteTable = () => {
             Danh sách phiếu soạn kho
           </h2>
         </div>
-        <Button
-          onClick={() => router.push("/warehouse/picking-note/new")}
-          className="gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Tạo phiếu soạn kho
-        </Button>
       </div>
       {/* Tabs navigation cao cấp hiển thị danh sách kho */}
       <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto pb-px mb-4">
