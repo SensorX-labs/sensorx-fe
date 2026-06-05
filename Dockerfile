@@ -5,9 +5,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (only once)
 COPY package.json package-lock.json ./
-RUN npm i
 RUN npm ci
 
 # Rebuild the source code only when needed
@@ -25,7 +24,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
-# Production image, copy all the files and run next
+# Production image — chỉ copy những gì cần thiết (standalone)
 FROM base AS runner
 WORKDIR /app
 
@@ -36,15 +35,17 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
+
+# Standalone output: server.js + minimal node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Start Next.js server
-CMD ["npm", "start"]
+# server.js được tạo bởi next build với output: standalone
+CMD ["node", "server.js"]
