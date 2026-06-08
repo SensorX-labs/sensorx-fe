@@ -16,26 +16,26 @@ const settingGroups = [
         fields: [
             {
                 label: 'Tên công ty',
-                value: 'Công ty TNHH Axetic',
+                value: 'CÔNG TY TNHH HẢI PHÒNG TECH',
                 type: 'text'
             },
             {
                 label: 'Mã số thuế',
-                value: '0123456789',
+                value: '0201871705 ',
                 type: 'text'
             },
             {
                 label: 'Địa chỉ',
-                value: '123 Nguyễn Huệ, Q.1, TP.HCM',
+                value: 'Số 250 Đường Đại Thắng, Phường Hoà Nghĩa, Quận Dương Kinh, Thành phố Hải Phòng, Việt Nam',
                 type: 'text'
             },
             {
                 label: 'Email liên hệ',
-                value: 'contact@axetic.vn',
+                value: 'info@haiphongtech.vn',
                 type: 'email'
             }, {
                 label: 'Số điện thoại',
-                value: '028 1234 5678',
+                value: '0938513909',
                 type: 'text'
             },
         ]
@@ -253,20 +253,20 @@ export default function SettingsPage() {
                                 <CardContent className="p-6 space-y-4">
                                     {
                                         group.fields.map((field) => (
-                                            <div key={field.label} className="flex items-center justify-between gap-4">
+                                            <div key={field.label} className="flex items-start justify-between gap-4">
                                                 <label className="text-sm font-semibold admin-text-primary min-w-0 flex-1">
                                                     {field.label}
                                                 </label>
                                                 {
                                                     field.type === 'toggle' ? (
                                                         <span className={`px-3 py-0.5 rounded-full text-xs font-bold ${field.value === 'Bật' || field.value === 'Đã bật' || field.value === 'Có'
-                                                                ? 'bg-green-100 text-green-600'
-                                                                : 'bg-gray-100 text-gray-400'
+                                                            ? 'bg-green-100 text-green-600'
+                                                            : 'bg-gray-100 text-gray-400'
                                                             }`}>
                                                             {field.value}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-sm text-right truncate max-w-[200px]">{field.value}</span>
+                                                        <span className="text-sm text-right text-slate-600 max-w-[70%] break-words">{field.value}</span>
                                                     )}
                                             </div>
                                         ))
