@@ -369,11 +369,6 @@ export default function RequestForQuotationList() {
                         <div className="font-semibold leading-tight text-gray-800">
                           {item.companyName}
                         </div>
-
-                        <div className="text-xs text-gray-500">
-                          {item.recipientName || '--'}
-                          {item.recipientPhone ? ` • ${item.recipientPhone}` : ''}
-                        </div>
                       </div>
                     </td>
 
