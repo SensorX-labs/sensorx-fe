@@ -9,7 +9,7 @@ import { CanAccess } from '@/shared/components/common/can-access';
 import InternalPriceService from '@/features/catalog/internal-price/services/internal-price-services';
 import { QuoteStatus } from '../../../constants/quote-status';
 import { GetDetailQuoteByIdResponse } from '../../../models/quote-detail-response';
-import { QuoteAnalysisService } from '../../../services/quote-analysis-service';
+import { QuoteAnalysisResponse, QuoteAnalysisService } from '../../../services/quote-analysis-service';
 import { QuoteService } from '../../../services/quote.service';
 import { RejectQuoteModal } from '../quotation-shared';
 import { QuotationActions } from './quotation-actions';
@@ -46,7 +46,7 @@ export default function QuotationDetail({ id, onBack }: QuotationDetailProps) {
   const [editNote, setEditNote] = useState('');
 
   const [analysisLoading, setAnalysisLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<QuoteAnalysisResponse | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const fetchDetail = async () => {

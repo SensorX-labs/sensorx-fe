@@ -215,7 +215,7 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
       <AdminContentCard className="min-h-0">
         <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-4 text-sm text-slate-500 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-3">
-            <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
+            <div className="relative min-w-[280px] flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 value={searchTerm}
@@ -230,7 +230,7 @@ export function InternalPriceList({ onViewDetail, onCreate }: InternalPriceListP
 
             <Button
               variant="outline"
-              className="rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              className="h-11 min-w-[140px] justify-center rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               onClick={() => {
                 setDraftFilters(filters);
                 setIsFilterOpen(true);
