@@ -52,14 +52,11 @@ export function QuoteTable({
                                     <td className="px-6 py-5">
 
                                         <p className="font-semibold text-gray-900">
-                                            {
-                                                item.productCode
-                                            }
+                                            {item.productName || 'Chưa cập nhật'}
                                         </p>
 
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            Thiết bị tự
-                                            động hóa
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            Mã: {item.productCode}
                                         </p>
                                     </td>
 
