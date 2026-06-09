@@ -7,6 +7,7 @@ interface RfqItem {
   productName: string;
   unit: string;
   quantity: number;
+  imageUrl?: string;
 }
 
 interface RfqTableProps {
@@ -52,14 +53,28 @@ export function RfqTable({ items }: RfqTableProps) {
               )}
             >
               <td className="px-8 py-5">
-                <p className="breadcrumb-text uppercase font-bold">
-                  {item.productName}
-                </p>
-
-                <div className="mt-1">
-                  <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">
-                    {item.productCode}
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded border border-gray-100 overflow-hidden bg-white flex-shrink-0 flex items-center justify-center">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.productName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="w-6 h-6 text-gray-200" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="breadcrumb-text uppercase font-bold">
+                      {item.productName}
+                    </p>
+                    <div className="mt-1">
+                      <span className="px-2 py-0.5 bg-gray-100 meta-label uppercase !text-[9px] font-bold tracking-widest">
+                        {item.productCode}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </td>
 
