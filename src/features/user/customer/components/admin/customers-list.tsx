@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Filter, Mail, Phone, Search } from 'lucide-react';
 import { FilterFieldConfig, FilterPanel } from '@/shared/components/admin/filter-panel';
 import { AdminContentCard } from '@/shared/components/admin/layout';
@@ -112,8 +111,6 @@ function CustomerTable({
   customers: Customer[];
   loading: boolean;
 }) {
-  const router = useRouter();
-
   return (
     <div className="relative overflow-auto flex-1 min-h-0 custom-scrollbar">
       <table className="w-full min-w-[1080px] text-sm">
@@ -158,8 +155,7 @@ function CustomerTable({
             customers.map(customer => (
               <tr 
                 key={customer.id} 
-                className="group cursor-pointer odd:bg-white even:bg-slate-50/60 transition-colors hover:bg-slate-100"
-                onClick={() => router.push(`/user/customer/${customer.id}`)}
+                className="group odd:bg-white even:bg-slate-50/60 transition-colors"
               >
                 <td className="px-6 py-4">
                   <div className="space-y-1">
