@@ -64,7 +64,7 @@ export function QuotationItemsEdit({
                     <td className="px-6 py-4 min-w-[250px]">
                       <div className="flex flex-col gap-0.5">
                         <div className="font-bold text-gray-900 text-base leading-tight">
-                          {item.productCode}
+                          {item.productName || 'Chưa cập nhật'}
                         </div>
                         <div className="text-xs text-gray-400 font-medium tracking-wide">
                           Mã: {item.productCode}
