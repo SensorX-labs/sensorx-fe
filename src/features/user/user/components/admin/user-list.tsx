@@ -62,9 +62,6 @@ export default function UserList() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', role: 1, warehouseId: '' });
 
-  // Dialog chọn kho khi gán quyền
-  const [assignRoleDialog, setAssignRoleDialog] = useState<{ isOpen: boolean; userId: string; targetRole: number } | null>(null);
-  const [selectedAssignWarehouseId, setSelectedAssignWarehouseId] = useState<string>('');
 
   const fetchUsers = async () => {
     try {
@@ -138,28 +135,6 @@ export default function UserList() {
     }
   };
 
-  const onRoleSelectChange = (userId: string, roleValue: string) => {
-    const roleNum = parseInt(roleValue, 10);
-    const isWarehouseRole = roleNum === 1 || roles.find(r => r.id === roleNum)?.name === 'WarehouseStaff';
-    if (isWarehouseRole) {
-      setAssignRoleDialog({ isOpen: true, userId, targetRole: roleNum });
-      setSelectedAssignWarehouseId('');
-    } else {
-      handleRoleChange(userId, roleNum);
-    }
-  };
-
-  const handleRoleChange = async (userId: string, roleNum: number, warehouseId?: string) => {
-    try {
-      await rolesService.assignRole(userId, roleNum, warehouseId);
-      toast.success('Cập nhật vai trò thành công');
-      await fetchUsers();
-      setAssignRoleDialog(null);
-    } catch {
-      toast.error('Cập nhật vai trò thất bại');
-    }
-  };
-
   const handleToggleLock = async (userId: string) => {
     try {
       await authService.toggleUserLock(userId);
@@ -224,39 +199,9 @@ export default function UserList() {
                   <td className="px-6 py-4 font-medium text-[#2B3674]">{user.email}</td>
                   <td className="px-6 py-4 text-gray-600">{user.fullName}</td>
                   <td className="px-6 py-4">
-                    {user.role === 'Admin' || user.role === 'Customer' ? (
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${roleColor[user.role]}`}>
-                        {roleLabels[user.role] ?? user.role}
-                      </span>
-                    ) : (
-                      <Select
-                        value={getRoleNumber(user.role)}
-                        onValueChange={(val) => onRoleSelectChange(user.id, val)}
-                      >
-                        <SelectTrigger className="h-8 w-40 text-xs border-gray-200">
-                          <SelectValue placeholder="Chọn vai trò" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.length > 0 ? (
-                            roles
-                              .filter((r) => r.name !== 'Customer' && r.name !== 'Admin')
-                              .map((r) => (
-                                <SelectItem key={r.id} value={String(r.id)}>
-                                  {roleLabels[r.name] ?? r.name}
-                                </SelectItem>
-                              ))
-                          ) : (
-                            Object.entries(roleLabels)
-                              .filter(([key]) => key !== 'Customer' && key !== 'Admin')
-                              .map(([key, label]) => (
-                                <SelectItem key={key} value={key}>
-                                  {label}
-                                </SelectItem>
-                              ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    )}
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${roleColor[user.role]}`}>
+                      {roleLabels[user.role] ?? user.role}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     {user.isLocked ? (
@@ -435,72 +380,6 @@ export default function UserList() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog chọn kho khi gán quyền nhân viên kho */}
-      <Dialog open={!!assignRoleDialog?.isOpen} onOpenChange={(open) => !open && setAssignRoleDialog(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-[#2B3674]">Chỉ định kho trực thuộc</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-3">
-            <p className="text-xs text-gray-500">
-              Vai trò <strong>Nhân viên kho</strong> yêu cầu bắt buộc phải chỉ định một kho cụ thể để quản lý.
-            </p>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-sm font-semibold text-[#2B3674]">
-                <div className="p-1 bg-emerald-50 rounded text-emerald-600 shrink-0">
-                  <WarehouseIcon className="w-3.5 h-3.5" />
-                </div>
-                Chọn kho bãi
-              </Label>
-              <Select
-                value={selectedAssignWarehouseId}
-                onValueChange={setSelectedAssignWarehouseId}
-              >
-                <SelectTrigger className="border-gray-200 focus:ring-[#4318FF] transition-all h-9">
-                  <SelectValue placeholder="Chọn kho được phân công" />
-                </SelectTrigger>
-                <SelectContent>
-                  {warehouses.map((w) => (
-                    <SelectItem key={w.id} value={w.id!}>
-                      {w.name}
-                    </SelectItem>
-                  ))}
-                  {warehouses.length === 0 && (
-                    <SelectItem value="none" disabled>
-                      Không có dữ liệu kho
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter className="pt-4">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setAssignRoleDialog(null)}
-              className="font-medium text-gray-500 hover:text-gray-700"
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                if (!selectedAssignWarehouseId) {
-                  toast.error('Vui lòng chọn kho bãi');
-                  return;
-                }
-                if (assignRoleDialog) {
-                  handleRoleChange(assignRoleDialog.userId, assignRoleDialog.targetRole, selectedAssignWarehouseId);
-                }
-              }}
-              className="bg-[#4318FF] hover:bg-[#3311CC] text-white px-6 font-bold shadow-md shadow-[#4318FF]/20"
-            >
-              Xác nhận gán
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
