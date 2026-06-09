@@ -136,27 +136,27 @@ export const ADMIN_MENU_CONFIG: MenuSection[] = [
     title: 'KHO HÀNG',
     items: [
       {
-        name: 'Phiếu nhập kho',
-        iconName: 'PackagePlus',
-        href: '/warehouse/stockin',
-        roles: ['WarehouseStaff']
-      },
-      {
-        name: 'Phiếu xuất kho',
-        iconName: 'PackageMinus',
-        href: '/warehouse/stockout',
-        roles: ['WarehouseStaff']
-      },
-      {
         name: 'Tồn kho',
         iconName: 'Warehouse',
         href: '/warehouse/stock',
         roles: ['Manager', 'WarehouseStaff']
       },
       {
+        name: 'Phiếu nhập kho',
+        iconName: 'PackagePlus',
+        href: '/warehouse/stockin',
+        roles: ['WarehouseStaff']
+      },
+      {
         name: 'Phiếu soạn kho',
         iconName: 'FileEdit',
         href: '/warehouse/picking-note',
+        roles: ['WarehouseStaff']
+      },
+      {
+        name: 'Phiếu xuất kho',
+        iconName: 'PackageMinus',
+        href: '/warehouse/stockout',
         roles: ['WarehouseStaff']
       }
     ],

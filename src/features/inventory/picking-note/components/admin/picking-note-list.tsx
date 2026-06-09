@@ -125,13 +125,6 @@ export function PickingNoteList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold admin-title uppercase">Phiếu soạn kho</h2>
-        <Link
-          href="/warehouse/picking-note/new?action=create"
-          className="flex items-center gap-2 admin-btn-primary"
-        >
-          <FileEdit size={16} />
-          Tạo phiếu soạn kho
-        </Link>
       </div>
 
       {/* Tabs navigation cao cấp */}
