@@ -36,23 +36,19 @@ export interface MenuSection {
 
 export const ADMIN_MENU_CONFIG: MenuSection[] = [
   {
-    title: 'TỔNG QUAN',
+    title: 'BÁO CÁO & THỐNG KÊ',
     items: [
       {
-        name: 'Bảng điều khiển',
-        iconName: 'LayoutDashboard',
-        href: '/dashboard',
+        name: 'Báo cáo Kinh doanh',
+        iconName: 'LineChart',
+        href: '/reports/business',
         roles: ['Manager']
       },
       {
-        name: 'Báo cáo',
-        iconName: 'BarChart3',
-        roles: ['Manager'],
-        subItems: [
-          { name: 'Doanh thu', iconName: 'LineChart', href: '/reports/revenue' },
-          { name: 'Bán hàng', iconName: 'PieChart', href: '/reports/sales' },
-          { name: 'Kho hàng', iconName: 'Boxes', href: '/reports/warehouse' },
-        ],
+        name: 'Báo cáo Kho vận',
+        iconName: 'Boxes',
+        href: '/reports/warehouse',
+        roles: ['Manager']
       },
     ],
   },
