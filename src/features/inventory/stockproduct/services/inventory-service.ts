@@ -3,6 +3,9 @@ import api from "@/shared/configs/axios-config";
 export interface InventoryItemListItem {
     id: string;
     productId: string;
+    productCode?: string;
+    productName?: string;
+    unit?: string;
     physicalQuantity: number;
     allocatedQuantity: number;
     warehouseName?: string;
@@ -24,6 +27,7 @@ export interface ConsolidatedInventoryItem {
     productId: string;
     productCode?: string | null;
     productName?: string | null;
+    unit?: string | null;
     totalPhysicalQuantity: number;
     totalAllocatedQuantity: number;
     totalSalableQuantity: number;
