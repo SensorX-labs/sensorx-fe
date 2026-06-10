@@ -12,7 +12,7 @@ export interface BusinessReportStatsResponse {
   conversionRate: number;
 
   newCustomers: number;
-  returningCustomers: number;
+  totalRfqs: number;
   
   topCustomers: Array<{
     customerId: string;
@@ -22,6 +22,7 @@ export interface BusinessReportStatsResponse {
 
   topProducts: Array<{
     productId: string;
+    productCode: string;
     productName: string;
     quantitySold: number;
     revenue: number;
@@ -31,6 +32,12 @@ export interface BusinessReportStatsResponse {
     period: string;
     revenue: number;
     profit: number;
+  }>;
+
+  conversionTrendChart: Array<{
+    period: string;
+    totalRfqs: number;
+    convertedQuotes: number;
   }>;
 }
 

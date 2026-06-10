@@ -24,7 +24,8 @@ import {
   Target,
   RefreshCcw,
   Package,
-  Award
+  Award,
+  ClipboardList
 } from 'lucide-react';
 import { Skeleton } from '@/shared/components/shadcn-ui/skeleton';
 import {
@@ -218,14 +219,77 @@ export default function ReportsBusinessPage() {
 
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Khách hàng quay lại</CardTitle>
-                <Users className="h-4 w-4 text-violet-500" />
+                <CardTitle className="text-sm font-medium">Tổng số lượng RFQ</CardTitle>
+                <ClipboardList className="h-4 w-4 text-violet-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-violet-600">{data.returningCustomers}</div>
+                <div className="text-2xl font-bold text-violet-600">{data.totalRfqs}</div>
               </CardContent>
             </Card>
           </div>
+
+          {/* Conversion Trend Chart */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Biểu đồ Phễu Báo giá</CardTitle>
+              <CardDescription>Số lượng Yêu cầu báo giá và Báo giá chốt thành công</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data.conversionTrendChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorRfqs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorConverted" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="period" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#6b7280', fontSize: 12 }} 
+                      dy={10}
+                    />
+                    <YAxis 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      labelStyle={{ color: '#374151', fontWeight: 'bold', marginBottom: '4px' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="totalRfqs" 
+                      name="Yêu cầu BG"
+                      stroke="#8b5cf6" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorRfqs)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="convertedQuotes" 
+                      name="BG thành công"
+                      stroke="#f59e0b" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorConverted)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             {/* Top Products */}
@@ -245,7 +309,7 @@ export default function ReportsBusinessPage() {
                           #{index + 1}
                         </div>
                         <div>
-                          <p className="text-sm font-medium leading-none">{product.productName}</p>
+                          <p className="text-sm font-medium leading-none">[{product.productCode}] - {product.productName}</p>
                           <p className="text-sm text-muted-foreground mt-1">Đã bán: {product.quantitySold}</p>
                         </div>
                       </div>
@@ -273,7 +337,7 @@ export default function ReportsBusinessPage() {
                           {customer.customerName.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-medium leading-none max-w-[150px] truncate" title={customer.customerName}>
+                          <p className="text-sm font-medium leading-none break-words" title={customer.customerName}>
                             {customer.customerName}
                           </p>
                         </div>
