@@ -51,6 +51,7 @@ export function ProductDetail() {
       productCode: product.code || '',
       unit: product.unitOfQuantityName || 'Cái',
       manufacturer: product.supplierName || 'SensorX',
+      image: product.images?.[0] || undefined,
       quantity: selectedQuantity,
     });
 

@@ -74,4 +74,6 @@ export interface MyRfqDetailItem {
     productCode: string;
     quantity: number;
     unit: string;
+    imageUrl?: string;
 }
+

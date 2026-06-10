@@ -273,7 +273,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
       <AdminContentCard className="min-h-0">
         <AdminHeaderBar>
           <div className="flex flex-1 flex-wrap items-center gap-3">
-            <div className="relative min-w-[280px] flex-1 xl:max-w-xl">
+            <div className="relative min-w-[280px] flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 value={searchTerm}
@@ -285,7 +285,7 @@ export function ProductList({ onViewDetail, onCreate, onEdit }: ProductListProps
 
             <Button
               variant="outline"
-              className="rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+              className="h-11 min-w-[140px] justify-center rounded-md border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               onClick={openFilterModal}
             >
               <Filter className="mr-2 h-4 w-4" />

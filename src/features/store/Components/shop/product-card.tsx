@@ -38,6 +38,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             productCode: product?.code || '',
             unit: product?.unitOfQuantityName || 'Cái',
             manufacturer: product?.supplierName || 'SensorX',
+            image: image || undefined,
             quantity: 1,
         });
         setTimeout(() => setJustAdded(false), 400);
