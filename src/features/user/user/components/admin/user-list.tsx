@@ -198,15 +198,11 @@ function UserTable({
   users,
   loading,
   warehouses,
-  roles,
-  onRoleSelectChange,
   onToggleLock,
 }: {
   users: UserResponse[];
   loading: boolean;
   warehouses: WarehouseModel[];
-  roles: Array<{ id: number; name: string }>;
-  onRoleSelectChange: (userId: string, roleValue: string) => void;
   onToggleLock: (userId: string) => void;
 }) {
   const warehouseMap = new Map(
@@ -214,11 +210,6 @@ function UserTable({
       .filter(warehouse => warehouse.id)
       .map(warehouse => [warehouse.id as string, warehouse.name])
   );
-
-  const getRoleNumber = (roleName: string) => {
-    const found = roles.find(role => role.name === roleName);
-    return found ? String(found.id) : roleName;
-  };
 
   return (
     <div className="relative overflow-x-auto">
@@ -280,29 +271,9 @@ function UserTable({
                 </td>
 
                 <td className="px-6 py-4">
-                  {user.role === 'Admin' || user.role === 'Customer' ? (
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${roleColor[user.role] ?? 'bg-slate-100 text-slate-600'}`}>
-                      {getRoleText(user.role)}
-                    </span>
-                  ) : (
-                    <Select
-                      value={getRoleNumber(user.role)}
-                      onValueChange={value => onRoleSelectChange(user.id, value)}
-                    >
-                      <SelectTrigger className="h-9 w-44 rounded-md border-slate-200 bg-white text-xs">
-                        <SelectValue placeholder="Chọn vai trò" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles
-                          .filter(role => role.name !== 'Customer' && role.name !== 'Admin')
-                          .map(role => (
-                            <SelectItem key={role.id} value={String(role.id)}>
-                              {getRoleText(role.name)}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${roleColor[user.role] ?? 'bg-slate-100 text-slate-600'}`}>
+                    {getRoleText(user.role)}
+                  </span>
                 </td>
 
                 <td className="px-6 py-4">
@@ -371,13 +342,6 @@ export default function UserList() {
     role: 1,
     warehouseId: '',
   });
-  const [assignRoleDialog, setAssignRoleDialog] = useState<{
-    isOpen: boolean;
-    userId: string;
-    targetRole: number;
-  } | null>(null);
-  const [selectedAssignWarehouseId, setSelectedAssignWarehouseId] = useState('');
-
   const pageSize = 10;
 
   const filterFields = useMemo<Array<FilterFieldConfig & { id: UserFilterKey }>>(
@@ -547,33 +511,7 @@ export default function UserList() {
     setCurrentPage(1);
   };
 
-  const onRoleSelectChange = (userId: string, roleValue: string) => {
-    const roleNum = Number.parseInt(roleValue, 10);
-    const isWarehouseRole =
-      roleNum === 1 || roles.find(role => role.id === roleNum)?.name === 'WarehouseStaff';
 
-    if (isWarehouseRole) {
-      setAssignRoleDialog({ isOpen: true, userId, targetRole: roleNum });
-      setSelectedAssignWarehouseId('');
-      return;
-    }
-
-    void handleRoleChange(userId, roleNum);
-  };
-
-  const handleRoleChange = async (
-    userId: string,
-    roleNum: number,
-    warehouseId?: string
-  ) => {
-    try {
-      await rolesService.assignRole(userId, roleNum, warehouseId);
-      setRefreshKey(current => current + 1);
-      setAssignRoleDialog(null);
-    } catch {
-      toast.error('Cập nhật vai trò thất bại');
-    }
-  };
 
   const handleToggleLock = async (userId: string) => {
     try {
@@ -678,8 +616,6 @@ export default function UserList() {
           users={users}
           loading={loading}
           warehouses={warehouses}
-          roles={roles}
-          onRoleSelectChange={onRoleSelectChange}
           onToggleLock={handleToggleLock}
         />
 
@@ -829,77 +765,6 @@ export default function UserList() {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!assignRoleDialog?.isOpen}
-        onOpenChange={open => {
-          if (!open) {
-            setAssignRoleDialog(null);
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Chỉ định kho trực thuộc</DialogTitle>
-            <DialogDescription className="sr-only">
-              Chọn kho bãi cho tài khoản được gán vai trò nhân viên kho.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 pt-3">
-            <p className="text-xs text-slate-500">
-              Vai trò Nhân viên kho bắt buộc phải được chỉ định một kho cụ thể.
-            </p>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <WarehouseIcon className="h-4 w-4 text-emerald-600" />
-                Chọn kho bãi
-              </Label>
-              <Select
-                value={selectedAssignWarehouseId}
-                onValueChange={setSelectedAssignWarehouseId}
-              >
-                <SelectTrigger className="h-10 rounded-md border-slate-200">
-                  <SelectValue placeholder="Chọn kho được phân công" />
-                </SelectTrigger>
-                <SelectContent>
-                  {warehouses.map(warehouse => (
-                    <SelectItem key={warehouse.id} value={warehouse.id!}>
-                      {warehouse.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => setAssignRoleDialog(null)}>
-              Hủy bỏ
-            </Button>
-            <Button
-              type="button"
-              className="bg-emerald-600 text-white hover:bg-emerald-700"
-              onClick={() => {
-                if (!selectedAssignWarehouseId) {
-                  toast.error('Vui lòng chọn kho bãi');
-                  return;
-                }
-
-                if (assignRoleDialog) {
-                  void handleRoleChange(
-                    assignRoleDialog.userId,
-                    assignRoleDialog.targetRole,
-                    selectedAssignWarehouseId
-                  );
-                }
-              }}
-            >
-              Xác nhận gán
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AdminPageContainer>
   );
 }

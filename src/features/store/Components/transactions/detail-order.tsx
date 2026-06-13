@@ -15,7 +15,8 @@ import {
     CreditCard,
     Truck,
     Download,
-    QrCode
+    QrCode,
+    X
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { OrderStatus } from '@/features/sales/order/enums/order-status';
@@ -25,6 +26,17 @@ import { usePaymentHub } from '@/shared/hooks/usePaymentHub';
 import { toast } from 'sonner';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { PaymentQrModal } from './payment-qr-modal';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/shared/components/shadcn-ui/alert-dialog';
 
 const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
     [OrderStatus.PendingPayment]: {
@@ -81,9 +93,26 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
     const paymentHub = usePaymentHub();
     const lastHandledUpdateRef = useRef<number | null>(null);
     const subscribedOrderIdRef = useRef<string | null>(null);
+
+    const handleCancelOrder = async () => {
+        if (!orderId) return;
+        try {
+            setIsCancelling(true);
+            await OrderService.cancelOrder(orderId);
+            toast.success('Đơn hàng đã được hủy thành công.');
+            // Reload order to reflect cancelled state
+            const updated = await OrderService.getMyOrderById(orderId);
+            if (updated) setOrder(updated);
+        } catch {
+            toast.error('Không thể hủy đơn hàng. Vui lòng thử lại.');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -246,6 +275,41 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                         <Download className="w-4 h-4" />
                         Tải hóa đơn (PDF)
                     </button>
+
+                    {order.status === OrderStatus.PendingPayment && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <button
+                                    disabled={isCancelling}
+                                    className="flex items-center gap-2 px-8 py-2.5 border border-red-300 text-red-600 tracking-label uppercase btn-tracking transition-all hover:bg-red-600 hover:text-white hover:border-red-600 !text-[10px] font-bold disabled:opacity-50"
+                                >
+                                    {isCancelling
+                                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                                        : <X className="w-4 h-4" />
+                                    }
+                                    Hủy đơn hàng
+                                </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Xác nhận hủy đơn hàng?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Hành động này không thể hoàn tác. Đơn hàng <strong>{order.code}</strong>, hóa đơn và thanh toán liên quan sẽ bị hủy vĩnh viễn.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Quay lại</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleCancelOrder}
+                                        className="bg-red-600 hover:bg-red-700 text-white"
+                                    >
+                                        Xác nhận hủy
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+
                     <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
                         <config.icon className="w-3.5 h-3.5" />
                         {config.label}
