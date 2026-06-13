@@ -115,8 +115,8 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
             const originalRequest: any = error.config;
             const errorData = error.response?.data;
 
-            // Nếu lỗi 401 (Unauthorized) và không phải là request gọi API refresh
-            if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh')) {
+            // Nếu lỗi 401 (Unauthorized) và không phải là request gọi API refresh hoặc login
+            if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/refresh') && !originalRequest.url?.includes('/login')) {
 
                 if (isRefreshing) {
                     // Nếu đang refresh, đưa request hiện tại vào hàng đợi
@@ -207,8 +207,8 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
                     errorMessage = errorData;
                 }
 
-                // Không hiển thị toast lỗi 401 ở đây vì ta đang xử lý refresh ở trên
-                if (error.response.status !== 401) {
+                // Không hiển thị toast lỗi 401 (ngoại trừ /login) ở đây vì ta đang xử lý refresh ở trên
+                if (error.response.status !== 401 || originalRequest.url?.includes('/login')) {
                     if (errorData?.isWarning || errorData?.IsWarning) {
                         toast.warning(errorMessage, {
                             style: { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FDBA74' }

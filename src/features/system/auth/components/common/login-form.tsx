@@ -20,6 +20,7 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
@@ -33,24 +34,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    const response = await authService.login(data);
+    setErrorMsg(null);
+    try {
+      const response = await authService.login(data);
 
-    const token = response.accessToken;
-    const refreshToken = response.refreshToken;
+      const token = response.accessToken;
+      const refreshToken = response.refreshToken;
 
-    if (token) Cookies.set('token', token, { expires: 7, path: '/' });
-    if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
-    if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
+      if (token) Cookies.set('token', token, { expires: 7, path: '/' });
+      if (refreshToken) Cookies.set('refreshToken', refreshToken, { expires: 30, path: '/' });
+      if (response.user) Cookies.set('user', JSON.stringify(response.user), { expires: 7, path: '/' });
 
-    window.dispatchEvent(new Event('user-updated'));
-    toast.success('Đăng nhập thành công!');
+      window.dispatchEvent(new Event('user-updated'));
+      toast.success('Đăng nhập thành công!');
 
-    const userRoles = response.user?.roles || [];
-    const isCustomer = userRoles.includes('Customer') || userRoles.includes('0');
+      const userRoles = response.user?.roles || [];
+      const isCustomer = userRoles.includes('Customer') || userRoles.includes('0');
 
-    if (redirect) router.push(redirect);
-    else if (!isCustomer && userRoles.length > 0) router.push('/dashboard');
-    else router.push('/shop');
+      if (redirect) router.push(redirect);
+      else if (!isCustomer && userRoles.length > 0) router.push('/dashboard');
+      else router.push('/shop');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setErrorMsg(error.message || 'Tên đăng nhập hoặc mật khẩu không chính xác.');
+    }
   };
 
   return (
@@ -69,6 +76,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        {errorMsg && (
+          <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-2xl flex items-start gap-3 text-red-600 dark:text-red-400 text-xs font-semibold animate-in fade-in slide-in-from-top-1 duration-200">
+            <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>{errorMsg}</div>
+          </div>
+        )}
         {/* Email */}
         <div className="group">
           <label className={`block text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400 mb-2 group-focus-within:text-[#0D9488] transition-colors ${errors.email ? 'text-red-500' : ''}`}>

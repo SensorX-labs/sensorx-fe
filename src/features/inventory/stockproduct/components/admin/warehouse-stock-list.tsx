@@ -41,6 +41,9 @@ const formatWarehouseLocation = (warehouse: ConsolidatedInventoryItem['warehouse
 const normalizeConsolidatedItem = (item: ConsolidatedInventoryItem): StockItem => ({
   id: item.productId,
   productId: item.productId,
+  productCode: item.productCode || undefined,
+  productName: item.productName || undefined,
+  unit: item.unit || undefined,
   physicalQuantity: item.totalPhysicalQuantity,
   allocatedQuantity: item.totalAllocatedQuantity,
   salableQuantity: item.totalSalableQuantity,
@@ -237,8 +240,8 @@ export default function WarehouseStockPage() {
       }
 
       const enrichedItems: StockItem[] = await Promise.all(filteredItems.map(async (item) => {
-        if (item.productCode && item.productName && item.unit && activeTab === 'all') {
-          return item;
+        if (item.productCode && item.productName) {
+          return { ...item, unit: item.unit || 'Cái' };
         }
 
         try {

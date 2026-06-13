@@ -14,17 +14,13 @@ const routeMap: Record<string, TabInfo> = {
     description: 'Tổng quan hoạt động kinh doanh, số liệu và tình trạng hệ thống theo thời gian thực',
   },
 
-  '/reports/revenue': {
-    title: 'Báo cáo doanh thu',
-    description: 'Phân tích doanh thu theo thời gian, khách hàng và kênh bán hàng',
-  },
-  '/reports/sales': {
-    title: 'Báo cáo bán hàng',
-    description: 'Theo dõi hiệu suất bán hàng, đơn hàng và xu hướng tiêu thụ sản phẩm',
+  '/reports/business': {
+    title: 'Báo cáo Kinh doanh',
+    description: 'Tổng hợp dữ liệu doanh thu, đơn hàng và khách hàng',
   },
   '/reports/warehouse': {
-    title: 'Báo cáo kho hàng',
-    description: 'Thống kê tồn kho, nhập xuất và tình trạng luân chuyển hàng hóa',
+    title: 'Báo cáo Kho & Hàng tồn kho',
+    description: 'Quản lý hiệu suất xuất nhập kho, tỷ trọng lưu động và giá trị tồn kho',
   },
 
   '/sales/customers': {

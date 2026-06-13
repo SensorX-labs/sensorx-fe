@@ -9,8 +9,4 @@ export class RolesService {
     async getRoles(): Promise<RoleItem[]> {
         return api.gateway.get("/api/roles");
     }
-
-    async assignRole(userId: string, role: number, warehouseId?: string): Promise<any> {
-        return api.gateway.post("/api/roles/assign", { userId, role, warehouseId });
-    }
 }
