@@ -71,7 +71,6 @@ export function AcceptQuoteModal({
                 feedback: 'Khách hàng xác nhận báo giá.',
             };
             await StoreQuoteService.customerResponse(quote.id, payload);
-            toast.success('Xác nhận báo giá thành công');
             if (onSuccess) onSuccess(QuoteStatus.ORDERED);
             onOpenChange(false);
         } catch (err) {
