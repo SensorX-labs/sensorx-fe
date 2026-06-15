@@ -128,47 +128,46 @@ export default function CatalogPage() {
           <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(10,10,10,0.94),rgba(4,47,46,0.88),rgba(21,128,61,0.48))]" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-18 md:px-8 md:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-6 py-16 md:px-8 md:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200">
               <Cpu className="h-3.5 w-3.5" />
               Giải pháp cho doanh nghiệp
             </div>
-            <h1 className="mt-6 max-w-4xl font-heading text-4xl font-black uppercase tracking-tight text-white md:text-6xl">
+            <h1 className="mt-5 max-w-4xl font-heading text-3xl font-black uppercase tracking-tight text-white md:text-[2.2rem]">
               Đưa giải pháp cảm biến và tự động hóa của SensorX đến nhiều doanh nghiệp hơn
             </h1>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-stone-200 md:text-base">
-              Không chỉ là nơi bán thiết bị, website của bạn có thể được nhìn như một điểm tiếp cận giải pháp:
-              giúp doanh nghiệp hiểu họ cần gì, chọn phương án nào và bắt đầu triển khai nhanh hơn.
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-200 md:text-sm">
+              Trang này giúp doanh nghiệp nhìn nhanh nhóm giải pháp phù hợp và cách bắt đầu trao đổi.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
               <Link
                 href="/contact"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 text-[11px] font-bold uppercase tracking-[0.22em] text-white transition hover:bg-emerald-600"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 text-[10px] font-bold uppercase tracking-[0.22em] text-white transition hover:bg-emerald-600"
               >
                 Tư vấn giải pháp
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/shop"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/8 px-6 text-[11px] font-bold uppercase tracking-[0.22em] text-white transition hover:bg-white/14"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-white/20 bg-white/8 px-5 text-[10px] font-bold uppercase tracking-[0.22em] text-white transition hover:bg-white/14"
               >
                 Xem danh mục thiết bị
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               { label: 'Mô hình phục vụ', value: 'B2B công nghiệp' },
               { label: 'Trọng tâm', value: 'Giải pháp + thiết bị' },
               { label: 'Nhóm khách hàng', value: 'Kỹ thuật / mua hàng / vận hành' },
               { label: 'Mục tiêu', value: 'Tăng chuyển đổi doanh nghiệp' },
             ].map(item => (
-              <div key={item.label} className="rounded-3xl border border-white/10 bg-white/8 p-5 backdrop-blur">
+              <div key={item.label} className="rounded-3xl border border-white/10 bg-white/8 p-4 backdrop-blur">
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">{item.label}</div>
-                <div className="mt-3 text-2xl font-black text-white">{item.value}</div>
+                <div className="mt-2 text-xl font-black text-white">{item.value}</div>
               </div>
             ))}
           </div>

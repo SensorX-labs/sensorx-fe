@@ -44,34 +44,34 @@ export default function ContactPage() {
           <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(10,10,10,0.94),rgba(4,47,46,0.88),rgba(12,74,68,0.68))]" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-18 md:px-8 md:py-24 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-6 py-16 md:px-8 md:py-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200">
               <Phone className="h-3.5 w-3.5" />
               Liên hệ doanh nghiệp
             </div>
 
-            <h1 className="mt-6 max-w-4xl font-heading text-4xl font-black uppercase tracking-tight text-white md:text-6xl">
+            <h1 className="mt-5 max-w-4xl font-heading text-2xl font-black uppercase tracking-tight text-white md:text-[2.2rem]">
               Kết nối đúng đầu mối của SensorX
             </h1>
 
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-stone-200 md:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-200 md:text-sm">
               Thông tin liên hệ được gom gọn theo từng nhóm để doanh nghiệp dễ kết nối và xử lý nhanh hơn.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               { label: 'Mô hình phục vụ', value: 'B2B công nghiệp' },
               { label: 'Kênh chính', value: 'Email · Hotline' },
               { label: 'Trọng tâm', value: 'Báo giá · kỹ thuật' },
               { label: 'Phản hồi', value: 'Đúng đầu mối' },
             ].map((item) => (
-              <div key={item.label} className="rounded-3xl border border-white/10 bg-white/8 p-5 backdrop-blur">
+              <div key={item.label} className="rounded-3xl border border-white/10 bg-white/8 p-4 backdrop-blur">
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">
                   {item.label}
                 </div>
-                <div className="mt-3 text-2xl font-black text-white">{item.value}</div>
+                <div className="mt-2 text-xl font-black text-white">{item.value}</div>
               </div>
             ))}
           </div>
