@@ -16,9 +16,14 @@ interface SupportCardProps {
 
 export function SupportCard({ staff }: SupportCardProps) {
   return (
-    <div className={cn(cardClass, "p-8 transition-all duration-300 hover:shadow-md")}>
+    <div
+      className={cn(
+        cardClass,
+        'overflow-hidden rounded-[22px] border-[#e6ebf1] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfd_100%)] p-8 transition-all duration-300 hover:shadow-md'
+      )}
+    >
       <div className="space-y-6">
-        <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4">
+        <div className="flex items-center gap-2 rounded-2xl border border-[#f0e6d2] bg-[#fbf7ef] px-4 py-3 tracking-label uppercase">
           <Headset className="w-4 h-4 text-[#B48F4E]" />
           Nhân viên hỗ trợ
         </div>
@@ -29,11 +34,11 @@ export function SupportCard({ staff }: SupportCardProps) {
               <img
                 src={staff.avatarUrl}
                 alt={staff.name}
-                className="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm"
+                className="h-16 w-16 rounded-xl border border-gray-100 object-cover shadow-sm"
               />
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
-                <User className="w-8 h-8 text-gray-200" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-gray-100 bg-gray-50">
+                <User className="h-8 w-8 text-gray-200" />
               </div>
             )}
 
@@ -41,18 +46,17 @@ export function SupportCard({ staff }: SupportCardProps) {
               <p className="breadcrumb-text uppercase !text-lg font-bold">
                 {staff.name}
               </p>
-              <p className="meta-label uppercase text-[9px] font-bold text-[#B48F4E] tracking-[0.2em]">
+              <p className="meta-label text-[9px] font-bold uppercase tracking-[0.2em] text-[#B48F4E]">
                 Technical Sales
               </p>
             </div>
           </div>
 
-          <div className="pt-2 space-y-3 border-t border-gray-50 mt-4">
+          <div className="mt-4 space-y-3 rounded-2xl border border-[#edf1f4] bg-[#fbfcfd] p-4">
             {staff.phone && (
               <div className="flex items-center gap-3">
-                <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
-
-                <span className="qty-label tracking-widest text-sm">
+                <Phone className="h-3.5 w-3.5 shrink-0 text-gray-300" />
+                <span className="qty-label text-sm tracking-widest">
                   {staff.phone}
                 </span>
               </div>
@@ -60,9 +64,8 @@ export function SupportCard({ staff }: SupportCardProps) {
 
             {staff.email && (
               <div className="flex items-center gap-3">
-                <Mail className="w-3.5 h-3.5 text-gray-300 shrink-0" />
-
-                <span className="meta-label underline decoration-gray-100 underline-offset-4 lowercase text-xs line-clamp-1">
+                <Mail className="h-3.5 w-3.5 shrink-0 text-gray-300" />
+                <span className="meta-label line-clamp-1 text-xs lowercase underline decoration-gray-100 underline-offset-4">
                   {staff.email}
                 </span>
               </div>

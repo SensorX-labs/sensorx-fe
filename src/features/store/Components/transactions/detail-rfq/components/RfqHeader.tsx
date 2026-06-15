@@ -11,20 +11,15 @@ interface RfqHeaderProps {
 
 export function RfqHeader({ code, config }: RfqHeaderProps) {
   return (
-    <div className="flex items-start justify-between p-8 border-b border-gray-100/50">
+    <div className="flex items-start justify-between gap-4 border-b border-[#edf1f4] bg-[#f8fafc] p-8">
       <div>
-        <p className="meta-label uppercase text-gray-400 mb-2">
-          Chi tiết yêu cầu
-        </p>
-
-        <h1 className="tracking-title-xl">
-          {code}
-        </h1>
+        <p className="meta-label mb-2 uppercase text-gray-400">Chi tiết yêu cầu</p>
+        <h1 className="tracking-title-xl">{code}</h1>
       </div>
 
       <div
         className={cn(
-          'px-5 py-2 border tracking-label text-[10px] uppercase font-bold',
+          'rounded-full px-5 py-2 border tracking-label text-[10px] font-bold uppercase shadow-sm',
           config.className
         )}
       >

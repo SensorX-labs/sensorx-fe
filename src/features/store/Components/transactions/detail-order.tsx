@@ -206,6 +206,9 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
     }, [order?.paymentStatus, order?.paymentQRURls, order?.grandTotal, order?.code]);
 
     const paymentAmount = order?.grandTotal || 0;
+    const paidAmount = order?.paymentAmount || 0;
+    const remainingAmount = Math.max(paymentAmount - paidAmount, 0);
+    const isFullyPaid = !!order && (order.paymentStatus === 'Completed' || paidAmount >= paymentAmount);
 
     if (loading) {
         return (
@@ -242,10 +245,6 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                     <h1 className="tracking-title-xl">{order.code}</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 px-8 py-2.5 border border-gray-900 tracking-label uppercase btn-tracking transition-all hover:bg-gray-900 hover:text-white !text-[10px] font-bold">
-                        <Download className="w-4 h-4" />
-                        Tải hóa đơn (PDF)
-                    </button>
                     <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
                         <config.icon className="w-3.5 h-3.5" />
                         {config.label}
@@ -375,6 +374,20 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                                                         <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số tiền cần thanh toán</p>
                                                         <p className="text-lg font-bold text-gray-900">
                                                             {paymentAmount.toLocaleString('vi-VN')} đ
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Đã thanh toán</p>
+                                                        <p className="text-lg font-bold text-emerald-700">
+                                                            {paidAmount.toLocaleString('vi-VN')} đ
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Còn lại</p>
+                                                        <p className="text-lg font-bold text-orange-600">
+                                                            {remainingAmount.toLocaleString('vi-VN')} đ
                                                         </p>
                                                     </div>
 

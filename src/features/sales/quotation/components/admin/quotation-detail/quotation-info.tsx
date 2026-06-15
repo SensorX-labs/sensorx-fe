@@ -47,8 +47,8 @@ export function QuotationInfo({ quoteDetail }: QuotationInfoProps) {
               <td className="px-6 py-3 admin-text-primary font-semibold">Từ RFQ</td>
               <td className="px-6 py-3">
                 {quoteDetail.rfqId ? (
-                  <Link href={`/sales/rfqs/${quoteDetail.rfqId}`} className="text-blue-600 hover:underline">
-                    {quoteDetail.rfqId}
+                  <Link href={`/sales/RFQ/${quoteDetail.rfqId}`} className="text-blue-600 hover:underline">
+                    {quoteDetail.rfqCode || quoteDetail.rfqId}
                   </Link>
                 ) : (
                   '—'
