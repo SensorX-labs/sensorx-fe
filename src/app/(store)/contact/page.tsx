@@ -22,7 +22,7 @@ const contactGroups = [
   {
     icon: Wrench,
     title: 'Hỗ trợ kỹ thuật',
-    items: ['techsupport@sensorx.vn', 'Tiếp nhận qua email mỗi ngày'],
+    items: ['+84 24 3767 8999', 'Tiếp nhận trong giờ làm việc'],
   },
   {
     icon: Phone,
