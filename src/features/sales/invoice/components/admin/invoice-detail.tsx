@@ -74,7 +74,7 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
   if (loading) {
     return (
       <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
-        Dang tai du lieu...
+        Đang tải dữ liệu
       </div>
     );
   }

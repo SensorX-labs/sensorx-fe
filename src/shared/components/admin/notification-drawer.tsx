@@ -45,12 +45,32 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
     }
   };
 
+  const getMappedUrl = (url: string): string => {
+    if (!url) return '/';
+    if (url.startsWith('/rfq/')) {
+      return url.replace('/rfq/', '/sales/RFQ/');
+    }
+    if (url.startsWith('/quotes/')) {
+      return url.replace('/quotes/', '/sales/quotations/');
+    }
+    if (url.startsWith('/my/quotes/')) {
+      return url.replace('/my/quotes/', '/transactions/quotations/');
+    }
+    if (url.startsWith('/my/orders/')) {
+      return url.replace('/my/orders/', '/transactions/orders/');
+    }
+    if (url.startsWith('/warehouse/transfers/')) {
+      return url.replace('/warehouse/transfers/', '/warehouse/transfer-orders/');
+    }
+    return url;
+  };
+
   const handleNotificationClick = async (notif: NotificationPayload) => {
     if (!notif.isRead) {
       await markAsRead(notif.id);
     }
     setOpen(false);
-    router.push(notif.targetUrl);
+    router.push(getMappedUrl(notif.targetUrl));
   };
 
   return (

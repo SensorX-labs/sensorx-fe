@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType, HubConnectionState } from '@microsoft/signalr';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { GATEWAY_URL } from '@/shared/constants/environment';
 
 export interface NotificationPayload {
@@ -14,12 +15,33 @@ export interface NotificationPayload {
   createdAt: string;
 }
 
+const getMappedUrl = (url: string): string => {
+  if (!url) return '/';
+  if (url.startsWith('/rfq/')) {
+    return url.replace('/rfq/', '/sales/RFQ/');
+  }
+  if (url.startsWith('/quotes/')) {
+    return url.replace('/quotes/', '/sales/quotations/');
+  }
+  if (url.startsWith('/my/quotes/')) {
+    return url.replace('/my/quotes/', '/transactions/quotations/');
+  }
+  if (url.startsWith('/my/orders/')) {
+    return url.replace('/my/orders/', '/transactions/orders/');
+  }
+  if (url.startsWith('/warehouse/transfers/')) {
+    return url.replace('/warehouse/transfers/', '/warehouse/transfer-orders/');
+  }
+  return url;
+};
+
 export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notifications, setNotifications] = useState<NotificationPayload[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const connectionRef = useRef<HubConnection | null>(null);
+  const router = useRouter();
 
   // Fetch unread count from API
   const fetchUnreadCount = useCallback(async () => {
@@ -58,7 +80,11 @@ export function useNotifications() {
       if (response.ok) {
         const result = await response.json();
         if (result.isSuccess && result.value?.items) {
-          setNotifications(result.value.items);
+          const mappedItems = result.value.items.map((item: NotificationPayload) => ({
+            ...item,
+            targetUrl: getMappedUrl(item.targetUrl)
+          }));
+          setNotifications(mappedItems);
         }
       }
     } catch (error) {
@@ -137,17 +163,22 @@ export function useNotifications() {
     connection.on('ReceiveNotification', (payload: NotificationPayload) => {
       console.log('New notification received:', payload);
       
+      const mappedPayload = {
+        ...payload,
+        targetUrl: getMappedUrl(payload.targetUrl)
+      };
+
       // Update count & notifications list
       setUnreadCount((prev) => prev + 1);
-      setNotifications((prev) => [payload, ...prev].slice(0, 20));
+      setNotifications((prev) => [mappedPayload, ...prev].slice(0, 20));
 
       // Trigger Sonner Toast
-      toast.info(payload.title, {
-        description: payload.content,
+      toast.info(mappedPayload.title, {
+        description: mappedPayload.content,
         action: {
           label: 'Xem',
           onClick: () => {
-            window.location.href = payload.targetUrl;
+            router.push(mappedPayload.targetUrl);
           },
         },
       });
@@ -170,7 +201,7 @@ export function useNotifications() {
         connection.stop();
       }
     };
-  }, [fetchUnreadCount, fetchNotifications]);
+  }, [fetchUnreadCount, fetchNotifications, router]);
 
   return {
     unreadCount,
