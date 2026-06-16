@@ -5,6 +5,7 @@ export interface GetDetailQuoteByIdResponse {
   id: string;
   code: string;
   rfqId: string;
+  rfqCode: string;
   status: QuoteStatus;
   quoteDate?: string | null;
   note?: string | null;
