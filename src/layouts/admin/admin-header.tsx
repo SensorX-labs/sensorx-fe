@@ -7,6 +7,8 @@ import { useActiveTab } from '@/shared/hooks/use-active-tab';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { cn } from '@/shared/utils';
+import { useNotifications } from '@/shared/hooks/use-notifications';
+import { NotificationDrawer } from '@/shared/components/admin/notification-drawer';
 
 interface DropdownItemProps {
     icon: any;
@@ -41,6 +43,7 @@ const AdminHeader: React.FC = () => {
     const [user, setUser] = useState<any>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const notificationState = useNotifications();
 
     // Hàm chuyển đổi Role sang tiếng Việt
     const getRoleLabel = (role: string) => {
@@ -120,12 +123,16 @@ const AdminHeader: React.FC = () => {
 
             <div className="flex items-center gap-3 shrink-0">
                 {/* Notifications */}
-                <div className="relative cursor-pointer hover:bg-gray-100 p-2.5 rounded-full transition-colors group">
-                    <Bell size={22} strokeWidth={1.5} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold border-2 border-white">
-                        4
-                    </span>
-                </div>
+                <NotificationDrawer {...notificationState}>
+                    <button className="relative cursor-pointer hover:bg-gray-100 p-2.5 rounded-full transition-colors group">
+                        <Bell size={22} strokeWidth={1.5} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                        {notificationState.unreadCount > 0 && (
+                            <span className="absolute top-1 right-1 w-4.5 h-4.5 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full font-bold border border-white">
+                                {notificationState.unreadCount}
+                            </span>
+                        )}
+                    </button>
+                </NotificationDrawer>
 
                 {/* User Profile Dropdown */}
                 <div className="relative ml-2" ref={dropdownRef}>

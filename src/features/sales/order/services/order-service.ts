@@ -44,6 +44,9 @@ export const OrderService = {
 
   checkOrderPaymentStatus: (id: string) =>
     api.master.get<unknown, { orderId: string; isPaid: boolean; paymentStatus: string }>(`/orders/${id}/payment-status`),
+
+  cancelOrder: (id: string) =>
+    api.master.post<unknown, void>(`/orders/my/${id}/cancel`),
 };
 
 export default OrderService;

@@ -15,7 +15,8 @@ import {
     CreditCard,
     Truck,
     Download,
-    QrCode
+    QrCode,
+    X
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { OrderStatus } from '@/features/sales/order/enums/order-status';
@@ -25,6 +26,17 @@ import { usePaymentHub } from '@/shared/hooks/usePaymentHub';
 import { toast } from 'sonner';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { PaymentQrModal } from './payment-qr-modal';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/shared/components/shadcn-ui/alert-dialog';
 
 const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
     [OrderStatus.PendingPayment]: {
@@ -81,9 +93,26 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
     const paymentHub = usePaymentHub();
     const lastHandledUpdateRef = useRef<number | null>(null);
     const subscribedOrderIdRef = useRef<string | null>(null);
+
+    const handleCancelOrder = async () => {
+        if (!orderId) return;
+        try {
+            setIsCancelling(true);
+            await OrderService.cancelOrder(orderId);
+            toast.success('Đơn hàng đã được hủy thành công.');
+            // Reload order to reflect cancelled state
+            const updated = await OrderService.getMyOrderById(orderId);
+            if (updated) setOrder(updated);
+        } catch {
+            toast.error('Không thể hủy đơn hàng. Vui lòng thử lại.');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -178,13 +207,13 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
 
         const isPending = normalizedStatus === 'pending';
         const isPartiallyPaid = normalizedStatus === 'partiallypaid';
-        
+
         let qrUrl = paymentQrUrls[0];
         if (qrUrl) {
             try {
                 const url = new URL(qrUrl);
                 url.searchParams.set('amount', Math.round(grandTotal).toString());
-                
+
                 let des = url.searchParams.get('des') || orderCode;
                 if (des.endsWith('-P1') || des.endsWith('-P2')) {
                     des = des.substring(0, des.length - 3);
@@ -245,6 +274,45 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
                     <h1 className="tracking-title-xl">{order.code}</h1>
                 </div>
                 <div className="flex items-center gap-4">
+                    <button className="flex items-center gap-2 px-8 py-2.5 border border-gray-900 tracking-label uppercase btn-tracking transition-all hover:bg-gray-900 hover:text-white !text-[10px] font-bold">
+                        <Download className="w-4 h-4" />
+                        Tải hóa đơn (PDF)
+                    </button>
+
+                    {order.status === OrderStatus.PendingPayment && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <button
+                                    disabled={isCancelling}
+                                    className="flex items-center gap-2 px-8 py-2.5 border border-red-300 text-red-600 tracking-label uppercase btn-tracking transition-all hover:bg-red-600 hover:text-white hover:border-red-600 !text-[10px] font-bold disabled:opacity-50"
+                                >
+                                    {isCancelling
+                                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                                        : <X className="w-4 h-4" />
+                                    }
+                                    Hủy đơn hàng
+                                </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Xác nhận hủy đơn hàng?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Hành động này không thể hoàn tác. Đơn hàng <strong>{order.code}</strong>, hóa đơn và thanh toán liên quan sẽ bị hủy vĩnh viễn.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Quay lại</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleCancelOrder}
+                                        className="bg-red-600 hover:bg-red-700 text-white"
+                                    >
+                                        Xác nhận hủy
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+
                     <div className={cn("px-5 py-2 border tracking-label text-[10px] uppercase font-bold flex items-center gap-2", config.className)}>
                         <config.icon className="w-3.5 h-3.5" />
                         {config.label}
@@ -349,102 +417,102 @@ export function OrderDetailView({ onBack, orderId }: { onBack: () => void, order
 
                 {/* CỘT PHẢI: THÔNG TIN CHUNG */}
                 <div className="space-y-6 sticky top-28">
-                                        {/* Thông tin thanh toán */}
-                                        {order.paymentStatus && (
-                                            <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                                                <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
-                                                    <CreditCard className="w-4 h-4 text-gray-400" />
-                                                    Thông tin thanh toán
-                                                </div>
+                    {/* Thông tin thanh toán */}
+                    {order.paymentStatus && (
+                        <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                            <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">
+                                <CreditCard className="w-4 h-4 text-gray-400" />
+                                Thông tin thanh toán
+                            </div>
 
-                                                <div className="space-y-6">
-                                                    {/* Payment Status Badge */}
-                                                    <div>
-                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Trạng thái</p>
-                                                        <div className={cn(
-                                                            "px-4 py-2 border tracking-label text-[10px] uppercase font-bold text-center",
-                                                            paymentStatusConfig[order.paymentStatus]?.className || 'bg-gray-50 text-gray-700 border-gray-200'
-                                                        )}>
-                                                            {paymentStatusConfig[order.paymentStatus]?.label || order.paymentStatus}
-                                                        </div>
-                                                    </div>
+                            <div className="space-y-6">
+                                {/* Payment Status Badge */}
+                                <div>
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider mb-2">Trạng thái</p>
+                                    <div className={cn(
+                                        "px-4 py-2 border tracking-label text-[10px] uppercase font-bold text-center",
+                                        paymentStatusConfig[order.paymentStatus]?.className || 'bg-gray-50 text-gray-700 border-gray-200'
+                                    )}>
+                                        {paymentStatusConfig[order.paymentStatus]?.label || order.paymentStatus}
+                                    </div>
+                                </div>
 
-                                                    {/* Payment Amount */}
-                                                    <div className="space-y-2">
-                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số tiền cần thanh toán</p>
-                                                        <p className="text-lg font-bold text-gray-900">
-                                                            {paymentAmount.toLocaleString('vi-VN')} đ
-                                                        </p>
-                                                    </div>
+                                {/* Payment Amount */}
+                                <div className="space-y-2">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Số tiền cần thanh toán</p>
+                                    <p className="text-lg font-bold text-gray-900">
+                                        {paymentAmount.toLocaleString('vi-VN')} đ
+                                    </p>
+                                </div>
 
-                                                    <div className="space-y-2">
-                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Đã thanh toán</p>
-                                                        <p className="text-lg font-bold text-emerald-700">
-                                                            {paidAmount.toLocaleString('vi-VN')} đ
-                                                        </p>
-                                                    </div>
+                                <div className="space-y-2">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Đã thanh toán</p>
+                                    <p className="text-lg font-bold text-emerald-700">
+                                        {paidAmount.toLocaleString('vi-VN')} đ
+                                    </p>
+                                </div>
 
-                                                    <div className="space-y-2">
-                                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Còn lại</p>
-                                                        <p className="text-lg font-bold text-orange-600">
-                                                            {remainingAmount.toLocaleString('vi-VN')} đ
-                                                        </p>
-                                                    </div>
+                                <div className="space-y-2">
+                                    <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Còn lại</p>
+                                    <p className="text-lg font-bold text-orange-600">
+                                        {remainingAmount.toLocaleString('vi-VN')} đ
+                                    </p>
+                                </div>
 
-                                                    {/* QR Payment Action */}
-                                                    {order.paymentStatus && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
-                                                        <div className="space-y-3">
-                                                            <Button
-                                                                type="button"
-                                                                onClick={() => setIsPaymentModalOpen(true)}
-                                                                disabled={!paymentQrConfig.canPay}
-                                                                className="w-full mt-2 bg-brand-green hover:bg-brand-green-hover shadow-lg shadow-brand-green/20 text-white uppercase tracking-widest text-[10px] font-bold disabled:bg-gray-200 disabled:text-gray-500"
-                                                            >
-                                                                <QrCode className="w-4 h-4 mr-2" />
-                                                                Thanh toán
-                                                            </Button>
-                                                            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider text-center">
-                                                                {paymentQrConfig.qrLabel}
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                {/* QR Payment Action */}
+                                {order.paymentStatus && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
+                                    <div className="space-y-3">
+                                        <Button
+                                            type="button"
+                                            onClick={() => setIsPaymentModalOpen(true)}
+                                            disabled={!paymentQrConfig.canPay}
+                                            className="w-full mt-2 bg-brand-green hover:bg-brand-green-hover shadow-lg shadow-brand-green/20 text-white uppercase tracking-widest text-[10px] font-bold disabled:bg-gray-200 disabled:text-gray-500"
+                                        >
+                                            <QrCode className="w-4 h-4 mr-2" />
+                                            Thanh toán
+                                        </Button>
+                                        <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider text-center">
+                                            {paymentQrConfig.qrLabel}
+                                        </p>
+                                    </div>
+                                )}
 
-                                                    {!paymentQrConfig.canPay && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
-                                                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-                                                            <p className="text-sm font-bold text-yellow-700 text-center">
-                                                                Chưa có mã QR thanh toán phù hợp.
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                {!paymentQrConfig.canPay && order.paymentStatus !== 'Completed' && order.paymentStatus !== 'Failed' && order.paymentStatus !== 'Cancelled' && (
+                                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+                                        <p className="text-sm font-bold text-yellow-700 text-center">
+                                            Chưa có mã QR thanh toán phù hợp.
+                                        </p>
+                                    </div>
+                                )}
 
-                                                    {/* Completion Message */}
-                                                    {order.paymentStatus === 'Completed' && (
-                                                        <div className="p-4 bg-green-50 border border-green-200 rounded">
-                                                            <p className="text-sm font-bold text-green-700 text-center">
-                                                                ✓ Thanh toán thành công. Cảm ơn bạn đã mua hàng!
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                {/* Completion Message */}
+                                {order.paymentStatus === 'Completed' && (
+                                    <div className="p-4 bg-green-50 border border-green-200 rounded">
+                                        <p className="text-sm font-bold text-green-700 text-center">
+                                            ✓ Thanh toán thành công. Cảm ơn bạn đã mua hàng!
+                                        </p>
+                                    </div>
+                                )}
 
-                                                    {/* Error Message */}
-                                                    {['Failed', 'Cancelled'].includes(order.paymentStatus) && (
-                                                        <div className="p-4 bg-red-50 border border-red-200 rounded">
-                                                            <p className="text-sm font-bold text-red-700 text-center">
-                                                                ✗ Thanh toán không thành công. Vui lòng liên hệ hỗ trợ.
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                {/* Error Message */}
+                                {['Failed', 'Cancelled'].includes(order.paymentStatus) && (
+                                    <div className="p-4 bg-red-50 border border-red-200 rounded">
+                                        <p className="text-sm font-bold text-red-700 text-center">
+                                            ✗ Thanh toán không thành công. Vui lòng liên hệ hỗ trợ.
+                                        </p>
+                                    </div>
+                                )}
 
-                                                    {/* Refresh Indicator */}
-                                                    {refreshing && (
-                                                        <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
-                                                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                                                            <p className="text-[10px] uppercase text-blue-700 font-bold">Đang cập nhật...</p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
+                                {/* Refresh Indicator */}
+                                {refreshing && (
+                                    <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                                        <p className="text-[10px] uppercase text-blue-700 font-bold">Đang cập nhật...</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     {/* Trạng thái đơn hàng (Timeline) */}
                     <div className="p-8 bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md">
                         <div className="flex items-center gap-2 tracking-label uppercase border-b border-gray-50 pb-4 mb-6 text-gray-900">

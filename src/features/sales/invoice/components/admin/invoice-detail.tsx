@@ -2,12 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Building2, CircleDollarSign, FileText, Receipt, Wallet } from 'lucide-react';
+import { ArrowLeft, Building2, CircleDollarSign, FileText, Receipt, Wallet, QrCode } from 'lucide-react';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { cn } from '@/shared/utils/cn';
 import { InvoiceStatus } from '../../enums/invoice-status';
 import { Invoice } from '../../models/invoice';
 import { InvoiceService } from '../../services/invoice-service';
+import { PaymentQrModal } from '@/features/store/Components/transactions/payment-qr-modal';
 
 interface InvoiceDetailProps {
   id: string;
@@ -29,11 +30,12 @@ const statusLabels: Record<string, string> = {
   [InvoiceStatus.Cancelled]: 'Đã hủy',
 };
 
-const formatMoney = (value?: number) => `${(value ?? 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value?: number) => `${(value ?? 0).toLocaleString('vi-VN')} đ`;
 
 export default function InvoiceDetail({ id }: InvoiceDetailProps) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isQrOpen, setIsQrOpen] = useState(false);
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -42,7 +44,7 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
         const response = await InvoiceService.getInvoiceById(id);
         setInvoice(response);
       } catch (error) {
-        console.error('>>> Loi khi fetch chi tiet hoa don:', error);
+        console.error('>>> Lỗi khi lấy chi tiết hóa đơn:', error);
       } finally {
         setLoading(false);
       }
@@ -53,10 +55,26 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
 
   const items = useMemo(() => invoice?.items ?? [], [invoice]);
 
+  const remaining = useMemo(() => {
+    if (!invoice) return 0;
+    return Math.max(0, invoice.grandTotal - invoice.amountPaid);
+  }, [invoice]);
+
+  const excess = useMemo(() => {
+    if (!invoice) return 0;
+    return Math.max(0, invoice.amountPaid - invoice.grandTotal);
+  }, [invoice]);
+
+  const qrUrl = useMemo(() => {
+    if (!invoice) return '';
+    const des = invoice.expectedTransferSyntax || invoice.code;
+    return `https://qr.sepay.vn/img?acc=0374295407&bank=MB&amount=${Math.round(remaining)}&des=${encodeURIComponent(des)}&template=null&download=false`;
+  }, [invoice, remaining]);
+
   if (loading) {
     return (
       <div className="py-20 text-center animate-pulse text-blue-600 font-medium tracking-widest uppercase text-xs">
-        Dang tai du lieu...
+        Đang tải dữ liệu
       </div>
     );
   }
@@ -84,12 +102,23 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
             {statusLabels[invoice.status] ?? invoice.status}
           </span>
         </div>
-        <Link href="/sales/invoices">
-          <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {invoice.status !== InvoiceStatus.Paid && invoice.status !== InvoiceStatus.Cancelled && (
+            <Button
+              onClick={() => setIsQrOpen(true)}
+              className="rounded bg-brand-green hover:bg-brand-green-hover text-white uppercase tracking-widest text-[10px] font-bold"
+            >
+              <QrCode className="w-4 h-4 mr-2" />
+              QR thanh toán
+            </Button>
+          )}
+          <Link href="/sales/invoices">
+            <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Quay lại
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -173,8 +202,14 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
                 </tr>
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Còn lại</td>
-                  <td className="px-6 py-3 font-bold">{formatMoney(invoice.grandTotal - invoice.amountPaid)}</td>
+                  <td className="px-6 py-3 font-bold">{formatMoney(remaining)}</td>
                 </tr>
+                {excess > 0 && (
+                  <tr>
+                    <td className="px-6 py-3 admin-text-primary font-semibold text-emerald-600">Tiền thừa</td>
+                    <td className="px-6 py-3 font-bold text-emerald-600">{formatMoney(excess)}</td>
+                  </tr>
+                )}
                 <tr>
                   <td className="px-6 py-3 admin-text-primary font-semibold">Nội dung CK</td>
                   <td className="px-6 py-3 break-all text-xs">{invoice.expectedTransferSyntax || '-'}</td>
@@ -239,10 +274,19 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
                   <span>TỔNG CỘNG:</span>
                   <span>{formatMoney(invoice.grandTotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-orange-600">
+                <div className={cn(
+                  "flex justify-between text-sm font-bold",
+                  remaining > 0 ? "text-orange-600" : "text-gray-500"
+                )}>
                   <span>CÒN LẠI:</span>
-                  <span>{formatMoney(invoice.grandTotal - invoice.amountPaid)}</span>
+                  <span>{formatMoney(remaining)}</span>
                 </div>
+                {excess > 0 && (
+                  <div className="flex justify-between text-sm font-bold text-emerald-600">
+                    <span>TIỀN THỪA:</span>
+                    <span>{formatMoney(excess)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -262,16 +306,41 @@ export default function InvoiceDetail({ id }: InvoiceDetailProps) {
               </div>
               <div className="text-xl font-bold text-emerald-700">{formatMoney(invoice.amountPaid)}</div>
             </div>
-            <div className="border border-gray-200 bg-white rounded shadow-sm p-4">
-              <div className="flex items-center gap-2 text-gray-500 text-xs uppercase tracking-wider mb-2">
-                <Receipt className="w-4 h-4" />
-                Còn lại
+            {excess > 0 ? (
+              <div className="border border-emerald-200 bg-emerald-50/20 rounded shadow-sm p-4">
+                <div className="flex items-center gap-2 text-emerald-600 text-xs uppercase tracking-wider mb-2">
+                  <CircleDollarSign className="w-4 h-4" />
+                  Tiền thừa
+                </div>
+                <div className="text-xl font-bold text-emerald-700">{formatMoney(excess)}</div>
               </div>
-              <div className="text-xl font-bold text-orange-600">{formatMoney(invoice.grandTotal - invoice.amountPaid)}</div>
-            </div>
+            ) : (
+              <div className="border border-gray-200 bg-white rounded shadow-sm p-4">
+                <div className="flex items-center gap-2 text-gray-500 text-xs uppercase tracking-wider mb-2">
+                  <Receipt className="w-4 h-4" />
+                  Còn lại
+                </div>
+                <div className={cn(
+                  "text-xl font-bold",
+                  remaining > 0 ? "text-orange-600" : "text-gray-500"
+                )}>
+                  {formatMoney(remaining)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      <PaymentQrModal
+        open={isQrOpen}
+        onOpenChange={setIsQrOpen}
+        orderCode={invoice.code}
+        paymentStatus={statusLabels[invoice.status] ?? invoice.status}
+        paymentAmount={remaining}
+        qrUrl={qrUrl}
+        qrLabel="Thanh toán hóa đơn"
+      />
     </div>
   );
 }
