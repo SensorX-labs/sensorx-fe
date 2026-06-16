@@ -34,7 +34,7 @@ function TransactionsContent() {
       <div className="absolute top-[400px] left-1/4 w-[400px] h-[400px] rounded-full bg-emerald-500/[0.03] dark:bg-emerald-500/[0.06] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[200px] right-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/[0.03] dark:bg-indigo-500/[0.06] blur-[150px] pointer-events-none" />
 
-      <div className="relative py-16 bg-stone-950 overflow-hidden border-b border-stone-900">
+      <div className="relative py-12 sm:py-14 lg:py-16 bg-stone-950 overflow-hidden border-b border-stone-900">
         <div className="absolute inset-0 z-0 opacity-40">
           <img
             src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop"
@@ -46,14 +46,14 @@ function TransactionsContent() {
 
         <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full bg-emerald-500/10 blur-[90px] -translate-y-1/2" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-4">
             <ClipboardList size={11} className="shrink-0" /> Tiến trình giao dịch
           </div>
-          <h1 className="font-heading text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-tight">
             Giao dịch của tôi
           </h1>
-          <p className="text-stone-300 text-xs md:text-sm font-sans max-w-md mt-3 leading-relaxed font-light">
+          <p className="text-stone-300 text-xs md:text-sm font-sans max-w-xl mt-3 leading-relaxed font-light">
             Theo dõi giỏ yêu cầu báo giá, danh sách RFQ, các báo giá phản hồi và tình trạng đơn hàng của bạn.
           </p>
         </div>
@@ -73,8 +73,8 @@ function TransactionsContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        <div className="flex items-center gap-6 border-b border-stone-200 dark:border-zinc-800 mb-10 overflow-x-auto hide-scrollbar">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 relative z-10">
+        <div className="flex items-center gap-3 sm:gap-6 border-b border-stone-200 dark:border-zinc-800 mb-8 sm:mb-10 overflow-x-auto hide-scrollbar">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -83,7 +83,7 @@ function TransactionsContent() {
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  'flex items-center gap-2 pb-4 text-xs font-sans font-extrabold uppercase tracking-widest whitespace-nowrap transition-all border-b-2 cursor-pointer',
+                  'flex items-center gap-2 pb-4 text-[10px] sm:text-xs font-sans font-extrabold uppercase tracking-widest whitespace-nowrap transition-all border-b-2 cursor-pointer',
                   isActive
                     ? 'border-[#0D9488] text-[#0D9488] dark:text-emerald-400'
                     : 'border-transparent text-stone-400 hover:text-stone-700 dark:hover:text-white'
@@ -96,7 +96,7 @@ function TransactionsContent() {
           })}
         </div>
 
-        <main>
+        <main className="pb-10">
           {activeTab === 'inquiry-cart' && <TabInquiryCart />}
           {activeTab === 'rfqs' && <MyRfqsTab />}
           {activeTab === 'quotes' && <MyQuotationsTab />}

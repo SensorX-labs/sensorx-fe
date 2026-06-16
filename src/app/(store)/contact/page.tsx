@@ -51,7 +51,7 @@ export default function ContactPage() {
               Liên hệ doanh nghiệp
             </div>
 
-            <h1 className="mt-5 max-w-4xl font-heading text-2xl font-black uppercase tracking-tight text-white md:text-[2.2rem]">
+            <h1 className="mt-5 max-w-4xl font-sans text-2xl font-black uppercase tracking-[0.02em] text-white md:text-[2.2rem]">
               Kết nối đúng đầu mối của SensorX
             </h1>
 
@@ -99,7 +99,7 @@ export default function ContactPage() {
                 <group.icon className="h-5 w-5" />
               </div>
 
-              <h2 className="mt-5 text-lg font-black uppercase tracking-wide text-stone-900">
+              <h2 className="mt-5 font-sans text-lg font-black uppercase tracking-[0.02em] text-stone-900">
                 {group.title}
               </h2>
 
@@ -157,7 +157,7 @@ export default function ContactPage() {
             Bắt đầu nhanh
           </div>
 
-          <h3 className="mt-4 font-heading text-2xl font-black uppercase tracking-tight text-stone-900">
+          <h3 className="mt-4 font-sans text-2xl font-black uppercase tracking-[0.02em] text-stone-900">
             Chuẩn bị mã hàng hoặc nhu cầu trước khi liên hệ
           </h3>
 

@@ -3,12 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, ShoppingBag, LayoutDashboard, ChevronRight, ChevronDown, LogOut, ClipboardList } from 'lucide-react';
+import { User, ShoppingBag, ChevronRight, ChevronDown, LogOut, ClipboardList, Menu, X } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { AuthService } from '@/features/system/auth/services/auth-service';
 import { cn } from '@/shared/utils';
 import { LucideIcon } from 'lucide-react';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
+
+interface StoreUser {
+  avatarUrl?: string;
+  fullName?: string;
+  name?: string;
+}
 
 interface DropdownItemProps {
   icon: LucideIcon;
@@ -57,8 +63,10 @@ export const StoreHeader = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<StoreUser | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { totalItems } = useInquiryCart();
 
@@ -68,6 +76,9 @@ export const StoreHeader = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -136,21 +147,21 @@ export const StoreHeader = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 bg-white/80 dark:bg-[#042F2E]/80 backdrop-blur-md border-b border-white/40 dark:border-white/10 shadow-lg shadow-black/5 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
+        className={`sticky top-0 z-50 bg-white/90 dark:bg-[#042F2E]/90 backdrop-blur-md border-b border-white/40 dark:border-white/10 shadow-lg shadow-black/5 transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
           }`}
       >
-        <div className="w-full px-6 sm:px-8">
-          <div className="flex items-center justify-between h-20 gap-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-18 lg:h-20 gap-3 sm:gap-6">
 
             {/* Logo */}
             <Link href="/" className="flex-none shrink-0 flex items-center gap-2">
-              <span className="font-heading font-bold text-2xl tracking-wide text-gray-900 dark:text-white">
+              <span className="font-heading font-bold text-xl sm:text-2xl tracking-wide text-gray-900 dark:text-white">
                 SENSOR<span className="text-[#0D9488] dark:text-[#14B8A6]">X</span>
               </span>
             </Link>
 
             {/* Navigation Menu (Desktop) */}
-            <nav className="hidden lg:flex flex-1 items-center justify-center gap-10">
+            <nav className="hidden lg:flex flex-1 items-center justify-center gap-8 xl:gap-10">
               <Link href="/shop" className="text-xs font-sans font-bold uppercase tracking-[0.25em] text-gray-900 dark:text-white/95 hover:text-primary dark:hover:text-secondary transition-all">
                 Sản phẩm
               </Link>
@@ -165,10 +176,11 @@ export const StoreHeader = () => {
               </Link>
             </nav>
 
-            <div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-2">
+            <div className="flex items-center justify-end gap-1.5 sm:gap-3 lg:gap-2">
               <Link
                 href="/transactions?tab=inquiry-cart"
                 className="relative group p-2 text-gray-700 dark:text-white/80 hover:text-primary dark:hover:text-secondary transition-all"
+                aria-label="Giỏ yêu cầu báo giá"
               >
                 <ShoppingBag size={22} strokeWidth={1.5} />
                 <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-[#042F2E]">
@@ -181,7 +193,7 @@ export const StoreHeader = () => {
               </Link>
 
               {/* Separator */}
-              <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 sm:mx-2 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1 sm:mx-2 hidden lg:block" />
 
               {/* Icons & Menu */}
               <div className="relative" ref={dropdownRef}>
@@ -286,7 +298,44 @@ export const StoreHeader = () => {
                   </div>
                 )}
               </div>
+
+              <button
+                type="button"
+                className="lg:hidden inline-flex items-center justify-center p-2 rounded-xl border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Mở menu điều hướng"
+              >
+                {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
             </div>
+          </div>
+        </div>
+
+        <div
+          ref={mobileMenuRef}
+          className={cn(
+            'lg:hidden border-t border-gray-200/80 dark:border-white/10 bg-white/95 dark:bg-[#042F2E]/95 backdrop-blur-md overflow-hidden transition-all duration-300',
+            isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+          )}
+        >
+          <div className="px-4 sm:px-6 py-4 space-y-2">
+            {[
+              { href: '/shop', label: 'Sản phẩm' },
+              { href: '/catalog', label: 'Giải pháp' },
+              { href: '/brands', label: 'Thương hiệu' },
+              { href: '/contact', label: 'Liên hệ' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-between rounded-xl border border-gray-200/70 dark:border-white/10 px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              >
+                <span>{item.label}</span>
+                <ChevronRight size={16} className="text-gray-400" />
+              </Link>
+            ))}
           </div>
         </div>
       </header>

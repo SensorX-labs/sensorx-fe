@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Share2, Truck, Shield, RotateCcw, Phone, Mail, FileText, Plus } from 'lucide-react';
-import { toast } from 'sonner';
-
 import { ProductService } from '@/features/catalog/product/services/product-service';
 import { ProductDetail as ProductDetailModel } from '@/features/catalog/product/models';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
@@ -14,14 +13,12 @@ import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
 export function ProductDetail() {
   const { id } = useParams();
-  const { addItem, getItemQuantity } = useInquiryCart();
+  const { addItem } = useInquiryCart();
   const [product, setProduct] = useState<ProductDetailModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
-  const qtyInCart = id ? getItemQuantity(id as string) : 0;
-
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
@@ -79,9 +76,9 @@ export function ProductDetail() {
   if (!product) return (
     <div className="min-h-screen bg-page-background flex flex-col items-center justify-center gap-6">
       <p className="text-gray-500 font-sans font-medium tracking-wide">Không tìm thấy sản phẩm này.</p>
-      <a href="/shop" className="px-8 py-3.5 bg-primary hover:bg-[#115E59] text-white rounded-full transition-all uppercase text-xs font-sans font-bold tracking-[0.2em]">
+      <Link href="/shop" className="px-8 py-3.5 bg-primary hover:bg-[#115E59] text-white rounded-full transition-all uppercase text-xs font-sans font-bold tracking-[0.2em]">
         Quay lại cửa hàng
-      </a>
+      </Link>
     </div>
   );
 
@@ -106,11 +103,11 @@ export function ProductDetail() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start mb-16 h-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start mb-12 sm:mb-16 h-full">
           {/* LEFT: Image Gallery */}
           <div className="lg:col-span-5 flex flex-col gap-4 lg:sticky lg:top-24 h-full">
-            <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-6 shadow-md border-t-4 border-t-[#0D9488] flex flex-col gap-4">
+            <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-md border-t-4 border-t-[#0D9488] flex flex-col gap-4">
               <div className="relative bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 aspect-square overflow-hidden shadow-inner flex items-center justify-center rounded-xl">
                 <Image
                   src={getImageUrl(product.images?.[activeImage] || '')}
@@ -142,36 +139,36 @@ export function ProductDetail() {
           </div>
 
           {/* RIGHT: Product Details & Actions */}
-          <div className="lg:col-span-7 flex flex-col h-full font-sans">
-            <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-stone-900 dark:text-white uppercase tracking-wide leading-snug mb-8">
+          <div className="lg:col-span-7 flex flex-col h-full font-sans min-w-0">
+            <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-stone-900 dark:text-white uppercase tracking-wide leading-snug mb-6 sm:mb-8">
               {product.name}
             </h1>
 
             {/* Properties List */}
             <div className="flex flex-col gap-5 text-sm mb-8 font-sans">
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <span className="col-span-4 md:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Mã sản phẩm:</span>
-                <span className="col-span-8 md:col-span-9 font-mono font-bold text-stone-900 dark:text-white bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 px-2.5 py-1 rounded w-fit text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-start sm:items-center">
+                <span className="sm:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Mã sản phẩm:</span>
+                <span className="sm:col-span-9 font-mono font-bold text-stone-900 dark:text-white bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 px-2.5 py-1 rounded w-fit text-xs">
                   {product.code}
                 </span>
               </div>
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <span className="col-span-4 md:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Hãng sản xuất:</span>
-                <span className="col-span-8 md:col-span-9 font-extrabold text-[#0D9488] dark:text-emerald-400 uppercase tracking-widest text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-start sm:items-center">
+                <span className="sm:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Hãng sản xuất:</span>
+                <span className="sm:col-span-9 font-extrabold text-[#0D9488] dark:text-emerald-400 uppercase tracking-widest text-xs">
                   {product.supplierName || 'SensorX'}
                 </span>
               </div>
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <span className="col-span-4 md:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Loại sản phẩm:</span>
-                <span className="col-span-8 md:col-span-9 font-semibold text-stone-800 dark:text-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-start sm:items-center">
+                <span className="sm:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Loại sản phẩm:</span>
+                <span className="sm:col-span-9 font-semibold text-stone-800 dark:text-gray-200">
                   {product.categoryName || 'Chưa cập nhật'}
                 </span>
               </div>
 
               {/* Quantity */}
-              <div className="grid grid-cols-12 gap-4 items-center pt-5 mt-2 border-t border-stone-200 dark:border-zinc-800/80">
-                <span className="col-span-4 md:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Số lượng:</span>
-                <div className="col-span-8 md:col-span-9 flex items-center gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 items-start sm:items-center pt-5 mt-2 border-t border-stone-200 dark:border-zinc-800/80">
+                <span className="sm:col-span-3 text-stone-500 font-bold uppercase tracking-wider text-[10px]">Số lượng:</span>
+                <div className="sm:col-span-9 flex flex-wrap items-center gap-3 sm:gap-4">
                   <div className="flex items-center bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-full overflow-hidden shadow-inner">
                     <button
                       onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
@@ -196,7 +193,7 @@ export function ProductDetail() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <button
                 onClick={handleCreateRFQ}
                 className="flex-1 h-12 transition-all duration-300 rounded-full shadow-md font-sans font-bold uppercase tracking-[0.1em] text-xs md:text-sm flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 relative overflow-hidden cursor-pointer"
@@ -210,13 +207,13 @@ export function ProductDetail() {
                 )}
               </button>
 
-              <button className="w-12 h-12 flex items-center justify-center border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-stone-400 hover:border-stone-850 hover:text-stone-900 transition-all rounded-full shadow-sm cursor-pointer" title="Chia sẻ">
+              <button className="w-full sm:w-12 h-12 flex items-center justify-center border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-stone-400 hover:border-stone-850 hover:text-stone-900 transition-all rounded-full shadow-sm cursor-pointer" title="Chia sẻ">
                 <Share2 size={18} />
               </button>
             </div>
 
             {/* Services */}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-stone-200 dark:border-zinc-800/80 w-full font-sans">
+            <div className="mt-auto flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-4 pt-6 border-t border-stone-200 dark:border-zinc-800/80 w-full font-sans">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-full bg-[#0D9488]/10 flex items-center justify-center text-[#0D9488] dark:text-emerald-400">
                   <Truck size={20} strokeWidth={2} />

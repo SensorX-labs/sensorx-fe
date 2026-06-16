@@ -6,11 +6,19 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
+interface ProductCardProduct {
+    code?: string;
+    unitOfQuantityName?: string;
+    supplierName?: string;
+    spec?: string;
+    description?: string;
+}
+
 interface ProductCardProps {
     id: string;
     name: string;
     image: string;
-    product?: any;
+    product?: ProductCardProduct;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -47,12 +55,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return (
         <div
             onClick={handleCardClick}
-            className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-3xl p-5 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative"
+            className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-3 sm:p-5 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative min-h-full"
         >
             <div>
                 {/* Supplier & Code */}
-                <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                         {product?.supplierName || 'SensorX'}
                     </span>
                     {product?.code && (
@@ -63,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
 
                 {/* Image container */}
-                <div className="h-44 w-full relative mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100/50 dark:border-zinc-800/50">
+                <div className="h-32 sm:h-44 w-full relative mb-4 sm:mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100/50 dark:border-zinc-800/50">
                     <Image
                         src={image || '/assets/images/products/default.png'}
                         alt={name}
@@ -74,21 +82,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
 
                 {/* Product title */}
-                <h3 className="font-bold text-xs text-gray-950 dark:text-white line-clamp-2 mb-2 group-hover:text-[#0D9488] dark:group-hover:text-emerald-400 transition-colors uppercase tracking-wide leading-snug h-10">
+                <h3 className="font-bold text-[11px] sm:text-xs text-gray-950 dark:text-white line-clamp-2 mb-2 group-hover:text-[#0D9488] dark:group-hover:text-emerald-400 transition-colors uppercase tracking-wide leading-snug h-9 sm:h-10">
                     {name}
                 </h3>
 
                 {/* Specs/Description */}
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
+                <p className="hidden sm:block text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
                     {product?.spec || product?.description || 'Chưa có thông số kỹ thuật chi tiết cho sản phẩm này.'}
                 </p>
             </div>
 
             {/* Action Footer */}
-            <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-between mt-auto gap-3">
+            <div className="border-t border-gray-100 dark:border-stone-850 pt-3 sm:pt-4 flex flex-col gap-2 mt-auto">
                 <button
                     onClick={handleAddToInquiry}
-                    className="flex items-center justify-center gap-1.5 px-4 h-9 rounded-xl text-[9px] font-sans font-bold uppercase tracking-wider bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
+                    className="w-full flex items-center justify-center gap-1.5 px-3 sm:px-4 h-9 sm:h-10 rounded-xl text-[9px] font-sans font-bold uppercase tracking-wider bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
                 >
                     <Plus size={11} className={justAdded ? 'rotate-90 transition-transform' : ''} />
                     Yêu cầu báo giá
@@ -96,7 +104,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 <button
                     onClick={handleCardClick}
-                    className="flex items-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
                 >
                     <span>Chi tiết</span>
                     <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />

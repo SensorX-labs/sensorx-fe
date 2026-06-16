@@ -15,9 +15,10 @@ export function InquiryCartPanel() {
     const [isHidden, setIsHidden] = useState(false);
 
     useEffect(() => {
-        const handleToggle = (e: any) => {
-            if (e.detail?.hide !== undefined) {
-                setIsHidden(e.detail.hide);
+        const handleToggle = (e: Event) => {
+            const customEvent = e as CustomEvent<{ hide?: boolean }>;
+            if (customEvent.detail?.hide !== undefined) {
+                setIsHidden(customEvent.detail.hide);
             }
         };
 
@@ -43,10 +44,10 @@ export function InquiryCartPanel() {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 font-sans select-none">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2 font-sans select-none max-w-[calc(100vw-2rem)] sm:max-w-none">
             {/* Panel mở rộng */}
             {isOpen && (
-                <div className="glass-card w-80 bg-white/90 dark:bg-zinc-950/90 border border-white/50 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+                <div className="glass-card w-[calc(100vw-2rem)] sm:w-80 max-h-[calc(100vh-7rem)] bg-white/90 dark:bg-zinc-950/90 border border-white/50 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
                     {/* Header */}
                     <div className="px-5 py-4 bg-primary text-white flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -64,7 +65,7 @@ export function InquiryCartPanel() {
                     </div>
 
                     {/* Items */}
-                    <div className="max-h-72 overflow-y-auto divide-y divide-gray-100/50 dark:divide-zinc-800/50 bg-white/50 dark:bg-zinc-900/50">
+                    <div className="max-h-[calc(100vh-18rem)] overflow-y-auto divide-y divide-gray-100/50 dark:divide-zinc-800/50 bg-white/50 dark:bg-zinc-900/50">
                         {items.map(item => (
                             <div key={item.productId} className="px-4 py-3.5 flex items-start gap-3 group hover:bg-gray-150/40 dark:hover:bg-zinc-800/40 transition-colors">
                                 <div className="flex-1 min-w-0">
@@ -145,7 +146,7 @@ export function InquiryCartPanel() {
                 <button
                     onClick={() => setIsOpen(true)}
                     className={cn(
-                        'relative flex items-center gap-3 px-5 h-14 cursor-pointer',
+                        'relative flex items-center gap-3 px-4 sm:px-5 h-14 cursor-pointer',
                         'bg-primary text-white rounded-2xl shadow-xl',
                         'transition-all duration-500 hover:-translate-y-1 hover:shadow-secondary/20',
                         'hover:bg-[#115E59] group animate-in fade-in zoom-in duration-300'
