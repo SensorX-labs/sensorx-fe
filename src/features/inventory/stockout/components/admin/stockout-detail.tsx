@@ -181,7 +181,10 @@ export default function StockOutDetail({ id }: StockOutDetailProps) {
       StockOutService.getById(id, warehouseId)
         .then((data: any) => {
           if (data) {
-            setStockOutData(data);
+            setStockOutData({
+              ...data,
+              date: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+            });
             setItems((data.items || []).map((item: any) => ({
               ...item,
               unitPrice: item.unitPrice ?? 0,
