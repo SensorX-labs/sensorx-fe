@@ -11,7 +11,7 @@
     --color-foreground: var(--foreground);
     --font-sans: "Josefin Sans", var(--font-geist-sans), sans-serif;
     --font-mono: var(--font-geist-mono);
-    --font-heading: "Cinzel", serif;
+    --font-heading: "Noto Serif", var(--font-noto-serif), serif;
     --font-body: "Josefin Sans", sans-serif;
     --color-primary: #0F766E;
     --color-secondary: #14B8A6;
