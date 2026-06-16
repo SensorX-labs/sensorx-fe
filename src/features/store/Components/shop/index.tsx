@@ -69,8 +69,9 @@ export default function Shop() {
 
     // Initial fetch and filter change
     useEffect(() => {
-        fetchProducts(false);
-    }, [filters, sortBy]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void fetchProducts(false);
+    }, [fetchProducts, filters, sortBy]);
 
     return (
         <div className="min-h-screen bg-[#ffffff] dark:bg-stone-950 relative overflow-hidden">
@@ -80,7 +81,7 @@ export default function Shop() {
             <div className="absolute bottom-[200px] right-1/6 w-[500px] h-[500px] rounded-full bg-indigo-500/[0.04] dark:bg-indigo-500/[0.06] blur-[150px] pointer-events-none" />
 
             {/* Catalog Banner */}
-            <div className="relative py-20 bg-stone-950 overflow-hidden border-b border-stone-900">
+            <div className="relative py-14 sm:py-16 lg:py-20 bg-stone-950 overflow-hidden border-b border-stone-900">
                 {/* Background image & gradient overlay */}
                 <div className="absolute inset-0 z-0 opacity-40">
                     <img 
@@ -97,14 +98,14 @@ export default function Shop() {
                 {/* Floating glow orb */}
                 <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full bg-emerald-500/10 blur-[90px] -translate-y-1/2" />
                 
-                <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-4">
                         <Sparkles size={11} /> Thiết bị chính hãng 100%
                     </div>
-                    <h1 className="font-heading text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+                    <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-tight">
                         Danh Mục Sản Phẩm
                     </h1>
-                    <p className="text-stone-300 text-xs md:text-sm font-sans max-w-md mt-3 leading-relaxed font-light">
+                    <p className="text-stone-300 text-xs md:text-sm font-sans max-w-xl mt-3 leading-relaxed font-light">
                         Hệ thống cảm biến và thiết bị tự động hoá công nghiệp hiệu suất cao từ các nhà sản xuất hàng đầu toàn cầu.
                     </p>
                 </div>
@@ -125,18 +126,18 @@ export default function Shop() {
             </div>
 
             {/* Catalog content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-                <div className="flex flex-col lg:flex-row gap-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16 relative z-10">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Sidebar Filter */}
-                    <aside className="w-full lg:w-68 flex-shrink-0">
+                    <aside className="w-full lg:w-72 flex-shrink-0">
                         <CatalogFilter onFiltersChange={setFilters} />
                     </aside>
 
                     {/* Main Content */}
                     <main className="flex-1">
                         {/* Toolbar */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-12 pb-6 border-b border-gray-200/50 dark:border-stone-800">
-                            <div className="flex items-center gap-4">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10 pb-6 border-b border-gray-200/50 dark:border-stone-800">
+                            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                                 <button className="p-2 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20"><LayoutGrid size={18} /></button>
                                 <button className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"><List size={18} /></button>
                                 <div className="w-px h-4 bg-gray-200 dark:bg-stone-800 mx-2" />
@@ -145,7 +146,7 @@ export default function Shop() {
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-4 sm:gap-6">
                                 <div className="flex items-center gap-2 group cursor-pointer">
                                     <label htmlFor="sort" className="text-[10px] font-sans font-bold uppercase tracking-widest text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white cursor-pointer transition-colors">
                                         Sắp xếp
@@ -175,14 +176,14 @@ export default function Shop() {
                             </div>
                         ) : products.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 xl:gap-x-8 xl:gap-y-12">
                                     {products.map((product) => (
                                         <ProductCard
                                             key={product.id}
                                             id={product.id}
                                             name={product.name}
                                             image={product.images?.[0] || '/assets/images/products/default.png'}
-                                            product={product as any}
+                                            product={product}
                                         />
                                     ))}
                                 </div>
@@ -192,8 +193,8 @@ export default function Shop() {
                                         <button
                                             onClick={() => fetchProducts(true)}
                                             disabled={loadingMore}
-                                            className="group relative px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
-                                        >
+                                    className="group relative w-full sm:w-auto px-8 sm:px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+                                >
                                             <span className="relative text-[10px] font-sans font-bold uppercase tracking-[0.25em] flex items-center gap-3">
                                                 {loadingMore ? (
                                                     <>Đang tải <Loader2 size={12} className="animate-spin text-white" /></>
@@ -206,7 +207,7 @@ export default function Shop() {
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-32 text-center border border-dashed border-gray-200 dark:border-stone-800 rounded-lg">
+                            <div className="flex flex-col items-center justify-center py-24 sm:py-32 text-center border border-dashed border-gray-200 dark:border-stone-800 rounded-lg">
                                 <SlidersHorizontal size={48} className="text-gray-200 dark:text-stone-700 mb-6" />
                                 <h3 className="text-lg font-heading font-bold uppercase tracking-widest text-gray-900 dark:text-white mb-2">Không tìm thấy sản phẩm</h3>
                                 <p className="text-xs text-gray-400 uppercase tracking-widest">Hãy thử thay đổi tiêu chí lọc hoặc từ khóa tìm kiếm</p>

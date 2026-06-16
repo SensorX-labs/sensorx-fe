@@ -20,8 +20,8 @@ export const StoreFooter = () => {
   return (
     <footer className="bg-zinc-950 text-white border-t border-zinc-800">
       <div className="border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* đăng ký email nhận tin nhắn */}
             <div>
               <h3 className="text-xs font-semibold tracking-widest uppercase text-white mb-4">
@@ -30,18 +30,18 @@ export const StoreFooter = () => {
               <p className="text-sm text-zinc-400 mb-6">
                 Đăng ký để nhận thông tin cập nhật, ưu đãi độc quyền và nhiều hơn nữa.
               </p>
-              <form onSubmit={handleSubscribe} className="flex gap-2">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@cuaban.com"
                   required
-                  className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-800 text-sm focus:outline-none focus:border-secondary transition-colors text-white placeholder-zinc-500"
+                  className="flex-1 min-w-0 px-4 py-3 bg-zinc-900 border border-zinc-800 text-sm focus:outline-none focus:border-secondary transition-colors text-white placeholder-zinc-500 rounded-xl sm:rounded-none sm:rounded-l-xl"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-white text-black text-xs font-semibold tracking-widest uppercase hover:bg-zinc-200 transition-colors"
+                  className="px-6 py-3 bg-white text-black text-xs font-semibold tracking-widest uppercase hover:bg-zinc-200 transition-colors rounded-xl sm:rounded-none sm:rounded-r-xl"
                 >
                   Đăng ký
                 </button>
@@ -74,8 +74,8 @@ export const StoreFooter = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 mb-10 lg:mb-12">
           {/* công ty */}
           <div>
             <h4 className="text-xs font-semibold tracking-widest uppercase text-white mb-4">
@@ -197,9 +197,9 @@ export const StoreFooter = () => {
       <div className="border-t border-zinc-800" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-8">
           {/* mạng xã hội */}
-          <div className="flex gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <h4 className="text-xs font-semibold tracking-widest uppercase text-white">
               Theo dõi chúng tôi
             </h4>
@@ -226,8 +226,8 @@ export const StoreFooter = () => {
           </div>
         </div>
 
-        <div className="mt-24 pb-12 text-center">
-          <h2 className="text-[6rem] md:text-[10rem] font-heading font-bold tracking-[0.2em] text-white opacity-5 select-none leading-none">
+        <div className="mt-16 sm:mt-20 lg:mt-24 pb-10 sm:pb-12 text-center overflow-hidden">
+          <h2 className="text-[3.5rem] sm:text-[5rem] md:text-[8rem] lg:text-[10rem] font-heading font-bold tracking-[0.18em] text-white opacity-5 select-none leading-none break-words">
             SENSORX
           </h2>
         </div>

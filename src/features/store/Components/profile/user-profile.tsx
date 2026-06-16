@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/shared/hooks/use-user';
 import { StoreBreadcrumb } from '@/shared/components/store/store-breadcrumb';
+import Image from 'next/image';
 
 import { SecurityTab } from './security-tab';
 import { AuthService } from '@/features/system/auth/services/auth-service';
@@ -42,7 +43,10 @@ export function UserProfile() {
   };
 
   useEffect(() => {
-    fetchCustomer();
+    if (!user?.id) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchCustomer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const handleAvatarClick = () => {
@@ -104,7 +108,7 @@ export function UserProfile() {
       <div className="absolute bottom-[200px] right-1/4 w-[500px] h-[500px] rounded-full bg-indigo-500/[0.03] dark:bg-indigo-500/[0.06] blur-[150px] pointer-events-none" />
 
       {/* Cinematic Banner */}
-      <div className="relative py-16 bg-stone-950 overflow-hidden border-b border-stone-900">
+      <div className="relative py-12 sm:py-14 lg:py-16 bg-stone-950 overflow-hidden border-b border-stone-900">
         {/* Background image & gradient overlay */}
         <div className="absolute inset-0 z-0 opacity-40">
           <img 
@@ -118,11 +122,11 @@ export function UserProfile() {
         {/* Floating glow orb */}
         <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full bg-emerald-500/10 blur-[90px] -translate-y-1/2" />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-4">
             <Building size={11} className="shrink-0" /> Cổng thông tin doanh nghiệp
           </div>
-          <h1 className="font-heading text-3xl md:text-5xl font-black text-white uppercase tracking-tight">
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-tight">
             TÀI KHOẢN CỦA TÔI
           </h1>
           <p className="text-stone-300 text-xs md:text-sm font-sans max-w-md mt-3 leading-relaxed font-light">
@@ -145,11 +149,11 @@ export function UserProfile() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 select-none relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           <aside className="lg:col-span-1 flex flex-col gap-4">
             {/* User Header Info Card */}
-            <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-6 flex flex-col items-center text-center shadow-md rounded-2xl border-t-4 border-t-[#0D9488]">
+            <div className="bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-5 sm:p-6 flex flex-col items-center text-center shadow-md rounded-2xl border-t-4 border-t-[#0D9488]">
               <div className="relative group mb-4">
                 <input
                   type="file"
@@ -165,9 +169,10 @@ export function UserProfile() {
                   {isUpdatingAvatar ? (
                     <Loader2 className="w-8 h-8 animate-spin text-[#0D9488]" />
                   ) : customerData?.avatarUrl ? (
-                    <img
+                    <Image
                       src={customerData.avatarUrl}
                       alt={customerData.name}
+                      fill
                       className="w-full h-full object-cover"
                     />
                   ) : customerData?.name ? (
@@ -195,7 +200,7 @@ export function UserProfile() {
               </p>
             </div>
 
-            <nav className="space-y-2">
+            <nav className="space-y-2 lg:sticky lg:top-24">
               {[
                 { id: 'business', label: 'Thông tin doanh nghiệp', icon: Building },
                 { id: 'security', label: 'Mật khẩu & Bảo mật', icon: Shield },
@@ -203,10 +208,10 @@ export function UserProfile() {
                 const Icon = item.icon || ChevronRight;
                 const isActive = activeTab === item.id;
                 return (
-                  <button
+                    <button
                     key={item.id}
                     onClick={() => {
-                      setActiveTab(item.id as any);
+                      setActiveTab(item.id as 'business' | 'security');
                     }}
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-3.5 text-xs font-sans font-bold uppercase tracking-wider rounded-xl transition-all duration-300 border cursor-pointer shadow-sm",
@@ -231,7 +236,7 @@ export function UserProfile() {
             </nav>
           </aside>
 
-          <main className="lg:col-span-3">
+          <main className="lg:col-span-3 min-w-0">
             {activeTab === 'business' && (
               loading ? (
                 <div className="flex justify-center py-20">

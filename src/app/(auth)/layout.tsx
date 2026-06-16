@@ -10,7 +10,7 @@ const TRUST_ITEMS = [
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen flex flex-col lg:flex-row selection:bg-emerald-500 selection:text-white">
 
       {/* ── LEFT PANEL — Dark branding ── */}
       <div className="hidden lg:flex lg:w-[42%] bg-stone-950 flex-col relative overflow-hidden border-r border-stone-850">
@@ -82,7 +82,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="absolute bottom-1/4 left-0 w-80 h-80 rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px] pointer-events-none" />
  
         {/* Mobile Header */}
-        <div className="lg:hidden flex items-center gap-3 px-6 py-4 bg-stone-950 border-b border-stone-850">
+        <div className="lg:hidden flex items-center gap-3 px-4 sm:px-6 py-4 bg-stone-950 border-b border-stone-850">
           <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
             <Cpu size={15} className="text-white" />
           </div>
@@ -93,8 +93,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
  
         {/* Form area */}
-        <main className="flex-1 flex items-center justify-center px-6 py-12 sm:px-12 md:py-16 relative z-10">
-          <div className="w-full max-w-md bg-[#F9F9FB] dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-8 sm:p-10 rounded-[2rem] shadow-2xl border-t-4 border-t-[#0D9488]">
+        <main className="flex-1 flex items-start lg:items-center justify-center px-4 sm:px-6 py-8 sm:py-12 md:py-16 relative z-10">
+          <div className="w-full max-w-md bg-[#F9F9FB] dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 sm:p-8 sm:p-10 rounded-2xl sm:rounded-[2rem] shadow-2xl border-t-4 border-t-[#0D9488]">
             {children}
           </div>
         </main>

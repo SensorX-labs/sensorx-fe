@@ -6,11 +6,19 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useInquiryCart } from '@/shared/hooks/use-inquiry-cart';
 
+interface ProductCardProduct {
+    code?: string;
+    unitOfQuantityName?: string;
+    supplierName?: string;
+    spec?: string;
+    description?: string;
+}
+
 interface ProductCardProps {
     id: string;
     name: string;
     image: string;
-    product?: any;
+    product?: ProductCardProduct;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -47,7 +55,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return (
         <div
             onClick={handleCardClick}
-            className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-3xl p-5 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative"
+            className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group cursor-pointer relative min-h-full"
         >
             <div>
                 {/* Supplier & Code */}
@@ -63,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
 
                 {/* Image container */}
-                <div className="h-44 w-full relative mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100/50 dark:border-zinc-800/50">
+                <div className="h-40 sm:h-44 w-full relative mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100/50 dark:border-zinc-800/50">
                     <Image
                         src={image || '/assets/images/products/default.png'}
                         alt={name}
@@ -85,10 +93,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
 
             {/* Action Footer */}
-            <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-between mt-auto gap-3">
+            <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between mt-auto gap-3">
                 <button
                     onClick={handleAddToInquiry}
-                    className="flex items-center justify-center gap-1.5 px-4 h-9 rounded-xl text-[9px] font-sans font-bold uppercase tracking-wider bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 h-10 rounded-xl text-[9px] font-sans font-bold uppercase tracking-wider bg-[#0D9488] hover:bg-[#0F766E] text-white active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
                 >
                     <Plus size={11} className={justAdded ? 'rotate-90 transition-transform' : ''} />
                     Yêu cầu báo giá
@@ -96,7 +104,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 <button
                     onClick={handleCardClick}
-                    className="flex items-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1 text-[9px] font-sans font-bold text-gray-900 dark:text-white uppercase tracking-[0.15em] hover:text-[#0D9488] dark:hover:text-emerald-400 transition-colors cursor-pointer"
                 >
                     <span>Chi tiết</span>
                     <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />

@@ -78,8 +78,6 @@ export function MyRfqsTab() {
     }, []);
 
     useEffect(() => {
-        setMyRfqs([]);
-        
         const timer = setTimeout(() => {
             paginationRef.current = { lastId: undefined, lastValue: undefined };
             fetchRfqs(false, activeFilter, searchTerm);
@@ -90,8 +88,8 @@ export function MyRfqsTab() {
 
     return (
         <div className="font-sans select-none">
-            <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="relative w-full sm:flex-1 sm:max-w-md">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                     <input
                         type="text"
@@ -104,7 +102,7 @@ export function MyRfqsTab() {
             </div>
 
             {/* Filter tabs */}
-            <div className="flex items-center border-b border-stone-200 dark:border-zinc-800 mb-6 bg-white dark:bg-zinc-950 sticky top-0 z-10">
+            <div className="flex items-center border-b border-stone-200 dark:border-zinc-800 mb-6 bg-white dark:bg-zinc-950 sticky top-0 z-10 overflow-x-auto hide-scrollbar">
                 {filters.map((filter) => (
                     <button
                         key={filter.id}
@@ -114,7 +112,7 @@ export function MyRfqsTab() {
                             }
                         }}
                         className={cn(
-                            "flex-1 py-4 text-[10px] font-extrabold tracking-widest uppercase transition-all border-b-2 text-center cursor-pointer",
+                            "min-w-max flex-1 py-4 px-4 text-[10px] font-extrabold tracking-widest uppercase transition-all border-b-2 text-center cursor-pointer",
                             activeFilter === filter.id
                                 ? "border-[#0D9488] text-[#0D9488] dark:text-emerald-400"
                                 : "border-transparent text-stone-400 hover:text-stone-700 dark:hover:text-white"
@@ -152,15 +150,15 @@ export function MyRfqsTab() {
                                     {/* Left accent bar */}
                                     <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${bgAccent}`} />
 
-                                    <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4">
+                                    <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="flex items-start sm:items-center gap-4 sm:gap-6">
                                             <span className="font-heading font-bold text-sm tracking-wide text-gray-900 dark:text-white">{request.code}</span>
                                             <span className={cn("px-2 py-0.5 text-[9px] uppercase font-bold tracking-widest border rounded", config.className)}>
                                                 {config.label}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center justify-between sm:justify-end gap-12">
+                                        <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-12">
                                             <div className="text-left sm:text-right">
                                                 <p className="text-[9px] font-sans font-bold uppercase tracking-widest text-gray-400 mb-0.5">Thời gian tạo</p>
                                                 <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
