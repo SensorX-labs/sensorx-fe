@@ -28,7 +28,6 @@ export function TabInquiryCart() {
 
       const rfqId = await StoreRFQService.createRFQ(rfqItems);
       clearCart();
-      toast.success("Đã lưu bản thảo yêu cầu báo giá!");
       return rfqId;
     } catch (error) {
       console.error("Error sending RFQ:", error);
@@ -44,7 +43,6 @@ export function TabInquiryCart() {
         return;
       }
       await StoreRFQService.sendRFQ(rfqId);
-      toast.success("Đã gửi yêu cầu báo giá thành công!");
     } catch (error) {
       console.error("Error sending RFQ:", error);
     }

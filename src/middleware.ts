@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
 import { getAllAdminPaths, getAllowedRoutes } from './shared/configs/admin-menu.config';
 
-const publicPaths = ['/', '/not-found', '/shop'];
+const publicPaths = ['/', '/not-found', '/shop', '/catalog', '/brands', '/contact'];
 const authPaths = ['/login', '/register', '/forgot-password'];
 
 // Lấy danh sách tất cả các path thuộc vùng Admin để định danh vùng bảo vệ

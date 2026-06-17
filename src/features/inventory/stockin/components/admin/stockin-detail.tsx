@@ -217,7 +217,11 @@ export default function StockInDetail({ id }: StockInDetailProps) {
       StockInService.getById(id, selectedWarehouseId || undefined)
         .then(data => {
           if (data) {
-            setStockInData(data);
+            setStockInData({
+              ...data,
+              status: data.status || 'completed',
+              date: data.receivedDate ? new Date(data.receivedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+            });
             const mappedItems = (data.items || []).map((item: any) => ({
               ...item,
               id: item.id || item.productId || Math.random().toString(),

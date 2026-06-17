@@ -40,6 +40,8 @@ export interface MyRfqDetail {
     code: string;
     status: RfqStatus;
     createdAt: string;
+    quoteId?: string;
+    quoteCode?: string;
     saleStaff?: MyRfqSaleStaff;
     customer?: MyRfqDetailCustomer;
     items: MyRfqDetailItem[];

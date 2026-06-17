@@ -53,7 +53,7 @@ interface PickingNoteData {
   warehouseId?: string;
   status: 'Pending' | 'Picking' | 'Completed' | 'Canceled' | 'Cancelled' | 'draft' | 'confirmed' | 'completed' | 'cancelled';
   items: LineItem[];
-  createdAt: string;
+  createdAt?: string;
   updatedAt: string;
   transferOrderCode?: string;
   sourceDocumentId?: string;
@@ -211,7 +211,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
             setFormData({
               id: data.id,
               code: data.code,
-              date: data.createdAt,
+              date: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
               createdBy: 'Admin',
               warehouse: 'Kho chính', // Mock for now if not in DTO
               warehouseId: data.warehouseId,
@@ -441,10 +441,21 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
       )}
       {/* Header section - Clean & Simple */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <h2 className="text-2xl font-bold admin-title uppercase">
-            {action === ActionType.CREATE ? 'Tạo phiếu soạn kho' : action === ActionType.UPDATE ? 'Chỉnh sửa phiếu soạn kho' : 'Chi tiết phiếu soạn kho'}
-          </h2>
+        <div className="flex items-center gap-4">
+          <Link href="/warehouse/picking-note">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 border border-gray-200 bg-white hover:bg-gray-100 rounded text-gray-600 shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div className="flex flex-col">
+            <h2 className="text-2xl font-bold admin-title uppercase">
+              {action === ActionType.CREATE ? 'Tạo phiếu soạn kho' : action === ActionType.UPDATE ? 'Chỉnh sửa phiếu soạn kho' : 'Chi tiết phiếu soạn kho'}
+            </h2>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -494,12 +505,6 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
               Lưu phiếu
             </Button>
           )}
-          <Link href="/warehouse/picking-note">
-            <Button variant="outline" className="rounded text-gray-700 hover:bg-gray-50">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Quay lại
-            </Button>
-          </Link>
         </div>
       </div>
 
@@ -568,7 +573,7 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                 </tr>
                 {formData.sourceDocumentType === 0 && (
                   <tr>
-                    <td className="px-6 py-3 admin-text-primary font-semibold text-red-500 font-bold">Thanh toán đơn</td>
+                    <td className="px-6 py-3 admin-text-primary font-semibold text-red-500 font-bold">Trạng thái thanh toán</td>
                     <td className="px-6 py-3">
                       {isPaid === null ? (
                         <span className="text-gray-400 text-xs italic">Đang kiểm tra...</span>
@@ -642,8 +647,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
                       <tr>
-                        <th className="px-6 py-3 font-medium">Mã SP</th>
                         <th className="px-6 py-3 font-medium">Tên SP</th>
+                        <th className="px-6 py-3 font-medium">Mã SP</th>
                         {!isEditing && formData.status === 'Pending' && (
                           <th className="px-6 py-3 font-medium text-right w-[120px]">Khả dụng</th>
                         )}
@@ -669,8 +674,8 @@ export function PickingNoteDetail({ id, initialData }: PickingNoteDetailProps) {
                               />
                             ) : (
                               <div className="flex flex-col">
-                                <span className="font-semibold admin-text-primary">{item.productCode}</span>
-                                <span className="text-gray-900">{item.productName}</span>
+                                <span className="font-semibold admin-text-primary">{item.productName}</span>
+                                <span className="text-sm text-gray-500">{item.productCode}</span>
                               </div>
                             )}
                           </td>
