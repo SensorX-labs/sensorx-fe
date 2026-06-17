@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, SlidersHorizontal, LayoutGrid, List, Loader2, Sparkles } from 'lucide-react';
 import ProductCard from './product-card';
 import { CatalogFilter, FilterState } from './catalog-filter';
@@ -25,9 +25,8 @@ export default function Shop() {
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
 
-    // Pagination state
-    const [lastId, setLastId] = useState<string | undefined>();
-    const [lastValue, setLastValue] = useState<string | undefined>();
+    // Pagination cursor is kept in a ref so it won't retrigger the initial fetch effect.
+    const lastCursorRef = useRef<{ lastId?: string; lastValue?: string }>({});
 
     // Fetch products
     const fetchProducts = useCallback(async (isLoadMore = false) => {
@@ -41,8 +40,8 @@ export default function Shop() {
                 categoryId: filters.categories.length > 0 ? filters.categories[0] : undefined,
                 sortByName: sortBy !== 'newest' ? true : false,
                 isDescending: sortBy !== 'name-asc' ? true : false,
-                lastId: isLoadMore ? lastId : undefined,
-                lastValue: isLoadMore ? lastValue : undefined,
+                lastId: isLoadMore ? lastCursorRef.current.lastId : undefined,
+                lastValue: isLoadMore ? lastCursorRef.current.lastValue : undefined,
             };
 
             const result = await ProductService.getLoadMore(query);
@@ -55,8 +54,10 @@ export default function Shop() {
                 }
 
                 setHasMore(result.hasNext);
-                setLastId(result.lastId);
-                setLastValue(result.lastValue);
+                lastCursorRef.current = {
+                    lastId: result.lastId,
+                    lastValue: result.lastValue,
+                };
             }
         } catch (error) {
             console.error('>>> Lỗi khi fetch sản phẩm:', error);
@@ -65,7 +66,7 @@ export default function Shop() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [filters, sortBy, lastId, lastValue]);
+    }, [filters, sortBy]);
 
     // Initial fetch and filter change
     useEffect(() => {
