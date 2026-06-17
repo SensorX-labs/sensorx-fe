@@ -15,16 +15,12 @@ import {
   Layers, 
   Eye,
   CheckCircle,
-  FileSpreadsheet,
-  Send
+  FileSpreadsheet
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export function HomePage() {
   const [activeSolution, setActiveSolution] = useState(0);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [rfqEmail, setRfqEmail] = useState('');
-  const [rfqSent, setRfqSent] = useState(false);
 
   const categories = [
     { name: 'Cảm biến quang điện', image: '/assets/images/section3_banner1.jpeg', link: '/shop?category=photoelectric' },
@@ -110,13 +106,6 @@ export function HomePage() {
     { title: 'Nhà máy sữa Việt Nam Vinamilk', location: 'Bình Dương', image: '/assets/images/banner_7.jpeg' },
     { title: 'Trạm xử lý nước sạch thông minh', location: 'Đồng Nai', image: '/assets/images/banner_8.jpeg' },
   ];
-
-  const handleRfqSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rfqEmail) return;
-    setRfqSent(true);
-    toast.success('Gửi yêu cầu báo giá nhanh thành công! Tư vấn viên của chúng tôi sẽ liên hệ trong 15 phút.');
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background selection:bg-primary selection:text-white">
@@ -290,74 +279,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* NEW SECTION 2: Hot Product Showcase */}
-      <section className="py-24 bg-[#FCF9F4] dark:bg-stone-900/40 border-t border-b border-gray-150/80">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
-            <div>
-              <span className="text-emerald-600 dark:text-emerald-400 font-sans font-bold tracking-[0.25em] uppercase text-xs">Sản phẩm bán chạy</span>
-              <h2 className="font-heading text-3xl md:text-5xl font-black text-gray-900 dark:text-white mt-3">Thiết Bị Tiêu Biểu</h2>
-            </div>
-            <Link
-              href="/shop"
-              className="mt-4 md:mt-0 inline-flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 uppercase tracking-widest transition-colors group"
-            >
-              Tất cả sản phẩm <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {hotProducts.map((prod, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white dark:bg-stone-950 border border-gray-150 dark:border-stone-800 rounded-3xl p-5 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
-              >
-                <div>
-                  {/* Category & Code */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{prod.category}</span>
-                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded uppercase">{prod.code}</span>
-                  </div>
-
-                  {/* Image container */}
-                  <div className="h-44 w-full relative mb-5 bg-[#FCF9F4] dark:bg-stone-900 rounded-2xl flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={prod.image} 
-                      alt={prod.name}
-                      className="max-h-36 max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/images/products/default.png';
-                      }}
-                    />
-                  </div>
-
-                  {/* Product title */}
-                  <h3 className="font-bold text-sm text-gray-950 dark:text-white line-clamp-2 mb-2 group-hover:text-emerald-600 transition-colors h-10">
-                    {prod.name}
-                  </h3>
-                  
-                  {/* Specs */}
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4">
-                    {prod.spec}
-                  </p>
-                </div>
-
-                {/* Action */}
-                <div className="border-t border-gray-100 dark:border-stone-850 pt-4 flex items-center justify-end mt-auto">
-                  <Link 
-                    href="/shop"
-                    className="flex items-center gap-2 px-4 h-9 rounded-full bg-gray-900 hover:bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest transition-all duration-300"
-                  >
-                    <span>Xem chi tiết</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Stats Section */}
       <section className="py-20 bg-emerald-600 text-white">
         <div className="max-w-7xl mx-auto px-6">
@@ -451,47 +372,20 @@ export function HomePage() {
 
               {/* Right Form & Image Grid */}
               <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
-                {!rfqSent ? (
-                  <form onSubmit={handleRfqSubmit} className="space-y-4">
-                    <h3 className="font-bold text-base text-white tracking-wide">Nhận bảng giá ưu đãi</h3>
-                    <p className="text-xs text-gray-400">Nhập email hoặc số điện thoại của bạn, chúng tôi sẽ liên hệ lại ngay lập tức.</p>
-                    
-                    <div>
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="your@email.com hoặc số điện thoại" 
-                        value={rfqEmail}
-                        onChange={(e) => setRfqEmail(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 focus:outline-none px-4 py-3.5 rounded-xl text-sm text-white placeholder-gray-500 transition-colors"
-                      />
-                    </div>
-                    
-                    <button 
-                      type="submit"
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all duration-300"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      Yêu cầu bảng giá
-                    </button>
-                  </form>
-                ) : (
-                  <div className="text-center py-6 space-y-4 animate-fade-in-up">
-                    <div className="w-12 h-12 bg-emerald-500/25 rounded-full flex items-center justify-center mx-auto border border-emerald-500/50">
-                      <CheckCircle className="w-6 h-6 text-emerald-400" />
-                    </div>
-                    <h3 className="font-bold text-lg text-white">Yêu cầu đã được ghi nhận!</h3>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      Cảm ơn bạn đã quan tâm. Chuyên viên kinh doanh B2B sẽ gửi email báo giá đến bạn sớm nhất.
-                    </p>
-                    <button 
-                      onClick={() => setRfqSent(false)}
-                      className="text-xs text-emerald-400 hover:underline tracking-wide font-medium mt-2"
-                    >
-                      Gửi yêu cầu khác
-                    </button>
-                  </div>
-                )}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-base text-white tracking-wide">Nhận bảng giá ưu đãi</h3>
+                  <p className="text-xs text-gray-400">
+                    Nhập thông tin trong trang liên hệ, chúng tôi sẽ phản hồi lại ngay khi nhận được yêu cầu.
+                  </p>
+
+                  <Link
+                    href="/contact"
+                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all duration-300"
+                  >
+                    Đi tới liên hệ
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
             
