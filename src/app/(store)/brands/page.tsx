@@ -49,14 +49,11 @@ export default function BrandsPage() {
 
           <div className="mt-2 grid gap-4 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
             <div>
-              <h1 className="max-w-3xl font-heading text-3xl font-black uppercase tracking-tight text-white md:text-[2.15rem]">
+              <h1 className="max-w-3xl font-sans text-3xl font-black uppercase tracking-[0.02em] text-white md:text-[2.15rem]">
                 Kết nối các thương hiệu SensorX đang làm việc cùng
               </h1>
-              <p className="mt-1.5 max-w-xl text-sm leading-6 text-stone-200">
-                SensorX làm việc cùng các thương hiệu quen thuộc trong tự động hóa, cảm biến và điện công nghiệp.
-              </p>
-              <p className="mt-1.5 max-w-xl text-sm leading-6 text-stone-200">
-                Danh sách bên dưới giúp bạn nhìn nhanh đối tác chính và phạm vi ứng dụng tiêu biểu.
+              <p className="mt-2 max-w-xl text-sm leading-6 text-stone-200">
+                SensorX làm việc cùng các thương hiệu quen thuộc trong tự động hóa, cảm biến và điện công nghiệp. Danh sách bên dưới giúp bạn nhìn nhanh đối tác chính.
               </p>
 
               <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
@@ -81,7 +78,6 @@ export default function BrandsPage() {
                 { label: 'Đối tác', value: '06+' },
                 { label: 'Phạm vi', value: 'B2B công nghiệp' },
                 { label: 'Nhóm chính', value: 'Cảm biến · điều khiển' },
-                { label: 'Mục tiêu', value: 'Rõ đầu mối' },
               ].map((item) => (
                 <div key={item.label} className="rounded-3xl border border-white/10 bg-white/8 p-3 backdrop-blur">
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-300">{item.label}</div>
@@ -109,7 +105,7 @@ export default function BrandsPage() {
             <div className="text-[11px] font-bold uppercase tracking-[0.26em] text-emerald-700">
               Đối tác và doanh nghiệp
             </div>
-            <h2 className="mt-3 font-heading text-3xl font-black uppercase tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="mt-3 font-sans text-3xl font-black uppercase tracking-[0.02em] text-stone-900 md:text-4xl">
               Những thương hiệu làm nên độ tin cậy của SensorX
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">
@@ -131,7 +127,7 @@ export default function BrandsPage() {
                 <BadgeCheck className="h-5 w-5 text-emerald-600" />
               </div>
               <div className="mt-6">
-                <h3 className="font-heading text-2xl font-black text-stone-900">{brand.name}</h3>
+                <h3 className="font-sans text-2xl font-black uppercase tracking-[0.02em] text-stone-900">{brand.name}</h3>
                 <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.24em] text-emerald-700">
                   {brand.segment}
                 </div>
@@ -149,7 +145,7 @@ export default function BrandsPage() {
               <Building2 className="h-3.5 w-3.5" />
               Khẳng định thương hiệu
             </div>
-            <h2 className="mt-4 font-heading text-3xl font-black uppercase tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="mt-4 font-sans text-3xl font-black uppercase tracking-[0.02em] text-stone-900 md:text-4xl">
               SensorX làm việc theo hướng rõ ràng và có chiều sâu
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-7 text-stone-600">
@@ -163,7 +159,7 @@ export default function BrandsPage() {
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white">
                   <item.icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-4 text-base font-black uppercase tracking-wide text-stone-900">
+                <h3 className="mt-4 font-sans text-base font-black uppercase tracking-[0.02em] text-stone-900">
                   {item.title}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-stone-600">{item.desc}</p>
@@ -178,7 +174,7 @@ export default function BrandsPage() {
           <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-700">
             Kết nối nhanh
           </div>
-          <h3 className="mt-4 font-heading text-2xl font-black uppercase tracking-tight text-stone-900">
+          <h3 className="mt-4 font-sans text-2xl font-black uppercase tracking-[0.02em] text-stone-900">
             Nếu cần báo giá, hãy vào shop hoặc liên hệ trực tiếp
           </h3>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

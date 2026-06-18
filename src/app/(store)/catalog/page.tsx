@@ -134,7 +134,7 @@ export default function CatalogPage() {
               <Cpu className="h-3.5 w-3.5" />
               Giải pháp cho doanh nghiệp
             </div>
-            <h1 className="mt-5 max-w-4xl font-heading text-3xl font-black uppercase tracking-tight text-white md:text-[2.2rem]">
+            <h1 className="mt-5 max-w-4xl font-sans text-3xl font-black uppercase tracking-[0.02em] text-white md:text-[2.2rem]">
               Đưa giải pháp cảm biến và tự động hóa của SensorX đến nhiều doanh nghiệp hơn
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-200 md:text-sm">
@@ -190,7 +190,7 @@ export default function CatalogPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 md:px-8">
         <div className="max-w-3xl">
           <div className="text-[11px] font-bold uppercase tracking-[0.26em] text-emerald-700">Nhóm giải pháp</div>
-          <h2 className="mt-3 font-heading text-3xl font-black uppercase tracking-tight text-stone-900 md:text-4xl">
+          <h2 className="mt-3 font-sans text-3xl font-black uppercase tracking-[0.02em] text-stone-900 md:text-4xl">
             Những gì doanh nghiệp có thể tìm thấy trên website của bạn
           </h2>
           <p className="mt-4 text-sm leading-7 text-stone-600">
@@ -208,7 +208,7 @@ export default function CatalogPage() {
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white">
                 <item.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 text-xl font-black text-stone-900">{item.title}</h3>
+              <h3 className="mt-5 font-sans text-xl font-black uppercase tracking-[0.02em] text-stone-900">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-stone-600">{item.summary}</p>
               <div className="mt-5 space-y-2">
                 {item.useCases.map(useCase => (
@@ -231,7 +231,7 @@ export default function CatalogPage() {
                 <Factory className="h-3.5 w-3.5" />
                 Ngành phù hợp
               </div>
-              <h2 className="mt-4 font-heading text-3xl font-black uppercase tracking-tight text-stone-900 md:text-4xl">
+              <h2 className="mt-4 font-sans text-3xl font-black uppercase tracking-[0.02em] text-stone-900 md:text-4xl">
                 Website nên nói chuyện trực tiếp với từng nhóm doanh nghiệp mục tiêu
               </h2>
               <p className="mt-4 text-sm leading-7 text-stone-600">
@@ -246,7 +246,7 @@ export default function CatalogPage() {
                     <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-900 text-white">
                       <Truck className="h-4 w-4" />
                     </div>
-                    <h3 className="text-base font-black uppercase tracking-wide text-stone-900">{item.title}</h3>
+                    <h3 className="font-sans text-base font-black uppercase tracking-[0.02em] text-stone-900">{item.title}</h3>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-stone-600">{item.desc}</p>
                 </div>
@@ -268,7 +268,7 @@ export default function CatalogPage() {
                 <div key={item.step} className="rounded-3xl border border-white/10 bg-white/6 p-5 backdrop-blur-sm">
                   <div className="flex items-center gap-3">
                     <div className="text-xl font-black text-emerald-300">{item.step}</div>
-                    <h3 className="text-base font-black uppercase tracking-wide">{item.title}</h3>
+                    <h3 className="font-sans text-base font-black uppercase tracking-[0.02em]">{item.title}</h3>
                   </div>
                   <p className="mt-3 text-sm leading-7 text-stone-200">{item.desc}</p>
                 </div>
@@ -316,7 +316,7 @@ export default function CatalogPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-100">Kết nối doanh nghiệp</div>
-              <h2 className="mt-3 font-heading text-3xl font-black uppercase tracking-tight md:text-4xl">
+              <h2 className="mt-3 font-sans text-3xl font-black uppercase tracking-[0.02em] md:text-4xl">
                 Nếu doanh nghiệp của bạn đang tìm một hướng triển khai phù hợp, SensorX có thể là điểm bắt đầu
               </h2>
               <p className="mt-4 text-sm leading-7 text-emerald-50/90">

@@ -58,7 +58,7 @@ export function TabInquiryCart() {
 
   if (items.length === 0) {
     return (
-      <div className="py-24 text-center bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm">
+      <div className="py-20 sm:py-24 px-4 text-center bg-[#F9F9FB] dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl shadow-sm">
         <ShoppingBag className="w-12 h-12 text-stone-300 dark:text-zinc-700 mx-auto mb-4" />
         <p className="text-xs font-sans font-bold uppercase tracking-widest text-stone-400">Giỏ hàng bản thảo đang trống.</p>
       </div>
@@ -67,7 +67,7 @@ export function TabInquiryCart() {
 
   return (
     <div className="space-y-6 font-sans select-none">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
         <h3 className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-stone-400">
           Danh sách sản phẩm ({items.length})
         </h3>
@@ -93,11 +93,11 @@ export function TabInquiryCart() {
             const bgAccent = bgAccents[idx % bgAccents.length];
 
             return (
-              <div key={item.productId} className="p-6 flex items-center gap-6 hover:bg-stone-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer group relative overflow-hidden">
+              <div key={item.productId} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 hover:bg-stone-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer group relative overflow-hidden">
                 {/* Left accent bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${bgAccent}`} />
                 
-                <div className="relative w-20 h-20 bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 flex-shrink-0 ml-2 rounded-xl overflow-hidden shadow-sm">
+                <div className="relative w-20 h-20 bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 flex-shrink-0 ml-2 rounded-xl overflow-hidden shadow-sm self-start sm:self-auto">
                   <Image
                     src={item.image || '/assets/images/products/default.png'}
                     alt={item.productName}
@@ -107,7 +107,7 @@ export function TabInquiryCart() {
                   />
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 w-full">
                   <h4 className="text-sm font-heading font-extrabold uppercase tracking-wide text-stone-900 dark:text-white mb-1 truncate">
                     {item.productName}
                   </h4>
@@ -115,7 +115,7 @@ export function TabInquiryCart() {
                     Mã: {item.productId.substring(0, 8)}...
                   </p>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                     <div className="flex items-center bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-full overflow-hidden shadow-inner">
                       <button
                         onClick={() => handleUpdateQty(item.productId, item.quantity, -1)}
@@ -148,13 +148,13 @@ export function TabInquiryCart() {
       <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
         <button
           onClick={handleSaveDraft}
-          className="flex items-center justify-center gap-3 px-8 h-12 bg-white dark:bg-zinc-900 border border-stone-250 dark:border-zinc-800 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] hover:bg-stone-50 dark:hover:bg-zinc-800 text-stone-850 dark:text-white transition-all cursor-pointer active:scale-95 shadow-sm">
+          className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 h-12 bg-white dark:bg-zinc-900 border border-stone-250 dark:border-zinc-800 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] hover:bg-stone-50 dark:hover:bg-zinc-800 text-stone-850 dark:text-white transition-all cursor-pointer active:scale-95 shadow-sm">
           <Save size={16} className="shrink-0" />
           Lưu bản thảo
         </button>
         <button
           onClick={handleSendRFQ}
-          className="flex items-center justify-center gap-3 px-8 h-12 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-all cursor-pointer active:scale-95 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+          className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 h-12 bg-[#0D9488] hover:bg-[#0F766E] text-white rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] transition-all cursor-pointer active:scale-95 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
           <Send size={16} className="shrink-0" />
           Gửi yêu cầu báo giá
         </button>

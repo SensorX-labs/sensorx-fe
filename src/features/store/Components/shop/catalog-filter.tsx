@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import CategoryService from '@/features/catalog/category/services/category-services';
 import { CategoryAllListResult } from '@/features/catalog/category/models';
 import { CategoryTreeItem, buildCategoryTree } from './category-tree-item';
@@ -48,7 +48,8 @@ export function CatalogFilter({
     };
     // Fetch categories
     useEffect(() => {
-        fetchCategories();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void fetchCategories();
     }, []);
 
     const categoryTree = buildCategoryTree(categories);
@@ -95,7 +96,7 @@ export function CatalogFilter({
     const activeFilterCount = filters.collections.length + filters.categories.length + (filters.search ? 1 : 0);
 
     return (
-        <div className="bg-[#F9F9FB] dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full lg:w-64 select-none shadow-md rounded-2xl border-t-4 border-t-[#0D9488] p-6">
+        <div className="bg-[#F9F9FB] dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full select-none shadow-md rounded-2xl border-t-4 border-t-[#0D9488] p-4 sm:p-6 lg:w-72">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200 dark:border-zinc-800/80">
                 <h3 className="text-xs font-heading font-extrabold uppercase tracking-widest text-stone-950 dark:text-white">
                     BỘ LỌC
@@ -136,7 +137,7 @@ export function CatalogFilter({
                                     setFilters(newFilters);
                                     onFiltersChange?.(newFilters);
                                 }}
-                                className="w-full px-4 py-2.5 text-xs border border-stone-250 dark:border-zinc-800 rounded-full bg-white dark:bg-zinc-950 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] transition-all font-sans font-semibold shadow-sm"
+                                className="w-full px-4 py-3 text-xs border border-stone-250 dark:border-zinc-800 rounded-full bg-white dark:bg-zinc-950 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] transition-all font-sans font-semibold shadow-sm"
                             />
                             <Search size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         </div>
