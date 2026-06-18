@@ -297,7 +297,7 @@ export default function SupplyRequestDetail({ id }: SupplyRequestDetailProps) {
       const resolvedData: SupplyRequestData = {
         id: data.id,
         code: data.code,
-        date: data.createdAt,
+        date: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         totalRequired: resolvedItems.reduce((sum, item) => sum + item.requiredQuantity, 0),
         status: data.status,
         note: data.note || '',

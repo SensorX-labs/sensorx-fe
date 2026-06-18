@@ -66,14 +66,7 @@ export function TransferOrderList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-4">
-        <Link href="/warehouse/transfer-orders/new?action=create">
-          <Button className="admin-btn-primary flex items-center gap-2">
-            <ArrowRightLeft className="w-4 h-4" />
-            Tạo lệnh điều chuyển
-          </Button>
-        </Link>
-      </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <Card className="border-none shadow-sm bg-white rounded">
