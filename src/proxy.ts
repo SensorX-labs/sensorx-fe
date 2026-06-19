@@ -16,7 +16,7 @@ const isPathMatch = (pathname: string, paths: string[], exactMatch: boolean = fa
     });
 };
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     const isAdminArea = isPathMatch(pathname, adminPaths);
